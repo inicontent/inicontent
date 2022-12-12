@@ -1798,7 +1798,7 @@ export default defineComponent({
                       {
                         xGap: "12px",
                         yGap: "12px",
-                        cols: "4 300:6 500:8 650:12 900:14 1000:16",
+                        cols: "3 300:4 500:6 650:8 900:10 1000:16",
                       },
                       () =>
                         [...Array(20).keys()].map(() =>
