@@ -31,6 +31,8 @@ import {
   NAvatar,
   NTag,
   NScrollbar,
+  NDataTable,
+  NDynamicTags,
   useMessage,
 } from "naive-ui";
 import {
@@ -51,12 +53,7 @@ import {
   DeviceFloppy,
 } from "@vicons/tabler";
 import { Buffer } from "buffer";
-import {
-  getProperty,
-  setProperty,
-  hasProperty,
-  deleteProperty,
-} from "dot-prop";
+import objectPath from "object-path";
 
 export default defineComponent({
   props: {
@@ -70,6 +67,7 @@ export default defineComponent({
     },
   },
   setup: (props, { emit }) => {
+    const Language = useGlobalCookie("Language");
     const RichEditor = resolveComponent("RichEditor"),
       RenderFields = resolveComponent("RenderFields");
     const Loading = useState("Loading");
@@ -158,34 +156,26 @@ export default defineComponent({
       ShowAssets = ref(false),
       Assets = ref(null),
       HandleSelectAssets = (url) => {
-        if (CurrentField.value.options.single) {
-          if (getProperty(single.value, CurrentField.value.path) === url)
-            deleteProperty(single.value, CurrentField.value.path);
-          else setProperty(single.value, CurrentField.value.path, url);
+        if (
+          !CurrentField.value.options.hasOwnProperty("single") ||
+          CurrentField.value.options.single === true
+        ) {
+          if (objectPath.get(single.value, CurrentField.value.path) === url)
+            objectPath.del(single.value, CurrentField.value.path);
+          else objectPath.set(single.value, CurrentField.value.path, url);
         } else {
-          if (hasProperty(single.value, CurrentField.value.path)) {
-            if (
-              getProperty(single.value, CurrentField.value.path).includes(url)
-            )
-              deleteProperty(
-                single.value,
-                CurrentField.value.path +
-                  `[${getProperty(
-                    single.value,
-                    CurrentField.value.path
-                  ).indexOf(url)}]`
-              );
-            else
-              setProperty(
-                single.value,
-                CurrentField.value.path +
-                  `[${
-                    getProperty(single.value, CurrentField.value.path).length
-                  }]`,
-                url
-              );
-          } else
-            setProperty(single.value, `${CurrentField.value.path}[0]`, url);
+          if (
+            objectPath.has(single.value, CurrentField.value.path) &&
+            objectPath.get(single.value, CurrentField.value.path).includes(url)
+          )
+            objectPath.del(
+              single.value,
+              CurrentField.value.path +
+                `.${objectPath
+                  .get(single.value, CurrentField.value.path)
+                  .indexOf(url)}`
+            );
+          else objectPath.push(single.value, CurrentField.value.path, url);
         }
       },
       EmailAutoComplete = () =>
@@ -212,40 +202,94 @@ export default defineComponent({
       RenderField = ({ name, key, path, type, ...options }) => {
         switch (type) {
           case "list":
+            if (
+              !objectPath.has(
+                single.value,
+                (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+              ) &&
+              options.default_value
+            )
+              objectPath.set(
+                single.value,
+                (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                options.default_value
+              );
             return options.values && options.values.length > 8
               ? h(
                   NFormItem,
                   {
                     label: name,
-                    path: path ?? pathTo(Schema, key),
+                    path:
+                      (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                     rule: {
                       required: options.required,
-                      trigger: "change",
+                      trigger: ["input", "blur"],
                       message: "Please select an option",
                     },
+                    ...(options.label_props ?? {}),
                   },
                   () =>
                     h(NSelect, {
-                      value: getProperty(
+                      value: objectPath.get(
                         single.value,
-                        path ?? pathTo(Schema, key)
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                       ),
                       onUpdateValue: (value) =>
-                        setProperty(
+                        objectPath.set(
                           single.value,
-                          path ?? pathTo(Schema, key),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                           value
                         ),
-                      options: options.values.map((v) => ({
-                        value: v.charAt(0) === "!" ? v.substring(1) : v,
-                        label: v.charAt(0) === "!" ? v.substring(1) : v,
-                        disabled:
-                          v.charAt(0) === "!" && User.value.role !== "admin",
-                      })),
+                      options: options.values.map((item) =>
+                        typeof item === "object" && item.label && item.value
+                          ? item
+                          : {
+                              value: item,
+                              label: item,
+                            }
+                      ),
                       filterable: true,
                       multiple:
                         options.hasOwnProperty("single") &&
                         options.single === false,
+                      ...(options.input_props ?? {}),
+                      ...(options.callback
+                        ? options.callback(
+                            objectPath.get(
+                              single.value,
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                            ),
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          )
+                        : {}),
                     })
                 )
               : !options.hasOwnProperty("single") || options.single === true
@@ -253,44 +297,74 @@ export default defineComponent({
                   NFormItem,
                   {
                     label: name,
-                    path: path ?? pathTo(Schema, key),
+                    path:
+                      (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                     rule: {
                       required: options.required,
-                      trigger: "change",
+                      trigger: ["input", "blur"],
                       message: "Please select an option",
                     },
+                    ...(options.label_props ?? {}),
                   },
                   () =>
                     h(
                       NRadioGroup,
                       {
-                        value: getProperty(
+                        value: objectPath.get(
                           single.value,
-                          path ?? pathTo(Schema, key)
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                         ),
                         onUpdateValue: (value) =>
-                          setProperty(
+                          objectPath.set(
                             single.value,
-                            path ?? pathTo(Schema, key),
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                             value
                           ),
+                        ...(options.input_props ?? {}),
+                        ...(options.callback
+                          ? options.callback(
+                              objectPath.get(
+                                single.value,
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                              ),
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                            )
+                          : {}),
                       },
                       () =>
-                        h(NSpace, () =>
+                        h(NSpace, {}, () =>
                           options.values.map((item) =>
-                            h(NRadio, {
-                              value:
-                                item.charAt(0) === "!"
-                                  ? item.substring(1)
-                                  : item,
-                              label:
-                                item.charAt(0) === "!"
-                                  ? item.substring(1)
-                                  : item,
-                              disabled:
-                                item.charAt(0) === "!" &&
-                                User.value.role !== "admin",
-                            })
+                            h(
+                              NRadio,
+                              typeof item === "object" &&
+                                item.label &&
+                                item.value
+                                ? item
+                                : {
+                                    value: item,
+                                    label: item,
+                                  }
+                            )
                           )
                         )
                     )
@@ -299,28 +373,60 @@ export default defineComponent({
                   NFormItem,
                   {
                     label: name,
-                    path: path ?? pathTo(Schema, key),
+                    path:
+                      (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                     rule: {
                       type: "array",
                       required: options.required,
-                      trigger: "change",
+                      trigger: ["input", "blur"],
                       message: "Please select an option",
                     },
+                    ...(options.label_props ?? {}),
                   },
                   () =>
                     h(
                       NCheckboxGroup,
                       {
-                        value: getProperty(
+                        value: objectPath.get(
                           single.value,
-                          path ?? pathTo(Schema, key)
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                         ),
                         onUpdateValue: (value) =>
-                          setProperty(
+                          objectPath.set(
                             single.value,
-                            path ?? pathTo(Schema, key),
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                             value
                           ),
+                        ...(options.input_props ?? {}),
+                        ...(options.callback
+                          ? options.callback(
+                              objectPath.get(
+                                single.value,
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                              ),
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                            )
+                          : {}),
                       },
                       () =>
                         h(
@@ -331,71 +437,191 @@ export default defineComponent({
                           },
                           () =>
                             options.values.map((item) =>
-                              h(NCheckbox, {
-                                value:
-                                  item.charAt(0) === "!"
-                                    ? item.substring(1)
-                                    : item,
-                                label:
-                                  item.charAt(0) === "!"
-                                    ? item.substring(1)
-                                    : item,
-                                disabled:
-                                  item.charAt(0) === "!" &&
-                                  User.value.role !== "admin",
-                              })
+                              h(
+                                NCheckbox,
+                                typeof item === "object" &&
+                                  item.label &&
+                                  item.value
+                                  ? item
+                                  : {
+                                      value: item,
+                                      label: item,
+                                    }
+                              )
                             )
                         )
                     )
                 );
           case "tags":
+            if (options.default_value)
+              [].concat(options.default_value).forEach(
+                (value) =>
+                  !objectPath
+                    .get(
+                      single.value,
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                      []
+                    )
+                    .includes(value) &&
+                  objectPath.push(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                    value
+                  )
+              );
             return h(
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                ...(options.label_props ?? {}),
+                rule: {
+                  type: "array",
+                  required: options.required,
+                  trigger: ["input", "blur"],
+                  validator(rule, value) {
+                    if (!value && options.required)
+                      return new Error("This field is required");
+                    switch (options.content_type) {
+                      case "url":
+                        try {
+                          if (value.charAt(0) === "#") return true;
+                          new URL(value);
+                        } catch (e) {
+                          return new Error("This is not a valid link");
+                        }
+                        break;
+                      case "email":
+                        return new RegExp(
+                          "([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|[[\t -Z^-~]*])"
+                        ).test(value);
+                      default:
+                        break;
+                    }
+                    return true;
+                  },
+                },
               },
               () =>
-                h(NSelect, {
-                  value: getProperty(single.value, path ?? pathTo(Schema, key)),
-                  onUpdateValue: (value) =>
-                    setProperty(
+                h(
+                  NDynamicTags,
+                  {
+                    value: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key),
-                      value
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     ),
-                  filterable: true,
-                  multiple: true,
-                  tag: true,
-                  showArrow: false,
-                  show: false,
-                })
+                    onUpdateValue: (value) =>
+                      objectPath.set(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                        value
+                      ),
+                    renderTag: (tag, index) =>
+                      h(
+                        NTag,
+                        {
+                          type:
+                            options.default_value &&
+                            [].concat(options.default_value).includes(tag)
+                              ? "primary"
+                              : "default",
+                          disabled:
+                            options.default_value &&
+                            [].concat(options.default_value).includes(tag),
+                          closable:
+                            !options.default_value ||
+                            ![].concat(options.default_value).includes(tag),
+                          onClose: () =>
+                            objectPath.del(
+                              single.value,
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                                `.${index}`
+                            ),
+                        },
+                        {
+                          default: () => tag,
+                        }
+                      ),
+                  },
+                  {
+                    trigger: ({ activate, disabled }) =>
+                      h(
+                        NButton,
+                        {
+                          size: "small",
+                          type: "primary",
+                          dashed: true,
+                          disabled: disabled,
+                          onClick: activate,
+                        },
+                        {
+                          icon: () => h(NIcon, () => h(Plus)),
+                        }
+                      ),
+                  }
+                )
             );
           case "table":
             return h(
               NFormItem,
               {
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   type:
                     !options.hasOwnProperty("single") || options.single === true
                       ? "object"
                       : "array",
                   required: options.required,
-                  trigger: "change",
+                  trigger: ["input", "blur"],
                   message: "Please select an option",
                 },
+                ...(options.label_props ?? {}),
               },
               {
                 label: () =>
-                  h(NSpace, () => [
+                  h(NSpace, {}, () => [
                     name.charAt(0).toUpperCase() +
                       name.slice(1).replaceAll("_", " "),
                     (!options.hasOwnProperty("single") ||
                       options.single === true) &&
-                    hasProperty(
+                    objectPath.has(
                       single.value,
-                      (path ?? pathTo(Schema, key)) + ".id"
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                        ".id"
                     )
                       ? h(
                           NButton,
@@ -405,13 +631,22 @@ export default defineComponent({
                             size: "tiny",
                             onClick: () => {
                               Drawer.value.table = name;
-                              Drawer.value.id = getProperty(
+                              Drawer.value.id = objectPath.get(
                                 single.value,
-                                (path ?? pathTo(Schema, key)) + ".id"
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                                  ".id"
                               );
-                              Drawer.value.data = getProperty(
+                              Drawer.value.data = objectPath.get(
                                 single.value,
-                                path ?? pathTo(Schema, key)
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               );
                               Drawer.value.show = true;
                             },
@@ -438,59 +673,85 @@ export default defineComponent({
                   ]),
                 default: () =>
                   h(NSelect, {
-                    value: hasProperty(
+                    value: objectPath.has(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     )
                       ? !options.hasOwnProperty("single") ||
                         options.single === true
                         ? []
                             .concat(
-                              getProperty(
+                              objectPath.get(
                                 single.value,
-                                path ?? pathTo(Schema, key)
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               )
                             )
                             .map((i) => i.id)[0]
                         : []
                             .concat(
-                              getProperty(
+                              objectPath.get(
                                 single.value,
-                                path ?? pathTo(Schema, key)
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               )
                             )
                             .map((i) => i.id)
                       : null,
                     onUpdateValue: (_value, option) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         Array.isArray(option)
                           ? option.map((i) => i.raw)
                           : option.raw
                       ),
-                    options: getProperty(
+                    options: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     )
                       ? mergeArrayOfObjects(
                           []
                             .concat(
-                              getProperty(
+                              objectPath.get(
                                 single.value,
-                                path ?? pathTo(Schema, key)
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               )
                             )
                             .map((single_value) => ({
                               label: options.label
                                 .map((single_label) =>
-                                  getProperty(single_value, single_label)
+                                  objectPath.get(single_value, single_label)
                                 )
                                 .join(" "),
                               value: single_value.id,
-                              image: options.image
-                                ? getProperty(single_value, options.image)
-                                : null,
+                              image: objectPath.get(
+                                single_value,
+                                options.image,
+                                null
+                              ),
                               raw: single_value,
                             })),
                           OPTIONS.value ? OPTIONS.value[name] ?? [] : []
@@ -536,9 +797,14 @@ export default defineComponent({
                                   )[0],
                                 round: true,
                                 size: "large",
-                                style: {
-                                  marginRight: "12px",
-                                },
+                                style:
+                                  Language.value === "ar"
+                                    ? {
+                                        marginLeft: "12px",
+                                      }
+                                    : {
+                                        marginRight: "12px",
+                                      },
                               }),
                               option.label,
                             ]
@@ -576,9 +842,14 @@ export default defineComponent({
                                     )[0],
                                   round: true,
                                   size: 24,
-                                  style: {
-                                    marginRight: "12px",
-                                  },
+                                  style:
+                                    Language.value === "ar"
+                                      ? {
+                                          marginLeft: "12px",
+                                        }
+                                      : {
+                                          marginRight: "12px",
+                                        },
                                 }),
                                 option.label,
                               ]
@@ -627,9 +898,14 @@ export default defineComponent({
                                           )[0],
                                         round: true,
                                         size: 22,
-                                        style: {
-                                          marginRight: "4px",
-                                        },
+                                        style:
+                                          Language.value === "ar"
+                                            ? {
+                                                marginLeft: "4px",
+                                              }
+                                            : {
+                                                marginRight: "4px",
+                                              },
                                       }),
                                       option.label,
                                     ]
@@ -672,7 +948,7 @@ export default defineComponent({
                                   ? res.result.map((single_result) => ({
                                       label: options.label
                                         .map((single_label) =>
-                                          getProperty(
+                                          objectPath.get(
                                             single_result,
                                             single_label
                                           )
@@ -681,16 +957,16 @@ export default defineComponent({
                                       value: single_result.id,
                                       image: options.image
                                         ? Array.isArray(
-                                            getProperty(
+                                            objectPath.get(
                                               single_result,
                                               options.image
                                             )
                                           )
-                                          ? getProperty(
+                                          ? objectPath.get(
                                               single_result,
                                               `${options.image}[0]`
                                             )
-                                          : getProperty(
+                                          : objectPath.get(
                                               single_result,
                                               options.image
                                             )
@@ -712,37 +988,41 @@ export default defineComponent({
             return h(
               NFormItem,
               {
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule:
                   !options.hasOwnProperty("single") || options.single === true
                     ? {
                         required: options.required,
-                        trigger: "change",
-                        message: "Please upload a file",
+                        trigger: ["input", "blur"],
+                        message: "This field is required",
                       }
                     : {
                         type: "array",
                         required: options.required,
-                        trigger: "change",
-                        message: "Please upload some files",
+                        trigger: ["input", "blur"],
+                        message: "This field is required",
                       },
+                ...(options.label_props ?? {}),
               },
               {
                 label: () =>
                   h(
-                    "div",
+                    NSpace,
                     {
-                      style: {
-                        display: "flex",
-                        gap: "5px",
-                      },
+                      inline: true,
+                      align: "center",
                     },
-                    [
+                    () => [
                       name,
                       h(
                         NPopover,
                         {
-                          trigger: "click",
+                          trigger: "hover",
                         },
                         {
                           trigger: () =>
@@ -764,29 +1044,22 @@ export default defineComponent({
                                 onUpdateValue: (value) =>
                                   !options.hasOwnProperty("single") ||
                                   options.single === true
-                                    ? setProperty(
+                                    ? objectPath.set(
                                         single.value,
-                                        path ?? pathTo(Schema, key),
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                                         value
                                       )
-                                    : getProperty(
+                                    : objectPath.push(
                                         single.value,
-                                        path ?? pathTo(Schema, key)
-                                      )
-                                    ? setProperty(
-                                        single.value,
-                                        (path ?? pathTo(Schema, key)) +
-                                          `[${
-                                            getProperty(
-                                              single.value,
-                                              path ?? pathTo(Schema, key)
-                                            ).length
-                                          }]`,
-                                        value
-                                      )
-                                    : setProperty(
-                                        single.value,
-                                        (path ?? pathTo(Schema, key)) + `[0]`,
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                                         value
                                       ),
                                 placeholder: "Link",
@@ -807,7 +1080,12 @@ export default defineComponent({
                           size: "tiny",
                           onClick: () => (
                             (CurrentField.value = {
-                              path: path ?? pathTo(Schema, key),
+                              path:
+                                (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                               options,
                             }),
                             (ShowAssets.value = true)
@@ -825,11 +1103,27 @@ export default defineComponent({
                       // defaultUpload: true,
                       // withCredentials: true,
                       "on-update:file-list": (files) =>
-                        setProperty(
-                          single.value,
-                          path ?? pathTo(Schema, key),
-                          files.map((file) => file.url ?? file)
-                        ),
+                        files.map((file) => file.url ?? file)[0]
+                          ? objectPath.set(
+                              single.value,
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                              !options.hasOwnProperty("single") ||
+                                options.single === true
+                                ? files.map((file) => file.url ?? file)[0]
+                                : files.map((file) => file.url ?? file)
+                            )
+                          : objectPath.del(
+                              single.value,
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                            ),
                       max:
                         !options.hasOwnProperty("single") ||
                         options.single === true
@@ -850,15 +1144,23 @@ export default defineComponent({
                                 ).toString("base64"),
                             }
                           : undefined,
-                      fileList: hasProperty(
+                      fileList: objectPath.has(
                         single.value,
-                        path ?? pathTo(Schema, key)
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                       )
                         ? []
                             .concat(
-                              getProperty(
+                              objectPath.get(
                                 single.value,
-                                path ?? pathTo(Schema, key)
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               )
                             )
                             .map((src) =>
@@ -898,64 +1200,12 @@ export default defineComponent({
                                   }
                             )
                         : undefined,
-                      onRemove: ({ file }) => {
-                        if (
-                          !options.hasOwnProperty("single") ||
-                          options.single === true
-                        )
-                          deleteProperty(
-                            single.value,
-                            path ?? pathTo(Schema, key)
-                          );
-                        else
-                          deleteProperty(
-                            single.value,
-                            (path ?? pathTo(Schema, key)) +
-                              `[${getProperty(
-                                single.value,
-                                path ?? pathTo(Schema, key)
-                              ).indexOf(file.url)}]`
-                          );
-                        return true;
-                      },
                       onFinish: ({ file, event }) => {
-                        const src = JSON.parse(event.target.response).result
-                          .public_url;
-                        if (
-                          !options.hasOwnProperty("single") ||
-                          options.single === true
-                        )
-                          setProperty(
-                            single.value,
-                            path ?? pathTo(Schema, key),
-                            src
-                          );
-                        else if (
-                          hasProperty(single.value, path ?? pathTo(Schema, key))
-                        )
-                          setProperty(
-                            single.value,
-                            (path ?? pathTo(Schema, key)) +
-                              `[${
-                                getProperty(
-                                  single.value,
-                                  path ?? pathTo(Schema, key)
-                                ).length
-                              }]`,
-                            src
-                          );
-                        else
-                          setProperty(
-                            single.value,
-                            (path ?? pathTo(Schema, key)) + `[0]`,
-                            src
-                          );
-                        file.url = src;
-                        file.name = src
-                          .split("/")
-                          .pop()
-                          .split("#")[0]
-                          .split("?")[0];
+                        const response = JSON.parse(
+                          event.target.response
+                        ).result;
+                        file.url = response.public_url;
+                        file.name = response.name;
                         return file;
                       },
                       onPreview: ({ url }) =>
@@ -995,43 +1245,77 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: options.required,
                   validator(rule, value) {
-                    if (!value)
-                      return options.required
-                        ? new Error("This field is required")
-                        : true;
-                    else if (value.charAt(0) === "#") return true;
-                    else if (
-                      !/(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/.test(
-                        value
-                      )
-                    )
+                    if (!value && options.required)
+                      return new Error("This field is required");
+                    try {
+                      if (value.charAt(0) === "#") return true;
+                      new URL(value);
+                    } catch (e) {
                       return new Error("This is not a valid link");
+                    }
                     return true;
                   },
                   trigger: ["input", "blur"],
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(
                   NInput,
                   {
                     inputProps: { type: "url" },
-                    value: getProperty(
+                    value: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     ),
                     onUpdateValue: (value) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        options.absolute_path
+                          ? options.absolute_path
+                          : (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         value
                       ),
                     placeholder: name,
                     clearable: true,
+                    ...(options.input_props ?? {}),
+                    ...(options.callback
+                      ? options.callback(
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          ),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
+                      : {}),
                   },
                   {
                     suffix: () => h(NIcon, () => h(Link)),
@@ -1043,16 +1327,25 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   type: "email",
                   required: options.required,
                   trigger: ["input", "blur"],
                   validator: (_rule, value) =>
-                    options.required && value === null
-                      ? new Error("Please write something")
-                      : true,
+                    options.required && !value
+                      ? new Error("This field is required")
+                      : new RegExp(
+                          "([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(.[!#-'*+/-9=?A-Z^-~-]+)*|[[\t -Z^-~]*])"
+                        ).test(value),
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(
@@ -1060,18 +1353,48 @@ export default defineComponent({
                   {
                     inputProps: { type: "email" },
                     options: EmailAutoComplete,
-                    value: getProperty(
+                    value: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     ),
                     onUpdateValue: (value) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        options.absolute_path
+                          ? options.absolute_path
+                          : (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         value
                       ),
                     placeholder: name,
                     clearable: true,
+                    ...(options.input_props ?? {}),
+                    ...(options.callback
+                      ? options.callback(
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          ),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
+                      : {}),
                   },
                   {
                     suffix: () => h(NIcon, () => h(At)),
@@ -1079,37 +1402,93 @@ export default defineComponent({
                 )
             );
           case "date":
-            if (!hasProperty(single.value, path ?? pathTo(Schema, key)))
-              setProperty(
+            if (
+              !objectPath.has(
                 single.value,
-                path ?? pathTo(Schema, key),
+                options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+              )
+            )
+              objectPath.set(
+                single.value,
+                options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 Date.now() / 1000
               );
             return h(
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   type: "number",
                   required: options.required,
                   trigger: ["blur", "change"],
                   message: "Please select a valid date",
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(NDatePicker, {
-                  value: hasProperty(single.value, path ?? pathTo(Schema, key))
-                    ? getProperty(single.value, path ?? pathTo(Schema, key)) *
-                      1000
-                    : Date.now(),
-                  onConfirm: (e) =>
-                    setProperty(
+                  value:
+                    objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key),
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                      Date.now() / 1000
+                    ) * 1000,
+                  onConfirm: (e) =>
+                    objectPath.set(
+                      single.value,
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                       e / 1000
                     ),
                   type: "datetime",
+                  ...(options.input_props ?? {}),
+                  ...(options.callback
+                    ? options.callback(
+                        objectPath.get(
+                          single.value,
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        ),
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      )
+                    : {}),
                 })
             );
           case "editor":
@@ -1117,21 +1496,57 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: options.required,
                   trigger: ["blur", "input"],
                   message: "Please write something",
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(RichEditor, {
-                  modelValue: getProperty(
+                  modelValue: objectPath.get(
                     single.value,
-                    path ?? pathTo(Schema, key)
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                   ),
                   "onUpdate:modelValue": (v) =>
-                    setProperty(single.value, path ?? pathTo(Schema, key), v),
+                    objectPath.set(
+                      single.value,
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                      v
+                    ),
+                  ...(options.input_props ?? {}),
+                  ...(options.callback
+                    ? options.callback(
+                        objectPath.get(
+                          single.value,
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        ),
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      )
+                    : {}),
                 })
             );
           case "textarea":
@@ -1139,39 +1554,84 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: options.required,
                   trigger: ["blur", "input"],
                   validator: (_rule, value) =>
-                    options.required && value === null
-                      ? new Error("Please write something")
+                    options.required && !value
+                      ? new Error("This field is required")
                       : true,
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(
                   NInput,
                   {
                     type: "textarea",
-                    value: hasProperty(
+                    value: objectPath.has(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     )
-                      ? getProperty(
-                          single.value,
-                          path ?? pathTo(Schema, key)
-                        ).toString()
+                      ? objectPath
+                          .get(
+                            single.value,
+                            options.absolute_path
+                              ? options.absolute_path
+                              : (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          )
+                          .toString()
                       : null,
                     onUpdateValue: (value) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        options.absolute_path
+                          ? options.absolute_path
+                          : (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         value
                       ),
                     placeholder: name,
                     showCount: true,
                     clearable: true,
+                    ...(options.input_props ?? {}),
+                    ...(options.callback
+                      ? options.callback(
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          ),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
+                      : {}),
                   },
                   {
                     suffix: () => h(NIcon, () => h(AlignJustified)),
@@ -1183,7 +1643,13 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   type: "number",
                   required: options.required,
@@ -1193,24 +1659,55 @@ export default defineComponent({
                       ? new Error("Please type a valid number")
                       : true,
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(
                   NInputNumber,
                   {
-                    value: getProperty(
+                    value: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key)
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                     ),
                     onUpdateValue: (value) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        options.absolute_path
+                          ? options.absolute_path
+                          : (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         value
                       ),
                     placeholder: name,
                     showButton: false,
                     clearable: true,
+                    ...(options.input_props ?? {}),
+                    ...(options.callback
+                      ? options.callback(
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          ),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
+                      : {}),
                   },
                   {
                     suffix: () => h(NIcon, () => h(ListNumbers)),
@@ -1222,37 +1719,69 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path: options.absolute_path
+                  ? options.absolute_path
+                  : (path ?? "") +
+                    name
+                      .toLowerCase()
+                      .replace(/ /g, "_")
+                      .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: options.required,
                   trigger: ["blur", "input"],
                   validator: (_rule, value) =>
-                    options.required && value === null
-                      ? new Error("Please type a valid number")
+                    options.required && !value
+                      ? new Error("This field is required")
                       : true,
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(
                   NInput,
                   {
-                    value: hasProperty(
+                    value: objectPath.get(
                       single.value,
-                      path ?? pathTo(Schema, key)
-                    )
-                      ? getProperty(
-                          single.value,
-                          path ?? pathTo(Schema, key)
-                        ).toString()
-                      : null,
+                      options.absolute_path
+                        ? options.absolute_path
+                        : (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                    ),
                     onUpdateValue: (value) =>
-                      setProperty(
+                      objectPath.set(
                         single.value,
-                        path ?? pathTo(Schema, key),
+                        options.absolute_path
+                          ? options.absolute_path
+                          : (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                         value.toString()
                       ),
                     placeholder: name,
                     clearable: true,
+                    ...(options.input_props ?? {}),
+                    ...(options.callback
+                      ? options.callback(
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          ),
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
+                      : {}),
                   },
                   {
                     suffix: () => h(NIcon, () => h(LetterCase)),
@@ -1264,44 +1793,97 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: options.required,
                   trigger: ["blur", "input"],
                   validator: (_rule, value) =>
-                    options.required && value === null
-                      ? new Error("Please type a valid number")
+                    options.required && !value
+                      ? new Error("This field is required")
                       : true,
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(NInput, {
                   type: "password",
                   showPasswordOn: "click",
-                  value: getProperty(single.value, path ?? pathTo(Schema, key)),
+                  value: objectPath.get(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  ),
                   onUpdateValue: (value) =>
-                    setProperty(
+                    objectPath.set(
                       single.value,
-                      path ?? pathTo(Schema, key),
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                       value
                     ),
                   placeholder: name,
+                  ...(options.input_props ?? {}),
+                  ...(options.callback
+                    ? options.callback(
+                        objectPath.get(
+                          single.value,
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        ),
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      )
+                    : {}),
                 })
             );
           case "boolean":
             return h(
               NFormItem,
               {
+                labelPlacement: "left",
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(NSwitch, {
-                  value: getProperty(single.value, path ?? pathTo(Schema, key)),
+                  value: objectPath.get(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  ),
                   onUpdateValue: (value) =>
-                    setProperty(
+                    objectPath.set(
                       single.value,
-                      path ?? pathTo(Schema, key),
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                       value
                     ),
                 })
@@ -1311,20 +1893,37 @@ export default defineComponent({
               NFormItem,
               {
                 label: name,
-                path: path ?? pathTo(Schema, key),
+                path:
+                  (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                 rule: {
                   required: true,
-                  trigger: "change",
+                  trigger: ["input", "blur"],
                   message: "Please select an option",
                 },
+                ...(options.label_props ?? {}),
               },
               () =>
                 h(NSelect, {
-                  value: getProperty(single.value, path ?? pathTo(Schema, key)),
+                  value: objectPath.get(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  ),
                   onUpdateValue: (value) =>
-                    setProperty(
+                    objectPath.set(
                       single.value,
-                      path ?? pathTo(Schema, key),
+                      (path ?? "") +
+                        name
+                          .toLowerCase()
+                          .replace(/ /g, "_")
+                          .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
                       value
                     ),
                   options: [
@@ -1340,161 +1939,450 @@ export default defineComponent({
                 })
             );
           case "group":
-            return h(
-              NCollapse,
-              {
-                style: {
-                  margin: "20px 0",
-                },
-                arrowPlacement: "right",
-                accordion: true,
-              },
-              {
-                arrow: () =>
-                  options.duplicatable &&
-                  (!hasProperty(single.value, path ?? pathTo(Schema, key)) ||
-                    getProperty(single.value, path ?? pathTo(Schema, key))
-                      .length === 0)
-                    ? ""
-                    : h(NIcon, () => h(ChevronRight)),
-                default: () =>
-                  h(
-                    NCollapseItem,
-                    {
-                      disabled:
-                        DisabledItem.value[path ?? pathTo(Schema, key)] ||
-                        (options.duplicatable &&
-                          (!hasProperty(
-                            single.value,
-                            path ?? pathTo(Schema, key)
-                          ) ||
-                            getProperty(
-                              single.value,
-                              path ?? pathTo(Schema, key)
-                            ).length === 0)),
-                      title: name,
-                      name: path ?? pathTo(Schema, key),
+            return options.collapsible === false &&
+              options.duplicatable !== true
+              ? h(
+                  NFormItem,
+                  {
+                    label: name,
+                    path:
+                      (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                    ...(options.label_props ?? {}),
+                  },
+                  () =>
+                    options.children.map((child) =>
+                      RenderField({
+                        ...child,
+                        path:
+                          (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                          ".",
+                      })
+                    )
+                )
+              : h(
+                  NCollapse,
+                  {
+                    displayDirective: "show",
+                    style: {
+                      margin: "20px 0",
                     },
-                    {
-                      "header-extra": () =>
-                        options.duplicatable
-                          ? h(
-                              NButton,
-                              {
-                                onmouseenter: () =>
-                                  (DisabledItem.value[
-                                    path ?? pathTo(Schema, key)
-                                  ] = true),
-                                onmouseleave: () =>
-                                  (DisabledItem.value[
-                                    path ?? pathTo(Schema, key)
-                                  ] = false),
-                                size: "small",
-                                round: true,
-                                onClick: () =>
-                                  setProperty(
-                                    single.value,
-                                    (path ?? pathTo(Schema, key)) +
-                                      "[" +
-                                      (getProperty(
+                    arrowPlacement: "right",
+                    accordion: true,
+                  },
+                  {
+                    arrow: () =>
+                      options.duplicatable == true &&
+                      (!objectPath.has(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      ) ||
+                        objectPath.get(
+                          single.value,
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        ).length === 0)
+                        ? ""
+                        : h(NIcon, () => h(ChevronRight)),
+                    default: () =>
+                      h(
+                        NCollapseItem,
+                        {
+                          displayDirective: "show",
+                          disabled:
+                            DisabledItem.value[
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                            ] ||
+                            (options.duplicatable === true &&
+                              (!objectPath.has(
+                                single.value,
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                              ) ||
+                                objectPath.get(
+                                  single.value,
+                                  (path ?? "") +
+                                    name
+                                      .toLowerCase()
+                                      .replace(/ /g, "_")
+                                      .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                ).length === 0)),
+                          title: name,
+                          name:
+                            (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                        },
+                        {
+                          "header-extra": () =>
+                            options.duplicatable === true
+                              ? h(
+                                  NButton,
+                                  {
+                                    onmouseenter: () =>
+                                      (DisabledItem.value[
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                      ] = true),
+                                    onmouseleave: () =>
+                                      (DisabledItem.value[
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                      ] = false),
+                                    size: "small",
+                                    round: true,
+                                    onClick: () =>
+                                      objectPath.push(
                                         single.value,
-                                        path ?? pathTo(Schema, key)
-                                      )?.length ?? 0) +
-                                      "]",
-                                    {}
-                                  ),
-                              },
-                              {
-                                icon: () => h(NIcon, () => h(Plus)),
-                              }
-                            )
-                          : null,
-                      default: () =>
-                        options.duplicatable
-                          ? hasProperty(
-                              single.value,
-                              path ?? pathTo(Schema, key)
-                            )
-                            ? h(
-                                NCollapse,
-                                {
-                                  accordion: true,
-                                },
-                                () =>
-                                  getProperty(
-                                    single.value,
-                                    path ?? pathTo(Schema, key)
-                                  ).map((item, index) =>
-                                    h(
-                                      NCollapseItem,
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                                        {}
+                                      ),
+                                  },
+                                  {
+                                    icon: () => h(NIcon, () => h(Plus)),
+                                  }
+                                )
+                              : null,
+                          default: () =>
+                            options.duplicatable == true
+                              ? objectPath.has(
+                                  single.value,
+                                  (path ?? "") +
+                                    name
+                                      .toLowerCase()
+                                      .replace(/ /g, "_")
+                                      .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                )
+                                ? options.children.filter(
+                                    (child) =>
+                                      (child.type === "group" &&
+                                        child.duplicatable === true) ||
+                                      child.type === "editor"
+                                  ).length > 0
+                                  ? h(
+                                      NCollapse,
                                       {
-                                        title: name + " " + (index + 1),
-                                        name:
-                                          (path ?? pathTo(Schema, key)) +
-                                          "." +
-                                          index,
+                                        displayDirective: "show",
+                                        accordion: true,
                                       },
-                                      {
-                                        "header-extra": () =>
-                                          h(
-                                            NButton,
-                                            {
-                                              quaternary: true,
-                                              circle: true,
-                                              type: "error",
-                                              onClick: () =>
-                                                deleteProperty(
-                                                  single.value,
-                                                  (path ??
-                                                    pathTo(Schema, key)) +
-                                                    "." +
-                                                    index
-                                                ),
-                                            },
-                                            {
-                                              icon: () =>
-                                                h(NIcon, () => h(Trash)),
-                                            }
-                                          ),
-                                        default: () =>
-                                          options.children.map((child) =>
+                                      () =>
+                                        objectPath
+                                          .get(
+                                            single.value,
+                                            (path ?? "") +
+                                              name
+                                                .toLowerCase()
+                                                .replace(/ /g, "_")
+                                                .replace(
+                                                  /[^\[a-zA-Zء-ي]-_+/g,
+                                                  ""
+                                                )
+                                          )
+                                          .map((item, index) =>
+                                            h(
+                                              NCollapseItem,
+                                              {
+                                                displayDirective: "show",
+                                                title: name + " " + (index + 1),
+                                                name:
+                                                  (path ?? "") +
+                                                  name
+                                                    .toLowerCase()
+                                                    .replace(/ /g, "_")
+                                                    .replace(
+                                                      /[^\[a-zA-Zء-ي]-_+/g,
+                                                      ""
+                                                    ) +
+                                                  "." +
+                                                  index,
+                                              },
+                                              {
+                                                "header-extra": () =>
+                                                  h(
+                                                    NButton,
+                                                    {
+                                                      quaternary: true,
+                                                      circle: true,
+                                                      type: "error",
+                                                      onClick: () =>
+                                                        objectPath.del(
+                                                          single.value,
+                                                          (path ?? "") +
+                                                            name
+                                                              .toLowerCase()
+                                                              .replace(
+                                                                / /g,
+                                                                "_"
+                                                              )
+                                                              .replace(
+                                                                /[^\[a-zA-Zء-ي]-_+/g,
+                                                                ""
+                                                              ) +
+                                                            `.${index}`
+                                                        ),
+                                                    },
+                                                    {
+                                                      icon: () =>
+                                                        h(NIcon, () =>
+                                                          h(Trash)
+                                                        ),
+                                                    }
+                                                  ),
+                                                default: () =>
+                                                  options.children.map(
+                                                    (child) =>
+                                                      RenderField({
+                                                        ...child,
+                                                        ...(options.callback
+                                                          ? options.callback(
+                                                              item,
+                                                              (path ?? "") +
+                                                                name
+                                                                  .toLowerCase()
+                                                                  .replace(
+                                                                    / /g,
+                                                                    "_"
+                                                                  )
+                                                                  .replace(
+                                                                    /[^\[a-zA-Zء-ي]-_+/g,
+                                                                    ""
+                                                                  ) +
+                                                                `.${index}`
+                                                            )
+                                                          : {}),
+                                                        ...(options.disabled_items
+                                                          ? {
+                                                              callback: (
+                                                                value,
+                                                                path
+                                                              ) =>
+                                                                path.split(
+                                                                  "."
+                                                                )[1] &&
+                                                                options.disabled_items.includes(
+                                                                  path.split(
+                                                                    "."
+                                                                  )[1]
+                                                                )
+                                                                  ? {
+                                                                      disabled: true,
+                                                                    }
+                                                                  : {},
+                                                            }
+                                                          : {}),
+                                                        path:
+                                                          (path ?? "") +
+                                                          name
+                                                            .toLowerCase()
+                                                            .replace(/ /g, "_")
+                                                            .replace(
+                                                              /[^\[a-zA-Zء-ي]-_+/g,
+                                                              ""
+                                                            ) +
+                                                          `.${index}.`,
+                                                      })
+                                                  ),
+                                              }
+                                            )
+                                          )
+                                    )
+                                  : h(NDataTable, {
+                                      columns: [
+                                        ...options.children.map((child) => ({
+                                          width:
+                                            child.name && child.name.length > 10
+                                              ? child.name.length * 15
+                                              : 200,
+                                          title: () => [
+                                            child.name,
+                                            child.required
+                                              ? h(
+                                                  NText,
+                                                  {
+                                                    type: "error",
+                                                  },
+                                                  () => " *"
+                                                )
+                                              : null,
+                                          ],
+                                          key: (
+                                            (path ?? "") +
+                                            name +
+                                            `.${child.name}`
+                                          )
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
+                                          render: (item, index) =>
                                             RenderField({
                                               ...child,
+                                              ...(options.callback
+                                                ? options.callback(
+                                                    item,
+                                                    (path ?? "") +
+                                                      name
+                                                        .toLowerCase()
+                                                        .replace(/ /g, "_")
+                                                        .replace(
+                                                          /[^\[a-zA-Zء-ي]-_+/g,
+                                                          ""
+                                                        ) +
+                                                      `.${index}`
+                                                  )
+                                                : {}),
+                                              ...(options.disabled_items &&
+                                              options.disabled_items.includes(
+                                                index
+                                              )
+                                                ? [
+                                                    ...options.disabled_items,
+                                                    {
+                                                      input_props: {
+                                                        disabled: true,
+                                                      },
+                                                    },
+                                                  ]
+                                                : {}),
+                                              label_props: {
+                                                showLabel: false,
+                                              },
                                               path:
-                                                pathTo(
-                                                  Schema,
-                                                  child.key
-                                                ).substr(
-                                                  0,
-                                                  pathTo(
-                                                    Schema,
-                                                    child.key
-                                                  ).lastIndexOf(".")
-                                                ) +
-                                                `[${index}]` +
-                                                pathTo(
-                                                  Schema,
-                                                  child.key
-                                                ).substr(
-                                                  pathTo(
-                                                    Schema,
-                                                    child.key
-                                                  ).lastIndexOf(".")
-                                                ),
-                                            })
-                                          ),
-                                      }
-                                    )
-                                  )
-                              )
-                            : null
-                          : options.children.map((child) => RenderField(child)),
-                    }
-                  ),
-              }
-            );
+                                                (path ?? "") +
+                                                name
+                                                  .toLowerCase()
+                                                  .replace(/ /g, "_")
+                                                  .replace(
+                                                    /[^\[a-zA-Zء-ي]-_+/g,
+                                                    ""
+                                                  ) +
+                                                `.${index}.`,
+                                              collapsible: false,
+                                            }),
+                                        })),
+                                        {
+                                          title: "Actions",
+                                          fixed: "right",
+                                          align: "center",
+                                          width: 100,
+                                          key: "actions",
+                                          render(row, index) {
+                                            return h(
+                                              NButton,
+                                              {
+                                                disabled:
+                                                  options.disabled_items &&
+                                                  options.disabled_items.includes(
+                                                    index
+                                                  ),
+                                                strong: true,
+                                                secondary: true,
+                                                circle: true,
+                                                type: "error",
+                                                onClick() {
+                                                  objectPath.del(
+                                                    single.value,
+                                                    (path ?? "") +
+                                                      name
+                                                        .toLowerCase()
+                                                        .replace(/ /g, "_")
+                                                        .replace(
+                                                          /[^\[a-zA-Zء-ي]-_+/g,
+                                                          ""
+                                                        ) +
+                                                      `.${index}`
+                                                  );
+                                                },
+                                              },
+                                              {
+                                                icon: () =>
+                                                  h(NIcon, () => h(Trash)),
+                                              }
+                                            );
+                                          },
+                                        },
+                                      ],
+                                      data: objectPath.get(
+                                        single.value,
+                                        (path ?? "") +
+                                          name
+                                            .toLowerCase()
+                                            .replace(/ /g, "_")
+                                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                      ),
+                                      scrollX: options.children.reduce(
+                                        (accumulator, child) => {
+                                          return (
+                                            accumulator +
+                                            (child.name &&
+                                            child.name.length > 10
+                                              ? child.name.length * 15
+                                              : 200)
+                                          );
+                                        },
+                                        100
+                                      ),
+                                    })
+                                : null
+                              : options.children.map((child) =>
+                                  RenderField({
+                                    ...child,
+                                    path:
+                                      (path ?? "") +
+                                      name
+                                        .toLowerCase()
+                                        .replace(/ /g, "_")
+                                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                                      ".",
+                                  })
+                                ),
+                        }
+                      ),
+                  }
+                );
           default:
-            console.log(getProperty(single.value, path ?? pathTo(Schema, key)));
+            console.log(
+              objectPath.get(
+                single.value,
+                (path ?? "") +
+                  name
+                    .toLowerCase()
+                    .replace(/ /g, "_")
+                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+              )
+            );
             return null;
         }
       };
@@ -1524,22 +2412,12 @@ export default defineComponent({
 
     return () => [
       h(
-        "style",
-        {},
-        {
-          default: () => `
-            .n-input-number,
-            .n-date-picker {
-              width: 100%;
-            }`,
-        }
-      ),
-      h(
         NDrawer,
         {
           show: Drawer.value.show,
           "on-update:show": (v) => (Drawer.value.show = v),
           resizable: true,
+          placement: Language.value === "ar" ? "left" : "right",
         },
         () =>
           h(
@@ -1606,7 +2484,7 @@ export default defineComponent({
         () =>
           h(
             NDrawerContent,
-            { id: "assets_modal", nativeScrollbar: false, closable: false },
+            { id: "assets_modal", nativeScrollbar: false, closable: true },
             {
               header: () => [
                 "Assets",
@@ -1620,8 +2498,8 @@ export default defineComponent({
                       },
                     }),
               ],
-              default: () =>
-                Array.isArray(Assets.value)
+              default: () => {
+                return Array.isArray(Assets.value)
                   ? h(NImageGroup, () =>
                       h(
                         NGrid,
@@ -1632,45 +2510,26 @@ export default defineComponent({
                         },
                         () =>
                           [
-                            ...Assets.value.filter(
-                              (Asset) =>
-                                (Array.isArray(
-                                  getProperty(
+                            ...Assets.value.filter((Asset) =>
+                              []
+                                .concat(
+                                  objectPath.get(
                                     single.value,
                                     CurrentField.value.path
                                   )
-                                ) &&
-                                  getProperty(
-                                    single.value,
-                                    CurrentField.value.path
-                                  ).includes(Asset.public_url)) ||
-                                getProperty(
-                                  single.value,
-                                  CurrentField.value.path
-                                ) === Asset.public_url
+                                )
+                                .includes(Asset.public_url)
                             ),
                             ...Assets.value.filter(
                               (Asset) =>
-                                (!Array.isArray(
-                                  getProperty(
-                                    single.value,
-                                    CurrentField.value.path
+                                ![]
+                                  .concat(
+                                    objectPath.get(
+                                      single.value,
+                                      CurrentField.value.path
+                                    )
                                   )
-                                ) &&
-                                  getProperty(
-                                    single.value,
-                                    CurrentField.value.path
-                                  ) !== Asset.public_url) ||
-                                (Array.isArray(
-                                  getProperty(
-                                    single.value,
-                                    CurrentField.value.path
-                                  )
-                                ) &&
-                                  !getProperty(
-                                    single.value,
-                                    CurrentField.value.path
-                                  ).includes(Asset.public_url))
+                                  .includes(Asset.public_url)
                             ),
                           ].map((Asset) =>
                             h(
@@ -1695,42 +2554,29 @@ export default defineComponent({
                                     },
                                     onClick: () =>
                                       HandleSelectAssets(Asset.public_url),
-                                    type:
-                                      (Array.isArray(
-                                        getProperty(
+                                    type: []
+                                      .concat(
+                                        objectPath.get(
                                           single.value,
                                           CurrentField.value.path
                                         )
-                                      ) &&
-                                        getProperty(
-                                          single.value,
-                                          CurrentField.value.path
-                                        ).includes(Asset.public_url)) ||
-                                      getProperty(
-                                        single.value,
-                                        CurrentField.value.path
-                                      ) === Asset.public_url
-                                        ? "success"
-                                        : "error",
+                                      )
+                                      .includes(Asset.public_url)
+                                      ? "success"
+                                      : "error",
                                   },
                                   {
                                     icon: () =>
                                       h(NIcon, () =>
                                         h(
-                                          (Array.isArray(
-                                            getProperty(
-                                              single.value,
-                                              CurrentField.value.path
+                                          []
+                                            .concat(
+                                              objectPath.get(
+                                                single.value,
+                                                CurrentField.value.path
+                                              )
                                             )
-                                          ) &&
-                                            getProperty(
-                                              single.value,
-                                              CurrentField.value.path
-                                            ).includes(Asset.public_url)) ||
-                                            getProperty(
-                                              single.value,
-                                              CurrentField.value.path
-                                            ) === Asset.public_url
+                                            .includes(Asset.public_url)
                                             ? Check
                                             : X
                                         )
@@ -1813,7 +2659,8 @@ export default defineComponent({
                             })
                           )
                         )
-                    ),
+                    );
+              },
             }
           )
       ),

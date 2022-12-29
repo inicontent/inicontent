@@ -54,168 +54,215 @@ import {
   Box,
   ArrowBarRight,
   ArrowBarLeft,
-  User as UserIcon,
+  ExternalLink,
   FileText,
-  LetterA,
-  LetterB,
-  LetterC,
-  LetterD,
-  LetterE,
-  LetterF,
-  LetterG,
-  LetterH,
-  LetterI,
-  LetterJ,
-  LetterK,
-  LetterL,
-  LetterM,
-  LetterN,
-  LetterO,
-  LetterP,
-  LetterQ,
-  LetterR,
-  LetterS,
-  LetterT,
-  LetterU,
-  LetterV,
-  LetterW,
-  LetterX,
-  LetterY,
-  LetterZ,
 } from "@vicons/tabler";
 import { Buffer } from "buffer";
 import { NuxtLink } from "#components";
-import { getProperty } from "dot-prop";
+import objectPath from "object-path";
 
 export default defineComponent({
-  props: {
-    db: {
-      type: String,
-      default: "",
-    },
-    table: {
-      type: String,
-      default: "",
-    },
-  },
-  setup: async (props) => {
+  async setup() {
+    definePageMeta({
+      middleware: "dashboard",
+      layout: "table",
+    });
+
+    const route = useRoute(),
+      database = useState("database");
+    const Language = useGlobalCookie("Language");
+    useLanguage({
+      ar: {
+        view_item: "مُعاينة العنصر",
+        new: "جديد",
+        deleted_at: "حُذف",
+        created_at: "أُضيف",
+        updated_at: "عُدِّل",
+        update: "تحديث",
+        create: "إنشاء",
+        delete: "حذف",
+        move_to_trash: "نقل لسلة المهملات",
+        confirm_delete_permanently: "حذف بصفة نهائية?",
+        edit: "تعديل",
+        published: "المنشورة",
+        trash: "سلة المهملات",
+        id: "المُعرف",
+        actions: "الأوامر",
+        edit_schema: "تعديل الهيكل",
+        search: "بحث",
+        reset: "إفراغ",
+        search_conditions: {
+          equal_to: "يساوي",
+          not_equal_to: "لا يساوي",
+          greater_than: "أكبر من",
+          greater_equal_to: "أكبر من او يساوي",
+          less_than: "أصغر من",
+          less_equal_to: "أصغر من او يساوي",
+          contains: "يحتوي",
+          not_contain: "لا يحتوي",
+        },
+        fields: {
+          text: "نص",
+          short_text: "نص قصير",
+          long_text: "نص طويل",
+          editor: "محرر نصوص",
+          number: "رقم",
+          password: "كلمة مرور",
+          link: "رابط",
+          email: "بريد",
+          upload: "ملحق",
+          tags: "وسوم",
+          date: "تاريخ",
+          toggle: "سحب",
+          list: "قائمة",
+          group: "مجموعة",
+          table: "جدول",
+        },
+      },
+      en: {
+        view_item: "View item",
+        new: "New",
+        deleted_at: "Deleted at",
+        created_at: "Created at",
+        updated_at: "Updated at",
+        update: "Update",
+        create: "Create",
+        delete: "Delete",
+        move_to_trash: "Move to trash",
+        confirm_delete_permanently: "Delete Permanently?",
+        edit: "Edit",
+        published: "Published",
+        trash: "Trash",
+        id: "ID",
+        actions: "Actions",
+        edit_schema: "Edit Schema",
+        search: "Search",
+        reset: "Reset",
+        search_conditions: {
+          equal_to: "Equal to",
+          not_equal_to: "Not Equal to",
+          greater_than: "Greater than",
+          greater_equal_to: "Greater/Equal than",
+          less_than: "Less than",
+          less_equal_to: "Less/Equal than",
+          contains: "Contains",
+          not_contain: "Doesn't Contains",
+        },
+        fields: {
+          text: "Text",
+          short_text: "Short Text",
+          long_text: "Long Text",
+          editor: "Rich Editor",
+          number: "Number",
+          password: "Password",
+          email: "Email",
+          link: "Link",
+          upload: "Upload",
+          tags: "Tags",
+          date: "Date",
+          toggle: "Toggle",
+          list: "List",
+          group: "Group",
+          table: "Table",
+        },
+      },
+    });
+
     const RenderSchema = resolveComponent("RenderSchema"),
       RenderFields = resolveComponent("RenderFields");
 
-    const LettersIcons = {
-        a: LetterA,
-        b: LetterB,
-        c: LetterC,
-        d: LetterD,
-        e: LetterE,
-        f: LetterF,
-        g: LetterG,
-        h: LetterH,
-        i: LetterI,
-        j: LetterJ,
-        k: LetterK,
-        l: LetterL,
-        m: LetterM,
-        n: LetterN,
-        o: LetterO,
-        p: LetterP,
-        q: LetterQ,
-        r: LetterR,
-        s: LetterS,
-        t: LetterT,
-        u: LetterU,
-        v: LetterV,
-        w: LetterW,
-        x: LetterX,
-        y: LetterY,
-        z: LetterZ,
+    const FieldsList = [
+      {
+        label: t("fields.text"),
+        key: "input",
+        icon: () => h(NIcon, () => h(Forms)),
+        children: [
+          {
+            label: t("fields.short_text"),
+            key: "text",
+            icon: () => h(NIcon, () => h(LetterCase)),
+          },
+          {
+            label: t("fields.long_text"),
+            key: "textarea",
+            icon: () => h(NIcon, () => h(AlignJustified)),
+          },
+          {
+            label: t("fields.editor"),
+            key: "editor",
+            icon: () => h(NIcon, () => h(Code)),
+          },
+          {
+            label: t("fields.number"),
+            key: "number",
+            icon: () => h(NIcon, () => h(ListNumbers)),
+          },
+          {
+            label: t("fields.password"),
+            key: "password",
+            icon: () => h(NIcon, () => h(Key)),
+          },
+          {
+            label: t("fields.email"),
+            key: "email",
+            icon: () => h(NIcon, () => h(At)),
+          },
+          {
+            label: t("fields.link"),
+            key: "url",
+            icon: () => h(NIcon, () => h(Link)),
+          },
+        ],
       },
-      FieldsList = [
-        {
-          label: "Text",
-          key: "input",
-          icon: () => h(NIcon, () => h(Forms)),
-          children: [
-            {
-              label: "Short Text",
-              key: "text",
-              icon: () => h(NIcon, () => h(LetterCase)),
-            },
-            {
-              label: "Long Text",
-              key: "textarea",
-              icon: () => h(NIcon, () => h(AlignJustified)),
-            },
-            {
-              label: "Rich Editor",
-              key: "editor",
-              icon: () => h(NIcon, () => h(Code)),
-            },
-            {
-              label: "Number",
-              key: "number",
-              icon: () => h(NIcon, () => h(ListNumbers)),
-            },
-            {
-              label: "Password",
-              key: "password",
-              icon: () => h(NIcon, () => h(Key)),
-            },
-            {
-              label: "Email",
-              key: "email",
-              icon: () => h(NIcon, () => h(At)),
-            },
-            {
-              label: "Link",
-              key: "url",
-              icon: () => h(NIcon, () => h(Link)),
-            },
-          ],
-        },
-        {
-          label: "Upload",
-          key: "upload",
-          icon: () => h(NIcon, () => h(Upload)),
-        },
-        {
-          label: "Tags",
-          key: "tags",
-          icon: () => h(NIcon, () => h(Tags)),
-        },
-        {
-          label: "Date",
-          key: "date",
-          icon: () => h(NIcon, () => h(Calendar)),
-        },
-        {
-          label: "Toggle",
-          key: "boolean",
-          icon: () => h(NIcon, () => h(ToggleLeft)),
-        },
-        {
-          label: "List",
-          key: "list",
-          icon: () => h(NIcon, () => h(ListDetails)),
-        },
-        {
-          label: "Group",
-          key: "group",
-          icon: () => h(NIcon, () => h(BoxMultiple)),
-        },
-        {
-          label: "Table",
-          key: "table",
-          icon: () => h(NIcon, () => h(Table)),
-        },
-      ];
+      {
+        label: t("fields.upload"),
+        key: "upload",
+        icon: () => h(NIcon, () => h(Upload)),
+      },
+      {
+        label: t("fields.tags"),
+        key: "tags",
+        icon: () => h(NIcon, () => h(Tags)),
+      },
+      {
+        label: t("fields.date"),
+        key: "date",
+        icon: () => h(NIcon, () => h(Calendar)),
+      },
+      {
+        label: t("fields.toggle"),
+        key: "boolean",
+        icon: () => h(NIcon, () => h(ToggleLeft)),
+      },
+      {
+        label: t("fields.list"),
+        key: "list",
+        icon: () => h(NIcon, () => h(ListDetails)),
+      },
+      {
+        label: t("fields.group"),
+        key: "group",
+        icon: () => h(NIcon, () => h(BoxMultiple)),
+      },
+      {
+        label: t("fields.table"),
+        key: "table",
+        icon: () => h(NIcon, () => h(Table)),
+      },
+    ];
 
+    useHead({
+      title: `${database.value.name} | ${
+        database.value.tables.find((item) => item.slug === route.params.slug)
+          .name
+      } Table`,
+      link: [{ rel: "icon", href: database.value.icon }],
+    });
     const Loading = useState("Loading", () => ({})),
       Window = useState("Window"),
       searchInput = useState(() => null),
       searchArray = useState(() => []),
       searchField = useState(() => []),
-      database = useState("database"),
       ShowSchemaModal = useState("ShowSchemaModal", () => false),
       ShowDeleted = useState(() => false);
     Loading.value["TableData"] = false;
@@ -236,7 +283,7 @@ export default defineComponent({
           [`${Drawer.value.table}_${Drawer.value.id}`]: true,
         };
         await useFetch(
-          `https://api.inicontent.com/${props.db}/${Drawer.value.table}/${Drawer.value.id}`,
+          `https://api.inicontent.com/${route.params.db_slug}/${Drawer.value.table}/${Drawer.value.id}`,
           {
             headers: {
               Authorization:
@@ -260,7 +307,7 @@ export default defineComponent({
           if (!errors) {
             Loading.value["DrawerContent"] = true;
             const { data } = await useFetch(
-              `https://api.inicontent.com/${props.db}/${Drawer.value.table}/${Drawer.value.id}!`,
+              `https://api.inicontent.com/${route.params.db_slug}/${Drawer.value.table}/${Drawer.value.id}!`,
               {
                 headers: {
                   Authorization:
@@ -290,7 +337,7 @@ export default defineComponent({
           if (!errors) {
             Loading.value["DrawerContent"] = true;
             const { data } = await useFetch(
-              `https://api.inicontent.com/${props.db}/${Drawer.value.table}`,
+              `https://api.inicontent.com/${route.params.db_slug}/${Drawer.value.table}`,
               {
                 headers: {
                   Authorization:
@@ -336,48 +383,49 @@ export default defineComponent({
         ),
       }),
       { data: TableData, refresh: refreshTableData } = await useLazyAsyncData(
-        `TableData_${props.db}-${props.table}`,
+        `TableData_${route.params.db_slug}-${route.params.slug}`,
         () =>
-          $fetch(`https://api.inicontent.com/${props.db}/${props.table}`, {
-            headers: {
-              Authorization:
-                "Basic " +
-                Buffer.from(
-                  `${User.value.username}:${User.value.password}`
-                ).toString("base64"),
-            },
-            onRequest: () => (Loading.value["TableData"] = true),
-            params: {
-              _options: JSON.stringify({
-                page: pagination.value.page,
-                per_page: pagination.value.pageSize,
-                show_deleted: ShowDeleted.value,
-                columns:
-                  database.value.tables &&
-                  database.value.tables.find(
-                    (item) => item.slug === props.table
-                  )?.schema
-                    ? database.value.tables
-                        .find((item) => item.slug === props.table)
-                        .schema.map((item, _index, schema) =>
-                          GetPathes(schema, item)
-                        )
-                        .flat(Infinity)
-                    : [],
-              }),
-              _where: searchInput.value
-                ? ShowDeleted.value
-                  ? JSON.stringify(
-                      JSON.parse(searchInput.value).push([
-                        ["deleted_at", ">", "0"],
-                      ])
-                    )
-                  : searchInput.value
-                : ShowDeleted.value
-                ? JSON.stringify(["deleted_at", ">", "0"])
-                : null,
-            },
-          }),
+          $fetch(
+            `https://api.inicontent.com/${route.params.db_slug}/${route.params.slug}`,
+            {
+              headers: {
+                Authorization:
+                  "Basic " +
+                  Buffer.from(
+                    `${User.value.username}:${User.value.password}`
+                  ).toString("base64"),
+              },
+              onRequest: () => (Loading.value["TableData"] = true),
+              params: {
+                _options: JSON.stringify({
+                  page: pagination.value.page,
+                  per_page: pagination.value.pageSize,
+                  show_deleted: ShowDeleted.value,
+                  columns:
+                    database.value.tables &&
+                    database.value.tables.find(
+                      (item) => item.slug === route.params.slug
+                    )?.schema
+                      ? database.value.tables
+                          .find((item) => item.slug === route.params.slug)
+                          .schema.map((item) => GetPathes(item))
+                          .flat(Infinity)
+                      : [],
+                }),
+                _where: searchInput.value
+                  ? ShowDeleted.value
+                    ? JSON.stringify(
+                        JSON.parse(searchInput.value).push([
+                          ["deleted_at", ">", "0"],
+                        ])
+                      )
+                    : searchInput.value
+                  : ShowDeleted.value
+                  ? JSON.stringify(["deleted_at", ">", "0"])
+                  : null,
+              },
+            }
+          ),
         {
           transform: (res) => {
             Loading.value["TableData"] = false;
@@ -392,7 +440,7 @@ export default defineComponent({
       DELETE = async (id) => {
         Loading.value["TableData"] = true;
         await useFetch(
-          `https://api.inicontent.com/${props.db}/${props.table}/${id}`,
+          `https://api.inicontent.com/${route.params.db_slug}/${route.params.slug}/${id}`,
           {
             headers: {
               Authorization:
@@ -412,7 +460,7 @@ export default defineComponent({
         message.success("Deleted Successfully");
         Loading.value["TableData"] = false;
       },
-      RenderColumn = (Column, item, row) => {
+      RenderColumn = (Column, item) => {
         switch (item.type) {
           case "table":
             return Column &&
@@ -448,7 +496,7 @@ export default defineComponent({
                                   },
                                   round: true,
                                   src: []
-                                    .concat(getProperty(Column, item.image))
+                                    .concat(objectPath.get(Column, item.image))
                                     .map((link) =>
                                       link &&
                                       link.includes("cdn.inicontent") &&
@@ -481,7 +529,7 @@ export default defineComponent({
                                 () =>
                                   item.label
                                     .map((single_label) =>
-                                      getProperty(Column, single_label)
+                                      objectPath.get(Column, single_label)
                                     )
                                     .join(" ")
                               ),
@@ -489,7 +537,11 @@ export default defineComponent({
                         : {
                             icon: () =>
                               h(NIcon, () =>
-                                h(LettersIcons[item.name.charAt(0)] ?? Table)
+                                h(
+                                  "span",
+                                  { style: { padding: "0 5px" } },
+                                  item.name.charAt(0).toUpperCase()
+                                )
                               ),
                             default: () =>
                               h(
@@ -506,7 +558,7 @@ export default defineComponent({
                                 () =>
                                   item.label
                                     .map((single_label) =>
-                                      getProperty(Column, single_label)
+                                      objectPath.get(Column, single_label)
                                     )
                                     .join(" ")
                               ),
@@ -533,7 +585,9 @@ export default defineComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(getProperty(Column, item.image))
+                                        .concat(
+                                          objectPath.get(Column, item.image)
+                                        )
                                         .map((link) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
@@ -566,7 +620,7 @@ export default defineComponent({
                                     () =>
                                       item.label
                                         .map((single_label) =>
-                                          getProperty(Column, single_label)
+                                          objectPath.get(Column, single_label)
                                         )
                                         .join(" ")
                                   ),
@@ -575,7 +629,9 @@ export default defineComponent({
                                 icon: () =>
                                   h(NIcon, () =>
                                     h(
-                                      LettersIcons[item.name.charAt(0)] ?? Table
+                                      "span",
+                                      { style: { padding: "0 5px" } },
+                                      item.name.charAt(0).toUpperCase()
                                     )
                                   ),
                                 default: () =>
@@ -593,7 +649,7 @@ export default defineComponent({
                                     () =>
                                       item.label
                                         .map((single_label) =>
-                                          getProperty(Column, single_label)
+                                          objectPath.get(Column, single_label)
                                         )
                                         .join(" ")
                                   ),
@@ -627,7 +683,7 @@ export default defineComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(getProperty(col, item.image))
+                                        .concat(objectPath.get(col, item.image))
                                         .map((link) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
@@ -660,7 +716,7 @@ export default defineComponent({
                                     () =>
                                       item.label
                                         .map((single_label) =>
-                                          getProperty(col, single_label)
+                                          objectPath.get(col, single_label)
                                         )
                                         .join(" ")
                                   ),
@@ -669,7 +725,9 @@ export default defineComponent({
                                 icon: () =>
                                   h(NIcon, () =>
                                     h(
-                                      LettersIcons[item.name.charAt(0)] ?? Table
+                                      "span",
+                                      { style: { padding: "0 5px" } },
+                                      item.name.charAt(0).toUpperCase()
                                     )
                                   ),
                                 default: () =>
@@ -687,7 +745,7 @@ export default defineComponent({
                                     () =>
                                       item.label
                                         .map((single_label) =>
-                                          getProperty(col, single_label)
+                                          objectPath.get(col, single_label)
                                         )
                                         .join(" ")
                                   ),
@@ -711,7 +769,9 @@ export default defineComponent({
                                         },
                                         round: true,
                                         src: []
-                                          .concat(getProperty(col, item.image))
+                                          .concat(
+                                            objectPath.get(col, item.image)
+                                          )
                                           .map((link) =>
                                             link &&
                                             link.includes("cdn.inicontent") &&
@@ -744,7 +804,7 @@ export default defineComponent({
                                       () =>
                                         item.label
                                           .map((single_label) =>
-                                            getProperty(col, single_label)
+                                            objectPath.get(col, single_label)
                                           )
                                           .join(" ")
                                     ),
@@ -753,8 +813,9 @@ export default defineComponent({
                                   icon: () =>
                                     h(NIcon, () =>
                                       h(
-                                        LettersIcons[item.name.charAt(0)] ??
-                                          Table
+                                        "span",
+                                        { style: { padding: "0 5px" } },
+                                        item.name.charAt(0).toUpperCase()
                                       )
                                     ),
                                   default: () =>
@@ -772,7 +833,7 @@ export default defineComponent({
                                       () =>
                                         item.label
                                           .map((single_label) =>
-                                            getProperty(col, single_label)
+                                            objectPath.get(col, single_label)
                                           )
                                           .join(" ")
                                     ),
@@ -1051,46 +1112,17 @@ export default defineComponent({
                                         () => [
                                           h("strong", `${child.name}:`),
                                           RenderColumn(
-                                            getProperty(
-                                              row,
-                                              pathTo(
-                                                database.value.tables &&
-                                                  database.value.tables.find(
-                                                    (item) =>
-                                                      item.slug === props.table
-                                                  ).schema
-                                                  ? database.value.tables.find(
-                                                      (item) =>
-                                                        item.slug ===
-                                                        props.table
-                                                    ).schema
-                                                  : [],
-                                                child.key
-                                              )
-                                                .split(".")
-                                                .slice(0, -1)
-                                                .join(".") +
-                                                `[${index}]` +
-                                                pathTo(
-                                                  database.value.tables &&
-                                                    database.value.tables.find(
-                                                      (item) =>
-                                                        item.slug ===
-                                                        props.table
-                                                    ).schema
-                                                    ? database.value.tables.find(
-                                                        (item) =>
-                                                          item.slug ===
-                                                          props.table
-                                                      ).schema
-                                                    : [],
-                                                  child.key
+                                            objectPath.get(
+                                              _item,
+                                              child.name
+                                                .toLowerCase()
+                                                .replace(/ /g, "_")
+                                                .replace(
+                                                  /[^\[a-zA-Zء-ي]-_+/g,
+                                                  ""
                                                 )
-                                                  .split(".")
-                                                  .pop()
                                             ),
-                                            child,
-                                            row
+                                            child
                                           ),
                                         ]
                                       )
@@ -1131,22 +1163,14 @@ export default defineComponent({
                           h(NSpace, { align: "center", inline: true }, () => [
                             h("strong", `${child.name}:`),
                             RenderColumn(
-                              getProperty(
-                                row,
-                                pathTo(
-                                  database.value.tables &&
-                                    database.value.tables.find(
-                                      (item) => item.slug === props.table
-                                    ).schema
-                                    ? database.value.tables.find(
-                                        (item) => item.slug === props.table
-                                      ).schema
-                                    : [],
-                                  child.key
-                                )
+                              objectPath.get(
+                                Column,
+                                child.name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                               ),
-                              child,
-                              row
+                              child
                             ),
                           ])
                         )
@@ -1175,7 +1199,12 @@ export default defineComponent({
                           Column.charAt(0).toUpperCase() +
                           Column.slice(1).replaceAll("_", " ")
                       ),
-                    icon: () => h(NIcon, () => h(UserIcon)),
+                    icon: () =>
+                      h(
+                        "span",
+                        { style: { padding: "0 5px" } },
+                        Column.charAt(0).toUpperCase()
+                      ),
                   }
                 )
               : h(NText, { depth: 3 }, () => "--");
@@ -1211,7 +1240,7 @@ export default defineComponent({
                 onSelect: async () => {
                   Loading.value["TableData"] = true;
                   await useFetch(
-                    `https://api.inicontent.com/${props.db}/${props.table}`,
+                    `https://api.inicontent.com/${route.params.db_slug}/${route.params.slug}`,
                     {
                       headers: {
                         Authorization:
@@ -1232,31 +1261,41 @@ export default defineComponent({
             ],
           },
           {
-            title: "ID",
+            title: t("id"),
             width: 100,
             key: "id",
             render: (row) =>
               h(
-                NTag,
+                NPopover,
+                {},
                 {
-                  onClick: () => navigateTo(`${props.table}/${row.id}`),
-                  bordered: false,
-                  round: true,
-                  style: "cursor: pointer",
-                },
-                () =>
-                  h(
-                    NEllipsis,
-                    { tooltip: false, style: "max-width:50px" },
-                    () => row.id
-                  )
+                  trigger: () =>
+                    h(
+                      NTag,
+                      {
+                        onClick: () =>
+                          navigateTo(`${route.params.slug}/${row.id}`),
+                        bordered: false,
+                        round: true,
+                        style: "cursor: pointer",
+                      },
+                      () =>
+                        h(
+                          NEllipsis,
+                          { tooltip: false, style: "max-width:50px" },
+                          () => row.id
+                        )
+                    ),
+                  default: () => t("view_item"),
+                }
               ),
           },
           ...(database.value.tables &&
-          database.value.tables.find((item) => item.slug === props.table)
+          database.value.tables.find((item) => item.slug === route.params.slug)
             ?.schema
-            ? database.value.tables.find((item) => item.slug === props.table)
-                .schema
+            ? database.value.tables.find(
+                (item) => item.slug === route.params.slug
+              ).schema
             : []
           ).map((item) => {
             const path = item.name
@@ -1265,7 +1304,7 @@ export default defineComponent({
               .replace(/[^\[a-zA-Zء-ي]-_+/g, "");
             return {
               title: () =>
-                h(NSpace, () => [
+                h(NSpace, { align: "center" }, () => [
                   FieldsList.flatMap((i) =>
                     i.children
                       ? [
@@ -1278,7 +1317,7 @@ export default defineComponent({
                         ]
                       : i
                   )
-                    .filter((i) => i.key === item.type)[0]
+                    .find((i) => i.key === item.type)
                     ?.icon() ?? h(NIcon, () => h(Box)),
                   item.name.charAt(0).toUpperCase() +
                     item.name.slice(1).replaceAll("_", " "),
@@ -1288,12 +1327,12 @@ export default defineComponent({
                   ? item.name.length * 15
                   : 200,
               key: path,
-              render: (row) => RenderColumn(row[path], item, row),
+              render: (row) => RenderColumn(row[path], item),
             };
           }),
           {
             title: () =>
-              h(NSpace, () => [h(NIcon, () => h(Calendar)), "Created at"]),
+              h(NSpace, () => [h(NIcon, () => h(Calendar)), t("created_at")]),
             width: 150,
             key: "created_at",
             render: (row) =>
@@ -1319,7 +1358,7 @@ export default defineComponent({
           },
           {
             title: () =>
-              h(NSpace, () => [h(NIcon, () => h(Calendar)), "Updated at"]),
+              h(NSpace, () => [h(NIcon, () => h(Calendar)), t("updated_at")]),
             width: 150,
             key: "updated_at",
             render: (row) =>
@@ -1345,7 +1384,7 @@ export default defineComponent({
           },
           ShowDeleted.value
             ? {
-                title: "Deleted at",
+                title: t("deleted_at"),
                 width: 150,
                 key: "deleted_at",
                 render: (row) =>
@@ -1371,7 +1410,7 @@ export default defineComponent({
               }
             : null,
           {
-            title: "Actions",
+            title: t("actions"),
             fixed: Window.value.width > 400 ? "right" : false,
             align: "center",
             width: 150,
@@ -1383,16 +1422,27 @@ export default defineComponent({
                   justify: "center",
                 },
                 () => [
-                  h(NuxtLink, { to: `${props.table}/${row.id}/edit` }, () =>
-                    h(
-                      NButton,
-                      {
-                        secondary: true,
-                        circle: true,
-                        type: "info",
-                      },
-                      { icon: () => h(NIcon, () => h(Pencil)) }
-                    )
+                  h(
+                    NuxtLink,
+                    { to: `${route.params.slug}/${row.id}/edit` },
+                    () =>
+                      h(
+                        NPopover,
+                        {},
+                        {
+                          trigger: () =>
+                            h(
+                              NButton,
+                              {
+                                secondary: true,
+                                circle: true,
+                                type: "info",
+                              },
+                              { icon: () => h(NIcon, () => h(Pencil)) }
+                            ),
+                          default: () => t("edit"),
+                        }
+                      )
                   ),
                   ShowDeleted.value
                     ? h(
@@ -1403,28 +1453,44 @@ export default defineComponent({
                         {
                           trigger: () =>
                             h(
+                              NPopover,
+                              {},
+                              {
+                                trigger: () =>
+                                  h(
+                                    NButton,
+                                    {
+                                      strong: true,
+                                      secondary: true,
+                                      circle: true,
+                                      type: "error",
+                                    },
+                                    { icon: () => h(NIcon, () => h(Trash)) }
+                                  ),
+                                default: () => t("delete"),
+                              }
+                            ),
+                          default: () => t("confirm_delete"),
+                        }
+                      )
+                    : h(
+                        NPopover,
+                        {},
+                        {
+                          trigger: () =>
+                            h(
                               NButton,
                               {
                                 strong: true,
                                 secondary: true,
                                 circle: true,
                                 type: "error",
+                                onClick: () => DELETE(row.id),
                               },
                               { icon: () => h(NIcon, () => h(Trash)) }
                             ),
-                          default: () => "Delete Permanently",
+                          default: () => t("move_to_trash"),
                         }
-                      )
-                    : h(
-                        NButton,
-                        {
-                          strong: true,
-                          secondary: true,
-                          circle: true,
-                          type: "error",
-                          onClick: () => DELETE(row.id),
-                        },
-                        { icon: () => h(NIcon, () => h(Trash)) }
                       ),
                 ]
               );
@@ -1436,7 +1502,7 @@ export default defineComponent({
 
     return () => [
       User.value && User.value.role === "admin"
-        ? h(RenderSchema, { table: props.table })
+        ? h(RenderSchema, { table: route.params.slug })
         : null,
       Window.value.width >= 700
         ? h(
@@ -1450,6 +1516,7 @@ export default defineComponent({
                   : Drawer.value.width ?? 251,
               "on-update:width": (w) => (Drawer.value.width = w),
               resizable: true,
+              placement: Language.value === "ar" ? "left" : "right",
             },
             () =>
               h(
@@ -1462,22 +1529,23 @@ export default defineComponent({
                   header: () =>
                     Drawer.value.id
                       ? [
-                          `${
-                            Drawer.value.table.charAt(0).toUpperCase() +
-                            Drawer.value.table.slice(1).replaceAll("_", " ")
-                          } | `,
+                          `Edit `,
                           h(
                             NuxtLink,
-                            { to: `${Drawer.value.table}/${Drawer.value.id}` },
+                            {
+                              to: `${Drawer.value.table}/${Drawer.value.id}/edit`,
+                            },
                             () =>
-                              h(
-                                NText,
-                                { type: "primary" },
-                                () => Drawer.value.id
-                              )
+                              h(NText, { type: "primary" }, () => [
+                                Drawer.value.table.charAt(0).toUpperCase() +
+                                  Drawer.value.table
+                                    .slice(1)
+                                    .replaceAll("_", " "),
+                                h(NIcon, () => h(ExternalLink)),
+                              ])
                           ),
                         ]
-                      : `New ${
+                      : `${t("new")} ${
                           Drawer.value.table.charAt(0).toUpperCase() +
                           Drawer.value.table.slice(1).replaceAll("_", " ")
                         }`,
@@ -1533,7 +1601,7 @@ export default defineComponent({
                           {
                             icon: () => h(NIcon, () => h(DeviceFloppy)),
                             default: () =>
-                              Drawer.value.id ? "UPDATE" : "CREATE",
+                              Drawer.value.id ? t("update") : t("create"),
                           }
                         ),
                       ]
@@ -1573,11 +1641,11 @@ export default defineComponent({
                 h(NSpace, () => [
                   Window.value.width < 700
                     ? database.value.tables.find(
-                        (item) => item.slug === props.table
+                        (item) => item.slug === route.params.slug
                       ).name
                     : `${database.value.name} - ${
                         database.value.tables.find(
-                          (item) => item.slug === props.table
+                          (item) => item.slug === route.params.slug
                         )?.name
                       }`,
                   h(
@@ -1587,7 +1655,7 @@ export default defineComponent({
                       type: ShowDeleted.value ? "default" : "primary",
                       onClick: () => (ShowDeleted.value = false),
                     },
-                    () => "Published"
+                    () => t("published")
                   ),
                   " | ",
                   h(
@@ -1597,7 +1665,7 @@ export default defineComponent({
                       type: ShowDeleted.value ? "primary" : "default",
                       onClick: () => (ShowDeleted.value = true),
                     },
-                    () => "Trash"
+                    () => t("trash")
                   ),
                 ]),
               "header-extra": () =>
@@ -1605,6 +1673,12 @@ export default defineComponent({
                   h(
                     NPopover,
                     {
+                      disabled:
+                        !TableData.value?.result ||
+                        !database.value.tables ||
+                        !database.value.tables.find(
+                          (item) => item.slug === route.params.slug
+                        ).schema,
                       style: {
                         maxHeight: "240px",
                         width: Window.value.width < 700 ? "300px" : "500px",
@@ -1616,18 +1690,32 @@ export default defineComponent({
                     {
                       trigger: () =>
                         h(
-                          NButton,
+                          NPopover,
+                          {},
                           {
-                            onClick: () => {
-                              if (
-                                !searchArray.value ||
-                                searchArray.value.length === 0
-                              )
-                                searchArray.value = [[null, "=", null]];
-                            },
-                          },
-                          {
-                            icon: () => h(NIcon, () => h(Search)),
+                            trigger: () =>
+                              h(
+                                NButton,
+                                {
+                                  disabled:
+                                    !TableData.value?.result ||
+                                    !database.value.tables ||
+                                    !database.value.tables.find(
+                                      (item) => item.slug === route.params.slug
+                                    ).schema,
+                                  onClick: () => {
+                                    if (
+                                      !searchArray.value ||
+                                      searchArray.value.length === 0
+                                    )
+                                      searchArray.value = [[null, "=", null]];
+                                  },
+                                },
+                                {
+                                  icon: () => h(NIcon, () => h(Search)),
+                                }
+                              ),
+                            default: () => t("search"),
                           }
                         ),
                       footer: () =>
@@ -1669,7 +1757,7 @@ export default defineComponent({
                               },
                               {
                                 icon: () => h(NIcon, () => h(X)),
-                                default: () => "Reset",
+                                default: () => t("reset"),
                               }
                             ),
                             h(
@@ -1687,7 +1775,7 @@ export default defineComponent({
                               },
                               {
                                 icon: () => h(NIcon, () => h(Search)),
-                                default: () => "Search",
+                                default: () => t("search"),
                               }
                             ),
                           ]),
@@ -1714,11 +1802,12 @@ export default defineComponent({
                                   options:
                                     database.value.tables &&
                                     database.value.tables.find(
-                                      (item) => item.slug === props.table
+                                      (item) => item.slug === route.params.slug
                                     ).schema
                                       ? database.value.tables
                                           .find(
-                                            (item) => item.slug === props.table
+                                            (item) =>
+                                              item.slug === route.params.slug
                                           )
                                           .schema.map((item, _index, schema) =>
                                             GenerateSearchInOptions(
@@ -1744,71 +1833,103 @@ export default defineComponent({
                                       )
                                       ? [
                                           {
-                                            label: "Equal to",
+                                            label: t(
+                                              "search_conditions.equal_to"
+                                            ),
                                             value: "=",
                                           },
                                           {
-                                            label: "Not Equal to",
+                                            label: t(
+                                              "search_conditions.not_equal_to"
+                                            ),
                                             value: "!",
                                           },
                                           {
-                                            label: "Greater than",
+                                            label: t(
+                                              "search_conditions.greater_than"
+                                            ),
                                             value: ">",
                                           },
                                           {
-                                            label: "Greater/Equal to",
+                                            label: t(
+                                              "search_conditions.greater_equal_to"
+                                            ),
                                             value: ">=",
                                           },
                                           {
-                                            label: "Less than",
+                                            label: t(
+                                              "search_conditions.less_than"
+                                            ),
                                             value: "<",
                                           },
                                           {
-                                            label: "Less/Equal to",
+                                            label: t(
+                                              "search_conditions.less_equal_to"
+                                            ),
                                             value: "<=",
                                           },
                                           {
-                                            label: "Like",
+                                            label: t(
+                                              "search_conditions.contains"
+                                            ),
                                             value: "like",
                                           },
                                           {
-                                            label: "Not Like",
+                                            label: t(
+                                              "search_conditions.not_contain"
+                                            ),
                                             value: "not like",
                                           },
                                         ]
                                       : [
                                           {
-                                            label: "Equal to",
+                                            label: t(
+                                              "search_conditions.equal_to"
+                                            ),
                                             value: "=",
                                           },
                                           {
-                                            label: "Not Equal to",
+                                            label: t(
+                                              "search_conditions.not_equal_to"
+                                            ),
                                             value: "!",
                                           },
                                           {
-                                            label: "Like",
+                                            label: t(
+                                              "search_conditions.contains"
+                                            ),
                                             value: "like",
                                           },
                                           {
-                                            label: "Not Like",
+                                            label: t(
+                                              "search_conditions.not_contain"
+                                            ),
                                             value: "not like",
                                           },
                                         ]
                                     : [
                                         {
-                                          label: "Equal to",
+                                          label: t(
+                                            "search_conditions.equal_to"
+                                          ),
                                           value: "=",
                                         },
                                         {
-                                          label: "Not Equal to",
+                                          label: t(
+                                            "search_conditions.not_equal_to"
+                                          ),
                                           value: "!",
                                         },
                                         {
-                                          label: "Like",
+                                          label: t(
+                                            "search_conditions.contains"
+                                          ),
                                           value: "like",
                                         },
                                         {
-                                          label: "Not Like",
+                                          label: t(
+                                            "search_conditions.not_contain"
+                                          ),
                                           value: "not like",
                                         },
                                       ],
@@ -1867,41 +1988,90 @@ export default defineComponent({
                     ? h(
                         NA,
                         {
-                          href: `${props.table}/new`,
-                          onClick: (event) => (
-                            event.preventDefault(),
-                            (Drawer.value.table = props.table),
-                            (Drawer.value.id = null),
-                            (Drawer.value.data = {}),
-                            (Drawer.value.show = true)
-                          ),
+                          href: `${route.params.slug}/new`,
+                          onClick: (e) => e.preventDefault(),
                         },
                         () =>
                           h(
-                            NButton,
+                            NPopover,
                             {},
                             {
-                              icon: () => h(NIcon, () => h(Plus)),
+                              trigger: () =>
+                                h(
+                                  NButton,
+                                  {
+                                    disabled:
+                                      !database.value.tables ||
+                                      !database.value.tables.find(
+                                        (item) =>
+                                          item.slug === route.params.slug
+                                      ).schema,
+                                    onClick: () => (
+                                      (Drawer.value.table = route.params.slug),
+                                      (Drawer.value.id = null),
+                                      (Drawer.value.data = {}),
+                                      (Drawer.value.show = true)
+                                    ),
+                                  },
+                                  {
+                                    icon: () => h(NIcon, () => h(Plus)),
+                                  }
+                                ),
+                              default: () => t("add_new"),
                             }
                           )
                       )
-                    : h(NuxtLink, { to: `${props.table}/new` }, () =>
-                        h(
-                          NButton,
-                          {},
-                          {
-                            icon: () => h(NIcon, () => h(Plus)),
-                          }
-                        )
+                    : h(
+                        NuxtLink,
+                        {
+                          to:
+                            !database.value.tables ||
+                            !database.value.tables.find(
+                              (item) => item.slug === route.params.slug
+                            ).schema
+                              ? null
+                              : `${route.params.slug}/new`,
+                        },
+                        () =>
+                          h(
+                            NPopover,
+                            {},
+                            {
+                              trigger: () =>
+                                h(
+                                  NButton,
+                                  {
+                                    disabled:
+                                      !database.value.tables ||
+                                      !database.value.tables.find(
+                                        (item) =>
+                                          item.slug === route.params.slug
+                                      ).schema,
+                                  },
+                                  {
+                                    icon: () => h(NIcon, () => h(Plus)),
+                                  }
+                                ),
+                              default: () => t("add_new"),
+                            }
+                          )
                       ),
                   User.value && User.value.role === "admin"
                     ? h(
-                        NButton,
+                        NPopover,
+                        {},
                         {
-                          onClick: () => (ShowSchemaModal.value = true),
-                        },
-                        {
-                          icon: () => h(NIcon, () => h(Settings)),
+                          trigger: () =>
+                            h(
+                              NButton,
+                              {
+                                onClick: () => (ShowSchemaModal.value = true),
+                              },
+                              {
+                                icon: () => h(NIcon, () => h(Settings)),
+                              }
+                            ),
+                          default: () => t("edit_schema"),
                         }
                       )
                     : null,

@@ -3,25 +3,24 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate && ftp -i -s:commands.ftp && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/* && cls",
+    "generate": "nuxt generate && lftp -u dashboard@inicontent.com,azqswx784512 -e \"rm -r _nuxt;quit\" ftp.inicontent.com && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
     "preview": "nuxt preview",
-    "ftp": "ftp -i -s:commands.ftp && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
+    "deploy": "gh-pages -d dist",
+    "ftp": "lftp -u dashboard@inicontent.com,azqswx784512 -e \"rm -r _nuxt;quit\" ftp.inicontent.com && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
     "@vicons/tabler": "^0.12.0",
-    "naive-ui": "^2.34.2",
+    "gh-pages": "^4.0.0",
+    "naive-ui": "^2.34.3",
     "nuxt": "3.0.0"
   },
   "dependencies": {
-    "@wangeditor/editor": "^5.1.23",
-    "@wangeditor/editor-for-vue": "^5.1.12",
-    "@wangeditor/plugin-upload-attachment": "^1.1.0",
     "apexcharts": "^3.36.3",
-    "dot-prop": "^7.2.0",
     "node-vibrant": "3.1.6",
+    "object-path": "^0.11.8",
     "vue3-apexcharts": "^1.4.1",
-    "vue3-drr-grid-layout": "^1.9.6",
+    "vue3-drr-grid-layout": "^1.9.7",
     "vuedraggable": "4.1.0"
   }
 }

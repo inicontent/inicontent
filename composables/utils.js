@@ -1,66 +1,20 @@
-export const pathTo = (array, target) => {
-  var result;
-  array.some(({ key, name, children = [] }) => {
-    if (key === target)
-      return (result = (name ?? "Field Name")
-        .toLowerCase()
-        .replace(/ /g, "_")
-        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""));
-    var temp = pathTo(children, target);
-    if (temp)
-      return (result =
-        (name ?? "Field Name")
-          .toLowerCase()
-          .replace(/ /g, "_")
-          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-        "." +
-        temp);
-  });
-  return result;
-};
-
-export const pathToSearch = (array, target) => {
-  var result;
-  array.some(({ key, name, duplicatable = false, children = [] }) => {
-    if (key === target)
-      return (result = name
-        .toLowerCase()
-        .replace(/ /g, "_")
-        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""));
-    var temp = pathToSearch(children, target);
-    if (temp)
-      return (result =
-        name
-          .toLowerCase()
-          .replace(/ /g, "_")
-          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-        (duplicatable ? ".*." : ".") +
-        temp);
-  });
-  return result;
-};
-
-export const GenerateSearchInOptions = (schema, item, prefix = null) => {
+export const GenerateSearchInOptions = (schema, item) => {
   if (item.type === "group")
     return {
       type: "group",
       label: item.name,
-      key: (prefix ? `${prefix + item.name}` : item.name)
+      key: `${(item.path ?? "") + item.name}`
         .toLowerCase()
         .replace(/ /g, "_")
         .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
       children: item.children
         .filter((i) => i.type !== "table" && i.type !== "group")
         .map((i) =>
-          GenerateSearchInOptions(
-            schema,
-            i,
-            item.name
-              .toLowerCase()
-              .replace(/ /g, "_")
-              .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-              (item.duplicatable ? ".*." : ".")
-          )
+          GenerateSearchInOptions(schema, {
+            ...i,
+            path:
+              (item.path ?? "") + item.name + (item.duplicatable ? ".*." : "."),
+          })
         ),
     };
   else if (item.type === "table")
@@ -74,13 +28,13 @@ export const GenerateSearchInOptions = (schema, item, prefix = null) => {
         .find((table) => table.slug === item.name)
         .schema.filter((item) => item.type !== "table")
         .map((i, _index, schema) =>
-          GenerateSearchInOptions(
-            schema,
-            i,
-            !item.hasOwnProperty("single") || item.single
-              ? `${item.name}.`
-              : `${item.name}.*.`
-          )
+          GenerateSearchInOptions(schema, {
+            ...i,
+            path:
+              (item.path ?? "") +
+              item.name +
+              (!item.hasOwnProperty("single") || item.single ? "." : ".*."),
+          })
         ),
     };
   else if (
@@ -89,35 +43,54 @@ export const GenerateSearchInOptions = (schema, item, prefix = null) => {
   )
     return {
       label: item.name,
-      value: prefix
-        ? `${prefix + pathToSearch(schema, item.key)}.*`
-        : `${pathToSearch(schema, item.key)}.*`,
+      value: `${(item.path ?? "") + item.name}.*`
+        .toLowerCase()
+        .replace(/ /g, "_")
+        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
       ty: item.type,
     };
   else
     return {
       label: item.name,
-      value: prefix
-        ? `${prefix + pathToSearch(schema, item.key)}`
-        : pathToSearch(schema, item.key),
+      value: ((item.path ?? "") + item.name)
+        .toLowerCase()
+        .replace(/ /g, "_")
+        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
       ty: item.type,
     };
 };
 
-export const GetPathes = (schema, item, prefix = null) => {
+export const GetPathes = (item) => {
   if (item.type === "group")
-    return item.children.map((i) => GetPathes(schema, i, prefix));
+    return item.children.map((i) =>
+      GetPathes({
+        ...i,
+        path: (item.path ?? "") + item.name + (item.duplicatable ? ".*." : "."),
+      })
+    );
   else if (item.type === "table")
     return [
       `${item.name}_id`,
       ...item.label.map((l) =>
-        !item.hasOwnProperty("single") || item.single
-          ? `${item.name}.${l}`
-          : `${item.name}.*.${l}`
+        (
+          (item.path ?? "") +
+          item.name +
+          (!item.hasOwnProperty("single") || item.single ? "." : ".*.") +
+          l
+        )
+          .toLowerCase()
+          .replace(/ /g, "_")
+          .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
       ),
-      !item.hasOwnProperty("single") || item.single
-        ? `${item.name}.${item.image}`
-        : `${item.name}.*.${item.image}`,
+      (
+        (item.path ?? "") +
+        item.name +
+        (!item.hasOwnProperty("single") || item.single ? "." : ".*.") +
+        item.image
+      )
+        .toLowerCase()
+        .replace(/ /g, "_")
+        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
     ];
   else if (
     item.type === "tags" ||
@@ -125,11 +98,13 @@ export const GetPathes = (schema, item, prefix = null) => {
     ((item.type === "upload" || item.type === "list") &&
       (!item.hasOwnProperty("single") || item.single === false))
   )
-    return prefix
-      ? `${prefix + pathToSearch(schema, item.key)}.*`
-      : `${pathToSearch(schema, item.key)}.*`;
+    return `${(item.path ?? "") + item.name}.*`
+      .toLowerCase()
+      .replace(/ /g, "_")
+      .replace(/[^\[a-zA-Zء-ي]-_+/g, "");
   else
-    return prefix
-      ? `${prefix + pathToSearch(schema, item.key)}`
-      : pathToSearch(schema, item.key);
+    return ((item.path ?? "") + item.name)
+      .toLowerCase()
+      .replace(/ /g, "_")
+      .replace(/[^\[a-zA-Zء-ي]-_+/g, "");
 };

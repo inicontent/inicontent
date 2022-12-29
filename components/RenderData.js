@@ -15,7 +15,7 @@ import {
   NScrollbar,
 } from "naive-ui";
 import { Check, X, FileText, User as UserIcon } from "@vicons/tabler";
-import { getProperty, hasProperty } from "dot-prop";
+import objectPath from "object-path";
 import { NuxtLink } from "#components";
 
 export default defineComponent({
@@ -30,6 +30,7 @@ export default defineComponent({
     },
   },
   setup: (props, { emit }) => {
+    const Language = useGlobalCookie("Language");
     const Loading = useState("Loading");
     Loading.value["Drawer"] = false;
     const single = computed({
@@ -51,14 +52,24 @@ export default defineComponent({
                     h(NText, { strong: true }, () => `${name}: `)
                   ),
                 default: () =>
-                  hasProperty(single.value, path ?? pathTo(Schema, key))
-                    ? h(
-                        NSpace,
+                  objectPath.has(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  )
+                    ? h(NSpace, () =>
                         []
                           .concat(
-                            getProperty(
+                            objectPath.get(
                               single.value,
-                              path ?? pathTo(Schema, key)
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                             )
                           )
                           .map((item) =>
@@ -92,16 +103,30 @@ export default defineComponent({
                     )
                   ),
                 default: () =>
-                  hasProperty(single.value, path ?? pathTo(Schema, key))
+                  objectPath.has(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  )
                     ? []
                         .concat(
-                          getProperty(single.value, path ?? pathTo(Schema, key))
+                          objectPath.get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                          )
                         )
                         .map((item) =>
                           h(
                             NuxtLink,
                             {
-                              to: `/${route.params.db_slug}/table/${name}/${item.id}`,
+                              to: `/${route.params.db_slug}/tables/${name}/${item.id}`,
                             },
                             () =>
                               h(
@@ -129,7 +154,7 @@ export default defineComponent({
                                             ? h(NAvatar, {
                                                 src: []
                                                   .concat(
-                                                    getProperty(
+                                                    objectPath.get(
                                                       item,
                                                       options.image
                                                     )
@@ -154,14 +179,19 @@ export default defineComponent({
                                                   )[0],
                                                 round: true,
                                                 size: 22,
-                                                style: {
-                                                  marginRight: "4px",
-                                                },
+                                                style:
+                                                  Language.value === "ar"
+                                                    ? {
+                                                        marginLeft: "4px",
+                                                      }
+                                                    : {
+                                                        marginRight: "4px",
+                                                      },
                                               })
                                             : null,
                                           options.label
                                             .map((single_label) =>
-                                              getProperty(item, single_label)
+                                              objectPath.get(item, single_label)
                                             )
                                             .join(" "),
                                         ],
@@ -184,15 +214,33 @@ export default defineComponent({
                     h(NText, { strong: true }, () => `${name}: `)
                   ),
                 default: () =>
-                  hasProperty(single.value, path ?? pathTo(Schema, key))
+                  objectPath.has(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  )
                     ? [].concat(
-                        getProperty(single.value, path ?? pathTo(Schema, key))
+                        objectPath.get(
+                          single.value,
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                        )
                       ).length === 1
                       ? []
                           .concat(
-                            getProperty(
+                            objectPath.get(
                               single.value,
-                              path ?? pathTo(Schema, key)
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                             )
                           )
                           .map((link) =>
@@ -218,9 +266,13 @@ export default defineComponent({
                           h(NSpace, { align: "center" }, () =>
                             []
                               .concat(
-                                getProperty(
+                                objectPath.get(
                                   single.value,
-                                  path ?? pathTo(Schema, key)
+                                  (path ?? "") +
+                                    name
+                                      .toLowerCase()
+                                      .replace(/ /g, "_")
+                                      .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                                 )
                               )
                               .map((link) =>
@@ -257,11 +309,22 @@ export default defineComponent({
                     h(NText, { strong: true }, () => `${name}: `)
                   ),
                 default: () =>
-                  hasProperty(single.value, path ?? pathTo(Schema, key))
+                  objectPath.has(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  )
                     ? h(NTime, {
-                        time: getProperty(
+                        time: objectPath.get(
                           single.value,
-                          path ?? pathTo(Schema, key)
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                         ),
                         unix: true,
                         type: "relative",
@@ -281,8 +344,14 @@ export default defineComponent({
                 default: () =>
                   h(NText, {
                     innerHTML:
-                      getProperty(single.value, path ?? pathTo(Schema, key)) ??
-                      "--",
+                      objectPath.get(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      ) ?? "--",
                   }),
               }
             );
@@ -299,9 +368,13 @@ export default defineComponent({
                   h(
                     NIconWrapper,
                     {
-                      color: getProperty(
+                      color: objectPath.get(
                         single.value,
-                        path ?? pathTo(Schema, key)
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                       )
                         ? "green"
                         : "red",
@@ -316,9 +389,13 @@ export default defineComponent({
                         },
                         () =>
                           h(
-                            getProperty(
+                            objectPath.get(
                               single.value,
-                              path ?? pathTo(Schema, key)
+                              (path ?? "") +
+                                name
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")
+                                  .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                             )
                               ? Check
                               : X
@@ -338,42 +415,60 @@ export default defineComponent({
                   ),
                 default: () =>
                   options.duplicatable
-                    ? hasProperty(single.value, path ?? pathTo(Schema, key))
-                      ? getProperty(
-                          single.value,
-                          path ?? pathTo(Schema, key)
-                        ).map((item, index) =>
-                          h(
-                            NListItem,
-                            {},
-                            {
-                              prefix: () =>
-                                h(NText, { strong: true }, () => index + 1),
-                              default: () =>
-                                options.children.map((child) =>
-                                  RenderField({
-                                    ...child,
-                                    path:
-                                      pathTo(Schema, child.key).substr(
-                                        0,
-                                        pathTo(Schema, child.key).lastIndexOf(
-                                          "."
-                                        )
-                                      ) +
-                                      `[${index}]` +
-                                      pathTo(Schema, child.key).substr(
-                                        pathTo(Schema, child.key).lastIndexOf(
-                                          "."
-                                        )
-                                      ),
-                                  })
-                                ),
-                            }
+                    ? objectPath.has(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      )
+                      ? objectPath
+                          .get(
+                            single.value,
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                           )
-                        )
+                          .map((item, index) =>
+                            h(
+                              NListItem,
+                              {},
+                              {
+                                prefix: () =>
+                                  h(NText, { strong: true }, () => index + 1),
+                                default: () =>
+                                  options.children.map((child) =>
+                                    RenderField({
+                                      ...child,
+                                      path:
+                                        (path ?? "") +
+                                        name
+                                          .toLowerCase()
+                                          .replace(/ /g, "_")
+                                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                                        `.${index}.`,
+                                    })
+                                  ),
+                              }
+                            )
+                          )
                       : null
                     : h(NSpace, { vertical: true }, () =>
-                        options.children.map((child) => RenderField(child))
+                        options.children.map((child) =>
+                          RenderField({
+                            ...child,
+                            path:
+                              (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                              ".",
+                          })
+                        )
                       ),
               }
             );
@@ -390,20 +485,34 @@ export default defineComponent({
                   h(
                     NA,
                     {
-                      href: hasProperty(
+                      href: objectPath.has(
                         single.value,
-                        path ?? pathTo(Schema, key)
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                       )
-                        ? `mailto:${getProperty(
+                        ? `mailto:${objectPath.get(
                             single.value,
-                            path ?? pathTo(Schema, key)
+                            (path ?? "") +
+                              name
+                                .toLowerCase()
+                                .replace(/ /g, "_")
+                                .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                           )}`
                         : "#",
                       _target: "blank",
                     },
                     () =>
-                      getProperty(single.value, path ?? pathTo(Schema, key)) ??
-                      "--"
+                      objectPath.get(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      ) ?? "--"
                   ),
               }
             );
@@ -421,15 +530,25 @@ export default defineComponent({
                     NA,
                     {
                       href:
-                        getProperty(
+                        objectPath.get(
                           single.value,
-                          path ?? pathTo(Schema, key)
+                          (path ?? "") +
+                            name
+                              .toLowerCase()
+                              .replace(/ /g, "_")
+                              .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
                         ) ?? "#",
                       _target: "blank",
                     },
                     () =>
-                      getProperty(single.value, path ?? pathTo(Schema, key)) ??
-                      "--"
+                      objectPath.get(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      ) ?? "--"
                   ),
               }
             );
@@ -451,22 +570,39 @@ export default defineComponent({
                     )
                   ),
                 default: () =>
-                  hasProperty(single.value, path ?? pathTo(Schema, key))
+                  objectPath.has(
+                    single.value,
+                    (path ?? "") +
+                      name
+                        .toLowerCase()
+                        .replace(/ /g, "_")
+                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                  )
                     ? h(
                         NTag,
                         { round: true },
                         {
                           default: () =>
-                            getProperty(
-                              single.value,
-                              path ?? pathTo(Schema, key)
-                            )
+                            objectPath
+                              .get(
+                                single.value,
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                              )
                               .charAt(0)
                               .toUpperCase() +
-                            getProperty(
-                              single.value,
-                              path ?? pathTo(Schema, key)
-                            )
+                            objectPath
+                              .get(
+                                single.value,
+                                (path ?? "") +
+                                  name
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")
+                                    .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                              )
                               .slice(1)
                               .replaceAll("_", " "),
                           icon: () => h(NIcon, () => h(UserIcon)),
@@ -488,8 +624,14 @@ export default defineComponent({
                   h(
                     NText,
                     () =>
-                      getProperty(single.value, path ?? pathTo(Schema, key)) ??
-                      "--"
+                      objectPath.get(
+                        single.value,
+                        (path ?? "") +
+                          name
+                            .toLowerCase()
+                            .replace(/ /g, "_")
+                            .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                      ) ?? "--"
                   ),
               }
             );
@@ -530,7 +672,11 @@ export default defineComponent({
       ),
       h(NScrollbar, { xScrollable: true }, () =>
         h(NList, { id: "PRINT_CONTENT", hoverable: true, bordered: true }, () =>
-          Schema.map((item) => RenderField(item))
+          [
+            ...Schema,
+            { name: "ID", type: "text" },
+            { name: "Created at", type: "date" },
+          ].map((item) => RenderField(item))
         )
       ),
     ];

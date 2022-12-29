@@ -13,6 +13,7 @@ import {
   NInput,
   NSelect,
   NSwitch,
+  NScrollbar,
 } from "naive-ui";
 import {
   Box,
@@ -49,88 +50,134 @@ export default defineComponent({
     },
   },
   setup: (props) => {
+    useLanguage({
+      ar: {
+        save: "حِفظ",
+        required: "إلزامي",
+        duplicatable: "قابل للنسخ",
+        fields: {
+          text: "نص",
+          short_text: "نص قصير",
+          long_text: "نص طويل",
+          editor: "محرر نصوص",
+          number: "رقم",
+          password: "كلمة مرور",
+          link: "رابط",
+          email: "بريد",
+          upload: "ملحق",
+          tags: "وسوم",
+          date: "تاريخ",
+          toggle: "سحب",
+          list: "قائمة",
+          group: "مجموعة",
+          table: "جدول",
+        },
+      },
+      en: {
+        save: "Save",
+        required: "Required",
+        duplicatable: "Duplicatable",
+        fields: {
+          text: "Text",
+          short_text: "Short Text",
+          long_text: "Long Text",
+          editor: "Rich Editor",
+          number: "Number",
+          password: "Password",
+          email: "Email",
+          link: "Link",
+          upload: "Upload",
+          tags: "Tags",
+          date: "Date",
+          toggle: "Toggle",
+          list: "List",
+          group: "Group",
+          table: "Table",
+        },
+      },
+    });
     const FieldsList = [
         {
-          label: "Text",
+          label: t("fields.text"),
           key: "input",
           icon: () => h(NIcon, () => h(Forms)),
           children: [
             {
-              label: "Short Text",
+              label: t("fields.short_text"),
               key: "text",
               icon: () => h(NIcon, () => h(LetterCase)),
             },
             {
-              label: "Long Text",
+              label: t("fields.long_text"),
               key: "textarea",
               icon: () => h(NIcon, () => h(AlignJustified)),
             },
             {
-              label: "Rich Editor",
+              label: t("fields.editor"),
               key: "editor",
               icon: () => h(NIcon, () => h(Code)),
+            },
+            {
+              label: t("fields.number"),
+              key: "number",
+              icon: () => h(NIcon, () => h(ListNumbers)),
+            },
+            {
+              label: t("fields.password"),
+              key: "password",
+              icon: () => h(NIcon, () => h(Key)),
+            },
+            {
+              label: t("fields.email"),
+              key: "email",
+              icon: () => h(NIcon, () => h(At)),
+            },
+            {
+              label: t("fields.link"),
+              key: "url",
+              icon: () => h(NIcon, () => h(Link)),
             },
           ],
         },
         {
-          label: "Number",
-          key: "number",
-          icon: () => h(NIcon, () => h(ListNumbers)),
-        },
-        {
-          label: "Password",
-          key: "password",
-          icon: () => h(NIcon, () => h(Key)),
-        },
-        {
-          label: "Email",
-          key: "email",
-          icon: () => h(NIcon, () => h(At)),
-        },
-        {
-          label: "Link",
-          key: "url",
-          icon: () => h(NIcon, () => h(Link)),
-        },
-        {
-          label: "Tags",
-          key: "tags",
-          icon: () => h(NIcon, () => h(Tags)),
-        },
-        {
-          label: "Date",
-          key: "date",
-          icon: () => h(NIcon, () => h(Calendar)),
-        },
-        {
-          label: "Upload",
+          label: t("fields.upload"),
           key: "upload",
           icon: () => h(NIcon, () => h(Upload)),
         },
         {
-          label: "Toggle",
+          label: t("fields.tags"),
+          key: "tags",
+          icon: () => h(NIcon, () => h(Tags)),
+        },
+        {
+          label: t("fields.date"),
+          key: "date",
+          icon: () => h(NIcon, () => h(Calendar)),
+        },
+        {
+          label: t("fields.toggle"),
           key: "boolean",
           icon: () => h(NIcon, () => h(ToggleLeft)),
         },
         {
-          label: "List",
+          label: t("fields.list"),
           key: "list",
           icon: () => h(NIcon, () => h(ListDetails)),
         },
         {
-          label: "Group",
+          label: t("fields.group"),
           key: "group",
           icon: () => h(NIcon, () => h(BoxMultiple)),
         },
         {
-          label: "Table",
+          label: t("fields.table"),
           key: "table",
           icon: () => h(NIcon, () => h(Table)),
         },
       ],
       Loading = useState("Loading", () => ({}));
     Loading.value["SchemaModal"] = false;
-
+    const Language = useGlobalCookie("Language");
     const route = useRoute(),
       message = useMessage(),
       Window = useState("Window", () => ({
@@ -186,19 +233,25 @@ export default defineComponent({
           }),
         };
       },
-      GenerateLabelOptions = (schema, item, prefix = null) => {
+      GenerateLabelOptions = (schema, item) => {
         if (item.type === "group" && !item.duplicatable)
           return item.children.map((i) =>
-            GenerateLabelOptions(
-              schema,
-              i,
-              prefix ? `${prefix} ${item.name}` : item.name
-            )
+            GenerateLabelOptions(schema, {
+              ...i,
+              prefix: item.prefix ? `${item.prefix} ${item.name}` : item.name,
+              path:
+                (item.path ?? "") +
+                (item.name ?? "Field Name") +
+                (item.duplicatable ? ".*." : "."),
+            })
           );
         else
           return {
-            label: prefix ? `${prefix} ${item.name}` : item.name,
-            value: pathTo(schema, item.key),
+            label: item.prefix ? `${item.prefix} ${item.name}` : item.name,
+            value: ((item.path ?? "") + (item.name ?? "Field Name"))
+              .toLowerCase()
+              .replace(/ /g, "_")
+              .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
           };
       },
       CustomFields = (schema, item) => {
@@ -209,7 +262,6 @@ export default defineComponent({
                 NFormItem,
                 {
                   label: "Allow Multiple",
-                  path: pathTo(SchemaModal.value, item.key) + `.single`,
                 },
                 () =>
                   h(NSwitch, {
@@ -221,7 +273,6 @@ export default defineComponent({
                 NFormItem,
                 {
                   label: "Allowed Files",
-                  path: pathTo(SchemaModal.value, item.key) + `.accept`,
                 },
                 () =>
                   h(NSelect, {
@@ -262,7 +313,6 @@ export default defineComponent({
                 NFormItem,
                 {
                   label: "Allow Multiple",
-                  path: pathTo(SchemaModal.value, item.key) + `.single`,
                 },
                 () =>
                   h(NSwitch, {
@@ -274,7 +324,6 @@ export default defineComponent({
                 NFormItem,
                 {
                   label: "Options",
-                  path: pathTo(SchemaModal.value, item.key) + `.values`,
                 },
                 () =>
                   h(NSelect, {
@@ -288,6 +337,53 @@ export default defineComponent({
                   })
               ),
             ];
+          case "tags":
+            return [
+              h(
+                NFormItem,
+                {
+                  label: "Content Type",
+                },
+                () =>
+                  h(NSelect, {
+                    value: schema.content_type,
+                    onUpdateValue: (v) => (schema.content_type = v),
+                    filterable: true,
+                    options: [
+                      {
+                        label: t("fields.short_text"),
+                        key: "text",
+                        icon: () => h(NIcon, () => h(LetterCase)),
+                      },
+                      {
+                        label: t("fields.number"),
+                        key: "number",
+                        icon: () => h(NIcon, () => h(ListNumbers)),
+                      },
+                      {
+                        label: t("fields.password"),
+                        key: "password",
+                        icon: () => h(NIcon, () => h(Key)),
+                      },
+                      {
+                        label: t("fields.email"),
+                        key: "email",
+                        icon: () => h(NIcon, () => h(At)),
+                      },
+                      {
+                        label: t("fields.link"),
+                        key: "url",
+                        icon: () => h(NIcon, () => h(Link)),
+                      },
+                      {
+                        label: t("fields.date"),
+                        key: "date",
+                        icon: () => h(NIcon, () => h(Calendar)),
+                      },
+                    ],
+                  })
+              ),
+            ];
           case "table":
             return [
               h(
@@ -295,7 +391,6 @@ export default defineComponent({
                 {
                   disabled: !schema.name,
                   label: "Allow Multiple",
-                  path: pathTo(SchemaModal.value, item.key) + `.single`,
                 },
                 () =>
                   h(NSwitch, {
@@ -309,7 +404,6 @@ export default defineComponent({
                 {
                   disabled: !schema.name,
                   label: "Allow Create",
-                  path: pathTo(SchemaModal.value, item.key) + `.allow_create`,
                 },
                 () =>
                   h(NSwitch, {
@@ -323,7 +417,6 @@ export default defineComponent({
                 {
                   disabled: !schema.name,
                   label: "Search In",
-                  path: pathTo(SchemaModal.value, item.key) + `.search`,
                 },
                 {
                   default: () =>
@@ -336,9 +429,11 @@ export default defineComponent({
                       options: schema.name
                         ? database.value.tables
                             .find((table) => table.slug === schema.name)
-                            .schema.filter((item) => item.type !== "table")
-                            .map((item, _index, schema) =>
-                              GenerateSearchInOptions(schema, item)
+                            .schema.filter(
+                              (element) => element.type !== "table"
+                            )
+                            .map((element, _index, schema) =>
+                              GenerateSearchInOptions(schema, element)
                             )
                             .flat(Infinity)
                         : [],
@@ -350,7 +445,6 @@ export default defineComponent({
                 {
                   disabled: !schema.name,
                   label: "Label Text",
-                  path: pathTo(SchemaModal.value, item.key) + `.label`,
                 },
                 {
                   default: () =>
@@ -363,9 +457,11 @@ export default defineComponent({
                       options: schema.name
                         ? database.value.tables
                             .find((table) => table.slug === schema.name)
-                            .schema.filter((item) => item.type !== "table")
-                            .map((item, _index, schema) =>
-                              GenerateLabelOptions(schema, item)
+                            .schema.filter(
+                              (element) => element.type !== "table"
+                            )
+                            .map((element, _index, schema) =>
+                              GenerateLabelOptions(schema, element)
                             )
                             .flat(Infinity)
                         : [],
@@ -377,7 +473,6 @@ export default defineComponent({
                 {
                   disabled: !schema.name,
                   label: "Label Image",
-                  path: pathTo(SchemaModal.value, item.key) + `.image`,
                 },
                 {
                   default: () =>
@@ -389,9 +484,11 @@ export default defineComponent({
                       options: schema.name
                         ? database.value.tables
                             .find((table) => table.slug === schema.name)
-                            .schema.filter((item) => item.type !== "table")
-                            .map((item, _index, schema) =>
-                              GenerateLabelOptions(schema, item)
+                            .schema.filter(
+                              (element) => element.type !== "table"
+                            )
+                            .map((element, _index, schema) =>
+                              GenerateLabelOptions(schema, element)
                             )
                             .flat(Infinity)
                         : [],
@@ -432,9 +529,14 @@ export default defineComponent({
                           NIcon,
                           {
                             class: "handle",
-                            style: {
-                              marginRight: "10px",
-                            },
+                            style:
+                              Language.value === "ar"
+                                ? {
+                                    marginLeft: "10px",
+                                  }
+                                : {
+                                    marginRight: "10px",
+                                  },
                             size: 18,
                           },
                           () => h(Menu2)
@@ -449,11 +551,12 @@ export default defineComponent({
                           h(
                             NButton,
                             {
-                              onmouseenter: () =>
-                                (DisabledItem.value[index] = true),
                               onmouseleave: () =>
                                 (DisabledItem.value[index] = false),
-                              onClick: () => Schema.splice(index, 1),
+                              onClick: () => (
+                                (DisabledItem.value[index] = true),
+                                Schema.splice(index, 1)
+                              ),
                               circle: true,
                               size: "small",
                               type: "error",
@@ -541,8 +644,6 @@ export default defineComponent({
                             ? h(
                                 NButton,
                                 {
-                                  onmouseenter: () =>
-                                    (DisabledItem.value[index] = true),
                                   onmouseleave: () =>
                                     (DisabledItem.value[index] = false),
                                   round: Window.value.width > 700,
@@ -553,23 +654,23 @@ export default defineComponent({
                                   type: Schema[index].duplicatable
                                     ? "info"
                                     : "tertiary",
-                                  onClick: () =>
+                                  onClick: () => (
+                                    (DisabledItem.value[index] = true),
                                     (Schema[index].duplicatable =
-                                      !Schema[index].duplicatable),
+                                      !Schema[index].duplicatable)
+                                  ),
                                 },
                                 {
                                   icon: () => h(NIcon, () => h(LetterD)),
                                   default: () =>
                                     Window.value.width < 700
                                       ? null
-                                      : "Duplicatable",
+                                      : t("duplicatable"),
                                 }
                               )
                             : h(
                                 NButton,
                                 {
-                                  onmouseenter: () =>
-                                    (DisabledItem.value[index] = true),
                                   onmouseleave: () =>
                                     (DisabledItem.value[index] = false),
                                   round: Window.value.width > 700,
@@ -580,16 +681,18 @@ export default defineComponent({
                                   type: Schema[index].required
                                     ? "error"
                                     : "tertiary",
-                                  onClick: () =>
+                                  onClick: () => (
+                                    (DisabledItem.value[index] = true),
                                     (Schema[index].required =
-                                      !Schema[index].required),
+                                      !Schema[index].required)
+                                  ),
                                 },
                                 {
                                   icon: () => h(NIcon, () => h(LetterR)),
                                   default: () =>
                                     Window.value.width < 700
                                       ? null
-                                      : "Required",
+                                      : t("required"),
                                 }
                               ),
                           h(
@@ -668,9 +771,6 @@ export default defineComponent({
                                 NFormItem,
                                 {
                                   label: "Table Name",
-                                  path:
-                                    pathTo(SchemaModal.value, element.key) +
-                                    `.name`,
                                 },
                                 {
                                   default: () =>
@@ -706,19 +806,19 @@ export default defineComponent({
                                 NFormItem,
                                 {
                                   label: "Field Name",
-                                  path:
-                                    pathTo(SchemaModal.value, element.key) +
-                                    `.name`,
                                   style: {
                                     marginBottom: "30px",
                                   },
                                 },
                                 {
                                   feedback: () =>
-                                    `#${pathTo(
-                                      SchemaModal.value,
-                                      element.key
-                                    )}`,
+                                    `#${
+                                      (element.path ?? "") +
+                                      (element.name ?? "Field Name")
+                                        .toLowerCase()
+                                        .replace(/ /g, "_")
+                                        .replace(/[^\[a-zA-Zء-ي]-_+/g, "")
+                                    }`,
                                   default: () =>
                                     h(NInput, {
                                       value: Schema[index].name,
@@ -729,7 +829,18 @@ export default defineComponent({
                               ),
                               ...CustomFields(Schema[index], element),
                               element.children && element.type === "group"
-                                ? RenderSchemaElement(element.children)
+                                ? RenderSchemaElement(
+                                    element.children.map((ele) => ({
+                                      ...ele,
+                                      path:
+                                        (element.path ?? "") +
+                                        (element.name ?? "Field Name")
+                                          .toLowerCase()
+                                          .replace(/ /g, "_")
+                                          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
+                                        (element.duplicatable ? ".*." : "."),
+                                    }))
+                                  )
                                 : null,
                             ],
                     }
@@ -746,6 +857,7 @@ export default defineComponent({
           style: {
             width: Window.value.width > 600 ? "600px" : "100%",
           },
+          maskClosable: false,
           preset: "card",
           size: "small",
           segmented: { content: true, footer: "soft" },
@@ -808,23 +920,13 @@ export default defineComponent({
                     onClick: SaveSchemaModal,
                   },
                   {
-                    default: () => "Save",
+                    default: () => t("save"),
                     icon: () => h(NIcon, () => h(DeviceFloppy)),
                   }
                 ),
               ]
             ),
-          default: () => [
-            h(
-              NForm,
-              {
-                size: "small",
-                "label-width": "auto",
-                "label-placement": "left",
-                "require-mark-placement": "right-hanging",
-              },
-              () => RenderSchemaElement(SchemaModal.value)
-            ),
+          default: () =>
             !SchemaModal.value || SchemaModal.value.length === 0
               ? h("div", {
                   style: {
@@ -832,8 +934,25 @@ export default defineComponent({
                     height: "50px",
                   },
                 })
-              : null,
-          ],
+              : h(
+                  NScrollbar,
+                  {
+                    style: {
+                      maxHeight: "calc(100vh - 156px)",
+                    },
+                  },
+                  () =>
+                    h(
+                      NForm,
+                      {
+                        size: "small",
+                        labelWidth: "auto",
+                        labelPlacement: "left",
+                        requireMarkPlacement: "right-hanging",
+                      },
+                      () => RenderSchemaElement(SchemaModal.value)
+                    )
+                ),
         }
       );
   },

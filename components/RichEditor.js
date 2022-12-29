@@ -67,12 +67,15 @@ export default defineComponent({
     },
   },
   setup: (props, { emit }) => {
+    const Language = useGlobalCookie("Language");
+
     const ColorPicker = resolveComponent("ColorPicker");
     const Loading = useState("Loading", () => ({}));
     Loading.value["Upload"] = false;
 
     const EditorText = JSON.parse(JSON.stringify(props.modelValue)),
       id = Math.random().toString(36).replace("0.", "RichEditor"),
+      isFocused = ref(false),
       currentSelection = ref(null),
       foreColor = ref(null),
       showForeColorPicker = ref(false),
@@ -82,6 +85,7 @@ export default defineComponent({
       User = useState("User");
 
     onMounted(() => {
+      document.execCommand("enableObjectResizing", false, "true");
       ["mouseup", "keyup", "selectionchange"].forEach((e) => {
         document.getElementById(id).addEventListener(e, () => {
           if (
@@ -98,21 +102,7 @@ export default defineComponent({
       });
     });
 
-    return () => [
-      h(
-        "style",
-        {},
-        {
-          default: () => `
-          .rich-editor {
-              border: 1px solid;
-              border-radius: 10px;
-              padding: 15px;
-              width: calc(100% - 32px);
-          }
-          `,
-        }
-      ),
+    return () =>
       h(
         NSpace,
         {
@@ -185,6 +175,7 @@ export default defineComponent({
                   h(
                     NPopselect,
                     {
+                      disabled: !isFocused.value,
                       size: "small",
                       scrollable: true,
                       "on-update:value": (key) => (
@@ -237,6 +228,7 @@ export default defineComponent({
                       h(
                         NButton,
                         {
+                          disabled: !isFocused.value,
                           type:
                             currentSelection.value &&
                             currentSelection.value.commonAncestorContainer.parentElement.tagName
@@ -253,6 +245,7 @@ export default defineComponent({
                   h(
                     NPopover,
                     {
+                      disabled: !currentSelection.value,
                       show: showForeColorPicker.value,
                       "on-update:show": (show) =>
                         show
@@ -302,6 +295,7 @@ export default defineComponent({
                   h(
                     NPopover,
                     {
+                      disabled: !currentSelection.value,
                       show: showBackColorPicker.value,
                       "on-update:show": (show) =>
                         show
@@ -350,13 +344,14 @@ export default defineComponent({
                   h(
                     NPopselect,
                     {
+                      disabled: !currentSelection.value,
                       size: "small",
                       scrollable: true,
                       type: document.queryCommandState("fontSize")
                         ? "primary"
                         : "default",
                       "on-update:value": (key) => (
-                        document.execCommand("styleWithCSS", false, true),
+                        document.execCommand("styleWithCSS", true),
                         document.execCommand("fontSize", false, key),
                         (currentSelection.value = saveSelection())
                       ),
@@ -454,150 +449,162 @@ export default defineComponent({
                 ]
               ),
               h(NDivider, { vertical: true }),
-              h(NButtonGroup, { size: "small" }, () => [
-                h(
-                  NUpload,
-                  {
-                    style: {
-                      width: "fit-content",
-                    },
-                    showFileList: false,
-                    triggerStyle: {
-                      height: "100%",
-                    },
-                    directoryDnd: true,
-                    max: 1,
-                    multiple: false,
-                    accept: "image/*",
-                    action: `https://api.inicontent.com/inicontent/assets`,
-                    headers: {
-                      Authorization:
-                        "Basic " +
-                        Buffer.from(
-                          `${User.value.username}:${User.value.password}`
-                        ).toString("base64"),
-                    },
-                    onBeforeUpload: () => (Loading.value["Upload"] = true),
-                    onFinish: ({ file, event }) => {
-                      const src = JSON.parse(event.target.response).result
-                        .public_url;
-                      var sel = document.selection;
-                      if (sel) {
-                        var textRange = sel.createRange();
-                        document.execCommand("insertImage", false, src);
-                        textRange.collapse(false);
-                        textRange.select();
-                      } else {
-                        document.execCommand("insertImage", false, src);
-                      }
-                      Loading.value["Upload"] = false;
-                      file.url = src;
-                      file.name = src
-                        .split("/")
-                        .pop()
-                        .split("#")[0]
-                        .split("?")[0];
-                      return file;
-                    },
-                  },
-                  () =>
-                    h(
-                      NButton,
-                      {
-                        type:
-                          currentSelection.value &&
-                          currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
-                            "img"
-                            ? "primary"
-                            : "default",
-                        style: {
-                          BorderTopRightRadius: 0,
-                          BorderBottomRightRadius: 0,
-                          height: "100%",
-                        },
-                        loading: Loading.value["Upload"],
+              h(
+                NButtonGroup,
+                { size: "small", style: { display: "flex" } },
+                () => [
+                  h(
+                    NUpload,
+                    {
+                      disabled: !isFocused.value,
+                      style: {
+                        width: "fit-content",
+                        "--n-item-disabled-opacity": 1,
                       },
-                      { icon: () => h(NIcon, () => h(Upload)) }
-                    )
-                ),
-                h(
-                  NPopover,
-                  {
-                    "on-update:show": (show) =>
-                      show
-                        ? (currentSelection.value = saveSelection())
-                        : restoreSelection(currentSelection.value),
-                  },
-                  {
-                    trigger: () =>
+                      showFileList: false,
+                      triggerStyle: {
+                        height: "100%",
+                      },
+                      directoryDnd: true,
+                      max: 1,
+                      multiple: false,
+                      accept: "image/*",
+                      action: `https://api.inicontent.com/inicontent/assets`,
+                      headers: {
+                        Authorization:
+                          "Basic " +
+                          Buffer.from(
+                            `${User.value.username}:${User.value.password}`
+                          ).toString("base64"),
+                      },
+                      onBeforeUpload: () => (Loading.value["Upload"] = true),
+                      onFinish: ({ file, event }) => {
+                        const src = JSON.parse(event.target.response).result
+                          .public_url;
+                        var sel = document.selection;
+                        if (sel) {
+                          var textRange = sel.createRange();
+                          document.execCommand("insertImage", false, src);
+                          textRange.collapse(false);
+                          textRange.select();
+                        } else {
+                          document.execCommand("insertImage", false, src);
+                        }
+                        Loading.value["Upload"] = false;
+                        file.url = src;
+                        file.name = src
+                          .split("/")
+                          .pop()
+                          .split("#")[0]
+                          .split("?")[0];
+                        return file;
+                      },
+                    },
+                    () =>
                       h(
                         NButton,
                         {
+                          disabled: !isFocused.value,
                           type:
                             currentSelection.value &&
                             currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
-                              "a"
+                              "img"
                               ? "primary"
                               : "default",
-                        },
-                        {
-                          icon: () => h(NIcon, () => h(Link)),
-                        }
-                      ),
-                    default: () =>
-                      h(NInputGroup, {}, () => [
-                        h(NInput, {
-                          inputProps: {
-                            type: "url",
+                          style: {
+                            BorderTopRightRadius: 0,
+                            BorderBottomRightRadius: 0,
+                            height: "100%",
                           },
-                          size: "small",
-                          value: aHref.value,
-                          "on-update:value": (url) => (aHref.value = url),
-                        }),
+                          loading: Loading.value["Upload"],
+                        },
+                        { icon: () => h(NIcon, () => h(Upload)) }
+                      )
+                  ),
+                  h(
+                    NPopover,
+                    {
+                      disabled: !isFocused.value,
+                      "on-update:show": (show) =>
+                        show
+                          ? (currentSelection.value = saveSelection())
+                          : restoreSelection(currentSelection.value),
+                    },
+                    {
+                      trigger: () =>
                         h(
                           NButton,
                           {
-                            type: "primary",
-                            onClick: () => (
-                              restoreSelection(currentSelection.value),
-                              document.execCommand(
-                                "createLink",
-                                true,
-                                aHref.value
-                              ),
-                              (aHref.value = null)
-                            ),
+                            disabled: !isFocused.value,
+                            type:
+                              currentSelection.value &&
+                              currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
+                                "a"
+                                ? "primary"
+                                : "default",
                           },
-                          () => h(NIcon, () => h(Plus))
+                          {
+                            icon: () => h(NIcon, () => h(Link)),
+                          }
                         ),
-                      ]),
-                  }
-                ),
-                h(
-                  NButton,
-                  {
-                    type: document.queryCommandState("insertOrderedList")
-                      ? "primary"
-                      : "default",
-                    onClick: () => document.execCommand("insertOrderedList"),
-                  },
-                  {
-                    icon: () => h(NIcon, () => h(ListNumbers)),
-                  }
-                ),
-                h(
-                  NButton,
-                  {
-                    type: document.queryCommandState("insertUnorderedList")
-                      ? "primary"
-                      : "default",
-                    onClick: () => document.execCommand("insertUnorderedList"),
-                  },
-                  {
-                    icon: () => h(NIcon, () => h(List)),
-                  }
-                ),
-              ]),
+                      default: () =>
+                        h(NInputGroup, {}, () => [
+                          h(NInput, {
+                            inputProps: {
+                              type: "url",
+                            },
+                            size: "small",
+                            value: aHref.value,
+                            "on-update:value": (url) => (aHref.value = url),
+                          }),
+                          h(
+                            NButton,
+                            {
+                              type: "primary",
+                              onClick: () => (
+                                restoreSelection(currentSelection.value),
+                                document.execCommand(
+                                  "createLink",
+                                  true,
+                                  aHref.value
+                                ),
+                                (aHref.value = null)
+                              ),
+                            },
+                            () => h(NIcon, () => h(Plus))
+                          ),
+                        ]),
+                    }
+                  ),
+                  h(
+                    NButton,
+                    {
+                      disabled: !isFocused.value,
+                      type: document.queryCommandState("insertOrderedList")
+                        ? "primary"
+                        : "default",
+                      onClick: () => document.execCommand("insertOrderedList"),
+                    },
+                    {
+                      icon: () => h(NIcon, () => h(ListNumbers)),
+                    }
+                  ),
+                  h(
+                    NButton,
+                    {
+                      disabled: !isFocused.value,
+                      type: document.queryCommandState("insertUnorderedList")
+                        ? "primary"
+                        : "default",
+                      onClick: () =>
+                        document.execCommand("insertUnorderedList"),
+                    },
+                    {
+                      icon: () => h(NIcon, () => h(List)),
+                    }
+                  ),
+                ]
+              ),
               h(NDivider, { vertical: true }),
               h(
                 NButtonGroup,
@@ -608,6 +615,7 @@ export default defineComponent({
                   h(
                     NButton,
                     {
+                      disabled: !isFocused.value,
                       type: document.queryCommandState("justifyLeft")
                         ? "primary"
                         : "default",
@@ -620,6 +628,7 @@ export default defineComponent({
                   h(
                     NButton,
                     {
+                      disabled: !isFocused.value,
                       type: document.queryCommandState("justifyCenter")
                         ? "primary"
                         : "default",
@@ -632,6 +641,7 @@ export default defineComponent({
                   h(
                     NButton,
                     {
+                      disabled: !isFocused.value,
                       type: document.queryCommandState("justifyRight")
                         ? "primary"
                         : "default",
@@ -652,7 +662,19 @@ export default defineComponent({
                     onClick: () => document.execCommand("undo", false, null),
                   },
                   {
-                    icon: () => h(NIcon, () => h(ArrowBackUp)),
+                    icon: () =>
+                      h(
+                        NIcon,
+                        {
+                          style:
+                            Language.value === "ar"
+                              ? {
+                                  transform: "scaleX(-1)",
+                                }
+                              : null,
+                        },
+                        () => h(ArrowBackUp)
+                      ),
                   }
                 ),
                 h(
@@ -662,7 +684,19 @@ export default defineComponent({
                     onClick: () => document.execCommand("redo", false, null),
                   },
                   {
-                    icon: () => h(NIcon, () => h(ArrowForwardUp)),
+                    icon: () =>
+                      h(
+                        NIcon,
+                        {
+                          style:
+                            Language.value === "ar"
+                              ? {
+                                  transform: "scaleX(-1)",
+                                }
+                              : null,
+                        },
+                        () => h(ArrowForwardUp)
+                      ),
                   }
                 ),
               ]),
@@ -679,10 +713,13 @@ export default defineComponent({
             () =>
               h("div", {
                 style: {
+                  minHeight: "100px",
                   outline: "0px solid transparent",
                 },
                 id: id,
                 innerHTML: EditorText,
+                onFocusin: () => (isFocused.value = true),
+                onFocusout: () => (isFocused.value = false),
                 onKeyup: (e) =>
                   e.code === "Enter" &&
                   e.ctrlKey &&
@@ -693,7 +730,6 @@ export default defineComponent({
               })
           ),
         ]
-      ),
-    ];
+      );
   },
 });

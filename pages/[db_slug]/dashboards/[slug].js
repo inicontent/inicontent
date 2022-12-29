@@ -8,12 +8,12 @@ import {
   NSpace,
 } from "naive-ui";
 import { GridLayout } from "vue3-drr-grid-layout";
-import { getProperty } from "dot-prop";
+import objectPath from "object-path";
 import VueApexCharts from "vue3-apexcharts";
 import "vue3-drr-grid-layout/dist/style.css";
 
 export default defineComponent({
-  setup: async () => {
+  async setup() {
     const Theme = useGlobalCookie("Theme"),
       database = useState("database"),
       ThemeConfig = useState("ThemeConfig"),
@@ -219,7 +219,7 @@ export default defineComponent({
             },
             {
               default: () =>
-                getProperty(
+                objectPath.get(
                   FETCH_DATA.value[item.url],
                   item.value,
                   h(NSkeleton, { text: true, round: true })
@@ -246,9 +246,9 @@ export default defineComponent({
               h(NSpace, { vertical: true }, () =>
                 FETCH_DATA.value[item.url] &&
                 typeof FETCH_DATA.value[item.url] !== "boolean"
-                  ? getProperty(FETCH_DATA.value[item.url], item.value, []).map(
-                      (element) => h(NText, () => element)
-                    )
+                  ? objectPath
+                      .get(FETCH_DATA.value[item.url], item.value, [])
+                      .map((element) => h(NText, () => element))
                   : [...Array(5).keys()].map(() =>
                       h(NSkeleton, { text: true, round: true })
                     )
@@ -272,7 +272,7 @@ export default defineComponent({
                 },
               },
               xaxis: {
-                categories: getProperty(
+                categories: objectPath.get(
                   FETCH_DATA.value[item.url],
                   item.keys,
                   []
@@ -308,11 +308,9 @@ export default defineComponent({
             series: [
               {
                 name: item.title,
-                data: getProperty(
-                  FETCH_DATA.value[item.url],
-                  item.data,
-                  []
-                ).map((val) => val.replace(/[^\d.-]/g, "")),
+                data: objectPath
+                  .get(FETCH_DATA.value[item.url], item.data, [])
+                  .map((val) => val.replace(/[^\d.-]/g, "")),
               },
             ],
           });
