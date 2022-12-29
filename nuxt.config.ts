@@ -3,8 +3,8 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false,
   },
-  vite: {
-    base: "/inicontent-vue/",
+  app: {
+    baseURL: "/inicontent-vue/",
   },
   components: {
     global: true,

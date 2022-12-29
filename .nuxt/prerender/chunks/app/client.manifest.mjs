@@ -1094,25 +1094,25 @@ const client_manifest = {
       "_RichEditor.e82d76d5.js"
     ]
   },
-  "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-500.css": {
-    "resourceType": "style",
-    "file": "error-500.aa2df86e.css",
-    "src": "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-500.css"
-  },
-  "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-404.css": {
-    "resourceType": "style",
-    "file": "error-404.a19a4ebd.css",
-    "src": "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-404.css"
-  },
   "node_modules/.pnpm/nuxt@3.0.0/node_modules/nuxt/dist/app/entry.css": {
     "resourceType": "style",
     "file": "entry.581c4403.css",
     "src": "node_modules/.pnpm/nuxt@3.0.0/node_modules/nuxt/dist/app/entry.css"
   },
+  "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-500.css": {
+    "resourceType": "style",
+    "file": "error-500.aa2df86e.css",
+    "src": "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-500.css"
+  },
   "pages/[db_slug]/dashboards/[slug].css": {
     "resourceType": "style",
     "file": "_slug_.0a4456ef.css",
     "src": "pages/[db_slug]/dashboards/[slug].css"
+  },
+  "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-404.css": {
+    "resourceType": "style",
+    "file": "error-404.a19a4ebd.css",
+    "src": "node_modules/.pnpm/@nuxt+ui-templates@1.0.0/node_modules/@nuxt/ui-templates/dist/templates/error-404.css"
   },
   "RenderData.css": {
     "resourceType": "style",

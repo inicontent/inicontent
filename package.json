@@ -3,10 +3,10 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate && lftp -u dashboard@inicontent.com,azqswx784512 -e \"rm -r _nuxt;quit\" ftp.inicontent.com && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
+    "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "deploy": "gh-pages -d dist",
-    "ftp": "lftp -u dashboard@inicontent.com,azqswx784512 -e \"rm -r _nuxt;quit\" ftp.inicontent.com && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
+    "deploy": "nuxt generate && cp -R .output/public/* docs/",
+    "ftp": "nuxt generate && lftp -u dashboard@inicontent.com,azqswx784512 -e \"rm -r _nuxt;quit\" ftp.inicontent.com && ncftpput -u dashboard@inicontent.com -p azqswx784512 -R ftp.inicontent.com / .output/public/*",
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
