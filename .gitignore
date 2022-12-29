@@ -5,5 +5,4 @@ node_modules
 .cache
 .output
 .env
-dist
 pnpm-lock.yaml

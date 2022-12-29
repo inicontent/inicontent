@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false,
   },
-  router: {
+  vite: {
     base: "/inicontent-vue/",
   },
   components: {
