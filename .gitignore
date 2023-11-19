@@ -1,5 +1,6 @@
 # Nuxt dev/build outputs
 .output
+<<<<<<< HEAD
 .data
 .nuxt
 .nitro
@@ -22,3 +23,11 @@ logs
 .env
 .env.*
 !.env.example
+=======
+.nuxt
+dist
+# Node dependencies
+node_modules
+# System files
+*.log
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2

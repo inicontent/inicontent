@@ -69,6 +69,10 @@ export default defineComponent({
   setup: (props, { emit }) => {
     const Language = useGlobalCookie("Language");
 
+<<<<<<< HEAD
+=======
+    const ColorPicker = resolveComponent("ColorPicker");
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
     const Loading = useState("Loading", () => ({}));
     Loading.value["Upload"] = false;
 
@@ -455,6 +459,7 @@ export default defineComponent({
                 NButtonGroup,
                 { size: "small", style: { display: "flex" } },
                 () => [
+<<<<<<< HEAD
                   user.value
                     ? h(
                         NUpload,
@@ -521,6 +526,76 @@ export default defineComponent({
                           )
                       )
                     : null,
+=======
+                  h(
+                    NUpload,
+                    {
+                      disabled: !isFocused.value,
+                      style: {
+                        width: "fit-content",
+                        "--n-item-disabled-opacity": 1,
+                      },
+                      showFileList: false,
+                      triggerStyle: {
+                        height: "100%",
+                      },
+                      directoryDnd: true,
+                      max: 1,
+                      multiple: false,
+                      accept: "image/*",
+                      action: `https://api.inicontent.com/inicontent/assets`,
+                      headers: {
+                        Authorization:
+                          "Basic " +
+                          Buffer.from(
+                            `${User.value.username}:${User.value.password}`
+                          ).toString("base64"),
+                      },
+                      onBeforeUpload: () => (Loading.value["Upload"] = true),
+                      onFinish: ({ file, event }) => {
+                        const src = JSON.parse(event.target.response).result
+                          .public_url;
+                        var sel = document.selection;
+                        if (sel) {
+                          var textRange = sel.createRange();
+                          document.execCommand("insertImage", false, src);
+                          textRange.collapse(false);
+                          textRange.select();
+                        } else {
+                          document.execCommand("insertImage", false, src);
+                        }
+                        Loading.value["Upload"] = false;
+                        file.url = src;
+                        file.name = src
+                          .split("/")
+                          .pop()
+                          .split("#")[0]
+                          .split("?")[0];
+                        return file;
+                      },
+                    },
+                    () =>
+                      h(
+                        NButton,
+                        {
+                          disabled: !isFocused.value,
+                          type:
+                            currentSelection.value &&
+                            currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
+                              "img"
+                              ? "primary"
+                              : "default",
+                          style: {
+                            BorderTopRightRadius: 0,
+                            BorderBottomRightRadius: 0,
+                            height: "100%",
+                          },
+                          loading: Loading.value["Upload"],
+                        },
+                        { icon: () => h(NIcon, () => h(Upload)) }
+                      )
+                  ),
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
                   h(
                     NPopover,
                     {

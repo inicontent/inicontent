@@ -7,7 +7,11 @@ import {
   NScrollbar,
   useMessage,
 } from "naive-ui";
+<<<<<<< HEAD
 import { LazyRenderFields } from "#components";
+=======
+import { RenderFields } from "#components";
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
 
 export default defineComponent({
   async setup() {
@@ -31,49 +35,82 @@ export default defineComponent({
     Loading.value["Signup"] = false;
 
     const SigninFormRef = ref(null),
+<<<<<<< HEAD
       route = useRoute(),
       message = useMessage(),
       database = useState("database"),
       user = useState("user"),
+=======
+      message = useMessage(),
+      database = useState("database"),
+      UserCookie = useCookie("User"),
+      User = useState("User"),
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
       SignupForm = useState(() => ({})),
       SignupFormRef = ref(),
       SigninForm = ref({
         username: "",
         password: "",
       }),
+<<<<<<< HEAD
       SigninColumns = [
         {
           id: 1,
           key: "username",
+=======
+      SigninSchema = [
+        {
+          name: "Username",
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
           type: "text",
           required: true,
         },
         {
+<<<<<<< HEAD
           id: 2,
           key: "password",
+=======
+          name: "Password",
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
           type: "password",
           required: true,
         },
       ],
+<<<<<<< HEAD
       SignupColumns = database.value.tables.find((item) => item.slug === "user")
+=======
+      SignupSchema = database.value.tables.find((item) => item.slug === "user")
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
         ?.schema
         ? database.value.tables.find((item) => item.slug === "user").schema
         : [
             {
+<<<<<<< HEAD
               id: 1,
               key: "username",
+=======
+              name: "Username",
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
               type: "text",
               required: true,
             },
             {
+<<<<<<< HEAD
               id: 2,
               key: "email",
+=======
+              name: "Email",
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
               type: "email",
               required: true,
             },
             {
+<<<<<<< HEAD
               id: 3,
               key: "password",
+=======
+              name: "Password",
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
               type: "password",
               required: true,
             },
@@ -85,6 +122,7 @@ export default defineComponent({
         if (!errors) {
           if (Loading.value["Signup"] !== true) {
             Loading.value["Signup"] = true;
+<<<<<<< HEAD
             // if (UserCookie.value && UserCookie.value.subscriptionID) {
             const { data } = await useFetch(`/api/inicontent/auth/signup`, {
               method: "POST",
@@ -100,6 +138,28 @@ export default defineComponent({
             //   message.error("Please pick a plan first");
             //   navigateTo("/");
             // }
+=======
+            if (UserCookie.value && UserCookie.value.subscriptionID) {
+              const { data } = await useFetch(
+                `https://api.inicontent.com/inicontent/auth/signup`,
+                {
+                  method: "POST",
+                  body: SignupForm.value,
+                  initialCache: false,
+                }
+              );
+              if (data.value.result && data.value.result.id) {
+                UserCookie.value = SigninForm.value;
+                User.value = data.value.result;
+                message.success(data.value.message.en);
+                navigateTo(`/dashboard`);
+              } else message.error(data.value.message.en);
+              Loading.value["Signup"] = false;
+            } else {
+              message.error("Please pick a plan first");
+              navigateTo("/");
+            }
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
           }
         } else message.error("The inputs are Invalid");
       });
@@ -110,6 +170,7 @@ export default defineComponent({
         if (!errors) {
           if (Loading.value["Signin"] !== true) {
             Loading.value["Signin"] = true;
+<<<<<<< HEAD
             const { data } = await useFetch(`/api/inicontent/auth/signin`, {
               method: "PUT",
               body: SigninForm.value,
@@ -118,6 +179,21 @@ export default defineComponent({
               user.value = data.value.result;
               message.success(data.value.message.en);
               navigateTo(`/admin`);
+=======
+            const { data } = await useFetch(
+              `https://api.inicontent.com/inicontent/auth/login`,
+              {
+                method: "POST",
+                body: SigninForm.value,
+                initialCache: false,
+              }
+            );
+            if (data.value.result && data.value.result.id) {
+              UserCookie.value = SigninForm.value;
+              User.value = data.value.result;
+              message.success(data.value.message.en);
+              navigateTo(`/dashboard`);
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
             } else message.error(data.value.message.en);
             Loading.value["Signin"] = false;
           }
@@ -125,7 +201,11 @@ export default defineComponent({
       });
     };
     useHead({
+<<<<<<< HEAD
       title: `${database.value.slug} | Authentication`,
+=======
+      title: `${database.value.name} | Authentication`,
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
       link: [{ rel: "icon", href: database.value.icon }],
     });
 
@@ -162,9 +242,16 @@ export default defineComponent({
                       onSubmit: SigninSubmit,
                     },
                     () => [
+<<<<<<< HEAD
                       h(LazyRenderFields, {
                         modelValue: SigninForm.value,
                         schema: SigninColumns,
+=======
+                      h(RenderFields, {
+                        modelValue: SigninForm.value,
+                        "onUpdate:modelValue": (v) => (SigninForm.value = v),
+                        schema: SigninSchema,
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
                       }),
                       h(
                         NButton,
@@ -198,9 +285,16 @@ export default defineComponent({
                     },
                     () => [
                       h(NScrollbar, { style: { maxHeight: "320px" } }, () =>
+<<<<<<< HEAD
                         h(LazyRenderFields, {
                           modelValue: SignupForm.value,
                           schema: SignupColumns,
+=======
+                        h(RenderFields, {
+                          modelValue: SignupForm.value,
+                          "onUpdate:modelValue": (v) => (SignupForm.value = v),
+                          schema: SignupSchema,
+>>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
                         })
                       ),
                       h(
