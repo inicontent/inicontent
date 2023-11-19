@@ -1,9 +1,11 @@
 export const useGlobalCookie = (cookieName) => {
-  const cookie = useState(cookieName, () => {
-    return useCookie(cookieName, {
-      default: () => ({}),
-    });
-  });
+  const cookie = useState(
+    cookieName,
+    () =>
+      useCookie(cookieName, {
+        default: () => null,
+      }).value
+  );
 
   watch(
     cookie,

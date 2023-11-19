@@ -1,82 +1,47 @@
-import { Buffer } from "buffer";
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  const UserCookie = useCookie("User"),
-    User = useState("User"),
+  const nuxtApp = useNuxtApp(),
+    user = useState("user"),
     database = useState("database");
-  if (
-    UserCookie.value &&
-    UserCookie.value.username &&
-    UserCookie.value.password
-  ) {
-    User.value = (
-      await useFetch(
-        `https://api.inicontent.com/${
-          to.params.db_slug ?? "inicontent"
-        }/auth/current`,
+  try {
+    await nuxtApp.runWithContext(() =>
+      useAsyncData(
+        "current",
+        () => $fetch(`/api/${to.params.database ?? "inicontent"}/auth/current`),
         {
-          headers: {
-            Authorization:
-              "Basic " +
-              Buffer.from(
-                `${UserCookie.value.username}:${UserCookie.value.password}`
-              ).toString("base64"),
+          transform(response) {
+            user.value = response.result;
           },
-          transform: (res) => res.result,
-          key: UserCookie.value.username,
         }
       )
-    ).data.value;
-    if (User.value && User.value.id) {
-      User.value.password = UserCookie.value.password;
-      if (["auth", "db_slug-auth"].includes(to.name))
-        return navigateTo(
-          to.params.db_slug ? `/${to.params.db_slug}` : `/dashboard`
-        );
-    } else if (!["auth", "db_slug-auth"].includes(to.name)) {
-      UserCookie.value = null;
-      User.value = null;
-      return navigateTo(
-        to.params.db_slug ? `/${to.params.db_slug}/auth` : "/auth"
+    );
+    await nuxtApp.runWithContext(() =>
+      useAsyncData(
+        "database",
+        () =>
+          $fetch(
+            `/api/inicontent/database/${to.params.database ?? "inicontent"}`
+          ),
+        {
+          transform(response) {
+            database.value = response.result;
+          },
+        }
+      )
+    );
+  } catch (error) {
+    user.value = null;
+  }
+  if (user.value) {
+    if (["auth", "database-auth"].includes(to.name)) {
+      return nuxtApp.runWithContext(() =>
+        navigateTo(
+          to.params.database ? `/${to.params.database}/admin` : `/admin`
+        )
       );
     }
-    if (!database.value || database.value.slug !== to.params.db_slug)
-      database.value = (
-        await useFetch(
-          `https://api.inicontent.com/inicontent/db/${
-            to.params.db_slug ?? "inicontent"
-          }`,
-          {
-            headers: {
-              Authorization:
-                "Basic " +
-                Buffer.from(
-                  `${User.value.username}:${User.value.password}`
-                ).toString("base64"),
-            },
-            transform: (res) => res.result,
-            key: (to.params.db_slug ?? "inicontent") + User.value.username,
-          }
-        )
-      ).data.value;
-    if (
-      to.params.table_slug &&
-      (!database.value.tables ||
-        !database.value.tables.find(
-          (item) => item.slug === to.params.table_slug
-        ))
-    )
-      return navigateTo(`/${to.params.db_slug}`);
-  } else if (["auth", "db_slug-auth"].includes(to.name))
-    database.value = (
-      await useFetch(
-        `https://api.inicontent.com/inicontent/db/${
-          to.params.db_slug ?? "inicontent"
-        }`,
-        {
-          transform: (res) => res.result,
-          key: to.params.db_slug ?? "inicontent",
-        }
-      )
-    ).data.value;
-  else return navigateTo(`/${to.params.db_slug ?? ""}/auth`);
+  } else if (!["auth", "database-auth"].includes(to.name)) {
+    return nuxtApp.runWithContext(() =>
+      navigateTo(to.params.database ? `/${to.params.database}/auth` : "/auth")
+    );
+  }
 });

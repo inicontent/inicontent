@@ -1,135 +1,113 @@
-export const pathTo = (array, target) => {
-  var result;
-  array.some(({ key, name, children = [] }) => {
-    if (key === target)
-      return (result = (name ?? "Field Name")
-        .toLowerCase()
-        .replace(/ /g, "_")
-        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""));
-    var temp = pathTo(children, target);
-    if (temp)
-      return (result =
-        (name ?? "Field Name")
-          .toLowerCase()
-          .replace(/ /g, "_")
-          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-        "." +
-        temp);
-  });
-  return result;
+export const toSlug = (string) =>
+  string
+    .toLowerCase()
+    .replace(/ /g, "_")
+    .replace(/[^\[a-zA-Zء-ي]-_+/g, "");
+
+export const toName = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1).replaceAll("_", " ");
+
+export const GenerateSearchInOptions = (
+  schema,
+  { key, type, children },
+  path
+) => {
+  const database = useState("database");
+  switch (type) {
+    case "array":
+    case "object":
+      return {
+        type: "group",
+        label: t(key),
+        key: (path ?? "") + key,
+        children: children
+          .filter(({ type }) => !["table", "array", "object"].includes(type))
+          .map((field) =>
+            GenerateSearchInOptions(schema, field, (path ?? "") + key + ".")
+          ),
+      };
+    case "table":
+      return {
+        type: "group",
+        label: t(key),
+        key: (path ?? "") + key,
+        children:
+          database.value.tables
+            .find(({ slug }) => slug === key)
+            ?.schema?.filter(({ type }) => !["table"].includes(type))
+            .map((field, _index, schema) =>
+              GenerateSearchInOptions(schema, field, (path ?? "") + key + ".")
+            ) ?? [],
+      };
+    default:
+      return {
+        label: t(key),
+        value: (path ?? "") + key,
+        ty: type,
+      };
+  }
 };
 
-export const pathToSearch = (array, target) => {
-  var result;
-  array.some(({ key, name, duplicatable = false, children = [] }) => {
-    if (key === target)
-      return (result = name
-        .toLowerCase()
-        .replace(/ /g, "_")
-        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""));
-    var temp = pathToSearch(children, target);
-    if (temp)
-      return (result =
-        name
-          .toLowerCase()
-          .replace(/ /g, "_")
-          .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-        (duplicatable ? ".*." : ".") +
-        temp);
-  });
-  return result;
+export const ReturnUNIX = (value) =>
+  typeof value == "number" && value >= -8.64e12 && value <= +8.64e12
+    ? value
+    : Date.parse(value) / 1000;
+
+export const getPath = (
+  schema,
+  id,
+  listNumbers = undefined,
+  currentPath = ""
+) => {
+  for (const item of schema) {
+    const newPath = currentPath ? `${currentPath}.${item.key}` : item.key;
+
+    if (item.id === id) {
+      return newPath;
+    }
+
+    if (item.type === "array" && item.children) {
+      let nestedPath;
+      if (listNumbers) {
+        if (!Array.isArray(listNumbers)) listNumbers = [listNumbers];
+        const firstItem = listNumbers.shift();
+        nestedPath = getPath(
+          item.children,
+          id,
+          listNumbers,
+          newPath + "." + firstItem
+        );
+      } else nestedPath = getPath(item.children, id, newPath + ".");
+      if (nestedPath) return nestedPath;
+    } else if (item.children) {
+      const nestedPath = getPath(item.children, id, newPath);
+      if (nestedPath) return nestedPath;
+    }
+  }
+
+  return null;
 };
 
-export const GenerateSearchInOptions = (schema, item, prefix = null) => {
-  if (item.type === "group")
-    return {
-      type: "group",
-      label: item.name,
-      key: (prefix ? `${prefix + item.name}` : item.name)
-        .toLowerCase()
-        .replace(/ /g, "_")
-        .replace(/[^\[a-zA-Zء-ي]-_+/g, ""),
-      children: item.children
-        .filter((i) => i.type !== "table" && i.type !== "group")
-        .map((i) =>
-          GenerateSearchInOptions(
-            schema,
-            i,
-            item.name
-              .toLowerCase()
-              .replace(/ /g, "_")
-              .replace(/[^\[a-zA-Zء-ي]-_+/g, "") +
-              (item.duplicatable ? ".*." : ".")
-          )
-        ),
-    };
-  else if (item.type === "table")
-    return {
-      type: "group",
-      label:
-        item.name.charAt(0).toUpperCase() +
-        item.name.slice(1).replaceAll("_", " "),
-      key: item.name,
-      children: database.value.tables
-        .find((table) => table.slug === item.name)
-        .schema.filter((item) => item.type !== "table")
-        .map((i, _index, schema) =>
-          GenerateSearchInOptions(
-            schema,
-            i,
-            !item.hasOwnProperty("single") || item.single
-              ? `${item.name}.`
-              : `${item.name}.*.`
-          )
-        ),
-    };
-  else if (
-    item.type === "tags" ||
-    (item.hasOwnProperty("single") && !item.single)
-  )
-    return {
-      label: item.name,
-      value: prefix
-        ? `${prefix + pathToSearch(schema, item.key)}.*`
-        : `${pathToSearch(schema, item.key)}.*`,
-      ty: item.type,
-    };
-  else
-    return {
-      label: item.name,
-      value: prefix
-        ? `${prefix + pathToSearch(schema, item.key)}`
-        : pathToSearch(schema, item.key),
-      ty: item.type,
-    };
-};
+export const humanFileSize = (bytes, si = false, dp = 1) => {
+  const thresh = si ? 1000 : 1024;
 
-export const GetPathes = (schema, item, prefix = null) => {
-  if (item.type === "group")
-    return item.children.map((i) => GetPathes(schema, i, prefix));
-  else if (item.type === "table")
-    return [
-      `${item.name}_id`,
-      ...item.label.map((l) =>
-        !item.hasOwnProperty("single") || item.single
-          ? `${item.name}.${l}`
-          : `${item.name}.*.${l}`
-      ),
-      !item.hasOwnProperty("single") || item.single
-        ? `${item.name}.${item.image}`
-        : `${item.name}.*.${item.image}`,
-    ];
-  else if (
-    item.type === "tags" ||
-    (item.hasOwnProperty("single") && item.single === false) ||
-    ((item.type === "upload" || item.type === "list") &&
-      (!item.hasOwnProperty("single") || item.single === false))
-  )
-    return prefix
-      ? `${prefix + pathToSearch(schema, item.key)}.*`
-      : `${pathToSearch(schema, item.key)}.*`;
-  else
-    return prefix
-      ? `${prefix + pathToSearch(schema, item.key)}`
-      : pathToSearch(schema, item.key);
+  if (Math.abs(bytes) < thresh) {
+    return bytes + " B";
+  }
+
+  const units = si
+    ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+    : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+  let u = -1;
+  const r = 10 ** dp;
+
+  do {
+    bytes /= thresh;
+    ++u;
+  } while (
+    Math.round(Math.abs(bytes) * r) / r >= thresh &&
+    u < units.length - 1
+  );
+
+  return bytes.toFixed(dp) + " " + units[u];
 };

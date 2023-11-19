@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "key": "ip",
+    "required": true,
+    "type": "ip"
+  },
+  {
+    "id": 2,
+    "key": "userAgent",
+    "required": true,
+    "type": "string"
+  },
+  {
+    "id": 3,
+    "key": "user",
+    "required": true,
+    "type": "table"
+  }
+]
