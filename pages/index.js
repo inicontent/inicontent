@@ -31,11 +31,6 @@ export default defineComponent({
       },
     });
 
-<<<<<<< HEAD
-=======
-    const UserCookie = useCookie("User");
-
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
     function PaypalButton() {
       if (typeof window.paypal !== "undefined")
         window.paypal
@@ -53,11 +48,7 @@ export default defineComponent({
             },
             onApprove: function (data, actions) {
               message.success(t("subscription_success"));
-<<<<<<< HEAD
               // UserCookie.value.subscriptionID = data.subscriptionID;
-=======
-              UserCookie.value.subscriptionID = data.subscriptionID;
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
               navigateTo("/auth?tab=signup");
             },
           })

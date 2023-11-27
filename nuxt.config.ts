@@ -1,6 +1,5 @@
 export default defineNuxtConfig({
   ssr: false,
-<<<<<<< HEAD
   nitro: {
     hooks: {
       "dev:reload": () => require("sharp"),
@@ -10,14 +9,6 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false,
   },
-=======
-  experimental: {
-    payloadExtraction: false,
-  },
-  app: {
-    baseURL: "/inicontent/",
-  },
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
   components: {
     global: true,
     dirs: ["~/components"],

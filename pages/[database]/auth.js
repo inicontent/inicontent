@@ -136,8 +136,6 @@ export default defineComponent({
       link: [{ rel: "icon", href: database.value.icon }],
     });
 
-    console.log(database.value);
-
     return () =>
       h(
         NCard,

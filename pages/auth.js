@@ -7,11 +7,7 @@ import {
   NScrollbar,
   useMessage,
 } from "naive-ui";
-<<<<<<< HEAD
 import { LazyRenderFields } from "#components";
-=======
-import { RenderFields } from "#components";
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
 
 export default defineComponent({
   async setup() {
@@ -35,33 +31,20 @@ export default defineComponent({
     Loading.value["Signup"] = false;
 
     const SigninFormRef = ref(null),
-<<<<<<< HEAD
       route = useRoute(),
       message = useMessage(),
       database = useState("database"),
       user = useState("user"),
-=======
-      message = useMessage(),
-      database = useState("database"),
-      UserCookie = useCookie("User"),
-      User = useState("User"),
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
       SignupForm = useState(() => ({})),
       SignupFormRef = ref(),
       SigninForm = ref({
         username: "",
         password: "",
       }),
-<<<<<<< HEAD
       SigninColumns = [
         {
           id: 1,
           key: "username",
-=======
-      SigninSchema = [
-        {
-          name: "Username",
->>>>>>> dc24e3800be1aa37e1af6a18a2902f9a0aaa83d2
           type: "text",
           required: true,
         },
