@@ -11,6 +11,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
           transform(response) {
             user.value = response.result;
           },
+          server: false,
         }
       )
     );
@@ -25,6 +26,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
           transform(response) {
             database.value = response.result;
           },
+          server: false,
         }
       )
     );

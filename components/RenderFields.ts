@@ -1503,12 +1503,13 @@ export default defineComponent({
                       "@hotmail.com",
                       "@qq.com",
                     ].map((suffix) => {
-                      const prefix = objectPath
-                        .get(
-                          modelValue.value,
-                          (path ?? "") + getPath(schema.value, field.id)
-                        )
-                        .split("@")[0];
+                      const prefix =
+                        objectPath
+                          .get(
+                            modelValue.value,
+                            (path ?? "") + getPath(schema.value, field.id)
+                          )
+                          ?.split("@")[0] ?? "";
                       return {
                         label: prefix + suffix,
                         value: prefix + suffix,

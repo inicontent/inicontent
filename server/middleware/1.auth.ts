@@ -1,12 +1,12 @@
-import Inibase, { Data } from "inibase";
+import Inibase from "inibase";
 import { isExists } from "inibase/file";
-import { join, parse } from "node:path";
+import { join } from "node:path";
 
 const POST_Session = async (event: any, slug: string) => {
   const db = new Inibase(slug, "databases");
   const session_data = {
       ip: getUserIP(event),
-      userAgent: event.node.req.headers["user-agent"],
+      userAgent: getRequestHeader(event, "user-agent"),
     },
     session = await db.get("session", session_data, undefined, true);
   if (session && session.user) return session.user;
@@ -57,7 +57,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     .slice(1);
   if (api !== "api") return;
 
-  if (!getUserIP(event) || !event.node.req.headers["user-agent"])
+  if (!getUserIP(event) || !getRequestHeader(event, "user-agent"))
     throw new Error("unsupported_browser");
 
   if (!DatabaseSlug) throw new Error("db_not_ found");

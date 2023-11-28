@@ -60,7 +60,7 @@ export const splitSchema = (schema: Schema) => {
   for (const { id, key, type, children, required, ...rest } of schema) {
     if (children) {
       if (isArrayOfArrays(children)) {
-        const [vSchema, unvSchema] = splitSchema(children);
+        const [vSchema, unvSchema] = splitSchema(children as any);
         validSchema.push({ id, key, type, required, children: vSchema });
         if (Object.keys(rest).length || unvSchema.length)
           unvalidSchema.push({ id, ...rest });
@@ -78,4 +78,4 @@ export const splitSchema = (schema: Schema) => {
 };
 
 export const getUserIP = (event: any) =>
-  getRequestIP(event) ?? event.node.req.headers["x-forwarded-for"];
+  getRequestIP(event) ?? getRequestHeader(event, "x-forwarded-for");

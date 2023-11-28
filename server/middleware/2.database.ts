@@ -1,4 +1,4 @@
-import Inibase, { Data, Schema } from "inibase";
+import Inibase, { Schema } from "inibase";
 import { isExists } from "inibase/file";
 import { join } from "node:path";
 import { isArrayOfObjects } from "inibase/utils";
