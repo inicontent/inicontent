@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, renameSync } from "fs";
 import Inibase, { Data, Schema } from "inibase";
 import { isValidID, findChangedProperties } from "inibase/utils";
-import { decodeID, encodeID } from "inibase/utils";
+import { decodeID, encodeID } from "inibase/utils.server";
 import { join } from "path";
 
 export default defineWrappedResponseHandler(async (event: any) => {
