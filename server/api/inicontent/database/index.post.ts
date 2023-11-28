@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import Inibase, { Schema } from "inibase";
-import { addIdToSchema, encodeID } from "inibase/utils";
+import { addIdToSchema, encodeID } from "inibase/utils.server";
 
 export default defineWrappedResponseHandler(async (event: any) => {
   if (!event.context.user) throw new Error("dont_have_access");
