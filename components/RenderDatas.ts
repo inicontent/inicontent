@@ -146,7 +146,7 @@ export default defineComponent({
                                                 ].includes(
                                                   link?.split(".").pop()
                                                 )
-                                                  ? `${link}?fit=22`
+                                                  ? `${link}?w=22`
                                                   : link
                                               )[0],
                                             round: true,
@@ -214,7 +214,7 @@ export default defineComponent({
                             ].includes(link?.split(".").pop())
                               ? h(NImage, {
                                   src: link?.includes("cdn.inicontent")
-                                    ? `${link}?fit=32`
+                                    ? `${link}?w=32`
                                     : link,
                                   previewSrc: link,
                                   width: 32,
@@ -242,7 +242,7 @@ export default defineComponent({
                                 ].includes(link?.split(".").pop())
                                   ? h(NImage, {
                                       src: link?.includes("cdn.inicontent")
-                                        ? `${link}?fit=32`
+                                        ? `${link}?w=32`
                                         : link,
                                       previewSrc: link,
                                       width: 32,

@@ -86,7 +86,7 @@ export default defineComponent({
                               minHeight: "60px",
                               borderRadius: "15px",
                             },
-                            src: `${CurrentAsset.value.public_url}?fit=100`,
+                            src: `${CurrentAsset.value.public_url}?w=100`,
                             previewSrc: CurrentAsset.value.public_url,
                             imgProps: { style: "width: 100%" },
                           })
@@ -241,7 +241,7 @@ export default defineComponent({
                                   root: "#assets_card",
                                 },
                                 lazy: true,
-                                src: `${Asset.public_url}?fit=60`,
+                                src: `${Asset.public_url}?w=60`,
                                 imgProps: { style: "width: 100%" },
                               })
                             : h(

@@ -956,7 +956,7 @@ export default defineComponent({
                                       "svg",
                                       "gif",
                                     ].includes(link?.split(".")?.pop() ?? "")
-                                      ? `${link}?fit=80`
+                                      ? `${link}?w=80`
                                       : link
                                   )[0],
                                 round: true,
@@ -1000,7 +1000,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(link?.split(".")?.pop() ?? "")
-                                        ? `${link}?fit=24`
+                                        ? `${link}?w=24`
                                         : link
                                     )[0],
                                   round: true,
@@ -1058,7 +1058,7 @@ export default defineComponent({
                                             ].includes(
                                               link?.split(".")?.pop() ?? ""
                                             )
-                                              ? `${link}?fit=22`
+                                              ? `${link}?w=22`
                                               : link
                                           )[0],
                                         round: true,
@@ -1306,7 +1306,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(src?.split(".")?.pop() ?? "")
-                                        ? `${src}?fit=94`
+                                        ? `${src}?w=94`
                                         : null,
                                   }
                             ) as any)
@@ -2259,7 +2259,7 @@ export default defineComponent({
                                         root: "#assets_modal",
                                       },
                                       lazy: true,
-                                      src: `${Asset.public_url}?fit=60`,
+                                      src: `${Asset.public_url}?w=60`,
                                       previewSrc: Asset.public_url,
                                       imgProps: { style: "width: 100%" },
                                     })

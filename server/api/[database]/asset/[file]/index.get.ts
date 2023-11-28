@@ -152,6 +152,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
           position: ((position ?? p) || "centre") as string | number,
         }
       );
+    if (!(width ?? w) && !(height ?? h) && fit)
+      instance.resize(Number(fit || 0) || null, Number(fit || 0) || null);
     if (background ?? bg)
       instance.flatten({
         background: ((background ?? bg) as string | null) || undefined,

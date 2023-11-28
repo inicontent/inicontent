@@ -426,7 +426,7 @@ export default defineComponent({
                                       "svg",
                                       "gif",
                                     ].includes(link.split(".").pop())
-                                      ? `${link}?fit=18`
+                                      ? `${link}?w=18`
                                       : link
                                   )[0];
                                 return img
@@ -534,7 +534,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(link.split(".").pop())
-                                        ? `${link}?fit=18`
+                                        ? `${link}?w=18`
                                         : link
                                     )[0],
                                 })
@@ -633,7 +633,7 @@ export default defineComponent({
                                             "svg",
                                             "gif",
                                           ].includes(link.split(".").pop())
-                                            ? `${link}?fit=18`
+                                            ? `${link}?w=18`
                                             : link
                                         )[0],
                                     })
@@ -730,7 +730,7 @@ export default defineComponent({
                                             "svg",
                                             "gif",
                                           ].includes(link.split(".").pop())
-                                            ? `${link}?fit=18`
+                                            ? `${link}?w=18`
                                             : link
                                         )[0],
                                     })
@@ -960,7 +960,7 @@ export default defineComponent({
                       ? h(NImage, {
                           src:
                             link && link.includes("cdn.inicontent")
-                              ? `${link}?fit=32`
+                              ? `${link}?w=32`
                               : link,
                           previewSrc: link,
                           width: 32,
@@ -987,7 +987,7 @@ export default defineComponent({
                                   ? h(NImage, {
                                       src:
                                         link && link.includes("cdn.inicontent")
-                                          ? `${link}?fit=32`
+                                          ? `${link}?w=32`
                                           : link,
                                       previewSrc: link,
                                       width: 32,
@@ -1009,7 +1009,7 @@ export default defineComponent({
                               ? h(NImage, {
                                   src:
                                     link && link.includes("cdn.inicontent")
-                                      ? `${link}?fit=32`
+                                      ? `${link}?w=32`
                                       : link,
                                   previewSrc: link,
                                   width: 32,
