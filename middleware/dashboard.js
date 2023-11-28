@@ -2,6 +2,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp(),
     user = useState("user"),
     database = useState("database");
+  // todo: save from path and use it to redirect
   try {
     await nuxtApp.runWithContext(() =>
       useAsyncData(

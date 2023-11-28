@@ -8,7 +8,7 @@ const POST_Session = async (event: any, slug: string) => {
       ip: getUserIP(event),
       userAgent: getRequestHeader(event, "user-agent"),
     },
-    session = await db.get("session", session_data, undefined, true);
+    session = await db.get("session", session_data, undefined, true, undefined);
   if (session && session.user) return session.user;
   else if (event.node.req.headers.authorization) {
     const [username, password] = Buffer.from(
