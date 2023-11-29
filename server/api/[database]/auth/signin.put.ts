@@ -1,7 +1,10 @@
 import Inibase, { Data } from "inibase";
 
 export default defineWrappedResponseHandler(async (event: any) => {
-  const db = new Inibase(event.context.database.slug, "databases");
+  const db = new Inibase(
+    event.context.database.slug,
+    useRuntimeConfig().databasePath
+  );
 
   let body = await readBody(event);
 

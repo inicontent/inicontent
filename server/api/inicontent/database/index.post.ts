@@ -6,7 +6,7 @@ import { addIdToSchema, encodeID } from "inibase/utils.server";
 export default defineWrappedResponseHandler(async (event: any) => {
   if (!event.context.user) throw new Error("dont_have_access");
 
-  const db = new Inibase("inicontent", "databases"),
+  const db = new Inibase("inicontent", useRuntimeConfig().databasePath),
     { _options } = getQuery(event);
 
   let body = await readBody(event),
@@ -45,7 +45,10 @@ export default defineWrappedResponseHandler(async (event: any) => {
   for (const table of body.tables)
     mkdirSync(join("databases", body.slug, table.slug), { recursive: true });
 
-  const child_database = new Inibase(body.slug, "databases");
+  const child_database = new Inibase(
+    body.slug,
+    useRuntimeConfig().databasePath
+  );
   if (Object.keys(bodySchema).length)
     for await (const [table, schema] of Object.entries(bodySchema))
       await child_database.setTableSchema(table, schema as Schema);

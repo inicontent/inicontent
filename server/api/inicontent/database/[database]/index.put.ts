@@ -2,12 +2,12 @@ import { existsSync, mkdirSync, renameSync } from "fs";
 import Inibase, { Data, Schema } from "inibase";
 import { isValidID, findChangedProperties } from "inibase/utils";
 import { decodeID, encodeID } from "inibase/utils.server";
-import { join } from "path";
+import { join } from "node:path";
 
 export default defineWrappedResponseHandler(async (event: any) => {
   if (!event.context.user) throw new Error("dont_have_access");
 
-  const db = new Inibase("inicontent", "databases"),
+  const db = new Inibase("inicontent", useRuntimeConfig().databasePath),
     { _options } = getQuery(event),
     tableToIdsSlug = (tables: Record<string, string>[]) => {
       let RETURN: any = {};

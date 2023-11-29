@@ -52,7 +52,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   if (!(await isExists(join("databases", DatabaseSlug))))
     throw new Error("db_not_found");
-  const db = new Inibase("inicontent", "databases");
+  const db = new Inibase("inicontent", useRuntimeConfig().databasePath);
   let database = await db.get(
     "database",
     { slug: DatabaseSlug },
@@ -62,7 +62,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
   event.context._options = db.pageInfo;
 
   if (!database) throw new Error("db_not_found");
-  const child_db = new Inibase(DatabaseSlug, "databases");
+  const child_db = new Inibase(DatabaseSlug, useRuntimeConfig().databasePath);
   if (database.tables) {
     database.tables = await Promise.all(
       (
@@ -103,7 +103,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
       undefined,
       true
     );
-    const child_child_db = new Inibase(idSlug, "databases");
+    const child_child_db = new Inibase(idSlug, useRuntimeConfig().databasePath);
 
     if (child_database) {
       if (child_database.tables) {

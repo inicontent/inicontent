@@ -3,7 +3,7 @@ import { isExists } from "inibase/file";
 import { join } from "node:path";
 
 const POST_Session = async (event: any, slug: string) => {
-  const db = new Inibase(slug, "databases");
+  const db = new Inibase(slug, useRuntimeConfig().databasePath);
   const session_data = {
       ip: getUserIP(event),
       userAgent: getRequestHeader(event, "user-agent"),

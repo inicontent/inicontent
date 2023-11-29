@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+
 export default defineNuxtConfig({
   ssr: true,
   nitro: {
@@ -31,5 +33,8 @@ export default defineNuxtConfig({
           ? ["naive-ui", "vueuc", "date-fns-tz/formatInTimeZone"]
           : [],
     },
+  },
+  runtimeConfig: {
+    databasePath: resolve(__dirname, "databases"),
   },
 });

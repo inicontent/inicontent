@@ -1,7 +1,10 @@
 import Inibase from "inibase";
 
 export default defineWrappedResponseHandler(async (event: any) => {
-  const db = new Inibase(event.context.database.slug, "databases"),
+  const db = new Inibase(
+      event.context.database.slug,
+      useRuntimeConfig().databasePath
+    ),
     { allDevices } = getQuery(event);
 
   if (!event.context.user) throw new Error("login_first");

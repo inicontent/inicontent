@@ -1,7 +1,10 @@
 import Inibase from "inibase";
 
 export default defineWrappedResponseHandler(async (event: any) => {
-  const db = new Inibase(event.context.database.slug, "databases"),
+  const db = new Inibase(
+      event.context.database.slug,
+      useRuntimeConfig().databasePath
+    ),
     table = getRouterParam(event, "table"),
     { _where, _options } = getQuery(event);
 
