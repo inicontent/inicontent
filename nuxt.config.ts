@@ -6,6 +6,12 @@ export default defineNuxtConfig({
     hooks: {
       "dev:reload": () => require("sharp"),
     },
+    serverAssets: [
+      {
+        baseName: "databases",
+        dir: "./server/databases",
+      },
+    ],
   },
   css: ["~/assets/css/main.css"],
   experimental: {
@@ -35,6 +41,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    databasePath: join(process.cwd(), "databases"),
+    databasePath: join(process.cwd(), "server", "databases"),
   },
 });

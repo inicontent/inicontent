@@ -48,7 +48,12 @@ export default defineWrappedResponseHandler(async (event: any) => {
           ),
         });
         await writeFile(
-          join("databases", event.context.database.slug, "asset", fileName),
+          join(
+            useRuntimeConfig().databasePath,
+            event.context.database.slug,
+            "asset",
+            fileName
+          ),
           file.data
         );
       }

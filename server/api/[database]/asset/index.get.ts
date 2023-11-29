@@ -11,7 +11,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
   let result = [],
     index = 0;
   const files = await readdir(
-    join("databases", event.context.database.slug, "asset")
+    join(useRuntimeConfig().databasePath, event.context.database.slug, "asset")
   );
   _options.total = files.length;
   _options.total_pages = Math.ceil(_options.total / _options.per_page);
@@ -20,7 +20,12 @@ export default defineWrappedResponseHandler(async (event: any) => {
     if (index <= (_options.page - 1) * _options.per_page) continue;
     if (index > _options.page * _options.per_page) break;
     const stats = await stat(
-        join("databases", event.context.database.slug, "asset", file)
+        join(
+          useRuntimeConfig().databasePath,
+          event.context.database.slug,
+          "asset",
+          file
+        )
       ),
       splited_name = file.split("."),
       data = {

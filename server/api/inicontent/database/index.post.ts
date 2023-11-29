@@ -1,7 +1,8 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import Inibase, { Schema } from "inibase";
 import { addIdToSchema, encodeID } from "inibase/utils.server";
+import { isExists } from "inibase/file";
 
 export default defineWrappedResponseHandler(async (event: any) => {
   if (!event.context.user) throw new Error("dont_have_access");
@@ -13,7 +14,10 @@ export default defineWrappedResponseHandler(async (event: any) => {
     bodySchema: any = {};
 
   if (Array.isArray(body)) throw new Error("you_can_publish_only_one");
-  if (body.slug && existsSync(join("databases", body.slug)))
+  if (
+    body.slug &&
+    (await isExists(join(useRuntimeConfig().databasePath, body.slug)))
+  )
     throw new Error("database_slug_already_exists");
 
   if (body.tables && Array.isArray(body.tables))
@@ -43,7 +47,9 @@ export default defineWrappedResponseHandler(async (event: any) => {
   );
 
   for (const table of body.tables)
-    mkdirSync(join("databases", body.slug, table.slug), { recursive: true });
+    mkdirSync(join(useRuntimeConfig().databasePath, body.slug, table.slug), {
+      recursive: true,
+    });
 
   const child_database = new Inibase(
     body.slug,

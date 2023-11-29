@@ -104,13 +104,18 @@ export default defineWrappedResponseHandler(async (event: any) => {
   if (
     file &&
     (await isExists(
-      join("databases", event.context.database.slug, "asset", decodeURI(file))
+      join(
+        useRuntimeConfig().databasePath,
+        event.context.database.slug,
+        "asset",
+        decodeURI(file)
+      )
     ))
   ) {
     const instance = sharp(
         await readFile(
           join(
-            "databases",
+            useRuntimeConfig().databasePath,
             event.context.database.slug,
             "asset",
             decodeURI(file)

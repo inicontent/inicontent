@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, renameSync } from "fs";
+import { mkdirSync, renameSync } from "fs";
 import Inibase, { Data, Schema } from "inibase";
+import { isExists } from "inibase/file";
 import { isValidID, findChangedProperties } from "inibase/utils";
 import { decodeID, encodeID } from "inibase/utils.server";
 import { join } from "node:path";
@@ -65,8 +66,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
   if (result) {
     if ((result as Data).slug !== event.context.database.slug) {
       renameSync(
-        join("databases", event.context.database.slug),
-        join("databases", (result as Data).slug)
+        join(useRuntimeConfig().databasePath, event.context.database.slug),
+        join(useRuntimeConfig().databasePath, (result as Data).slug)
       );
       event.context.database.slug = (result as Data).slug;
     }
@@ -80,16 +81,22 @@ export default defineWrappedResponseHandler(async (event: any) => {
         if (replaceOldSlugs)
           for (const [oldPath, newPath] of Object.entries(replaceOldSlugs))
             if (
-              existsSync(
-                join("databases", event.context.database.slug, oldPath)
+              await isExists(
+                join(
+                  useRuntimeConfig().databasePath,
+                  event.context.database.slug,
+                  oldPath
+                )
               )
             )
               renameSync(
-                join("databases", event.context.database.slug, oldPath),
                 join(
-                  ".",
-                  "databases",
-                  "database",
+                  useRuntimeConfig().databasePath,
+                  event.context.database.slug,
+                  oldPath
+                ),
+                join(
+                  useRuntimeConfig().databasePath,
                   event.context.database.slug,
                   newPath
                 )
@@ -99,7 +106,9 @@ export default defineWrappedResponseHandler(async (event: any) => {
         for (const table_slug in (tablesWithoutId as Record<string, any>[]).map(
           (table) => table.slug
         ))
-          mkdirSync(join("databases", body.slug, table_slug));
+          mkdirSync(
+            join(useRuntimeConfig().databasePath, body.slug, table_slug)
+          );
       }
       const child_database = new Inibase(
         event.context.database.slug,

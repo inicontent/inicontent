@@ -12,6 +12,7 @@ export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
       const response: any = await handler(event);
       if (middleware) return response;
       // do something after the route handler
+
       if (Buffer.isBuffer(response)) return response;
       setResponseHeader(event, "Vary", "Accept-Encoding");
       setResponseHeader(event, "Content-Encoding", "deflate");
