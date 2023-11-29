@@ -50,7 +50,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   if (!DatabaseSlug) throw new Error("db_not_found");
 
-  if (!(await isExists(join("databases", DatabaseSlug))))
+  if (!(await isExists(join(useRuntimeConfig().databasePath, DatabaseSlug))))
     throw new Error("db_not_found");
   const db = new Inibase("inicontent", useRuntimeConfig().databasePath);
   let database = await db.get(

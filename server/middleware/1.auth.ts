@@ -62,7 +62,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   if (!DatabaseSlug) throw new Error("db_not_ found");
 
-  if (await isExists(join("databases", DatabaseSlug)))
+  if (await isExists(join(useRuntimeConfig().databasePath, DatabaseSlug)))
     event.context.user = await POST_Session(event, DatabaseSlug);
 
   if (DatabaseSlug === "inicontent") {
@@ -70,7 +70,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     if (
       subDatabaseSlug &&
       subDatabaseSlug !== "inicontent" &&
-      (await isExists(join("databases", subDatabaseSlug)))
+      (await isExists(join(useRuntimeConfig().databasePath, subDatabaseSlug)))
     )
       event.context.child_user = await POST_Session(event, subDatabaseSlug);
   }

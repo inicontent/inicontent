@@ -11,7 +11,13 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   if (tableSlug == "auth") return;
   if (
-    !(await isExists(join("databases", event.context.database.slug, tableSlug)))
+    !(await isExists(
+      join(
+        useRuntimeConfig().databasePath,
+        event.context.database.slug,
+        tableSlug
+      )
+    ))
   )
     throw new Error("table_not_found");
 
