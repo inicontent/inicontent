@@ -13,9 +13,10 @@ import {
   NList,
   NListItem,
   NScrollbar,
+  NPopover,
 } from "naive-ui";
-import { Check, X, FileText, User as UserIcon } from "@vicons/tabler";
-import objectPath from "object-path";
+import { Check, X, FileText, User } from "@vicons/tabler";
+import { get, has } from "object-path";
 
 export default defineComponent({
   props: {
@@ -38,166 +39,239 @@ export default defineComponent({
       }),
       route = useRoute(),
       RenderData = (field: any, path?: string): any => {
-        switch (field.type) {
-          case "list":
-          case "tags":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? h(NSpace, () =>
-                        []
-                          .concat(
-                            objectPath.get(
-                              single.value,
-                              (path ?? "") + getPath(props.schema, field.id)
-                            )
-                          )
-                          .map((item) =>
-                            h(
-                              NTag,
-                              {
-                                bordered: false,
-                              },
-                              () => item
-                            )
-                          )
-                      )
-                    : h(NText, () => "--"),
-              }
-            );
-          case "table":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? []
+        if (!has(single.value, (path ?? "") + getPath(props.schema, field.id)))
+          switch (field.type) {
+            case "boolean":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NIconWrapper,
+                      {
+                        color: "red",
+                        borderRadius: 50,
+                        size: 18,
+                      },
+                      () =>
+                        h(
+                          NIcon,
+                          {
+                            size: 16,
+                          },
+                          () => h(X)
+                        )
+                    ),
+                }
+              );
+            case "array":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NButton,
+                      {
+                        circle: true,
+                      },
+                      {
+                        default: () =>
+                          h(NText, { depth: 3 }, { default: () => "[--]" }),
+                      }
+                    ),
+                }
+              );
+            case "object":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NButton,
+                      {
+                        circle: true,
+                      },
+                      {
+                        default: () =>
+                          h(NText, { depth: 3 }, { default: () => "{--}" }),
+                      }
+                    ),
+                }
+              );
+            default:
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () => h(NText, { depth: 3 }, () => "--"),
+                }
+              );
+          }
+        else
+          switch (field.type) {
+            case "list":
+            case "tags":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(NSpace, () =>
+                      []
                         .concat(
-                          objectPath.get(
+                          get(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
                           )
                         )
-                        .map((item: any) =>
+                        .map((item) =>
                           h(
                             NTag,
                             {
-                              onClick: () =>
-                                navigateTo(
-                                  `/${route.params.database}/admin/tables/${field.key}/${item.id}`
-                                ),
-                              style: {
-                                cursor: "pointer",
-                                padding: "0 6px 0 4px",
-                              },
-                              round: true,
+                              bordered: false,
                             },
-                            {
-                              default: () =>
-                                h(
-                                  "div",
-                                  {
-                                    style: {
-                                      display: "flex",
-                                      alignItems: "center",
-                                    },
-                                  },
-                                  {
-                                    default: () => [
-                                      field.image
-                                        ? h(NAvatar, {
-                                            src: []
-                                              .concat(
-                                                objectPath.get(
-                                                  item,
-                                                  field.image
-                                                )
-                                              )
-                                              .map((link: any) =>
-                                                link.includes(
-                                                  "cdn.inicontent"
-                                                ) &&
-                                                [
-                                                  "png",
-                                                  "jpg",
-                                                  "jpeg",
-                                                  "ico",
-                                                  "webp",
-                                                  "svg",
-                                                  "gif",
-                                                ].includes(
-                                                  link?.split(".").pop()
-                                                )
-                                                  ? `${link}?w=22`
-                                                  : link
-                                              )[0],
-                                            round: true,
-                                            size: 22,
-                                            style:
-                                              Language.value === "ar"
-                                                ? {
-                                                    marginLeft: "4px",
-                                                  }
-                                                : {
-                                                    marginRight: "4px",
-                                                  },
-                                          })
-                                        : null,
-                                      field.label
-                                        .map((single_label: any) =>
-                                          objectPath.get(item, single_label)
-                                        )
-                                        .join(" "),
-                                    ],
-                                  }
-                                ),
-                            }
+                            () => item
                           )
                         )
-                    : null,
-              }
-            );
-          case "upload":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? [].concat(
-                        objectPath.get(
+                    ),
+                }
+              );
+            case "table":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    []
+                      .concat(
+                        get(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         )
-                      ).length === 1
+                      )
+                      .map((item: any) =>
+                        h(
+                          NButton,
+                          {
+                            tag: "a",
+                            href: `/${route.params.database}/admin/tables/${field.key}/${item.id}`,
+                            onClick: (e) => (
+                              e.preventDefault(),
+                              navigateTo(
+                                `/${route.params.database}/admin/tables/${field.key}/${item.id}`
+                              )
+                            ),
+                            size: "small",
+                            round: true,
+                          },
+                          field.image
+                            ? {
+                                icon: () =>
+                                  h(NIcon, () =>
+                                    h(NAvatar, {
+                                      style: {
+                                        width: "18px",
+                                        height: "18px",
+                                      },
+                                      round: true,
+                                      src: []
+                                        .concat(get(item, field.image))
+                                        .map((link: string) =>
+                                          link &&
+                                          link.includes("cdn.inicontent") &&
+                                          [
+                                            "png",
+                                            "jpg",
+                                            "jpeg",
+                                            "ico",
+                                            "webp",
+                                            "svg",
+                                            "gif",
+                                          ].includes(
+                                            link.split(".").pop() ?? ""
+                                          )
+                                            ? `${link}?fit=18`
+                                            : link
+                                        )[0],
+                                    })
+                                  ),
+                                default: () =>
+                                  field.label
+                                    ? field.label
+                                        .map((single_label: string) =>
+                                          get(item, single_label)
+                                        )
+                                        .join(" ")
+                                    : item.id,
+                              }
+                            : {
+                                icon: () =>
+                                  h(NIcon, () =>
+                                    h(
+                                      "span",
+                                      { style: { padding: "0 5px" } },
+                                      field.key.charAt(0).toUpperCase()
+                                    )
+                                  ),
+                                default: () =>
+                                  field.label
+                                    ? field.label
+                                        .map((single_label: string) =>
+                                          get(item, single_label)
+                                        )
+                                        .join(" ")
+                                    : item.id,
+                              }
+                        )
+                      ),
+                }
+              );
+            case "upload":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    [].concat(
+                      get(
+                        single.value,
+                        (path ?? "") + getPath(props.schema, field.id)
+                      )
+                    ).length === 1
                       ? []
                           .concat(
-                            objectPath.get(
+                            get(
                               single.value,
                               (path ?? "") + getPath(props.schema, field.id)
                             )
@@ -214,7 +288,7 @@ export default defineComponent({
                             ].includes(link?.split(".").pop())
                               ? h(NImage, {
                                   src: link?.includes("cdn.inicontent")
-                                    ? `${link}?w=32`
+                                    ? `${link}?fit=32`
                                     : link,
                                   previewSrc: link,
                                   width: 32,
@@ -225,7 +299,7 @@ export default defineComponent({
                           h(NSpace, { align: "center" }, () =>
                             []
                               .concat(
-                                objectPath.get(
+                                get(
                                   single.value,
                                   (path ?? "") + getPath(props.schema, field.id)
                                 )
@@ -242,7 +316,7 @@ export default defineComponent({
                                 ].includes(link?.split(".").pop())
                                   ? h(NImage, {
                                       src: link?.includes("cdn.inicontent")
-                                        ? `${link}?w=32`
+                                        ? `${link}?fit=32`
                                         : link,
                                       previewSrc: link,
                                       width: 32,
@@ -250,312 +324,298 @@ export default defineComponent({
                                   : h(NIcon, () => h(FileText))
                               )
                           )
+                        ),
+                }
+              );
+            case "date":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NPopover,
+                      {},
+                      {
+                        trigger: () =>
+                          h(NTime, {
+                            time: Number(
+                              get(
+                                single.value,
+                                (path ?? "") + getPath(props.schema, field.id)
+                              )
+                            ),
+                            type: "relative",
+                          }),
+                        default: () =>
+                          h(NTime, {
+                            time: Number(
+                              get(
+                                single.value,
+                                (path ?? "") + getPath(props.schema, field.id)
+                              )
+                            ),
+                          }),
+                      }
+                    ),
+                }
+              );
+            case "html":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(NText, {
+                      innerHTML:
+                        get(
+                          single.value,
+                          (path ?? "") + getPath(props.schema, field.id)
+                        ) ?? "--",
+                    }),
+                }
+              );
+            case "boolean":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NIconWrapper,
+                      {
+                        color: get(
+                          single.value,
+                          (path ?? "") + getPath(props.schema, field.id)
                         )
-                    : h(NText, () => "--"),
-              }
-            );
-          case "date":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? h(NTime, {
-                        time: ReturnUNIX(
-                          objectPath.get(
+                          ? "green"
+                          : "red",
+                        borderRadius: 50,
+                        size: 18,
+                      },
+                      () =>
+                        h(
+                          NIcon,
+                          {
+                            size: 16,
+                          },
+                          () =>
+                            h(
+                              get(
+                                single.value,
+                                (path ?? "") + getPath(props.schema, field.id)
+                              )
+                                ? Check
+                                : X
+                            )
+                        )
+                    ),
+                }
+              );
+            case "array":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    get(
+                      single.value,
+                      (path ?? "") + getPath(props.schema, field.id)
+                    ).map((item: any, index: number) =>
+                      h(
+                        NListItem,
+                        {},
+                        {
+                          prefix: () =>
+                            h(NText, { strong: true }, () => index + 1),
+                          default: () =>
+                            field.children.map((child: any) =>
+                              RenderData(
+                                child,
+                                path ??
+                                  getPath(props.schema, field.id) + `.${index}.`
+                              )
+                            ),
+                        }
+                      )
+                    ),
+                }
+              );
+            case "object":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(NSpace, { vertical: true }, () =>
+                      field.children.map((child: any) =>
+                        RenderData(
+                          child,
+                          (path ?? "") + getPath(props.schema, field.id) + "."
+                        )
+                      )
+                    ),
+                }
+              );
+            case "email":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NA,
+                      {
+                        href: `mailto:${get(
+                          single.value,
+                          (path ?? "") + getPath(props.schema, field.id)
+                        )}`,
+                        _target: "blank",
+                      },
+                      () =>
+                        get(
+                          single.value,
+                          (path ?? "") + getPath(props.schema, field.id)
+                        ) ?? "--"
+                    ),
+                }
+              );
+
+            case "color":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NTag,
+                      {
+                        round: true,
+                        style: {
+                          backgroundColor: get(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
-                          )
-                        ),
-                        unix: true,
-                        type: "relative",
-                      })
-                    : h(NText, () => "--"),
-              }
-            );
-          case "editor":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(NText, {
-                    innerHTML:
-                      objectPath.get(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      ) ?? "--",
-                  }),
-              }
-            );
-          case "boolean":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(
-                    NIconWrapper,
-                    {
-                      color: objectPath.get(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      )
-                        ? "green"
-                        : "red",
-                      borderRadius: 50,
-                      size: 18,
-                    },
-                    () =>
-                      h(
-                        NIcon,
-                        {
-                          size: 16,
+                          ),
                         },
-                        () =>
-                          h(
-                            objectPath.get(
+                      },
+                      () =>
+                        h(
+                          NText,
+                          { style: { mixBlendMode: "difference" } },
+                          () =>
+                            get(
                               single.value,
                               (path ?? "") + getPath(props.schema, field.id)
                             )
-                              ? Check
-                              : X
-                          )
-                      )
-                  ),
-              }
-            );
-          case "array":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? objectPath
-                        .get(
-                          single.value,
-                          (path ?? "") + getPath(props.schema, field.id)
                         )
-                        .map((item: any, index: number) =>
-                          h(
-                            NListItem,
-                            {},
-                            {
-                              prefix: () =>
-                                h(NText, { strong: true }, () => index + 1),
-                              default: () =>
-                                field.children.map((child: any) =>
-                                  RenderData(
-                                    child,
-                                    path ??
-                                      getPath(props.schema, field.id) +
-                                        `.${index}.`
-                                  )
-                                ),
-                            }
-                          )
-                        )
-                    : null,
-              }
-            );
-          case "object":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(NSpace, { vertical: true }, () =>
-                    field.children.map((child: any) =>
-                      RenderData(
-                        child,
-                        (path ?? "") + getPath(props.schema, field.id) + "."
-                      )
-                    )
-                  ),
-              }
-            );
-          case "email":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(
-                    NA,
-                    {
-                      href: objectPath.has(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      )
-                        ? `mailto:${objectPath.get(
+                    ),
+                }
+              );
+            case "url":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NA,
+                      {
+                        href:
+                          get(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
-                          )}`
-                        : "#",
-                      _target: "blank",
-                    },
-                    () =>
-                      objectPath.get(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      ) ?? "--"
-                  ),
-              }
-            );
-
-          case "color":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? h(
-                        NTag,
-                        {
-                          round: true,
-                          style: {
-                            backgroundColor: objectPath.get(
-                              single.value,
-                              (path ?? "") + getPath(props.schema, field.id)
-                            ),
-                          },
-                        },
-                        () =>
-                          h(
-                            NText,
-                            { style: { mixBlendMode: "difference" } },
-                            () =>
-                              objectPath.get(
-                                single.value,
-                                (path ?? "") + getPath(props.schema, field.id)
-                              )
-                          )
-                      )
-                    : h(NText, { depth: 3 }, () => "--"),
-              }
-            );
-          case "url":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(
-                    NA,
-                    {
-                      href:
-                        objectPath.get(
+                          ) ?? "#",
+                        _target: "blank",
+                      },
+                      () =>
+                        get(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
-                        ) ?? "#",
-                      _target: "blank",
-                    },
-                    () =>
-                      objectPath.get(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      ) ?? "--"
-                  ),
-              }
-            );
-          case "role":
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  objectPath.has(
-                    single.value,
-                    (path ?? "") + getPath(props.schema, field.id)
-                  )
-                    ? h(
-                        NTag,
-                        { round: true },
-                        {
-                          default: () =>
-                            t(
-                              objectPath.get(
-                                single.value,
-                                (path ?? "") + getPath(props.schema, field.id)
-                              )
-                            ),
-                          icon: () => h(NIcon, () => h(UserIcon)),
-                        }
-                      )
-                    : h(NText, { depth: 3 }, () => "--"),
-              }
-            );
-          default:
-            return h(
-              NListItem,
-              {},
-              {
-                prefix: () =>
-                  h(NButton, { text: true }, () =>
-                    h(NText, { strong: true }, () => `${t(field.key)}: `)
-                  ),
-                default: () =>
-                  h(NText, {
-                    style: {
-                      whiteSpace: "pre-line",
-                    },
-                    innerHTML:
-                      objectPath.get(
-                        single.value,
-                        (path ?? "") + getPath(props.schema, field.id)
-                      ) ?? "--",
-                  }),
-              }
-            );
-        }
+                        ) ?? "--"
+                    ),
+                }
+              );
+            case "role":
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(
+                      NTag,
+                      { round: true },
+                      {
+                        default: () =>
+                          t(
+                            get(
+                              single.value,
+                              (path ?? "") + getPath(props.schema, field.id)
+                            )
+                          ),
+                        icon: () => h(NIcon, () => h(User)),
+                      }
+                    ),
+                }
+              );
+            default:
+              return h(
+                NListItem,
+                {},
+                {
+                  prefix: () =>
+                    h(NButton, { text: true }, () =>
+                      h(NText, { strong: true }, () => `${t(field.key)}: `)
+                    ),
+                  default: () =>
+                    h(NText, {
+                      style: {
+                        whiteSpace: "pre-line",
+                      },
+                      innerHTML:
+                        get(
+                          single.value,
+                          (path ?? "") + getPath(props.schema, field.id)
+                        ) ?? "--",
+                    }),
+                }
+              );
+          }
       };
     return () => [
       h(

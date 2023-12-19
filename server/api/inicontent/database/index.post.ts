@@ -61,8 +61,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   await child_database.post("user", event.context.user);
   await child_database.post("session", {
-    ip: getUserIP(event) as string,
-    userAgent: event.node.req.headers["user-agent"],
+    ip: getUserIP(event),
+    userAgent: getRequestHeader(event, "user-agent"),
     user: event.context.user.id,
   });
   event.context._options = db.pageInfo;

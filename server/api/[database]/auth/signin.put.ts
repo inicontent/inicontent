@@ -29,7 +29,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     "session",
     {
       ip: getUserIP(event),
-      userAgent: event.node.req.headers["user-agent"] as string,
+      userAgent: getRequestHeader(event, "user-agent"),
     },
     undefined,
     true
@@ -37,20 +37,14 @@ export default defineWrappedResponseHandler(async (event: any) => {
 
   if (session) {
     if (!session.user || session.user.id !== user.id)
-      return await db.put(
-        "session",
-        { user: user.id },
-        session.id,
-        undefined,
-        true
-      );
+      await db.put("session", { user: user.id }, session.id, undefined, true);
   } else
     await db.post(
       "session",
       {
         user: user.id,
         ip: getUserIP(event),
-        userAgent: event.node.req.headers["user-agent"] as string,
+        userAgent: getRequestHeader(event, "user-agent"),
       },
       undefined,
       false

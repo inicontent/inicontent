@@ -1,5 +1,4 @@
 import {
-  useMessage,
   NCard,
   NSpace,
   NButton,
@@ -11,7 +10,14 @@ import {
   NPopover,
   NText,
 } from "naive-ui";
-import { Plus, Settings } from "@vicons/tabler";
+import {
+  Settings,
+  Plus,
+  Folders,
+  Language as LanguageIcon,
+  Users,
+  Fingerprint,
+} from "@vicons/tabler";
 
 export default defineComponent({
   async setup() {
@@ -36,9 +42,10 @@ export default defineComponent({
     const database = useState("database"),
       route = useRoute(),
       user = useState("user");
+
     useHead({
-      title: `${database.value.slug} | ${t("Admin")}`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      title: `${database.value.slug} | ${t("admin")}`,
+      link: [{ rel: "icon", href: database.value?.icon }],
     });
     return () => [
       h(
@@ -58,7 +65,7 @@ export default defineComponent({
               },
               () => t("Tables")
             ),
-          default: () => [
+          default: () =>
             h(NGrid, { xGap: 12, yGap: 12, cols: "1 500:2 800:4" }, () =>
               database.value.tables
                 .filter(
@@ -66,13 +73,16 @@ export default defineComponent({
                     user.value &&
                     (user.value.role === "admin" ||
                       slug === "user" ||
-                      (allowed_methods &&
-                        allowed_methods.find(
-                          (method) => method.role === user.value.role
-                        ) &&
-                        allowed_methods
-                          .find((method) => method.role === user.value.role)
-                          .methods.includes("r")))
+                      allowed_methods
+                        ?.find((method) => method.role === user.value.role)
+                        ?.methods?.includes("r"))
+                )
+                .toSorted(
+                  (a, b) =>
+                    ["user", "session", "translation", "asset"].includes(
+                      b.slug
+                    ) -
+                    ["user", "session", "translation", "asset"].includes(a.slug)
                 )
                 .map((table) =>
                   h(NGi, () =>
@@ -92,9 +102,20 @@ export default defineComponent({
                         header: () =>
                           h(NSpace, () => [
                             h(NIconWrapper, { borderRadius: 50 }, () =>
-                              h(NIcon, { style: "font-style: normal" }, () =>
-                                t(table.slug).charAt(0)
-                              )
+                              h(NIcon, { style: "font-style: normal" }, () => {
+                                switch (table.slug) {
+                                  case "asset":
+                                    return h(Folders);
+                                  case "translation":
+                                    return h(LanguageIcon);
+                                  case "user":
+                                    return h(Users);
+                                  case "session":
+                                    return h(Fingerprint);
+                                  default:
+                                    return t(table.slug).charAt(0);
+                                }
+                              })
                             ),
                             h(NH4, { style: "margin-bottom: 0" }, () =>
                               t(table.slug)
@@ -102,15 +123,12 @@ export default defineComponent({
                           ]),
                         "header-extra": () =>
                           h(NSpace, () => [
-                            user.value &&
-                            user.value.role &&
-                            (user.value.role === "admin" ||
-                              (table.allowed_methods &&
-                                table.allowed_methods.find(
-                                  (method) =>
-                                    method.role === user.value.role &&
-                                    method.methods.includes("c")
-                                )))
+                            user.value.role === "admin" ||
+                            allowed_methods
+                              ?.find(
+                                (method) => method.role === user.value.role
+                              )
+                              ?.methods?.includes("c")
                               ? h(
                                   NPopover,
                                   {},
@@ -137,8 +155,6 @@ export default defineComponent({
                                   }
                                 )
                               : null,
-                            user.value &&
-                            user.value.role &&
                             user.value.role === "admin"
                               ? h(
                                   NPopover,
@@ -173,7 +189,6 @@ export default defineComponent({
                   )
                 )
             ),
-          ],
         }
       ),
     ];

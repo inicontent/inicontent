@@ -11,8 +11,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
   if (allDevices) await db.delete("session", { user: event.context.user.id });
   else
     await db.delete("session", {
-      ip: getUserIP(event) as string,
-      userAgent: event.node.req.headers["user-agent"] as string,
+      ip: getUserIP(event),
+      userAgent: getRequestHeader(event, "user-agent"),
       user: event.context.user.id,
     });
   throw new Error("logout_success");

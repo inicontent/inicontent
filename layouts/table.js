@@ -65,18 +65,13 @@ export default defineComponent({
                           !["user", "session", "asset", "translation"].includes(
                             slug
                           ) &&
-                          user.value.role &&
                           (user.value.role === "admin" ||
                             slug === "user" ||
-                            (allowed_methods &&
-                              allowed_methods.find(
+                            allowed_methods
+                              ?.find(
                                 (method) => method.role === user.value.role
-                              ) &&
-                              allowed_methods
-                                .find(
-                                  (method) => method.role === user.value.role
-                                )
-                                .methods.includes("r")))
+                              )
+                              ?.methods?.includes("r"))
                       )
                       .map(({ slug, allowed_methods }) => ({
                         label: () =>
@@ -92,12 +87,9 @@ export default defineComponent({
                         children:
                           user.value.role === "admin" ||
                           slug === "user" ||
-                          (allowed_methods &&
-                            allowed_methods.find(
-                              (method) =>
-                                method.role === user.value.role &&
-                                method.methods.includes("c")
-                            ))
+                          allowed_methods
+                            ?.find((method) => method.role === user.value.role)
+                            ?.methods?.includes("c")
                             ? [
                                 {
                                   label: () =>
@@ -134,13 +126,9 @@ export default defineComponent({
                         user.value.role &&
                         (user.value.role === "admin" ||
                           slug === "user" ||
-                          (allowed_methods &&
-                            allowed_methods.find(
-                              (method) => method.role === user.value.role
-                            ) &&
-                            allowed_methods
-                              .find((method) => method.role === user.value.role)
-                              .methods.includes("r")))
+                          allowed_methods
+                            ?.find((method) => method.role === user.value.role)
+                            ?.methods?.includes("r"))
                     ).length
                       ? {
                           key: "divider-1",
@@ -156,15 +144,11 @@ export default defineComponent({
                           user.value.role &&
                           (user.value.role === "admin" ||
                             slug === "user" ||
-                            (allowed_methods &&
-                              allowed_methods.find(
+                            allowed_methods
+                              ?.find(
                                 (method) => method.role === user.value.role
-                              ) &&
-                              allowed_methods
-                                .find(
-                                  (method) => method.role === user.value.role
-                                )
-                                .methods.includes("r")))
+                              )
+                              ?.methods?.includes("r"))
                       )
                       .map(({ slug, allowed_methods }) => ({
                         label: () =>
@@ -194,12 +178,9 @@ export default defineComponent({
                         children:
                           user.value.role === "admin" ||
                           slug === "user" ||
-                          (allowed_methods &&
-                            allowed_methods.find(
-                              (method) =>
-                                method.role === user.value.role &&
-                                method.methods.includes("c")
-                            ))
+                          allowed_methods
+                            ?.find((method) => method.role === user.value.role)
+                            ?.methods?.includes("c")
                             ? [
                                 {
                                   label: () =>

@@ -70,7 +70,7 @@ useLanguage({
   },
 });
 
-export const FieldsList = [
+export default [
   {
     label: t("fields.text"),
     key: "string",

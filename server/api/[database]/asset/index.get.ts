@@ -34,8 +34,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
           `http://localhost:3000/api/${event.context.database.slug}/asset/${file}`
         ),
         size: stats.size,
-        created_at: stats.birthtime,
-        updated_at: stats.mtime,
+        createdAt: new Date(stats.birthtime).getTime(),
+        updatedAt: new Date(stats.mtime).getTime(),
       };
     result.push(
       splited_name.length === 3

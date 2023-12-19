@@ -40,13 +40,13 @@ export default defineComponent({
         },
         {
           id: "19c813b4c1df3f3838c6206cfb9f7c5c",
-          key: "created_at",
+          key: "createdAt",
           type: "date",
           required: true,
         },
         {
           id: "a1057000f4ab8bd4e97eee569a299a11",
-          key: "updated_at",
+          key: "updatedAt",
           type: "date",
           required: false,
         },

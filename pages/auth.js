@@ -55,8 +55,9 @@ export default defineComponent({
           required: true,
         },
       ],
-      SignupColumns = database.value.tables.find((item) => item.slug === "user")
-        ?.schema
+      SignupColumns = database.value?.tables?.find(
+        (item) => item.slug === "user"
+      )?.schema
         ? database.value.tables.find((item) => item.slug === "user").schema
         : [
             {

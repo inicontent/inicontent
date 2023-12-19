@@ -63,10 +63,9 @@ export default defineComponent({
       user = useState("user"),
       Theme = useGlobalCookie("Theme"),
       database = useState("database", () => ({
-        name: "Inicontent",
+        slug: "inicontent",
         icon: "/favicon.ico",
       }));
-
     onMounted(() => {
       Window.value = { width: window.innerWidth };
       window.addEventListener(
@@ -170,7 +169,7 @@ export default defineComponent({
                                         )
                                       ),
                                     },
-                                    () => t(toName(childRoute))
+                                    () => t(childRoute)
                                   )
                                 )
                             )

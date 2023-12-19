@@ -57,13 +57,14 @@ export default defineComponent({
                   user.value &&
                   (user.value.role === "admin" ||
                     slug === "user" ||
-                    (allowed_methods &&
-                      allowed_methods.find(
-                        (method) => method.role === user.value.role
-                      ) &&
-                      allowed_methods
-                        .find((method) => method.role === user.value.role)
-                        .methods.includes("r")))
+                    allowed_methods
+                      ?.find((method) => method.role === user.value.role)
+                      ?.methods?.includes("r"))
+              )
+              .toSorted(
+                (a, b) =>
+                  ["user", "session", "translation", "asset"].includes(b.slug) -
+                  ["user", "session", "translation", "asset"].includes(a.slug)
               )
               .map((table) =>
                 h(NGi, () =>
@@ -104,15 +105,10 @@ export default defineComponent({
                         ]),
                       "header-extra": () =>
                         h(NSpace, () => [
-                          user.value &&
-                          user.value.role &&
-                          (user.value.role === "admin" ||
-                            (table.allowed_methods &&
-                              table.allowed_methods.find(
-                                (method) =>
-                                  method.role === user.value.role &&
-                                  method.methods.includes("c")
-                              )))
+                          user.value.role === "admin" ||
+                          allowed_methods
+                            ?.find((method) => method.role === user.value.role)
+                            ?.methods?.includes("c")
                             ? h(
                                 NPopover,
                                 {},
@@ -139,8 +135,6 @@ export default defineComponent({
                                 }
                               )
                             : null,
-                          user.value &&
-                          user.value.role &&
                           user.value.role === "admin"
                             ? h(
                                 NPopover,

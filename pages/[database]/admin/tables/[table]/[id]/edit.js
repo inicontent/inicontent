@@ -48,10 +48,11 @@ export default defineComponent({
 
     const route = useRoute(),
       database = useState("database"),
-      Columns = database.value.tables.find(
-        (item) => item.slug === route.params.table
-      ).schema,
-      user = useState("user"),
+      schema = database.value.tables
+        .find((item) => item.slug === route.params.table)
+        .schema.filter(
+          (field) => !["id", "createdAt", "updatedAt"].includes(field.key)
+        ),
       message = useMessage(),
       { data: single } = await useFetch(
         `/api/${route.params.database}/${route.params.table}/${route.params.id}`,
@@ -116,10 +117,9 @@ export default defineComponent({
       };
 
     useHead({
-      title: `${database.value.slug} | ${
-        database.value.tables.find((item) => item.slug === route.params.table)
-          .name
-      } Table : ${route.params.id}`,
+      title: `${database.value.slug} | ${t(route.params.table)} ${t(
+        "table"
+      )} : ${route.params.id}`,
       link: [{ rel: "icon", href: database.value.icon }],
     });
     return () =>
@@ -135,100 +135,71 @@ export default defineComponent({
         },
         {
           header: () =>
-            h(
-              NEllipsis,
-              () =>
-                `${
-                  database.value.tables.find(
-                    (item) => item.slug === route.params.table
-                  ).name
-                } #${single.value.id}`
-            ),
+            h(NEllipsis, () => `${t(route.params.table)} #${single.value.id}`),
           "header-extra": () =>
-            h(NSpace, {}, () => [
-              h(
-                NPopover,
-                {},
-                {
-                  trigger: () =>
-                    h(
-                      NButton,
-                      {
-                        tag: "a",
-                        href: `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`,
-                        onClick: (e) => (
-                          e.preventDefault(),
-                          navigateTo(
-                            `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`
-                          )
+            schema.length > 4
+              ? h(NSpace, {}, () => [
+                  h(
+                    NPopover,
+                    {},
+                    {
+                      trigger: () =>
+                        h(
+                          NButton,
+                          {
+                            tag: "a",
+                            href: `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`,
+                            onClick: (e) => (
+                              e.preventDefault(),
+                              navigateTo(
+                                `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`
+                              )
+                            ),
+                            circle: true,
+                            secondary: true,
+                          },
+                          {
+                            icon: () => h(NIcon, () => h(Eye)),
+                          }
                         ),
-                        circle: true,
-                        secondary: true,
-                      },
-                      {
-                        icon: () => h(NIcon, () => h(Eye)),
-                      }
-                    ),
-                  default: () => t("view"),
-                }
-              ),
-              h(
-                NPopconfirm,
-                { onPositiveClick: DELETE },
-                {
-                  trigger: () =>
-                    h(
-                      NPopover,
-                      {},
-                      {
-                        trigger: () =>
-                          h(
-                            NButton,
-                            {
-                              secondary: true,
-                              circle: true,
-                              type: "error",
-                              loading: Loading.value["DELETE"],
-                            },
-                            {
-                              icon: () => h(NIcon, () => h(Trash)),
-                            }
-                          ),
-                        default: () =>
-                          single.value.deleted_at
-                            ? t("delete")
-                            : t("move_to_trash"),
-                      }
-                    ),
-                  default: () =>
-                    single.value.deleted_at
-                      ? t("confirm_delete_permanently")
-                      : t("confirm_delete"),
-                }
-              ),
-              h(
-                NPopover,
-                {},
-                {
-                  trigger: () =>
-                    h(
-                      NButton,
-                      {
-                        secondary: true,
-                        circle: true,
-                        type: single.value.deleted_at ? "info" : "primary",
-                        onClick: UPDATE,
-                        loading: Loading.value["UPDATE"],
-                      },
-                      {
-                        icon: () => h(NIcon, () => h(DeviceFloppy)),
-                      }
-                    ),
-                  default: () => t("update"),
-                }
-              ),
-              single.value.deleted_at
-                ? h(
+                      default: () => t("view"),
+                    }
+                  ),
+                  h(
+                    NPopconfirm,
+                    { onPositiveClick: DELETE },
+                    {
+                      trigger: () =>
+                        h(
+                          NPopover,
+                          {},
+                          {
+                            trigger: () =>
+                              h(
+                                NButton,
+                                {
+                                  secondary: true,
+                                  circle: true,
+                                  type: "error",
+                                  loading: Loading.value["DELETE"],
+                                },
+                                {
+                                  icon: () => h(NIcon, () => h(Trash)),
+                                }
+                              ),
+                            default: () =>
+                              single.value.deleted_at
+                                ? t("delete")
+                                : t("move_to_trash"),
+                          }
+                        ),
+                      default: () =>
+                        single.value.deleted_at
+                          ? t("confirm_delete_permanently")
+                          : t("confirm_delete"),
+                    }
+                  ),
+                  h(
                     NPopover,
                     {},
                     {
@@ -238,19 +209,42 @@ export default defineComponent({
                           {
                             secondary: true,
                             circle: true,
-                            type: "primary",
-                            onClick: () => UPDATE(true),
+                            type: single.value.deleted_at ? "info" : "primary",
+                            onClick: UPDATE,
                             loading: Loading.value["UPDATE"],
                           },
                           {
-                            icon: () => h(NIcon, () => h(Send)),
+                            icon: () => h(NIcon, () => h(DeviceFloppy)),
                           }
                         ),
-                      default: () => t("publish"),
+                      default: () => t("update"),
                     }
-                  )
-                : null,
-            ]),
+                  ),
+                  single.value.deleted_at
+                    ? h(
+                        NPopover,
+                        {},
+                        {
+                          trigger: () =>
+                            h(
+                              NButton,
+                              {
+                                secondary: true,
+                                circle: true,
+                                type: "primary",
+                                onClick: () => UPDATE(true),
+                                loading: Loading.value["UPDATE"],
+                              },
+                              {
+                                icon: () => h(NIcon, () => h(Send)),
+                              }
+                            ),
+                          default: () => t("publish"),
+                        }
+                      )
+                    : null,
+                ])
+              : null,
           action: () =>
             h(NSpace, { justify: "end" }, () => [
               h(
@@ -321,7 +315,7 @@ export default defineComponent({
               () =>
                 h(LazyRenderFields, {
                   modelValue: single.value,
-                  schema: Columns,
+                  schema: schema,
                 })
             ),
         }

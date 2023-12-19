@@ -39,7 +39,6 @@ import {
   Plus,
   Tools,
   Minus,
-  Calendar,
   QuestionMark,
   ExternalLink,
   FileUpload,
@@ -49,7 +48,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "@vicons/tabler";
-import objectPath from "object-path";
+import { get } from "object-path";
 import { LazyRenderFields } from "#components";
 import { isArrayOfObjects } from "inibase/utils";
 
@@ -70,9 +69,9 @@ export default defineComponent({
         text_copied: "تم نسخ النص",
         view_item: "مُعاينة العنصر",
         new: "جديد",
-        deleted_at: "حُذف",
-        created_at: "أُضيف",
-        updated_at: "عُدِّل",
+        deletedAt: "حُذف",
+        createdAt: "أُضيف",
+        updatedAt: "عُدِّل",
         update: "تحديث",
         create: "إنشاء",
         delete: "حذف",
@@ -103,9 +102,9 @@ export default defineComponent({
         text_copied: "Text copied to clipboard",
         view_item: "View item",
         new: "New",
-        deleted_at: "Deleted at",
-        created_at: "Created at",
-        updated_at: "Updated at",
+        deletedAt: "Deleted at",
+        createdAt: "Created at",
+        updatedAt: "Updated at",
         update: "Update",
         create: "Create",
         delete: "Delete",
@@ -139,7 +138,7 @@ export default defineComponent({
       searchArray = useState(() =>
         route.query.search
           ? JSON.parse(route.query.search).filter(
-              (searchItem) => !["deleted_at"].includes(searchItem[0])
+              (searchItem) => !["deletedAt"].includes(searchItem[0])
             )
           : []
       ),
@@ -281,11 +280,11 @@ export default defineComponent({
                 ? ShowDeleted.value
                   ? JSON.stringify({
                       ...searchInput.value,
-                      deleted_at: ">0",
+                      deletedAt: ">0",
                     })
                   : JSON.stringify(searchInput.value)
                 : ShowDeleted.value
-                ? JSON.stringify({ deleted_at: ">0" })
+                ? JSON.stringify({ deletedAt: ">0" })
                 : null,
             },
           }),
@@ -413,7 +412,7 @@ export default defineComponent({
                             icon: () =>
                               h(NIcon, () => {
                                 const img = []
-                                  .concat(objectPath.get(value, item.image))
+                                  .concat(get(value, item.image))
                                   .map((link) =>
                                     link &&
                                     link.includes("cdn.inicontent") &&
@@ -426,7 +425,7 @@ export default defineComponent({
                                       "svg",
                                       "gif",
                                     ].includes(link.split(".").pop())
-                                      ? `${link}?w=18`
+                                      ? `${link}?fit=18`
                                       : link
                                   )[0];
                                 return img
@@ -452,15 +451,15 @@ export default defineComponent({
                                   style: {
                                     maxWidth:
                                       (item.key && item.key.length > 10
-                                        ? item.key.length * 15
-                                        : 150) + "px",
+                                        ? item.key.length * 12
+                                        : 120) + "px",
                                   },
                                 },
                                 () =>
                                   item.label
                                     ? item.label
                                         .map((single_label) =>
-                                          objectPath.get(value, single_label)
+                                          get(value, single_label)
                                         )
                                         .join(" ")
                                     : value.id
@@ -483,18 +482,18 @@ export default defineComponent({
                                   style: {
                                     maxWidth:
                                       (item.key && item.key.length > 10
-                                        ? item.key.length * 15
-                                        : 150) + "px",
+                                        ? item.key.length * 12
+                                        : 120) + "px",
                                   },
                                 },
                                 () =>
                                   item.label
                                     ? item.label
                                         .map((single_label) =>
-                                          objectPath.get(value, single_label)
+                                          get(value, single_label)
                                         )
                                         .join(" ")
-                                    : item.id
+                                    : value.id
                               ),
                           }
                     )
@@ -521,7 +520,7 @@ export default defineComponent({
                                   },
                                   round: true,
                                   src: []
-                                    .concat(objectPath.get(value, item.image))
+                                    .concat(get(value, item.image))
                                     .map((link) =>
                                       link &&
                                       link.includes("cdn.inicontent") &&
@@ -534,7 +533,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(link.split(".").pop())
-                                        ? `${link}?w=18`
+                                        ? `${link}?fit=18`
                                         : link
                                     )[0],
                                 })
@@ -547,18 +546,18 @@ export default defineComponent({
                                   style: {
                                     maxWidth:
                                       (item.key && item.key.length > 10
-                                        ? item.key.length * 15
-                                        : 150) + "px",
+                                        ? item.key.length * 12
+                                        : 120) + "px",
                                   },
                                 },
                                 () =>
                                   item.label
                                     ? item.label
                                         .map((single_label) =>
-                                          objectPath.get(value, single_label)
+                                          get(value, single_label)
                                         )
                                         .join(" ")
-                                    : item.id
+                                    : [].concat(value)[0].id
                               ),
                           }
                         : {
@@ -578,18 +577,18 @@ export default defineComponent({
                                   style: {
                                     maxWidth:
                                       (item.key && item.key.length > 10
-                                        ? item.key.length * 15
-                                        : 150) + "px",
+                                        ? item.key.length * 12
+                                        : 120) + "px",
                                   },
                                 },
                                 () =>
                                   item.label
                                     ? item.label
                                         .map((single_label) =>
-                                          objectPath.get(value, single_label)
+                                          get(value, single_label)
                                         )
                                         .join(" ")
-                                    : item.id
+                                    : [].concat(value)[0].id
                               ),
                           }
                     )
@@ -620,7 +619,7 @@ export default defineComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(objectPath.get(col, item.image))
+                                        .concat(get(col, item.image))
                                         .map((link) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
@@ -633,7 +632,7 @@ export default defineComponent({
                                             "svg",
                                             "gif",
                                           ].includes(link.split(".").pop())
-                                            ? `${link}?w=18`
+                                            ? `${link}?fit=18`
                                             : link
                                         )[0],
                                     })
@@ -646,18 +645,18 @@ export default defineComponent({
                                       style: {
                                         maxWidth:
                                           (item.key && item.key.length > 10
-                                            ? item.key.length * 15
-                                            : 150) + "px",
+                                            ? item.key.length * 12
+                                            : 120) + "px",
                                       },
                                     },
                                     () =>
                                       item.label
                                         ? item.label
                                             .map((single_label) =>
-                                              objectPath.get(col, single_label)
+                                              get(col, single_label)
                                             )
                                             .join(" ")
-                                        : item.id
+                                        : col.id
                                   ),
                               }
                             : {
@@ -677,18 +676,18 @@ export default defineComponent({
                                       style: {
                                         maxWidth:
                                           (item.key && item.key.length > 10
-                                            ? item.key.length * 15
-                                            : 150) + "px",
+                                            ? item.key.length * 12
+                                            : 120) + "px",
                                       },
                                     },
                                     () =>
                                       item.label
                                         ? item.label
                                             .map((single_label) =>
-                                              objectPath.get(col, single_label)
+                                              get(col, single_label)
                                             )
                                             .join(" ")
-                                        : item.id
+                                        : col.id
                                   ),
                               }
                         )
@@ -717,7 +716,7 @@ export default defineComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(objectPath.get(col, item.image))
+                                        .concat(get(col, item.image))
                                         .map((link) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
@@ -730,7 +729,7 @@ export default defineComponent({
                                             "svg",
                                             "gif",
                                           ].includes(link.split(".").pop())
-                                            ? `${link}?w=18`
+                                            ? `${link}?fit=18`
                                             : link
                                         )[0],
                                     })
@@ -743,18 +742,18 @@ export default defineComponent({
                                       style: {
                                         maxWidth:
                                           (item.key && item.key.length > 10
-                                            ? item.key.length * 15
-                                            : 150) + "px",
+                                            ? item.key.length * 12
+                                            : 120) + "px",
                                       },
                                     },
                                     () =>
                                       item.label
                                         ? item.label
                                             .map((single_label) =>
-                                              objectPath.get(col, single_label)
+                                              get(col, single_label)
                                             )
                                             .join(" ")
-                                        : item.id
+                                        : col.id
                                   ),
                               }
                             : {
@@ -774,18 +773,18 @@ export default defineComponent({
                                       style: {
                                         maxWidth:
                                           (item.key && item.key.length > 10
-                                            ? item.key.length * 15
-                                            : 150) + "px",
+                                            ? item.key.length * 12
+                                            : 120) + "px",
                                       },
                                     },
                                     () =>
                                       item.label
                                         ? item.label
                                             .map((single_label) =>
-                                              objectPath.get(col, single_label)
+                                              get(col, single_label)
                                             )
                                             .join(" ")
-                                        : item.id
+                                        : col.id
                                   ),
                               }
                         )
@@ -803,8 +802,8 @@ export default defineComponent({
                         style: {
                           maxWidth:
                             (item.key && item.key.length > 10
-                              ? item.key.length * 15
-                              : 150) + "px",
+                              ? item.key.length * 12
+                              : 120) + "px",
                         },
                       },
                       () =>
@@ -824,8 +823,8 @@ export default defineComponent({
                   style: {
                     maxWidth:
                       (item.key && item.key.length > 10
-                        ? item.key.length * 15
-                        : 150) + "px",
+                        ? item.key.length * 12
+                        : 120) + "px",
                   },
                 },
                 () => Array.from(Array(value.length), () => "•")
@@ -860,8 +859,8 @@ export default defineComponent({
                         style: {
                           maxWidth:
                             (item.key && item.key.length > 10
-                              ? item.key.length * 15
-                              : 150) + "px",
+                              ? item.key.length * 12
+                              : 120) + "px",
                         },
                       },
                       () =>
@@ -904,8 +903,8 @@ export default defineComponent({
                               style: {
                                 maxWidth:
                                   (item.key && item.key.length > 10
-                                    ? item.key.length * 15
-                                    : 150) + "px",
+                                    ? item.key.length * 12
+                                    : 120) + "px",
                               },
                             },
                             () => _value
@@ -940,11 +939,21 @@ export default defineComponent({
                 }
               );
             case "date":
-              return h(NTime, {
-                time: value,
-                unix: true,
-                type: "relative",
-              });
+              return h(
+                NPopover,
+                {},
+                {
+                  trigger: () =>
+                    h(NTime, {
+                      time: Number(value),
+                      type: "relative",
+                    }),
+                  default: () =>
+                    h(NTime, {
+                      time: Number(value),
+                    }),
+                }
+              );
             case "upload":
               return [].concat(value).length === 1
                 ? [].concat(value).map((link) =>
@@ -960,7 +969,7 @@ export default defineComponent({
                       ? h(NImage, {
                           src:
                             link && link.includes("cdn.inicontent")
-                              ? `${link}?w=32`
+                              ? `${link}?fit=32`
                               : link,
                           previewSrc: link,
                           width: 32,
@@ -987,7 +996,7 @@ export default defineComponent({
                                   ? h(NImage, {
                                       src:
                                         link && link.includes("cdn.inicontent")
-                                          ? `${link}?w=32`
+                                          ? `${link}?fit=32`
                                           : link,
                                       previewSrc: link,
                                       width: 32,
@@ -1009,7 +1018,7 @@ export default defineComponent({
                               ? h(NImage, {
                                   src:
                                     link && link.includes("cdn.inicontent")
-                                      ? `${link}?w=32`
+                                      ? `${link}?fit=32`
                                       : link,
                                   previewSrc: link,
                                   width: 32,
@@ -1031,8 +1040,8 @@ export default defineComponent({
                         style: {
                           maxWidth:
                             (item.key && item.key.length > 10
-                              ? item.key.length * 15
-                              : 150) + "px",
+                              ? item.key.length * 12
+                              : 120) + "px",
                         },
                       },
                       () => t(value)
@@ -1093,7 +1102,7 @@ export default defineComponent({
                                     () => [
                                       h("strong", `${t(child.key)}:`),
                                       RenderSchema(
-                                        objectPath.get(_item, child.slug),
+                                        get(_item, child.slug),
                                         child
                                       ),
                                     ]
@@ -1125,10 +1134,7 @@ export default defineComponent({
                       item.children.map((child) =>
                         h(NSpace, { align: "center", inline: true }, () => [
                           h("strong", `${child.key}:`),
-                          RenderSchema(
-                            objectPath.get(value, child.slug),
-                            child
-                          ),
+                          RenderSchema(get(value, child.slug), child),
                         ])
                       )
                     ),
@@ -1143,8 +1149,8 @@ export default defineComponent({
                       style: {
                         maxWidth:
                           (item.key && item.key.length > 10
-                            ? item.key.length * 15
-                            : 150) + "px",
+                            ? item.key.length * 12
+                            : 120) + "px",
                       },
                     },
                     () => value
@@ -1197,41 +1203,10 @@ export default defineComponent({
                 t(item.key),
               ]),
             width:
-              item.key && item.key.length > 10 ? item.key.length * 15 : 200,
+              item.key && item.key.length > 10 ? item.key.length * 12 : 120,
             key: item.key,
             render: (row) => RenderSchema(row[item.key], item),
           })),
-          ShowDeleted.value
-            ? {
-                title: () =>
-                  h(NSpace, () => [
-                    h(NIcon, () => h(Calendar)),
-                    t("deleted_at"),
-                  ]),
-                width: 150,
-                key: "deleted_at",
-                render: (row) =>
-                  row["deleted_at"]
-                    ? h(
-                        NPopover,
-                        {},
-                        {
-                          trigger: () =>
-                            h(NTime, {
-                              time: row["deleted_at"],
-                              unix: true,
-                              type: "relative",
-                            }),
-                          default: () =>
-                            h(NTime, {
-                              time: row["deleted_at"],
-                              unix: true,
-                            }),
-                        }
-                      )
-                    : h(NText, { depth: 3 }, () => "--"),
-              }
-            : null,
           {
             title: t("actions"),
             fixed: Window.value.width > 400 ? "right" : false,
@@ -2036,7 +2011,7 @@ export default defineComponent({
                       default: () => t("add_new"),
                     }
                   ),
-                  user.value && user.value.role === "admin"
+                  user.value.role === "admin"
                     ? h(
                         NPopover,
                         {},

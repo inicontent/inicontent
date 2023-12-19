@@ -1,1 +1,0 @@
-[[1,"orderN",null,"number",null],[2,"isActive",null,"boolean",null],[3,"products",null,"array",[[4,"name",null,"string",null],[5,"variants",null,"array",[[6,"name",null,"string",null],[7,"price",null,"number",null]]]]]]

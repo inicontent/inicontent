@@ -133,7 +133,7 @@ export default defineComponent({
     };
     useHead({
       title: `${database.value.slug} | Authentication`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      link: [{ rel: "icon", href: database.value?.icon }],
     });
 
     return () =>

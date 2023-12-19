@@ -1,25 +1,15 @@
 import { join } from "node:path";
 
 export default defineNuxtConfig({
-  ssr: true,
+  ssr: false,
   nitro: {
     hooks: {
       "dev:reload": () => require("sharp"),
     },
-    serverAssets: [
-      {
-        baseName: "databases",
-        dir: "./server/databases",
-      },
-    ],
   },
   css: ["~/assets/css/main.css"],
   experimental: {
     payloadExtraction: false,
-  },
-  components: {
-    global: true,
-    dirs: ["~/components"],
   },
   build: {
     transpile:
@@ -41,6 +31,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    databasePath: join(process.cwd(), "server", "databases"),
+    databasePath: join(process.cwd(), "databases"),
   },
 });

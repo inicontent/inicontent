@@ -44,15 +44,12 @@ import {
   Trash,
   ChevronRight,
   Upload,
-  AlignJustified,
   Link,
-  At,
-  ListNumbers,
-  LetterCase,
   Books,
   Check,
   X,
   DeviceFloppy,
+  QuestionMark,
 } from "@vicons/tabler";
 import {
   isArrayOfObjects,
@@ -61,7 +58,7 @@ import {
   validateFieldType,
   deepMerge,
 } from "inibase/utils";
-import objectPath from "object-path";
+import { get, set, has, del, push } from "object-path";
 import { LazyRichEditor, LazyRenderFields } from "#components";
 export default defineComponent({
   props: {
@@ -74,7 +71,7 @@ export default defineComponent({
       default: {},
     },
   },
-  setup: (props, { emit }) => {
+  setup: (props) => {
     const Language = useGlobalCookie("Language");
     useLanguage({
       ar: {
@@ -86,16 +83,16 @@ export default defineComponent({
         actions: "Actions",
       },
     });
-    const Loading: any = useState("Loading");
+    const Loading = <any>useState("Loading");
     Loading.value["Drawer"] = false;
     const modelValue = toRef(props, "modelValue"),
       message = useMessage(),
-      database: any = useState("database"),
-      schema = toRef(props, "schema"),
+      database = <any>useState("database"),
+      schema = <any>toRef(props, "schema"),
       route = useRoute(),
-      user: any = useState("user"),
-      OPTIONS: any = ref({}),
-      DisabledItem: any = ref({}),
+      user = <any>useState("user"),
+      OPTIONS = <any>ref({}),
+      DisabledItem = <any>ref({}),
       DrawerFormRef = ref<FormInst | null>(null),
       Drawer = ref({
         show: false,
@@ -161,24 +158,22 @@ export default defineComponent({
           !CurrentField.value.options.hasOwnProperty("single") ||
           CurrentField.value.options.single === true
         ) {
-          if (objectPath.get(modelValue.value, CurrentField.value.path) === url)
-            objectPath.del(modelValue.value, CurrentField.value.path);
-          else objectPath.set(modelValue.value, CurrentField.value.path, url);
+          if (get(modelValue.value, CurrentField.value.path) === url)
+            del(modelValue.value, CurrentField.value.path);
+          else set(modelValue.value, CurrentField.value.path, url);
         } else {
           if (
-            objectPath.has(modelValue.value, CurrentField.value.path) &&
-            objectPath
-              .get(modelValue.value, CurrentField.value.path)
-              .includes(url)
+            has(modelValue.value, CurrentField.value.path) &&
+            get(modelValue.value, CurrentField.value.path).includes(url)
           )
-            objectPath.del(
+            del(
               modelValue.value,
               CurrentField.value.path +
-                `.${objectPath
-                  .get(modelValue.value, CurrentField.value.path)
-                  .indexOf(url)}`
+                `.${get(modelValue.value, CurrentField.value.path).indexOf(
+                  url
+                )}`
             );
-          else objectPath.push(modelValue.value, CurrentField.value.path, url);
+          else push(modelValue.value, CurrentField.value.path, url);
         }
       },
       RenderField = (field: any, path?: string): any => {
@@ -214,7 +209,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -224,12 +219,12 @@ export default defineComponent({
               },
               () =>
                 h(NSelect, {
-                  value: objectPath.get(
+                  value: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -239,10 +234,73 @@ export default defineComponent({
                     "user",
                     ...(database.value.roles ?? []),
                   ].map((v) => ({
-                    label: toName(v),
+                    label: t(v),
                     value: v,
                   })),
                 })
+            );
+          case "id":
+            return h(
+              NFormItem,
+              {
+                label: t(field.key),
+                path: (path ?? "") + getPath(schema.value, field.id),
+                rule: {
+                  required: field.required,
+                  trigger: ["blur", "input"],
+                },
+                ...(field.label_props
+                  ? field.label_props instanceof Function
+                    ? field.label_props(
+                        get(
+                          modelValue.value,
+                          (path ?? "") + getPath(schema.value, field.id)
+                        )
+                      ) ?? {}
+                    : field.label_props
+                  : {}),
+              },
+              () =>
+                h(
+                  NInput,
+                  {
+                    value: get(
+                      modelValue.value,
+                      (path ?? "") + getPath(schema.value, field.id)
+                    ),
+                    onUpdateValue: (value) =>
+                      set(
+                        modelValue.value,
+                        (path ?? "") + getPath(schema.value, field.id),
+                        value.toString()
+                      ),
+                    placeholder: t(field.key),
+                    clearable: true,
+                    ...(field.input_props
+                      ? field.input_props instanceof Function
+                        ? field.input_props(
+                            get(
+                              modelValue.value,
+                              (path ?? "") + getPath(schema.value, field.id)
+                            )
+                          ) ?? {}
+                        : field.input_props
+                      : {}),
+                  },
+                  {
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                  }
+                )
             );
           case "text":
             return h(
@@ -257,7 +315,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -269,12 +327,12 @@ export default defineComponent({
                 h(
                   NInput,
                   {
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value.toString()
@@ -284,7 +342,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -293,7 +351,17 @@ export default defineComponent({
                       : {}),
                   },
                   {
-                    suffix: () => h(NIcon, () => h(LetterCase)),
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
                   }
                 )
             );
@@ -314,7 +382,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -328,12 +396,12 @@ export default defineComponent({
                   {
                     type: "textarea",
                     rows: field.is_table ? 1 : 3,
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value.toString()
@@ -344,7 +412,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -353,7 +421,17 @@ export default defineComponent({
                       : {}),
                   },
                   {
-                    suffix: () => h(NIcon, () => h(AlignJustified)),
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
                   }
                 )
             );
@@ -371,7 +449,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -383,12 +461,12 @@ export default defineComponent({
                 h(
                   NRadioGroup,
                   {
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -396,7 +474,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -424,7 +502,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -470,11 +548,11 @@ export default defineComponent({
                     },
                     {
                       arrow: () =>
-                        !objectPath.has(
+                        !has(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         ) ||
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         ).length === 0
@@ -489,11 +567,11 @@ export default defineComponent({
                               DisabledItem.value[
                                 (path ?? "") + getPath(schema.value, field.id)
                               ] ||
-                              !objectPath.has(
+                              !has(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               ) ||
-                              objectPath.get(
+                              get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               ).length === 0,
@@ -526,7 +604,7 @@ export default defineComponent({
                                         ] = false),
                                       1
                                     ),
-                                    objectPath.push(
+                                    push(
                                       modelValue.value,
                                       (path ?? "") +
                                         getPath(schema.value, field.id),
@@ -543,7 +621,7 @@ export default defineComponent({
                                 }
                               ),
                             default: () =>
-                              objectPath.has(
+                              has(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -554,87 +632,83 @@ export default defineComponent({
                                       accordion: true,
                                     },
                                     () =>
-                                      objectPath
-                                        .get(
-                                          modelValue.value,
-                                          path ??
-                                            getPath(schema.value, field.id)
-                                        )
-                                        .map((item: any, index: number) =>
-                                          h(
-                                            NCollapseItem,
-                                            {
-                                              displayDirective: "show",
-                                              title: t(field.key) + " " + index,
-                                              name:
-                                                (path ??
-                                                  getPath(
-                                                    schema.value,
-                                                    field.id
-                                                  )) +
-                                                "." +
-                                                index,
-                                            },
-                                            {
-                                              "header-extra": () =>
-                                                h(
-                                                  NButton,
-                                                  {
-                                                    disabled:
-                                                      field.disabled_items &&
-                                                      field.disabled_items.includes(
-                                                        index
-                                                      ),
-                                                    quaternary: true,
-                                                    circle: true,
-                                                    type: "error",
-                                                    onClick: () =>
-                                                      objectPath.del(
-                                                        modelValue.value,
-                                                        (path ??
-                                                          getPath(
-                                                            schema.value,
-                                                            field.id
-                                                          )) + `.${index}`
-                                                      ),
-                                                  },
-                                                  {
-                                                    icon: () =>
-                                                      h(NIcon, () => h(Trash)),
-                                                  }
-                                                ),
-                                              default: () =>
-                                                field.children.map(
-                                                  (child: any) =>
-                                                    RenderField(
-                                                      {
-                                                        ...child,
-                                                        ...(field.disabled_items
-                                                          ? {
-                                                              input_props: {
-                                                                disabled:
-                                                                  field.disabled_items &&
-                                                                  field.disabled_items.includes(
-                                                                    index
-                                                                  ),
-                                                              },
-                                                            }
-                                                          : {}),
-                                                      },
+                                      get(
+                                        modelValue.value,
+                                        path ?? getPath(schema.value, field.id)
+                                      ).map((item: any, index: number) =>
+                                        h(
+                                          NCollapseItem,
+                                          {
+                                            displayDirective: "show",
+                                            title: t(field.key) + " " + index,
+                                            name:
+                                              (path ??
+                                                getPath(
+                                                  schema.value,
+                                                  field.id
+                                                )) +
+                                              "." +
+                                              index,
+                                          },
+                                          {
+                                            "header-extra": () =>
+                                              h(
+                                                NButton,
+                                                {
+                                                  disabled:
+                                                    field.disabled_items &&
+                                                    field.disabled_items.includes(
+                                                      index
+                                                    ),
+                                                  quaternary: true,
+                                                  circle: true,
+                                                  type: "error",
+                                                  onClick: () =>
+                                                    del(
+                                                      modelValue.value,
                                                       (path ??
                                                         getPath(
                                                           schema.value,
                                                           field.id
-                                                        )) +
-                                                        "." +
-                                                        index +
-                                                        "." +
-                                                        child.key
-                                                    )
-                                                ),
-                                            }
-                                          )
+                                                        )) + `.${index}`
+                                                    ),
+                                                },
+                                                {
+                                                  icon: () =>
+                                                    h(NIcon, () => h(Trash)),
+                                                }
+                                              ),
+                                            default: () =>
+                                              field.children.map((child: any) =>
+                                                RenderField(
+                                                  {
+                                                    ...child,
+                                                    ...(field.disabled_items
+                                                      ? {
+                                                          input_props: {
+                                                            disabled:
+                                                              field.disabled_items &&
+                                                              field.disabled_items.includes(
+                                                                index
+                                                              ),
+                                                          },
+                                                        }
+                                                      : {}),
+                                                  },
+                                                  (path ??
+                                                    getPath(
+                                                      schema.value,
+                                                      field.id
+                                                    )) +
+                                                    "." +
+                                                    index +
+                                                    "." +
+                                                    child.key
+                                                )
+                                              ),
+                                          }
                                         )
+                                      )
                                   )
                                 : null,
                           }
@@ -659,7 +733,7 @@ export default defineComponent({
                                 size: "small",
                                 round: true,
                                 onClick: () =>
-                                  objectPath.push(
+                                  push(
                                     modelValue.value,
                                     (path ?? "") +
                                       getPath(schema.value, field.id),
@@ -745,7 +819,7 @@ export default defineComponent({
                                               circle: true,
                                               type: "error",
                                               onClick() {
-                                                objectPath.del(
+                                                del(
                                                   modelValue.value,
                                                   (path ??
                                                     getPath(
@@ -766,7 +840,7 @@ export default defineComponent({
                                   },
                                 },
                           ],
-                          data: objectPath.get(
+                          data: get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           ),
@@ -798,7 +872,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -811,7 +885,7 @@ export default defineComponent({
                   h(NSpace, {}, () => [
                     t(field.key),
                     field.single === true &&
-                    objectPath.has(
+                    has(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id) + ".id"
                     )
@@ -823,13 +897,13 @@ export default defineComponent({
                             size: "tiny",
                             onClick: () => {
                               Drawer.value.table = field.key;
-                              Drawer.value.id = objectPath.get(
+                              Drawer.value.id = get(
                                 modelValue.value,
                                 (path ?? "") +
                                   getPath(schema.value, field.id) +
                                   ".id"
                               );
-                              Drawer.value.data = objectPath.get(
+                              Drawer.value.data = get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               );
@@ -864,14 +938,14 @@ export default defineComponent({
                   ]),
                 default: () =>
                   h(NSelect, {
-                    value: objectPath.has(
+                    value: has(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     )
                       ? field.single === true
                         ? []
                             .concat(
-                              objectPath.get(
+                              get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -879,7 +953,7 @@ export default defineComponent({
                             .map((i: any) => i.id)[0]
                         : []
                             .concat(
-                              objectPath.get(
+                              get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -887,21 +961,21 @@ export default defineComponent({
                             .map((i: any) => i.id)
                       : null,
                     onUpdateValue: (_value, option: any) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         Array.isArray(option)
                           ? option.map((i: any) => i.raw)
                           : option.raw
                       ),
-                    options: objectPath.get(
+                    options: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     )
                       ? deepMerge(
                           []
                             .concat(
-                              objectPath.get(
+                              get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -909,15 +983,11 @@ export default defineComponent({
                             .map((single_value: any) => ({
                               label: field.label
                                 .map((single_label: any) =>
-                                  t(objectPath.get(single_value, single_label))
+                                  t(get(single_value, single_label))
                                 )
                                 .join(" "),
                               value: single_value.id,
-                              image: objectPath.get(
-                                single_value,
-                                field.image,
-                                null
-                              ),
+                              image: get(single_value, field.image, null),
                               raw: single_value,
                             })),
                           OPTIONS.value ? OPTIONS.value[field.key] ?? [] : []
@@ -956,7 +1026,7 @@ export default defineComponent({
                                       "svg",
                                       "gif",
                                     ].includes(link?.split(".")?.pop() ?? "")
-                                      ? `${link}?w=80`
+                                      ? `${link}?fit=80`
                                       : link
                                   )[0],
                                 round: true,
@@ -1000,7 +1070,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(link?.split(".")?.pop() ?? "")
-                                        ? `${link}?w=24`
+                                        ? `${link}?fit=24`
                                         : link
                                     )[0],
                                   round: true,
@@ -1058,7 +1128,7 @@ export default defineComponent({
                                             ].includes(
                                               link?.split(".")?.pop() ?? ""
                                             )
-                                              ? `${link}?w=22`
+                                              ? `${link}?fit=22`
                                               : link
                                           )[0],
                                         round: true,
@@ -1103,30 +1173,19 @@ export default defineComponent({
                                   ? res.result.map((single_result: any) => ({
                                       label: field.label
                                         .map((single_label: any) =>
-                                          t(
-                                            objectPath.get(
-                                              single_result,
-                                              single_label
-                                            )
-                                          )
+                                          t(get(single_result, single_label))
                                         )
                                         .join(" "),
                                       value: single_result.id,
                                       image: field.image
                                         ? Array.isArray(
-                                            objectPath.get(
-                                              single_result,
-                                              field.image
-                                            )
+                                            get(single_result, field.image)
                                           )
-                                          ? objectPath.get(
+                                          ? get(
                                               single_result,
                                               `${field.image}[0]`
                                             )
-                                          : objectPath.get(
-                                              single_result,
-                                              field.image
-                                            )
+                                          : get(single_result, field.image)
                                         : null,
                                       raw: single_result,
                                     }))
@@ -1161,7 +1220,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1203,13 +1262,13 @@ export default defineComponent({
                                 inputProps: { type: "url" },
                                 onUpdateValue: (value) =>
                                   field.single === true
-                                    ? objectPath.set(
+                                    ? set(
                                         modelValue.value,
                                         (path ?? "") +
                                           getPath(schema.value, field.id),
                                         value
                                       )
-                                    : objectPath.push(
+                                    : push(
                                         modelValue.value,
                                         (path ?? "") +
                                           getPath(schema.value, field.id),
@@ -1251,14 +1310,14 @@ export default defineComponent({
                       directoryDnd: true,
                       "on-update:file-list": (files: any) =>
                         files.map((file: any) => file.url ?? file)[0]
-                          ? objectPath.set(
+                          ? set(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id),
                               field.single === true
                                 ? files.map((file: any) => file.url ?? file)[0]
                                 : files.map((file: any) => file.url ?? file)
                             )
-                          : objectPath.del(
+                          : del(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             ),
@@ -1268,13 +1327,13 @@ export default defineComponent({
                       action: `/api/${
                         database.value.slug ?? "inicontent"
                       }/asset`,
-                      fileList: objectPath.has(
+                      fileList: has(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id)
                       )
                         ? ([]
                             .concat(
-                              objectPath.get(
+                              get(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -1306,7 +1365,7 @@ export default defineComponent({
                                         "svg",
                                         "gif",
                                       ].includes(src?.split(".")?.pop() ?? "")
-                                        ? `${src}?w=94`
+                                        ? `${src}?fit=94`
                                         : null,
                                   }
                             ) as any)
@@ -1367,7 +1426,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1378,12 +1437,12 @@ export default defineComponent({
               () =>
                 h(NColorPicker, {
                   modes: ["hex"],
-                  value: objectPath.get(
+                  value: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1391,7 +1450,7 @@ export default defineComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          objectPath.get(
+                          get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1421,7 +1480,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1434,12 +1493,12 @@ export default defineComponent({
                   NInput,
                   {
                     inputProps: { type: "url" },
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1449,7 +1508,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1458,7 +1517,17 @@ export default defineComponent({
                       : {}),
                   },
                   {
-                    suffix: () => h(NIcon, () => h(Link)),
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
                   }
                 )
             );
@@ -1484,7 +1553,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1504,23 +1573,21 @@ export default defineComponent({
                       "@qq.com",
                     ].map((suffix) => {
                       const prefix =
-                        objectPath
-                          .get(
-                            modelValue.value,
-                            (path ?? "") + getPath(schema.value, field.id)
-                          )
-                          ?.split("@")[0] ?? "";
+                        get(
+                          modelValue.value,
+                          (path ?? "") + getPath(schema.value, field.id)
+                        )?.split("@")[0] ?? "";
                       return {
                         label: prefix + suffix,
                         value: prefix + suffix,
                       };
                     }),
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1530,7 +1597,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1539,21 +1606,32 @@ export default defineComponent({
                       : {}),
                   },
                   {
-                    suffix: () => h(NIcon, () => h(At)),
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
                   }
                 )
             );
           case "date":
             if (
-              !objectPath.has(
+              !has(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
-              )
+              ) &&
+              field.required
             )
-              objectPath.set(
+              set(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
-                Date.now() / 1000
+                Date.now()
               );
             return h(
               NFormItem,
@@ -1569,7 +1647,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1579,25 +1657,28 @@ export default defineComponent({
               },
               () =>
                 h(NDatePicker, {
-                  value:
-                    ReturnUNIX(
-                      objectPath.get(
-                        modelValue.value,
-                        (path ?? "") + getPath(schema.value, field.id),
-                        Date.now()
+                  value: get(
+                    modelValue.value,
+                    (path ?? "") + getPath(schema.value, field.id)
+                  )
+                    ? Number(
+                        get(
+                          modelValue.value,
+                          (path ?? "") + getPath(schema.value, field.id)
+                        )
                       )
-                    ) * 1000,
+                    : null,
                   onConfirm: (e: number) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
-                      e / 1000
+                      e
                     ),
                   type: "datetime",
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          objectPath.get(
+                          get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1620,7 +1701,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1630,12 +1711,12 @@ export default defineComponent({
               },
               () =>
                 h(LazyRichEditor, {
-                  modelValue: objectPath.get(
+                  modelValue: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   "onUpdate:modelValue.value": (v: any) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       v
@@ -1643,7 +1724,7 @@ export default defineComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          objectPath.get(
+                          get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1670,7 +1751,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1682,12 +1763,12 @@ export default defineComponent({
                 h(
                   NInputNumber,
                   {
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1698,7 +1779,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1707,28 +1788,69 @@ export default defineComponent({
                       : {}),
                   },
                   {
-                    suffix: () => h(NIcon, () => h(ListNumbers)),
+                    suffix: () =>
+                      FieldsList.flatMap(({ label, key, icon, children }) => [
+                        { label, key, icon },
+                        ...(children ?? []),
+                      ])
+                        .find(({ key }) =>
+                          field.subtype
+                            ? key === field.subtype
+                            : key === field.type
+                        )
+                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
                   }
                 )
             );
           case "password":
+            const alreadyRun = useState("alreadyRun", () => false);
+
+            if (
+              !alreadyRun.value &&
+              get(
+                modelValue.value,
+                (path ?? "") + getPath(schema.value, field.id)
+              ) !== undefined
+            ) {
+              alreadyRun.value = true;
+              set(
+                modelValue.value,
+                (path ?? "") + getPath(schema.value, field.id),
+                undefined
+              );
+            }
+            console.log(
+              get(
+                modelValue.value,
+                (path ?? "") + getPath(schema.value, field.id)
+              )
+            );
             return h(
               NFormItem,
               {
                 label: t(field.key),
                 path: (path ?? "") + getPath(schema.value, field.id),
                 rule: {
-                  required: field.required,
+                  required:
+                    !get(
+                      modelValue.value,
+                      (path ?? "") + getPath(schema.value, field.id)
+                    ) && field.required,
                   trigger: ["blur", "input"],
                   validator: (_rule, value) =>
-                    field.required && !value
+                    !get(
+                      modelValue.value,
+                      (path ?? "") + getPath(schema.value, field.id)
+                    ) &&
+                    field.required &&
+                    !value
                       ? new Error("This field is required")
                       : true,
                 },
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1740,12 +1862,12 @@ export default defineComponent({
                 h(NInput, {
                   type: "password",
                   showPasswordOn: "click",
-                  value: objectPath.get(
+                  value: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1754,7 +1876,7 @@ export default defineComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          objectPath.get(
+                          get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1773,7 +1895,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1783,12 +1905,12 @@ export default defineComponent({
               },
               () =>
                 h(NSwitch, {
-                  value: objectPath.get(
+                  value: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1797,13 +1919,13 @@ export default defineComponent({
             );
           case "list":
             if (
-              !objectPath.has(
+              !has(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
               field.default_value
             )
-              objectPath.set(
+              set(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 field.default_value
@@ -1822,7 +1944,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1833,12 +1955,12 @@ export default defineComponent({
               () =>
                 h(NSelect, {
                   defaultValue: field.default_value ?? [],
-                  value: objectPath.get(
+                  value: get(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    objectPath.set(
+                    set(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1852,7 +1974,7 @@ export default defineComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          objectPath.get(
+                          get(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1863,13 +1985,13 @@ export default defineComponent({
             );
           case "checkbox":
             if (
-              !objectPath.has(
+              !has(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
               field.default_value
             )
-              objectPath.set(
+              set(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 field.default_value
@@ -1888,7 +2010,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1900,12 +2022,12 @@ export default defineComponent({
                 h(
                   NCheckboxGroup,
                   {
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1913,7 +2035,7 @@ export default defineComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            objectPath.get(
+                            get(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1944,14 +2066,12 @@ export default defineComponent({
                 .concat(field.default_value)
                 .forEach(
                   (value) =>
-                    !objectPath
-                      .get(
-                        modelValue.value,
-                        (path ?? "") + getPath(schema.value, field.id),
-                        []
-                      )
-                      .includes(value) &&
-                    objectPath.push(
+                    !get(
+                      modelValue.value,
+                      (path ?? "") + getPath(schema.value, field.id),
+                      []
+                    ).includes(value) &&
+                    push(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1965,7 +2085,7 @@ export default defineComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        objectPath.get(
+                        get(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -2016,12 +2136,12 @@ export default defineComponent({
                           }[field.children as string] ?? "Type here",
                     },
                     defaultValue: field.default_value ?? [],
-                    value: objectPath.get(
+                    value: get(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value: any) =>
-                      objectPath.set(
+                      set(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -2048,7 +2168,7 @@ export default defineComponent({
 
           default:
             console.log(
-              objectPath.get(
+              get(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ),
@@ -2084,8 +2204,8 @@ export default defineComponent({
             NDrawerContent,
             {
               title: Drawer.value.id
-                ? `${t(toName(Drawer.value.table))} | ${Drawer.value.id}`
-                : `New ${t(toName(Drawer.value.table))}`,
+                ? `${t(Drawer.value.table)} | ${Drawer.value.id}`
+                : `New ${t(Drawer.value.table)}`,
               closable: true,
               nativeScrollbar: false,
             },
@@ -2165,10 +2285,7 @@ export default defineComponent({
                             ...Assets.value.filter((Asset: any) =>
                               []
                                 .concat(
-                                  objectPath.get(
-                                    modelValue.value,
-                                    CurrentField.value.path
-                                  )
+                                  get(modelValue.value, CurrentField.value.path)
                                 )
                                 .includes((Asset?.public_url ?? "") as never)
                             ),
@@ -2176,7 +2293,7 @@ export default defineComponent({
                               (Asset: any) =>
                                 ![]
                                   .concat(
-                                    objectPath.get(
+                                    get(
                                       modelValue.value,
                                       CurrentField.value.path
                                     )
@@ -2208,7 +2325,7 @@ export default defineComponent({
                                       HandleSelectAssets(Asset.public_url),
                                     type: []
                                       .concat(
-                                        objectPath.get(
+                                        get(
                                           modelValue.value,
                                           CurrentField.value.path
                                         )
@@ -2225,7 +2342,7 @@ export default defineComponent({
                                         h(
                                           []
                                             .concat(
-                                              objectPath.get(
+                                              get(
                                                 modelValue.value,
                                                 CurrentField.value.path
                                               )
@@ -2259,7 +2376,7 @@ export default defineComponent({
                                         root: "#assets_modal",
                                       },
                                       lazy: true,
-                                      src: `${Asset.public_url}?w=60`,
+                                      src: `${Asset.public_url}?fit=60`,
                                       previewSrc: Asset.public_url,
                                       imgProps: { style: "width: 100%" },
                                     })

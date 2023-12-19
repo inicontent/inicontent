@@ -63,15 +63,11 @@ export default defineComponent({
                           allowed_methods
                             ? [
                                 user.value.role === "admin" ||
-                                (allowed_methods.find(
-                                  (method) => method.role === user.value.role
-                                ) &&
-                                  allowed_methods
-                                    .find(
-                                      (method) =>
-                                        method.role === user.value.role
-                                    )
-                                    .methods.includes("r"))
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("r")
                                   ? {
                                       label: () =>
                                         h(
@@ -86,11 +82,11 @@ export default defineComponent({
                                     }
                                   : null,
                                 user.value.role === "admin" ||
-                                allowed_methods.find(
-                                  (method) =>
-                                    method.role === user.value.role &&
-                                    method.methods.includes("c")
-                                )
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("c")
                                   ? {
                                       label: () =>
                                         h(
@@ -105,15 +101,11 @@ export default defineComponent({
                                     }
                                   : null,
                                 user.value.role === "admin" ||
-                                (allowed_methods.find(
-                                  (method) => method.role === user.value.role
-                                ) &&
-                                  allowed_methods
-                                    .find(
-                                      (method) =>
-                                        method.role === user.value.role
-                                    )
-                                    .methods.includes("u"))
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("u")
                                   ? {
                                       label: () =>
                                         h(
@@ -128,15 +120,11 @@ export default defineComponent({
                                     }
                                   : null,
                                 user.value.role === "admin" ||
-                                (allowed_methods.find(
-                                  (method) => method.role === user.value.role
-                                ) &&
-                                  allowed_methods
-                                    .find(
-                                      (method) =>
-                                        method.role === user.value.role
-                                    )
-                                    .methods.includes("d"))
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("d")
                                   ? {
                                       label: () =>
                                         h(

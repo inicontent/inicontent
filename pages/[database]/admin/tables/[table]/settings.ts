@@ -25,6 +25,7 @@ import {
   Asterisk,
 } from "@vicons/tabler";
 import draggable from "vuedraggable";
+import { objectToDotNotation } from "inibase/utils";
 
 export default defineComponent({
   async setup() {
@@ -68,6 +69,7 @@ export default defineComponent({
     const Language = useGlobalCookie("Language");
     const route = useRoute(),
       message = useMessage(),
+      showDraggable = ref(false),
       Window = useState("Window", () => ({
         width: 0,
       })),
@@ -129,7 +131,7 @@ export default defineComponent({
         }
       },
       changeFieldType = (
-        { id, key, type, required, children }: any,
+        { id, key, required, children }: any,
         newType: string
       ) => {
         switch (newType) {
@@ -528,8 +530,8 @@ export default defineComponent({
                                             slug !== route.params.table ||
                                             route.params.table === "user"
                                         )
-                                        .map(({ key, slug }: any) => ({
-                                          label: t(key),
+                                        .map(({ slug }: any) => ({
+                                          label: t(slug),
                                           value: slug,
                                         })),
                                     }),
@@ -577,7 +579,28 @@ export default defineComponent({
       )} Settings`,
       link: [{ rel: "icon", href: database.value.icon }],
     });
-
+    onMounted(async () => {
+      if (Language.value) {
+        await useFetch(`/api/${route.params.database}/translation`, {
+          params: {
+            _where: JSON.stringify({
+              original:
+                "[]" +
+                Object.entries(
+                  objectToDotNotation(
+                    (useState("LanguageMessages").value ?? {})[
+                      Language.value
+                    ] ?? {}
+                  )
+                )
+                  .filter(([key, value]: any) => value === null)
+                  .map(([key, value]) => key)
+                  .join(","),
+            }),
+          },
+        });
+      }
+    });
     return () =>
       h(NGrid, { xGap: 12, cols: 12, itemResponsive: true }, () => [
         h(NGi, { span: 11 }, () =>
@@ -644,7 +667,10 @@ export default defineComponent({
                             }
                           )
                       ),
-                    default: () =>
+                    default: () => [
+                      showDraggable.value
+                        ? null
+                        : h("style", ".handle {display:none}"),
                       !schemaModal.value || schemaModal.value.length === 0
                         ? h("div", {
                             style: {
@@ -659,6 +685,7 @@ export default defineComponent({
                             },
                             () => RenderSchemaElement(schemaModal.value)
                           ),
+                    ],
                   }
                 ),
             }

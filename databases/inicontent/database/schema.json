@@ -1,0 +1,138 @@
+[
+  {
+    "id": 1,
+    "key": "slug",
+    "type": "string",
+    "required": true
+  },
+  {
+    "id": 2,
+    "key": "icon",
+    "type": "url",
+    "required": false
+  },
+  {
+    "id": 3,
+    "key": "languages",
+    "type": "array",
+    "required": false,
+    "children": "string"
+  },
+  {
+    "id": 4,
+    "key": "allowed_domains",
+    "type": "array",
+    "required": false,
+    "children": "url"
+  },
+  {
+    "id": 5,
+    "key": "roles",
+    "type": "array",
+    "required": false,
+    "children": "string"
+  },
+  {
+    "id": 6,
+    "key": "tables",
+    "type": "array",
+    "required": false,
+    "children": [
+      {
+        "id": 7,
+        "key": "id",
+        "type": "id",
+        "required": true
+      },
+      {
+        "id": 8,
+        "key": "slug",
+        "type": "string",
+        "required": true
+      },
+      {
+        "id": 9,
+        "key": "allowed_methods",
+        "type": "array",
+        "required": true,
+        "children": [
+          {
+            "id": 10,
+            "key": "role",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 11,
+            "key": "methods",
+            "type": "array",
+            "required": true,
+            "children": "string"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "key": "schema",
+        "type": "array",
+        "required": false,
+        "children": [
+          {
+            "id": 13,
+            "key": "id",
+            "type": "id",
+            "required": true
+          },
+          {
+            "id": 14,
+            "key": "subtype",
+            "type": "string",
+            "required": false,
+            "children": ""
+          },
+          {
+            "id": 15,
+            "key": "accept",
+            "type": "array",
+            "required": false,
+            "children": "string"
+          },
+          {
+            "id": 16,
+            "key": "search",
+            "type": "array",
+            "required": false,
+            "children": "string"
+          },
+          {
+            "id": 17,
+            "key": "label",
+            "type": "array",
+            "required": false,
+            "children": "string"
+          },
+          {
+            "id": 18,
+            "key": "image",
+            "type": "string",
+            "required": false
+          },
+          {
+            "id": 19,
+            "key": "values",
+            "type": "array",
+            "required": false,
+            "children": ["string", "number"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "key": "user",
+    "type": ["table", "array"],
+    "required": false,
+    "children": "table"
+  }
+]

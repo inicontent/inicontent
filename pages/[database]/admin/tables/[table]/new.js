@@ -35,10 +35,11 @@ export default defineComponent({
 
     const route = useRoute(),
       database = useState("database"),
-      Columns = database.value.tables.find(
-        (item) => item.slug === route.params.table
-      ).schema,
-      user = useState("user"),
+      schema = database.value.tables
+        .find((item) => item.slug === route.params.table)
+        .schema.filter(
+          (field) => !["id", "createdAt", "updatedAt"].includes(field.key)
+        ),
       message = useMessage(),
       single = ref({}),
       formRef = ref(),
@@ -71,17 +72,21 @@ export default defineComponent({
       };
 
     useHead({
-      title: `${database.value.slug} | ${t("new")} ${
+      title: `${database.value.slug} | ${t("new")} ${t(
         database.value.tables.find((item) => item.slug === route.params.table)
-          .name
-      }`,
+          .slug
+      )}`,
       link: [{ rel: "icon", href: database.value.icon }],
     });
     return () =>
       h(
         NCard,
         {
-          title: `${t("new")} item`,
+          title: `${t("new")} ${t(
+            database.value.tables.find(
+              (item) => item.slug === route.params.table
+            ).slug
+          )}`,
           style: "height: fit-content",
           onKeyup: (e) =>
             e.preventDefault() && e.code === "s" && (e.ctrlKey || e.metaKey)
@@ -93,36 +98,38 @@ export default defineComponent({
             h(
               NEllipsis,
               () =>
-                `${t("new")} ${
+                `${t("new")} ${t(
                   database.value.tables.find(
                     (item) => item.slug === route.params.table
-                  ).name
-                }`
+                  ).slug
+                )}`
             ),
           "header-extra": () =>
-            h(NSpace, {}, () => [
-              h(
-                NPopover,
-                {},
-                {
-                  trigger: () =>
-                    h(
-                      NButton,
-                      {
-                        secondary: true,
-                        circle: true,
-                        type: "primary",
-                        onClick: CREATE,
-                        loading: Loading.value["CREATE"],
-                      },
-                      {
-                        icon: () => h(NIcon, () => h(Send)),
-                      }
-                    ),
-                  default: () => t("publish"),
-                }
-              ),
-            ]),
+            schema.length > 4
+              ? h(NSpace, {}, () => [
+                  h(
+                    NPopover,
+                    {},
+                    {
+                      trigger: () =>
+                        h(
+                          NButton,
+                          {
+                            secondary: true,
+                            circle: true,
+                            type: "primary",
+                            onClick: CREATE,
+                            loading: Loading.value["CREATE"],
+                          },
+                          {
+                            icon: () => h(NIcon, () => h(Send)),
+                          }
+                        ),
+                      default: () => t("publish"),
+                    }
+                  ),
+                ])
+              : null,
           action: () =>
             h(NSpace, { justify: "end" }, () => [
               h(
@@ -150,7 +157,7 @@ export default defineComponent({
               () =>
                 h(LazyRenderFields, {
                   modelValue: single.value,
-                  schema: Columns,
+                  schema: schema,
                 })
             ),
         }

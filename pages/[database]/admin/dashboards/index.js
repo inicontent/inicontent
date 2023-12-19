@@ -221,9 +221,7 @@ export default defineComponent({
                       {
                         onClick: () =>
                           navigateTo(
-                            `/${route.params.database}/admin/admins/${toSlug(
-                              name
-                            )}`
+                            `/${route.params.database}/admin/admins/${name}`
                           ),
                         style: {
                           cursor: "pointer",

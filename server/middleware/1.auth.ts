@@ -57,9 +57,6 @@ export default defineWrappedResponseHandler(async (event: any) => {
     .slice(1);
   if (api !== "api") return;
 
-  if (!getUserIP(event) || !getRequestHeader(event, "user-agent"))
-    throw new Error("unsupported_browser");
-
   if (!DatabaseSlug) throw new Error("db_not_ found");
 
   if (await isExists(join(useRuntimeConfig().databasePath, DatabaseSlug)))

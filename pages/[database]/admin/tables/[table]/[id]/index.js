@@ -63,10 +63,9 @@ export default defineComponent({
         }
       };
     useHead({
-      title: `${database.value.slug} | ${t(
-        database.value.tables.find(({ slug }) => slug === route.params.table)
-          ?.slug ?? "--"
-      )} Table : ${route.params.id}`,
+      title: `${database.value.slug} | ${t(route.params.table)} ${t(
+        "table"
+      )} : ${route.params.id}`,
       link: [{ rel: "icon", href: database.value.icon }],
     });
 
@@ -83,15 +82,7 @@ export default defineComponent({
         },
         {
           header: () =>
-            h(
-              NEllipsis,
-              () =>
-                `${
-                  database.value.tables.find(
-                    ({ slug }) => slug === route.params.table
-                  )?.slug ?? "--"
-                } #${single.value.id}`
-            ),
+            h(NEllipsis, () => `${t(route.params.table)} #${single.value.id}`),
           "header-extra": () =>
             h(NSpace, {}, () => [
               h(

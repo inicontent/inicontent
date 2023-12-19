@@ -14,8 +14,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
         data = {
           mime_type: file.type,
           size: file.data.length,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         };
       if (event.context.child_user?.id ?? event.context.user?.id) {
         result.push({
