@@ -1,4 +1,4 @@
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     definePageMeta({
       middleware: "dashboard",

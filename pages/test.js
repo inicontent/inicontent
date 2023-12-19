@@ -1,6 +1,6 @@
 import { LazyRenderFields } from "#components";
 import { NForm } from "naive-ui";
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     const user = ref({
         username: "karim.ama",

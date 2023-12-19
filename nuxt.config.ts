@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 export default defineNuxtConfig({
-  ssr: false,
+  ssr: true,
   nitro: {
     hooks: {
       "dev:reload": () => require("sharp"),

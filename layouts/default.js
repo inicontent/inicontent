@@ -28,7 +28,7 @@ import {
   Language as LanguageIcon,
 } from "@vicons/tabler";
 
-export default defineComponent({
+export default defineNuxtComponent({
   setup: async (props, { slots }) => {
     const Language = useGlobalCookie("Language");
     useLanguage({

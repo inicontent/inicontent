@@ -57,7 +57,7 @@ function restoreSelection(range: Range | null) {
   window?.getSelection()?.addRange(range);
 }
 
-export default defineComponent({
+export default defineNuxtComponent({
   props: {
     modelValue: {
       type: String,

@@ -12,7 +12,7 @@ import VueApexCharts from "vue3-apexcharts";
 import { GridLayout } from "@noction/vue-draggable-grid";
 import "@noction/vue-draggable-grid/styles";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     const Theme = useGlobalCookie("Theme"),
       database = useState("database"),

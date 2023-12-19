@@ -60,7 +60,7 @@ import {
 } from "inibase/utils";
 import { get, set, has, del, push } from "object-path";
 import { LazyRichEditor, LazyRenderFields } from "#components";
-export default defineComponent({
+export default defineNuxtComponent({
   props: {
     schema: {
       type: [Object],
@@ -289,10 +289,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -352,10 +353,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -422,10 +424,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -1518,10 +1521,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -1607,10 +1611,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -1789,10 +1794,11 @@ export default defineComponent({
                   },
                   {
                     suffix: () =>
-                      FieldsList.flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
+                      FieldsList()
+                        .flatMap(({ label, key, icon, children }) => [
+                          { label, key, icon },
+                          ...(children ?? []),
+                        ])
                         .find(({ key }) =>
                           field.subtype
                             ? key === field.subtype
@@ -1819,12 +1825,6 @@ export default defineComponent({
                 undefined
               );
             }
-            console.log(
-              get(
-                modelValue.value,
-                (path ?? "") + getPath(schema.value, field.id)
-              )
-            );
             return h(
               NFormItem,
               {

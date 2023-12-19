@@ -6,7 +6,7 @@ import {
   NTimelineItem,
 } from "naive-ui";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     useHead({
       title: "Inicontent | Homepage",

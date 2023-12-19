@@ -18,7 +18,7 @@ import {
   Fingerprint,
 } from "@vicons/tabler";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     definePageMeta({
       middleware: "dashboard",
@@ -52,7 +52,7 @@ export default defineComponent({
         () =>
           h(NGrid, { xGap: 12, yGap: 12, cols: "1 500:2 800:4" }, () =>
             database.value.tables
-              .filter(
+              ?.filter(
                 ({ slug, allowed_methods }) =>
                   user.value &&
                   (user.value.role === "admin" ||

@@ -26,7 +26,7 @@ import {
 } from "@vicons/tabler";
 
 import { LazyRenderFields } from "#components";
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     definePageMeta({
       middleware: "dashboard",

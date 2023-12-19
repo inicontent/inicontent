@@ -58,7 +58,7 @@ import {
   Database,
 } from "@vicons/tabler";
 
-export default defineComponent({
+export default defineNuxtComponent({
   setup: () => {
     definePageMeta({
       middleware: "dashboard",

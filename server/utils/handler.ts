@@ -8,7 +8,10 @@ export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
   defineEventHandler<T>(async (event: any) => {
     const { _options } = getQuery(event);
     try {
-      if (!getUserIP(event) || !getRequestHeader(event, "user-agent"))
+      if (
+        getUserIP(event) === undefined ||
+        getRequestHeader(event, "user-agent") === undefined
+      )
         throw new Error("unsupported_browser");
 
       // do something before the route handler

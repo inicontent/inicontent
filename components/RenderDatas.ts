@@ -18,7 +18,7 @@ import {
 import { Check, X, FileText, User } from "@vicons/tabler";
 import { get, has } from "object-path";
 
-export default defineComponent({
+export default defineNuxtComponent({
   props: {
     schema: {
       type: [Object],

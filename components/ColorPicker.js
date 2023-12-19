@@ -1,4 +1,4 @@
-export default defineComponent({
+export default defineNuxtComponent({
   props: {
     width: {
       type: Number,

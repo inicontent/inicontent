@@ -52,7 +52,7 @@ import { get } from "object-path";
 import { LazyRenderFields } from "#components";
 import { isArrayOfObjects } from "inibase/utils";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     definePageMeta({
       middleware: "dashboard",
@@ -63,6 +63,7 @@ export default defineComponent({
       router = useRouter(),
       database = useState("database");
     const Language = useGlobalCookie("Language");
+
     useLanguage({
       ar: {
         click_to_copy: "نسخ",
@@ -265,30 +266,27 @@ export default defineComponent({
           return refreshTableData();
         },
       }),
-      { data: TableData, refresh: refreshTableData } = await useLazyAsyncData(
-        `TableData_${route.params.database}-${route.params.table}`,
-        () =>
-          $fetch(`/api/${route.params.database}/${route.params.table}`, {
-            onRequest: () => (Loading.value["TableData"] = true),
-            params: {
-              _options: JSON.stringify({
-                page: pagination.value.page,
-                per_page: pagination.value.pageSize,
-                columns: [],
-              }),
-              _where: searchInput.value
-                ? ShowDeleted.value
-                  ? JSON.stringify({
-                      ...searchInput.value,
-                      deletedAt: ">0",
-                    })
-                  : JSON.stringify(searchInput.value)
-                : ShowDeleted.value
-                ? JSON.stringify({ deletedAt: ">0" })
-                : null,
-            },
-          }),
+      { data: TableData, refresh: refreshTableData } = await useLazyFetch(
+        `/api/${route.params.database}/${route.params.table}`,
         {
+          onRequest: () => (Loading.value["TableData"] = true),
+          params: {
+            _options: JSON.stringify({
+              page: pagination.value.page,
+              per_page: pagination.value.pageSize,
+              columns: [],
+            }),
+            _where: searchInput.value
+              ? ShowDeleted.value
+                ? JSON.stringify({
+                    ...searchInput.value,
+                    deletedAt: ">0",
+                  })
+                : JSON.stringify(searchInput.value)
+              : ShowDeleted.value
+              ? JSON.stringify({ deletedAt: ">0" })
+              : null,
+          },
           transform: (res) => {
             Loading.value["TableData"] = false;
             if (res.options.total < res.options.per_page)
@@ -1185,17 +1183,18 @@ export default defineComponent({
             ],
           },
           ...(database.value.tables
-            ? database.value.tables.find(
+            ? database.value.tables?.find(
                 (item) => item.slug === route.params.table
               )?.schema ?? []
             : []
           ).map((item) => ({
             title: () =>
               h(NSpace, { align: "center" }, () => [
-                FieldsList.flatMap(({ label, key, icon, children }) => [
-                  { label, key, icon },
-                  ...(children ?? []),
-                ])
+                FieldsList()
+                  .flatMap(({ label, key, icon, children }) => [
+                    { label, key, icon },
+                    ...(children ?? []),
+                  ])
                   .find(({ key }) =>
                     item.subtype ? key === item.subtype : key === item.type
                   )
@@ -1351,7 +1350,7 @@ export default defineComponent({
 
     useHead({
       title: `${database.value.slug} | ${t(
-        database.value.tables.find((item) => item.slug === route.params.table)
+        database.value.tables?.find((item) => item.slug === route.params.table)
           .slug
       )} ${t("Table")}`,
       link: [{ rel: "icon", href: database.value.icon }],
@@ -1499,7 +1498,7 @@ export default defineComponent({
               header: () =>
                 h(NSpace, () => [
                   t(
-                    database.value.tables.find(
+                    database.value.tables?.find(
                       (item) => item.slug === route.params.table
                     )?.slug
                   ) ?? "--",
@@ -2011,7 +2010,7 @@ export default defineComponent({
                       default: () => t("add_new"),
                     }
                   ),
-                  user.value.role === "admin"
+                  user.value?.role === "admin"
                     ? h(
                         NPopover,
                         {},

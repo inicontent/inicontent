@@ -12,6 +12,7 @@ import { NuxtLayout, NuxtLink } from "#components";
 export default defineComponent({
   setup: (props, { slots }) => {
     const Language = useGlobalCookie("Language");
+
     useLanguage({
       ar: {
         show_all: "أظهر الكل",
@@ -30,6 +31,7 @@ export default defineComponent({
       user = useState("user"),
       isMenuOpen = useState("isMenuOpen", () => false),
       database = useState("database");
+
     return () =>
       h(NuxtLayout, { name: "default" }, () =>
         h(
@@ -58,158 +60,175 @@ export default defineComponent({
                   collapsed: !isMenuOpen.value,
                   collapsedIconSize: 22,
                   collapsedWidth: Window.value.width < 700 ? 0 : 64,
-                  options: [
-                    ...database.value.tables
-                      .filter(
-                        ({ slug, allowed_methods }) =>
-                          !["user", "session", "asset", "translation"].includes(
-                            slug
-                          ) &&
-                          (user.value.role === "admin" ||
-                            slug === "user" ||
-                            allowed_methods
-                              ?.find(
-                                (method) => method.role === user.value.role
-                              )
-                              ?.methods?.includes("r"))
-                      )
-                      .map(({ slug, allowed_methods }) => ({
-                        label: () =>
-                          h(
-                            NuxtLink,
-                            {
-                              to: `/${route.params.database}/admin/tables/${slug}`,
-                            },
-                            { default: () => t(slug) }
-                          ),
-                        key: slug,
-                        icon: () => t(slug).charAt(0).toUpperCase(),
-                        children:
-                          user.value.role === "admin" ||
-                          slug === "user" ||
-                          allowed_methods
-                            ?.find((method) => method.role === user.value.role)
-                            ?.methods?.includes("c")
-                            ? [
+                  options: database.value.tables
+                    ? [
+                        ...database.value.tables
+                          ?.filter(
+                            ({ slug, allowed_methods }) =>
+                              ![
+                                "user",
+                                "session",
+                                "asset",
+                                "translation",
+                              ].includes(slug) &&
+                              (user.value.role === "admin" ||
+                                slug === "user" ||
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("r"))
+                          )
+                          .map(({ slug, allowed_methods }) => ({
+                            label: () =>
+                              h(
+                                NuxtLink,
                                 {
-                                  label: () =>
-                                    h(
-                                      NuxtLink,
-                                      {
-                                        to: `/${route.params.database}/admin/tables/${slug}`,
-                                      },
-                                      { default: () => t("show_all") }
-                                    ),
-                                  key: slug,
-                                  icon: () => h(NIcon, () => h(Eye)),
+                                  to: `/${route.params.database}/admin/tables/${slug}`,
                                 },
-                                {
-                                  label: () =>
-                                    h(
-                                      NuxtLink,
-                                      {
-                                        to: `/${route.params.database}/admin/tables/${slug}/new`,
-                                      },
-                                      { default: () => t("add_new") }
-                                    ),
-                                  key: `new-${slug}`,
-                                  icon: () => h(NIcon, () => h(Plus)),
-                                },
-                              ]
-                            : null,
-                      })),
-                    database.value.tables.filter(
-                      ({ slug, allowed_methods }) =>
-                        ["user", "session", "asset", "translation"].includes(
-                          slug
-                        ) &&
-                        user.value.role &&
-                        (user.value.role === "admin" ||
-                          slug === "user" ||
-                          allowed_methods
-                            ?.find((method) => method.role === user.value.role)
-                            ?.methods?.includes("r"))
-                    ).length
-                      ? {
-                          key: "divider-1",
-                          type: "divider",
-                        }
-                      : null,
-                    ...database.value.tables
-                      .filter(
-                        ({ slug, allowed_methods }) =>
-                          ["user", "session", "asset", "translation"].includes(
-                            slug
-                          ) &&
-                          user.value.role &&
-                          (user.value.role === "admin" ||
-                            slug === "user" ||
-                            allowed_methods
-                              ?.find(
-                                (method) => method.role === user.value.role
-                              )
-                              ?.methods?.includes("r"))
-                      )
-                      .map(({ slug, allowed_methods }) => ({
-                        label: () =>
-                          h(
-                            NuxtLink,
-                            {
-                              to: `/${route.params.database}/admin/tables/${slug}`,
-                            },
-                            { default: () => t(slug) }
-                          ),
-                        key: slug,
-                        icon: () =>
-                          h(NIcon, () => {
-                            switch (slug) {
-                              case "asset":
-                                return h(Folders);
-                              case "translation":
-                                return h(LanguageIcon);
-                              case "user":
-                                return h(Users);
-                              case "session":
-                                return h(Fingerprint);
-                              default:
-                                return t(slug).charAt(0).toUpperCase();
+                                { default: () => t(slug) }
+                              ),
+                            key: slug,
+                            icon: () => t(slug).charAt(0).toUpperCase(),
+                            children:
+                              user.value.role === "admin" ||
+                              slug === "user" ||
+                              allowed_methods
+                                ?.find(
+                                  (method) => method.role === user.value.role
+                                )
+                                ?.methods?.includes("c")
+                                ? [
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}`,
+                                          },
+                                          { default: () => t("show_all") }
+                                        ),
+                                      key: slug,
+                                      icon: () => h(NIcon, () => h(Eye)),
+                                    },
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}/new`,
+                                          },
+                                          { default: () => t("add_new") }
+                                        ),
+                                      key: `new-${slug}`,
+                                      icon: () => h(NIcon, () => h(Plus)),
+                                    },
+                                  ]
+                                : null,
+                          })),
+                        database.value.tables?.filter(
+                          ({ slug, allowed_methods }) =>
+                            [
+                              "user",
+                              "session",
+                              "asset",
+                              "translation",
+                            ].includes(slug) &&
+                            user.value.role &&
+                            (user.value.role === "admin" ||
+                              slug === "user" ||
+                              allowed_methods
+                                ?.find(
+                                  (method) => method.role === user.value.role
+                                )
+                                ?.methods?.includes("r"))
+                        ).length
+                          ? {
+                              key: "divider-1",
+                              type: "divider",
                             }
-                          }),
-                        children:
-                          user.value.role === "admin" ||
-                          slug === "user" ||
-                          allowed_methods
-                            ?.find((method) => method.role === user.value.role)
-                            ?.methods?.includes("c")
-                            ? [
+                          : null,
+                        ...database.value.tables
+                          ?.filter(
+                            ({ slug, allowed_methods }) =>
+                              [
+                                "user",
+                                "session",
+                                "asset",
+                                "translation",
+                              ].includes(slug) &&
+                              user.value.role &&
+                              (user.value.role === "admin" ||
+                                slug === "user" ||
+                                allowed_methods
+                                  ?.find(
+                                    (method) => method.role === user.value.role
+                                  )
+                                  ?.methods?.includes("r"))
+                          )
+                          .map(({ slug, allowed_methods }) => ({
+                            label: () =>
+                              h(
+                                NuxtLink,
                                 {
-                                  label: () =>
-                                    h(
-                                      NuxtLink,
-                                      {
-                                        to: `/${route.params.database}/admin/tables/${slug}`,
-                                      },
-                                      { default: () => t("show_all") }
-                                    ),
-                                  key: slug,
-                                  icon: () => h(NIcon, () => h(Eye)),
+                                  to: `/${route.params.database}/admin/tables/${slug}`,
                                 },
-                                {
-                                  label: () =>
-                                    h(
-                                      NuxtLink,
-                                      {
-                                        to: `/${route.params.database}/admin/tables/${slug}/new`,
-                                      },
-                                      { default: () => t("add_new") }
-                                    ),
-                                  key: `new-${slug}`,
-                                  icon: () => h(NIcon, () => h(Plus)),
-                                },
-                              ]
-                            : null,
-                      })),
-                  ],
+                                { default: () => t(slug) }
+                              ),
+                            key: slug,
+                            icon: () =>
+                              h(NIcon, () => {
+                                switch (slug) {
+                                  case "asset":
+                                    return h(Folders);
+                                  case "translation":
+                                    return h(LanguageIcon);
+                                  case "user":
+                                    return h(Users);
+                                  case "session":
+                                    return h(Fingerprint);
+                                  default:
+                                    return t(slug).charAt(0).toUpperCase();
+                                }
+                              }),
+                            children:
+                              user.value.role === "admin" ||
+                              slug === "user" ||
+                              allowed_methods
+                                ?.find(
+                                  (method) => method.role === user.value.role
+                                )
+                                ?.methods?.includes("c")
+                                ? [
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}`,
+                                          },
+                                          { default: () => t("show_all") }
+                                        ),
+                                      key: slug,
+                                      icon: () => h(NIcon, () => h(Eye)),
+                                    },
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}/new`,
+                                          },
+                                          { default: () => t("add_new") }
+                                        ),
+                                      key: `new-${slug}`,
+                                      icon: () => h(NIcon, () => h(Plus)),
+                                    },
+                                  ]
+                                : null,
+                          })),
+                      ]
+                    : [],
                   defaultExpandedKeys: [
                     route.params.table ??
                       route.path.split("/").filter(Boolean).pop(),

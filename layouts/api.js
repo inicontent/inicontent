@@ -2,7 +2,7 @@ import { NLayout, NLayoutSider, NMenu, NLayoutContent, NIcon } from "naive-ui";
 import { Eye, Folders, Pencil, Plus, Trash } from "@vicons/tabler";
 import { NuxtLayout, NuxtLink } from "#components";
 
-export default defineComponent({
+export default defineNuxtComponent({
   setup: (props, { slots }) => {
     const Language = useGlobalCookie("Language");
     useLanguage({

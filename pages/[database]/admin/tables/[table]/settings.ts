@@ -27,7 +27,7 @@ import {
 import draggable from "vuedraggable";
 import { objectToDotNotation } from "inibase/utils";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     definePageMeta({
       middleware: "dashboard",
@@ -213,14 +213,16 @@ export default defineComponent({
                     value: field.content_type,
                     onUpdateValue: (v) => (field.content_type = v),
                     filterable: true,
-                    options: FieldsList.flatMap(
-                      ({ label, key, icon, children }) => [
+                    options: FieldsList()
+                      .flatMap(({ label, key, icon, children }) => [
                         { label, key, icon },
                         ...(children ?? []),
-                      ]
-                    ).filter(({ key }) =>
-                      ["text", "number", "email", "url", "color"].includes(key)
-                    ),
+                      ])
+                      .filter(({ key }) =>
+                        ["text", "number", "email", "url", "color"].includes(
+                          key
+                        )
+                      ),
                   })
               ),
             ];
@@ -361,7 +363,7 @@ export default defineComponent({
                                 h(
                                   NDropdown,
                                   {
-                                    options: FieldsList,
+                                    options: FieldsList(),
                                     style: {
                                       maxHeight: "200px",
                                     },
@@ -433,7 +435,7 @@ export default defineComponent({
                           h(
                             NDropdown,
                             {
-                              options: FieldsList,
+                              options: FieldsList(),
                               style: {
                                 maxHeight: "200px",
                               },
@@ -461,26 +463,34 @@ export default defineComponent({
                                 },
                                 {
                                   icon: () =>
-                                    FieldsList.flatMap(
-                                      ({ label, key, icon, children }) => [
-                                        { label, key, icon },
-                                        ...(children ?? []),
-                                      ]
-                                    )
+                                    FieldsList()
+                                      .flatMap(
+                                        ({ label, key, icon, children }) => [
+                                          { label, key, icon },
+                                          ...(children ?? []),
+                                        ]
+                                      )
                                       .find(({ key }) => key === element.type)
                                       ?.icon() ??
                                     h(NIcon, () => h(QuestionMark)),
                                   default: () =>
                                     Window.value.width < 700
                                       ? null
-                                      : FieldsList.flatMap(
-                                          ({ label, key, icon, children }) => [
-                                            { label, key, icon },
-                                            ...(children ?? []),
-                                          ]
-                                        ).find(
-                                          ({ key }) => key === element.type
-                                        )?.label ?? "Custom",
+                                      : FieldsList()
+                                          .flatMap(
+                                            ({
+                                              label,
+                                              key,
+                                              icon,
+                                              children,
+                                            }) => [
+                                              { label, key, icon },
+                                              ...(children ?? []),
+                                            ]
+                                          )
+                                          .find(
+                                            ({ key }) => key === element.type
+                                          )?.label ?? "Custom",
                                 }
                               )
                           ),
@@ -637,7 +647,7 @@ export default defineComponent({
                       h(
                         NDropdown,
                         {
-                          options: FieldsList,
+                          options: FieldsList(),
                           style: {
                             maxHeight: "200px",
                           },

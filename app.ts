@@ -26,7 +26,7 @@ import {
 import Vibrant from "node-vibrant";
 import { NuxtLayout, NuxtPage, NuxtLoadingIndicator } from "#components";
 
-export default defineComponent({
+export default defineNuxtComponent({
   async setup() {
     const rtlStyles: any = [
         unstableListRtl,
