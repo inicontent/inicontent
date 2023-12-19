@@ -7,10 +7,10 @@ import {
   NScrollbar,
   NSpace,
 } from "naive-ui";
-import { GridLayout } from "vue3-drr-grid-layout";
 import objectPath from "object-path";
 import VueApexCharts from "vue3-apexcharts";
-import "vue3-drr-grid-layout/dist/style.css";
+import { GridLayout } from "@noction/vue-draggable-grid";
+import "@noction/vue-draggable-grid/styles";
 
 export default defineComponent({
   async setup() {
