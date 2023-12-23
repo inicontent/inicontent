@@ -8,7 +8,7 @@ const POST_Session = async (event: any, slug: string) => {
   console.log(readdirSync(process.cwd()));
 
   console.log("using Runtime:");
-  console.log(readdirSync(process.cwd()));
+  console.log(readdirSync(useRuntimeConfig().databasePath));
 
   const db = new Inibase(slug, useRuntimeConfig().databasePath);
   const session_data = {
