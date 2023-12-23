@@ -58,12 +58,18 @@ import {
   validateFieldType,
   deepMerge,
 } from "inibase/utils";
-import { get, set, has, del, push } from "object-path";
+import {
+  getProperty,
+  setProperty,
+  hasProperty,
+  deleteProperty,
+} from "dot-prop";
 import { LazyRichEditor, LazyRenderFields } from "#components";
+import { type Schema } from "inibase";
 export default defineNuxtComponent({
   props: {
     schema: {
-      type: [Object],
+      type: Object as PropType<Schema>,
       default: [],
     },
     modelValue: {
@@ -158,22 +164,34 @@ export default defineNuxtComponent({
           !CurrentField.value.options.hasOwnProperty("single") ||
           CurrentField.value.options.single === true
         ) {
-          if (get(modelValue.value, CurrentField.value.path) === url)
-            del(modelValue.value, CurrentField.value.path);
-          else set(modelValue.value, CurrentField.value.path, url);
+          if (
+            (getProperty(modelValue.value, CurrentField.value.path) as any) ===
+            url
+          )
+            deleteProperty(modelValue.value, CurrentField.value.path);
+          else setProperty(modelValue.value, CurrentField.value.path, url);
         } else {
           if (
-            has(modelValue.value, CurrentField.value.path) &&
-            get(modelValue.value, CurrentField.value.path).includes(url)
+            hasProperty(modelValue.value, CurrentField.value.path) &&
+            getProperty(modelValue.value, CurrentField.value.path).includes(url)
           )
-            del(
+            deleteProperty(
               modelValue.value,
               CurrentField.value.path +
-                `.${get(modelValue.value, CurrentField.value.path).indexOf(
-                  url
-                )}`
+                `.${getProperty(
+                  modelValue.value,
+                  CurrentField.value.path
+                ).indexOf(url)}`
             );
-          else push(modelValue.value, CurrentField.value.path, url);
+          else
+            setProperty(
+              modelValue.value,
+              `${CurrentField.value.path}[${
+                getProperty(modelValue.value, CurrentField.value.path, [])
+                  .length + 1
+              }]`,
+              url
+            );
         }
       },
       RenderField = (field: any, path?: string): any => {
@@ -209,7 +227,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -219,12 +237,12 @@ export default defineNuxtComponent({
               },
               () =>
                 h(NSelect, {
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -252,7 +270,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -264,12 +282,12 @@ export default defineNuxtComponent({
                 h(
                   NInput,
                   {
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value.toString()
@@ -279,7 +297,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -316,7 +334,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -328,12 +346,12 @@ export default defineNuxtComponent({
                 h(
                   NInput,
                   {
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value.toString()
@@ -343,7 +361,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -384,7 +402,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -398,12 +416,12 @@ export default defineNuxtComponent({
                   {
                     type: "textarea",
                     rows: field.is_table ? 1 : 3,
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value.toString()
@@ -414,7 +432,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -452,7 +470,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -464,12 +482,12 @@ export default defineNuxtComponent({
                 h(
                   NRadioGroup,
                   {
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -477,7 +495,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -505,7 +523,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -551,14 +569,15 @@ export default defineNuxtComponent({
                     },
                     {
                       arrow: () =>
-                        !has(
+                        !hasProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         ) ||
-                        get(
+                        getProperty(
                           modelValue.value,
-                          (path ?? "") + getPath(schema.value, field.id)
-                        ).length === 0
+                          (path ?? "") + getPath(schema.value, field.id),
+                          []
+                        )?.length === 0
                           ? ""
                           : h(NIcon, () => h(ChevronRight)),
                       default: () =>
@@ -570,14 +589,15 @@ export default defineNuxtComponent({
                               DisabledItem.value[
                                 (path ?? "") + getPath(schema.value, field.id)
                               ] ||
-                              !has(
+                              !hasProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               ) ||
-                              get(
+                              getProperty(
                                 modelValue.value,
-                                (path ?? "") + getPath(schema.value, field.id)
-                              ).length === 0,
+                                (path ?? "") + getPath(schema.value, field.id),
+                                []
+                              )?.length === 0,
                             title: t(field.key),
                             name:
                               (path ?? "") + getPath(schema.value, field.id),
@@ -607,10 +627,19 @@ export default defineNuxtComponent({
                                         ] = false),
                                       1
                                     ),
-                                    push(
+                                    setProperty(
                                       modelValue.value,
-                                      (path ?? "") +
-                                        getPath(schema.value, field.id),
+                                      `${
+                                        (path ?? "") +
+                                        getPath(schema.value, field.id)
+                                      }[${
+                                        getProperty(
+                                          modelValue.value,
+                                          (path ?? "") +
+                                            getPath(schema.value, field.id),
+                                          []
+                                        ).length + 1
+                                      }]`,
                                       field.onCreate
                                         ? (field.onCreate instanceof Function
                                             ? field.onCreate()
@@ -624,7 +653,7 @@ export default defineNuxtComponent({
                                 }
                               ),
                             default: () =>
-                              has(
+                              hasProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -635,9 +664,10 @@ export default defineNuxtComponent({
                                       accordion: true,
                                     },
                                     () =>
-                                      get(
+                                      getProperty(
                                         modelValue.value,
-                                        path ?? getPath(schema.value, field.id)
+                                        path ?? getPath(schema.value, field.id),
+                                        []
                                       ).map((item: any, index: number) =>
                                         h(
                                           NCollapseItem,
@@ -667,7 +697,7 @@ export default defineNuxtComponent({
                                                   circle: true,
                                                   type: "error",
                                                   onClick: () =>
-                                                    del(
+                                                    deleteProperty(
                                                       modelValue.value,
                                                       (path ??
                                                         getPath(
@@ -736,10 +766,19 @@ export default defineNuxtComponent({
                                 size: "small",
                                 round: true,
                                 onClick: () =>
-                                  push(
+                                  setProperty(
                                     modelValue.value,
-                                    (path ?? "") +
-                                      getPath(schema.value, field.id),
+                                    `${
+                                      (path ?? "") +
+                                      getPath(schema.value, field.id)
+                                    }[${
+                                      getProperty(
+                                        modelValue.value,
+                                        (path ?? "") +
+                                          getPath(schema.value, field.id),
+                                        []
+                                      ).length + 1
+                                    }]`,
                                     {}
                                   ),
                               },
@@ -822,7 +861,7 @@ export default defineNuxtComponent({
                                               circle: true,
                                               type: "error",
                                               onClick() {
-                                                del(
+                                                deleteProperty(
                                                   modelValue.value,
                                                   (path ??
                                                     getPath(
@@ -843,7 +882,7 @@ export default defineNuxtComponent({
                                   },
                                 },
                           ],
-                          data: get(
+                          data: getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           ),
@@ -875,7 +914,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -888,7 +927,7 @@ export default defineNuxtComponent({
                   h(NSpace, {}, () => [
                     t(field.key),
                     field.single === true &&
-                    has(
+                    hasProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id) + ".id"
                     )
@@ -900,13 +939,13 @@ export default defineNuxtComponent({
                             size: "tiny",
                             onClick: () => {
                               Drawer.value.table = field.key;
-                              Drawer.value.id = get(
+                              Drawer.value.id = getProperty(
                                 modelValue.value,
                                 (path ?? "") +
                                   getPath(schema.value, field.id) +
                                   ".id"
                               );
-                              Drawer.value.data = get(
+                              Drawer.value.data = getProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               );
@@ -941,14 +980,14 @@ export default defineNuxtComponent({
                   ]),
                 default: () =>
                   h(NSelect, {
-                    value: has(
+                    value: hasProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     )
                       ? field.single === true
                         ? []
                             .concat(
-                              get(
+                              getProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -956,7 +995,7 @@ export default defineNuxtComponent({
                             .map((i: any) => i.id)[0]
                         : []
                             .concat(
-                              get(
+                              getProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -964,21 +1003,21 @@ export default defineNuxtComponent({
                             .map((i: any) => i.id)
                       : null,
                     onUpdateValue: (_value, option: any) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         Array.isArray(option)
                           ? option.map((i: any) => i.raw)
                           : option.raw
                       ),
-                    options: get(
+                    options: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     )
                       ? deepMerge(
                           []
                             .concat(
-                              get(
+                              getProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -986,11 +1025,18 @@ export default defineNuxtComponent({
                             .map((single_value: any) => ({
                               label: field.label
                                 .map((single_label: any) =>
-                                  t(get(single_value, single_label))
+                                  t(
+                                    getProperty(single_value, single_label) ??
+                                      ""
+                                  )
                                 )
                                 .join(" "),
                               value: single_value.id,
-                              image: get(single_value, field.image, null),
+                              image: getProperty(
+                                single_value,
+                                field.image,
+                                null
+                              ),
                               raw: single_value,
                             })),
                           OPTIONS.value ? OPTIONS.value[field.key] ?? [] : []
@@ -1176,19 +1222,30 @@ export default defineNuxtComponent({
                                   ? res.result.map((single_result: any) => ({
                                       label: field.label
                                         .map((single_label: any) =>
-                                          t(get(single_result, single_label))
+                                          t(
+                                            getProperty(
+                                              single_result,
+                                              single_label
+                                            ) ?? ""
+                                          )
                                         )
                                         .join(" "),
                                       value: single_result.id,
                                       image: field.image
                                         ? Array.isArray(
-                                            get(single_result, field.image)
+                                            getProperty(
+                                              single_result,
+                                              field.image
+                                            )
                                           )
-                                          ? get(
+                                          ? getProperty(
                                               single_result,
                                               `${field.image}[0]`
                                             )
-                                          : get(single_result, field.image)
+                                          : getProperty(
+                                              single_result,
+                                              field.image
+                                            )
                                         : null,
                                       raw: single_result,
                                     }))
@@ -1223,7 +1280,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1265,16 +1322,25 @@ export default defineNuxtComponent({
                                 inputProps: { type: "url" },
                                 onUpdateValue: (value) =>
                                   field.single === true
-                                    ? set(
+                                    ? setProperty(
                                         modelValue.value,
                                         (path ?? "") +
                                           getPath(schema.value, field.id),
                                         value
                                       )
-                                    : push(
+                                    : setProperty(
                                         modelValue.value,
-                                        (path ?? "") +
-                                          getPath(schema.value, field.id),
+                                        `${
+                                          (path ?? "") +
+                                          getPath(schema.value, field.id)
+                                        }[${
+                                          getProperty(
+                                            modelValue.value,
+                                            (path ?? "") +
+                                              getPath(schema.value, field.id),
+                                            []
+                                          ).length + 1
+                                        }]`,
                                         value
                                       ),
                                 placeholder: "Link",
@@ -1313,14 +1379,14 @@ export default defineNuxtComponent({
                       directoryDnd: true,
                       "on-update:file-list": (files: any) =>
                         files.map((file: any) => file.url ?? file)[0]
-                          ? set(
+                          ? setProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id),
                               field.single === true
                                 ? files.map((file: any) => file.url ?? file)[0]
                                 : files.map((file: any) => file.url ?? file)
                             )
-                          : del(
+                          : deleteProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             ),
@@ -1330,13 +1396,13 @@ export default defineNuxtComponent({
                       action: `/api/${
                         database.value.slug ?? "inicontent"
                       }/asset`,
-                      fileList: has(
+                      fileList: hasProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id)
                       )
                         ? ([]
                             .concat(
-                              get(
+                              getProperty(
                                 modelValue.value,
                                 (path ?? "") + getPath(schema.value, field.id)
                               )
@@ -1429,7 +1495,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1440,12 +1506,12 @@ export default defineNuxtComponent({
               () =>
                 h(NColorPicker, {
                   modes: ["hex"],
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1453,7 +1519,7 @@ export default defineNuxtComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          get(
+                          getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1483,7 +1549,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1496,12 +1562,12 @@ export default defineNuxtComponent({
                   NInput,
                   {
                     inputProps: { type: "url" },
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1511,7 +1577,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1557,7 +1623,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1577,21 +1643,22 @@ export default defineNuxtComponent({
                       "@qq.com",
                     ].map((suffix) => {
                       const prefix =
-                        get(
+                        getProperty(
                           modelValue.value,
-                          (path ?? "") + getPath(schema.value, field.id)
+                          (path ?? "") + getPath(schema.value, field.id),
+                          ""
                         )?.split("@")[0] ?? "";
                       return {
                         label: prefix + suffix,
                         value: prefix + suffix,
                       };
                     }),
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1601,7 +1668,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1627,13 +1694,13 @@ export default defineNuxtComponent({
             );
           case "date":
             if (
-              !has(
+              !hasProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
               field.required
             )
-              set(
+              setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 Date.now()
@@ -1652,7 +1719,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1662,19 +1729,19 @@ export default defineNuxtComponent({
               },
               () =>
                 h(NDatePicker, {
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   )
                     ? Number(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       )
                     : null,
                   onConfirm: (e: number) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       e
@@ -1683,7 +1750,7 @@ export default defineNuxtComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          get(
+                          getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1706,7 +1773,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1716,12 +1783,12 @@ export default defineNuxtComponent({
               },
               () =>
                 h(LazyRichEditor, {
-                  modelValue: get(
+                  modelValue: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   "onUpdate:modelValue.value": (v: any) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       v
@@ -1729,7 +1796,7 @@ export default defineNuxtComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          get(
+                          getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1756,7 +1823,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1768,12 +1835,12 @@ export default defineNuxtComponent({
                 h(
                   NInputNumber,
                   {
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -1784,7 +1851,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -1813,13 +1880,13 @@ export default defineNuxtComponent({
 
             if (
               !alreadyRun.value &&
-              get(
+              getProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) !== undefined
             ) {
               alreadyRun.value = true;
-              set(
+              setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 undefined
@@ -1832,13 +1899,13 @@ export default defineNuxtComponent({
                 path: (path ?? "") + getPath(schema.value, field.id),
                 rule: {
                   required:
-                    !get(
+                    !getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ) && field.required,
                   trigger: ["blur", "input"],
                   validator: (_rule, value) =>
-                    !get(
+                    !getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ) &&
@@ -1850,7 +1917,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1862,12 +1929,12 @@ export default defineNuxtComponent({
                 h(NInput, {
                   type: "password",
                   showPasswordOn: "click",
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1876,7 +1943,7 @@ export default defineNuxtComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          get(
+                          getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1895,7 +1962,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1905,12 +1972,12 @@ export default defineNuxtComponent({
               },
               () =>
                 h(NSwitch, {
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1919,13 +1986,13 @@ export default defineNuxtComponent({
             );
           case "list":
             if (
-              !has(
+              !hasProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
               field.default_value
             )
-              set(
+              setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 field.default_value
@@ -1944,7 +2011,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -1955,12 +2022,12 @@ export default defineNuxtComponent({
               () =>
                 h(NSelect, {
                   defaultValue: field.default_value ?? [],
-                  value: get(
+                  value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
                   ),
                   onUpdateValue: (value: any) =>
-                    set(
+                    setProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       value
@@ -1974,7 +2041,7 @@ export default defineNuxtComponent({
                   ...(field.input_props
                     ? field.input_props instanceof Function
                       ? field.input_props(
-                          get(
+                          getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
@@ -1985,13 +2052,13 @@ export default defineNuxtComponent({
             );
           case "checkbox":
             if (
-              !has(
+              !hasProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
               field.default_value
             )
-              set(
+              setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
                 field.default_value
@@ -2010,7 +2077,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -2022,12 +2089,12 @@ export default defineNuxtComponent({
                 h(
                   NCheckboxGroup,
                   {
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -2035,7 +2102,7 @@ export default defineNuxtComponent({
                     ...(field.input_props
                       ? field.input_props instanceof Function
                         ? field.input_props(
-                            get(
+                            getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
@@ -2066,14 +2133,20 @@ export default defineNuxtComponent({
                 .concat(field.default_value)
                 .forEach(
                   (value) =>
-                    !get(
+                    !getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       []
                     ).includes(value) &&
-                    push(
+                    setProperty(
                       modelValue.value,
-                      (path ?? "") + getPath(schema.value, field.id),
+                      `${(path ?? "") + getPath(schema.value, field.id)}[${
+                        getProperty(
+                          modelValue.value,
+                          (path ?? "") + getPath(schema.value, field.id),
+                          []
+                        ).length + 1
+                      }]`,
                       value
                     )
                 );
@@ -2085,7 +2158,7 @@ export default defineNuxtComponent({
                 ...(field.label_props
                   ? field.label_props instanceof Function
                     ? field.label_props(
-                        get(
+                        getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
@@ -2136,12 +2209,12 @@ export default defineNuxtComponent({
                           }[field.children as string] ?? "Type here",
                     },
                     defaultValue: field.default_value ?? [],
-                    value: get(
+                    value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
                     ),
                     onUpdateValue: (value: any) =>
-                      set(
+                      setProperty(
                         modelValue.value,
                         (path ?? "") + getPath(schema.value, field.id),
                         value
@@ -2168,7 +2241,7 @@ export default defineNuxtComponent({
 
           default:
             console.log(
-              get(
+              getProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ),
@@ -2285,7 +2358,11 @@ export default defineNuxtComponent({
                             ...Assets.value.filter((Asset: any) =>
                               []
                                 .concat(
-                                  get(modelValue.value, CurrentField.value.path)
+                                  getProperty(
+                                    modelValue.value,
+                                    CurrentField.value.path,
+                                    []
+                                  ) as any
                                 )
                                 .includes((Asset?.public_url ?? "") as never)
                             ),
@@ -2293,10 +2370,11 @@ export default defineNuxtComponent({
                               (Asset: any) =>
                                 ![]
                                   .concat(
-                                    get(
+                                    getProperty(
                                       modelValue.value,
-                                      CurrentField.value.path
-                                    )
+                                      CurrentField.value.path,
+                                      []
+                                    ) as any
                                   )
                                   .includes((Asset?.public_url ?? "") as never)
                             ),
@@ -2325,10 +2403,11 @@ export default defineNuxtComponent({
                                       HandleSelectAssets(Asset.public_url),
                                     type: []
                                       .concat(
-                                        get(
+                                        getProperty(
                                           modelValue.value,
-                                          CurrentField.value.path
-                                        )
+                                          CurrentField.value.path,
+                                          []
+                                        ) as any
                                       )
                                       .includes(
                                         (Asset?.public_url ?? "") as never
@@ -2342,10 +2421,11 @@ export default defineNuxtComponent({
                                         h(
                                           []
                                             .concat(
-                                              get(
+                                              getProperty(
                                                 modelValue.value,
-                                                CurrentField.value.path
-                                              )
+                                                CurrentField.value.path,
+                                                []
+                                              ) as any
                                             )
                                             .includes(
                                               (Asset?.public_url ?? "") as never

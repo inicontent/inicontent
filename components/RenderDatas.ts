@@ -16,12 +16,12 @@ import {
   NPopover,
 } from "naive-ui";
 import { Check, X, FileText, User } from "@vicons/tabler";
-import { get, has } from "object-path";
-
+import { getProperty, hasProperty } from "dot-prop";
+import { type Schema } from "inibase";
 export default defineNuxtComponent({
   props: {
     schema: {
-      type: [Object],
+      type: Object as PropType<Schema>,
       default: [],
     },
     modelValue: {
@@ -39,7 +39,12 @@ export default defineNuxtComponent({
       }),
       route = useRoute(),
       RenderData = (field: any, path?: string): any => {
-        if (!has(single.value, (path ?? "") + getPath(props.schema, field.id)))
+        if (
+          !hasProperty(
+            single.value,
+            (path ?? "") + getPath(props.schema, field.id)
+          )
+        )
           switch (field.type) {
             case "boolean":
               return h(
@@ -142,7 +147,7 @@ export default defineNuxtComponent({
                     h(NSpace, () =>
                       []
                         .concat(
-                          get(
+                          getProperty(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
                           )
@@ -171,7 +176,7 @@ export default defineNuxtComponent({
                   default: () =>
                     []
                       .concat(
-                        get(
+                        getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         )
@@ -202,7 +207,9 @@ export default defineNuxtComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(get(item, field.image))
+                                        .concat(
+                                          getProperty(item, field.image) ?? []
+                                        )
                                         .map((link: string) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
@@ -226,7 +233,7 @@ export default defineNuxtComponent({
                                   field.label
                                     ? field.label
                                         .map((single_label: string) =>
-                                          get(item, single_label)
+                                          getProperty(item, single_label)
                                         )
                                         .join(" ")
                                     : item.id,
@@ -244,7 +251,7 @@ export default defineNuxtComponent({
                                   field.label
                                     ? field.label
                                         .map((single_label: string) =>
-                                          get(item, single_label)
+                                          getProperty(item, single_label)
                                         )
                                         .join(" ")
                                     : item.id,
@@ -264,14 +271,14 @@ export default defineNuxtComponent({
                     ),
                   default: () =>
                     [].concat(
-                      get(
+                      getProperty(
                         single.value,
                         (path ?? "") + getPath(props.schema, field.id)
                       )
                     ).length === 1
                       ? []
                           .concat(
-                            get(
+                            getProperty(
                               single.value,
                               (path ?? "") + getPath(props.schema, field.id)
                             )
@@ -299,7 +306,7 @@ export default defineNuxtComponent({
                           h(NSpace, { align: "center" }, () =>
                             []
                               .concat(
-                                get(
+                                getProperty(
                                   single.value,
                                   (path ?? "") + getPath(props.schema, field.id)
                                 )
@@ -344,7 +351,7 @@ export default defineNuxtComponent({
                         trigger: () =>
                           h(NTime, {
                             time: Number(
-                              get(
+                              getProperty(
                                 single.value,
                                 (path ?? "") + getPath(props.schema, field.id)
                               )
@@ -354,7 +361,7 @@ export default defineNuxtComponent({
                         default: () =>
                           h(NTime, {
                             time: Number(
-                              get(
+                              getProperty(
                                 single.value,
                                 (path ?? "") + getPath(props.schema, field.id)
                               )
@@ -376,7 +383,7 @@ export default defineNuxtComponent({
                   default: () =>
                     h(NText, {
                       innerHTML:
-                        get(
+                        getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         ) ?? "--",
@@ -396,7 +403,7 @@ export default defineNuxtComponent({
                     h(
                       NIconWrapper,
                       {
-                        color: get(
+                        color: getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         )
@@ -413,7 +420,7 @@ export default defineNuxtComponent({
                           },
                           () =>
                             h(
-                              get(
+                              getProperty(
                                 single.value,
                                 (path ?? "") + getPath(props.schema, field.id)
                               )
@@ -434,10 +441,11 @@ export default defineNuxtComponent({
                       h(NText, { strong: true }, () => `${t(field.key)}: `)
                     ),
                   default: () =>
-                    get(
+                    getProperty(
                       single.value,
-                      (path ?? "") + getPath(props.schema, field.id)
-                    ).map((item: any, index: number) =>
+                      (path ?? "") + getPath(props.schema, field.id),
+                      []
+                    )?.map((item: any, index: number) =>
                       h(
                         NListItem,
                         {},
@@ -490,14 +498,14 @@ export default defineNuxtComponent({
                     h(
                       NA,
                       {
-                        href: `mailto:${get(
+                        href: `mailto:${getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         )}`,
                         _target: "blank",
                       },
                       () =>
-                        get(
+                        getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         ) ?? "--"
@@ -520,7 +528,7 @@ export default defineNuxtComponent({
                       {
                         round: true,
                         style: {
-                          backgroundColor: get(
+                          backgroundColor: getProperty(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
                           ),
@@ -531,7 +539,7 @@ export default defineNuxtComponent({
                           NText,
                           { style: { mixBlendMode: "difference" } },
                           () =>
-                            get(
+                            getProperty(
                               single.value,
                               (path ?? "") + getPath(props.schema, field.id)
                             )
@@ -553,14 +561,14 @@ export default defineNuxtComponent({
                       NA,
                       {
                         href:
-                          get(
+                          getProperty(
                             single.value,
                             (path ?? "") + getPath(props.schema, field.id)
                           ) ?? "#",
                         _target: "blank",
                       },
                       () =>
-                        get(
+                        getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         ) ?? "--"
@@ -583,7 +591,7 @@ export default defineNuxtComponent({
                       {
                         default: () =>
                           t(
-                            get(
+                            getProperty(
                               single.value,
                               (path ?? "") + getPath(props.schema, field.id)
                             )
@@ -608,7 +616,7 @@ export default defineNuxtComponent({
                         whiteSpace: "pre-line",
                       },
                       innerHTML:
-                        get(
+                        getProperty(
                           single.value,
                           (path ?? "") + getPath(props.schema, field.id)
                         ) ?? "--",
