@@ -48,10 +48,10 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "@vicons/tabler";
-import { get } from "object-path";
+import { getProperty } from "dot-prop";
 import { LazyRenderFields } from "#components";
 import { isArrayOfObjects } from "inibase/utils";
-
+import { type Database, type User } from "@/types";
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
@@ -61,7 +61,7 @@ export default defineNuxtComponent({
 
     const route = useRoute(),
       router = useRouter(),
-      database = useState("database");
+      database = useState<Database>("database");
     const Language = useGlobalCookie("Language");
 
     useLanguage({
@@ -133,34 +133,45 @@ export default defineNuxtComponent({
       },
     });
 
-    const Loading = useState("Loading", () => ({})),
-      Window = useState("Window"),
-      searchInput = useState(() => route.query.search ?? null),
-      searchArray = useState(() =>
-        route.query.search
-          ? JSON.parse(route.query.search).filter(
-              (searchItem) => !["deletedAt"].includes(searchItem[0])
-            )
-          : []
+    const Loading = <any>useState("Loading", () => ({})),
+      Window = <any>useState("Window"),
+      searchInput = <any>useState(() => route.query.search ?? null),
+      searchArray = <any>(
+        useState(() =>
+          route.query.search
+            ? JSON.parse(route.query.search as string).filter(
+                (searchItem: string[]) => !["deletedAt"].includes(searchItem[0])
+              )
+            : []
+        )
       ),
-      searchField = useState(() => []),
-      ShowDeleted = useState(() =>
-        route.query.hasOwnProperty("show_deleted") ? true : false
+      searchField = <any>useState(() => []),
+      ShowDeleted = <any>(
+        useState(() =>
+          route.query.hasOwnProperty("show_deleted") ? true : false
+        )
       );
     Loading.value["TableData"] = false;
     Loading.value["DrawerContent"] = false;
     Loading.value["Drawer"] = {};
 
-    const user = useState("user"),
+    const user = useState<User | any>("user"),
       message = useMessage(),
       ImportInput = ref(),
-      UploadProgress = ref(null),
+      UploadProgress = <any>ref(null),
       DrawerFormRef = useState(() => null),
-      Drawer = useState("Drawer", () => ({
+      Drawer = useState<{
+        show: boolean;
+        id: null | string;
+        table: null | string;
+        data: any;
+        width: number;
+      }>("Drawer", () => ({
         show: false,
         id: null,
         table: null,
         data: {},
+        width: 251,
       })),
       LoadDrawer = async () => {
         Loading.value["Drawer"] = {
@@ -170,7 +181,7 @@ export default defineNuxtComponent({
         await useFetch(
           `/api/${route.params.database}/${Drawer.value.table}/${Drawer.value.id}`,
           {
-            transform: (res) => (Drawer.value.data = res.result),
+            transform: (res: any) => (Drawer.value.data = res.result),
           }
         );
         Loading.value["Drawer"] = {
@@ -180,10 +191,10 @@ export default defineNuxtComponent({
         Drawer.value.show = true;
       },
       UpdateDrawer = async () => {
-        DrawerFormRef.value?.validate(async (errors) => {
+        (DrawerFormRef.value as any)?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["DrawerContent"] = true;
-            const { data } = await useFetch(
+            const { data }: any = await useFetch(
               `/api/${route.params.database}/${Drawer.value.table}/${Drawer.value.id}`,
               {
                 method: "PUT",
@@ -202,7 +213,7 @@ export default defineNuxtComponent({
         });
       },
       CreateDrawer = async () => {
-        DrawerFormRef.value?.validate(async (errors) => {
+        (DrawerFormRef.value as any)?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["DrawerContent"] = true;
             const { data } = await useFetch(
@@ -211,7 +222,7 @@ export default defineNuxtComponent({
                 method: "POST",
                 body: Drawer.value.data,
 
-                transform: (res) => {
+                transform: (res: any) => {
                   if (res.result) res.result = [].concat(res.result)[0];
                   return res;
                 },
@@ -235,21 +246,22 @@ export default defineNuxtComponent({
         pageCount: 1,
         showSizePicker: true,
         pageSize: route.query.per_page ? Number(route.query.per_page) : 15,
+        itemCount: 0,
         pageSizes: [15, 30, 60, 100, 500],
-        prefix: ({ itemCount }) => itemCount,
-        onChange: async (currentPage) => {
+        prefix: ({ itemCount }: any) => itemCount,
+        onChange: async (currentPage: number) => {
           pagination.value.page = currentPage;
-          let { page, ...Query } = route.query;
+          let { page, ...Query }: any = route.query;
           if (currentPage !== 1) Query = { ...Query, page: currentPage };
           router.push({ query: Query });
           return refreshTableData();
         },
-        onUpdatePageSize: async (pageSize) => {
+        onUpdatePageSize: async (pageSize: number) => {
           let OLD_pageSize = JSON.parse(
             JSON.stringify(pagination.value.pageSize)
           );
           pagination.value.pageSize = pageSize;
-          let { per_page, page, ...Query } = route.query;
+          let { per_page, page, ...Query }: any = route.query;
           if (pageSize !== 15) {
             pagination.value.page = Math.round(
               OLD_pageSize < pageSize
@@ -266,7 +278,7 @@ export default defineNuxtComponent({
           return refreshTableData();
         },
       }),
-      { data: TableData, refresh: refreshTableData } = await useLazyFetch(
+      { data: TableData, refresh: refreshTableData }: any = await useLazyFetch(
         `/api/${route.params.database}/${route.params.table}`,
         {
           onRequest: () => (Loading.value["TableData"] = true),
@@ -287,7 +299,7 @@ export default defineNuxtComponent({
               ? JSON.stringify({ deletedAt: ">0" })
               : null,
           },
-          transform: (res) => {
+          transform: (res: any) => {
             Loading.value["TableData"] = false;
             if (res.options.total < res.options.per_page)
               pagination.value.showSizePicker = false;
@@ -297,7 +309,7 @@ export default defineNuxtComponent({
           },
         }
       ),
-      DELETE = async (id) => {
+      DELETE = async (id: any) => {
         Loading.value["TableData"] = true;
         await useFetch(
           `/api/${route.params.database}/${route.params.table}/${id}`,
@@ -306,13 +318,13 @@ export default defineNuxtComponent({
           }
         );
         TableData.value.result = TableData.value.result.filter(
-          (item) => item.id !== id
+          (item: { id: any }) => item.id !== id
         );
         pagination.value.itemCount--;
         message.success("Deleted Successfully");
         Loading.value["TableData"] = false;
       },
-      RenderSchema = (value, item) => {
+      RenderSchema = (value: any, item: any): any => {
         if (value === null || value === undefined)
           switch (item.type) {
             case "boolean":
@@ -393,14 +405,14 @@ export default defineNuxtComponent({
                       NButton,
                       {
                         onClick: () => (
-                          (Drawer.value.id = [].concat(value)[0].id),
+                          (Drawer.value.id = ([].concat(value)[0] as any).id),
                           (Drawer.value.table = item.key),
                           (Drawer.value.data = {}),
                           LoadDrawer()
                         ),
                         loading:
                           Loading.value["Drawer"][
-                            `${item.key}_${[].concat(value)[0].id}`
+                            `${item.key}_${([].concat(value)[0] as any).id}`
                           ],
                         size: "small",
                         round: true,
@@ -410,8 +422,10 @@ export default defineNuxtComponent({
                             icon: () =>
                               h(NIcon, () => {
                                 const img = []
-                                  .concat(get(value, item.image))
-                                  .map((link) =>
+                                  .concat(
+                                    getProperty(value, item.image, []) as any
+                                  )
+                                  .map((link: string) =>
                                     link &&
                                     link.includes("cdn.inicontent") &&
                                     [
@@ -422,7 +436,7 @@ export default defineNuxtComponent({
                                       "webp",
                                       "svg",
                                       "gif",
-                                    ].includes(link.split(".").pop())
+                                    ].includes(link.split(".").pop() ?? "")
                                       ? `${link}?fit=18`
                                       : link
                                   )[0];
@@ -456,8 +470,8 @@ export default defineNuxtComponent({
                                 () =>
                                   item.label
                                     ? item.label
-                                        .map((single_label) =>
-                                          get(value, single_label)
+                                        .map((single_label: any) =>
+                                          getProperty(value, single_label)
                                         )
                                         .join(" ")
                                     : value.id
@@ -487,8 +501,8 @@ export default defineNuxtComponent({
                                 () =>
                                   item.label
                                     ? item.label
-                                        .map((single_label) =>
-                                          get(value, single_label)
+                                        .map((single_label: any) =>
+                                          getProperty(value, single_label)
                                         )
                                         .join(" ")
                                     : value.id
@@ -502,7 +516,7 @@ export default defineNuxtComponent({
                           navigateTo(
                             `/${route.params.database}/admin/tables/${
                               item.key
-                            }/${[].concat(value)[0].id}`
+                            }/${([].concat(value)[0] as any).id}`
                           ),
                         size: "small",
                         round: true,
@@ -518,8 +532,10 @@ export default defineNuxtComponent({
                                   },
                                   round: true,
                                   src: []
-                                    .concat(get(value, item.image))
-                                    .map((link) =>
+                                    .concat(
+                                      getProperty(value, item.image, []) as any
+                                    )
+                                    .map((link: string) =>
                                       link &&
                                       link.includes("cdn.inicontent") &&
                                       [
@@ -530,7 +546,7 @@ export default defineNuxtComponent({
                                         "webp",
                                         "svg",
                                         "gif",
-                                      ].includes(link.split(".").pop())
+                                      ].includes(link.split(".").pop() ?? "")
                                         ? `${link}?fit=18`
                                         : link
                                     )[0],
@@ -551,11 +567,11 @@ export default defineNuxtComponent({
                                 () =>
                                   item.label
                                     ? item.label
-                                        .map((single_label) =>
-                                          get(value, single_label)
+                                        .map((single_label: any) =>
+                                          getProperty(value, single_label)
                                         )
                                         .join(" ")
-                                    : [].concat(value)[0].id
+                                    : ([].concat(value)[0] as any).id
                               ),
                           }
                         : {
@@ -582,15 +598,15 @@ export default defineNuxtComponent({
                                 () =>
                                   item.label
                                     ? item.label
-                                        .map((single_label) =>
-                                          get(value, single_label)
+                                        .map((single_label: any) =>
+                                          getProperty(value, single_label)
                                         )
                                         .join(" ")
-                                    : [].concat(value)[0].id
+                                    : ([].concat(value)[0] as any).id
                               ),
                           }
                     )
-                : [].concat(value).map((col) =>
+                : [].concat(value).map((col: any) =>
                     Window.value.width >= 700
                       ? h(
                           NButton,
@@ -617,8 +633,14 @@ export default defineNuxtComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(get(col, item.image))
-                                        .map((link) =>
+                                        .concat(
+                                          getProperty(
+                                            col,
+                                            item.image,
+                                            []
+                                          ) as any
+                                        )
+                                        .map((link: string) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
                                           [
@@ -629,7 +651,9 @@ export default defineNuxtComponent({
                                             "webp",
                                             "svg",
                                             "gif",
-                                          ].includes(link.split(".").pop())
+                                          ].includes(
+                                            link.split(".").pop() ?? ""
+                                          )
                                             ? `${link}?fit=18`
                                             : link
                                         )[0],
@@ -650,8 +674,8 @@ export default defineNuxtComponent({
                                     () =>
                                       item.label
                                         ? item.label
-                                            .map((single_label) =>
-                                              get(col, single_label)
+                                            .map((single_label: any) =>
+                                              getProperty(col, single_label)
                                             )
                                             .join(" ")
                                         : col.id
@@ -681,8 +705,8 @@ export default defineNuxtComponent({
                                     () =>
                                       item.label
                                         ? item.label
-                                            .map((single_label) =>
-                                              get(col, single_label)
+                                            .map((single_label: any) =>
+                                              getProperty(col, single_label)
                                             )
                                             .join(" ")
                                         : col.id
@@ -714,8 +738,14 @@ export default defineNuxtComponent({
                                       },
                                       round: true,
                                       src: []
-                                        .concat(get(col, item.image))
-                                        .map((link) =>
+                                        .concat(
+                                          getProperty(
+                                            col,
+                                            item.image,
+                                            []
+                                          ) as any
+                                        )
+                                        .map((link: string) =>
                                           link &&
                                           link.includes("cdn.inicontent") &&
                                           [
@@ -726,7 +756,9 @@ export default defineNuxtComponent({
                                             "webp",
                                             "svg",
                                             "gif",
-                                          ].includes(link.split(".").pop())
+                                          ].includes(
+                                            link.split(".").pop() ?? ""
+                                          )
                                             ? `${link}?fit=18`
                                             : link
                                         )[0],
@@ -747,8 +779,8 @@ export default defineNuxtComponent({
                                     () =>
                                       item.label
                                         ? item.label
-                                            .map((single_label) =>
-                                              get(col, single_label)
+                                            .map((single_label: any) =>
+                                              getProperty(col, single_label)
                                             )
                                             .join(" ")
                                         : col.id
@@ -778,8 +810,8 @@ export default defineNuxtComponent({
                                     () =>
                                       item.label
                                         ? item.label
-                                            .map((single_label) =>
-                                              get(col, single_label)
+                                            .map((single_label: any) =>
+                                              getProperty(col, single_label)
                                             )
                                             .join(" ")
                                         : col.id
@@ -954,7 +986,7 @@ export default defineNuxtComponent({
               );
             case "upload":
               return [].concat(value).length === 1
-                ? [].concat(value).map((link) =>
+                ? [].concat(value).map((link: string) =>
                     [
                       "png",
                       "jpg",
@@ -963,7 +995,7 @@ export default defineNuxtComponent({
                       "webp",
                       "svg",
                       "gif",
-                    ].includes(link.split(".").pop())
+                    ].includes(link.split(".").pop() ?? "")
                       ? h(NImage, {
                           src:
                             link && link.includes("cdn.inicontent")
@@ -981,7 +1013,7 @@ export default defineNuxtComponent({
                             ...[]
                               .concat(value)
                               .slice(0, 3)
-                              .map((link) =>
+                              .map((link: string) =>
                                 [
                                   "png",
                                   "jpg",
@@ -990,7 +1022,7 @@ export default defineNuxtComponent({
                                   "webp",
                                   "svg",
                                   "gif",
-                                ].includes(link.split(".").pop())
+                                ].includes(link.split(".").pop() ?? "")
                                   ? h(NImage, {
                                       src:
                                         link && link.includes("cdn.inicontent")
@@ -1003,7 +1035,7 @@ export default defineNuxtComponent({
                               ),
                             `+${[].concat(value).length - 3}`,
                           ]
-                        : [].concat(value).map((link) =>
+                        : [].concat(value).map((link: string) =>
                             [
                               "png",
                               "jpg",
@@ -1012,7 +1044,7 @@ export default defineNuxtComponent({
                               "webp",
                               "svg",
                               "gif",
-                            ].includes(link.split(".").pop())
+                            ].includes(link.split(".").pop() ?? "")
                               ? h(NImage, {
                                   src:
                                     link && link.includes("cdn.inicontent")
@@ -1091,20 +1123,21 @@ export default defineNuxtComponent({
                             },
                             () =>
                               h(NSpace, { vertical: true }, () =>
-                                item.children.map((child) =>
-                                  h(
-                                    NSpace,
-                                    {
-                                      align: "center",
-                                    },
-                                    () => [
-                                      h("strong", `${t(child.key)}:`),
-                                      RenderSchema(
-                                        get(_item, child.slug),
-                                        child
-                                      ),
-                                    ]
-                                  )
+                                item.children.map(
+                                  (child: { key: string | null; slug: any }) =>
+                                    h(
+                                      NSpace,
+                                      {
+                                        align: "center",
+                                      },
+                                      () => [
+                                        h("strong", `${t(child.key)}:`),
+                                        RenderSchema(
+                                          getProperty(_item, child.slug),
+                                          child
+                                        ),
+                                      ]
+                                    )
                                 )
                               )
                           )
@@ -1129,10 +1162,10 @@ export default defineNuxtComponent({
                     ),
                   default: () =>
                     h(NSpace, { vertical: true }, () =>
-                      item.children.map((child) =>
+                      item.children.map((child: { key: any; slug: any }) =>
                         h(NSpace, { align: "center", inline: true }, () => [
                           h("strong", `${child.key}:`),
-                          RenderSchema(get(value, child.slug), child),
+                          RenderSchema(getProperty(value, child.slug), child),
                         ])
                       )
                     ),
@@ -1174,7 +1207,7 @@ export default defineNuxtComponent({
                     {
                       method: "DELETE",
                       body: checkedRowKeys.value,
-                    }
+                    } as any
                   );
                   message.success("Deleted Successfully");
                   await refreshTableData();
@@ -1184,10 +1217,10 @@ export default defineNuxtComponent({
           },
           ...(database.value.tables
             ? database.value.tables?.find(
-                (item) => item.slug === route.params.table
+                ({ slug }) => slug === route.params.table
               )?.schema ?? []
             : []
-          ).map((item) => ({
+          ).map((item: any) => ({
             title: () =>
               h(NSpace, { align: "center" }, () => [
                 FieldsList()
@@ -1204,7 +1237,8 @@ export default defineNuxtComponent({
             width:
               item.key && item.key.length > 10 ? item.key.length * 12 : 120,
             key: item.key,
-            render: (row) => RenderSchema(row[item.key], item),
+            render: (row: { [x: string]: any }) =>
+              RenderSchema(row[item.key], item),
           })),
           {
             title: t("actions"),
@@ -1212,7 +1246,7 @@ export default defineNuxtComponent({
             align: "center",
             width: 150,
             key: "actions",
-            render(row) {
+            render(row: { id: any }) {
               return h(
                 NSpace,
                 {
@@ -1326,7 +1360,7 @@ export default defineNuxtComponent({
         ].filter((i) => i !== null);
 
     watch(searchInput, (v) => {
-      const { search, ...Query } = route.query;
+      const { search, ...Query }: any = route.query;
       return v
         ? router.push({
             query: {
@@ -1350,10 +1384,10 @@ export default defineNuxtComponent({
 
     useHead({
       title: `${database.value.slug} | ${t(
-        database.value.tables?.find((item) => item.slug === route.params.table)
-          .slug
+        database.value.tables?.find(({ slug }) => slug === route.params.table)
+          ?.slug ?? ""
       )} ${t("Table")}`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      link: [{ rel: "icon", href: database.value.icon ?? "" }],
     });
 
     return () => [
@@ -1362,12 +1396,12 @@ export default defineNuxtComponent({
             NDrawer,
             {
               show: Drawer.value.show,
-              "on-update:show": (v) => (Drawer.value.show = v),
+              "on-update:show": (v: boolean) => (Drawer.value.show = v),
               width:
                 Window.value.width < 700
                   ? window.screen.width
-                  : Drawer.value.width ?? 251,
-              "on-update:width": (w) => (Drawer.value.width = w),
+                  : Drawer.value.width,
+              "on-update:width": (w: any) => (Drawer.value.width = w),
               resizable: true,
               placement: Language.value === "ar" ? "left" : "right",
             },
@@ -1389,7 +1423,7 @@ export default defineNuxtComponent({
                             {
                               tag: "a",
                               href: `/${route.params.database}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`,
-                              onClick: (e) => (
+                              onClick: (e: any) => (
                                 e.preventDefault(),
                                 navigateTo(
                                   `/${route.params.database}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`
@@ -1474,9 +1508,10 @@ export default defineNuxtComponent({
                       () =>
                         h(LazyRenderFields, {
                           modelValue: Drawer.value.data,
-                          schema: database.value.tables.find(
-                            (item) => item.slug === Drawer.value.table
-                          ).schema,
+                          schema:
+                            database.value.tables.find(
+                              ({ slug }) => slug === Drawer.value.table
+                            )?.schema ?? [],
                         })
                     ),
                 }
@@ -1499,7 +1534,7 @@ export default defineNuxtComponent({
                 h(NSpace, () => [
                   t(
                     database.value.tables?.find(
-                      (item) => item.slug === route.params.table
+                      ({ slug }) => slug === route.params.table
                     )?.slug
                   ) ?? "--",
                   h(
@@ -1529,54 +1564,57 @@ export default defineNuxtComponent({
                     ref: ImportInput,
                     type: "file",
                     accept: ".json,.csv,.xml",
-                    onChange: async (e) => {
-                      const reader = new FileReader();
-                      reader.addEventListCheckener("load", async (event) => {
-                        try {
-                          let items,
-                            chunkSize = 500;
-                          switch (e.target.files[0].type) {
-                            case "application/json":
-                              items = JSON.parse(event.target.result);
-                              break;
-                          }
-                          if (items && items.length > 0) {
-                            UploadProgress.value = 0;
-                            let newItems = [
-                              ...Array(Math.ceil(items.length / chunkSize)),
-                            ].map((_, index) => index);
-                            for await (const index of newItems) {
-                              const { data } = await useFetch(
-                                `/api/${route.params.database}/${route.params.table}`,
-                                {
-                                  method: "POST",
-                                  body: items.splice(0, chunkSize),
-                                }
-                              );
-                              if (
-                                data.value &&
-                                data.value.result &&
-                                data.value.result.length > 0
-                              ) {
-                                UploadProgress.value =
-                                  ((index + 1) * 100) / newItems.length;
-                                if (UploadProgress.value === 100) {
-                                  message.success(data.value.message.en);
-                                  setTimeout(
-                                    () => (UploadProgress.value = null),
-                                    1500
-                                  );
-                                }
-                              } else message.error(data.value.message.en);
-                            }
-                            refreshTableData();
-                          } else message.error("File not valid");
-                        } catch (error) {
-                          console.log(error);
-                        }
-                        e.target.value = null;
-                      });
-                      reader.readAsText(e.target.files[0]);
+                    onChange: async (e: any) => {
+                      // const reader = new FileReader();
+                      // reader.addEventListCheckener(
+                      //   "load",
+                      //   async (event: any) => {
+                      //     try {
+                      //       let items,
+                      //         chunkSize = 500;
+                      //       switch (e.target.files[0].type) {
+                      //         case "application/json":
+                      //           items = JSON.parse(event.target.result);
+                      //           break;
+                      //       }
+                      //       if (items && items.length > 0) {
+                      //         UploadProgress.value = 0;
+                      //         let newItems = [
+                      //           ...Array(Math.ceil(items.length / chunkSize)),
+                      //         ].map((_, index) => index);
+                      //         for await (const index of newItems) {
+                      //           const { data }:any = await useFetch(
+                      //             `/api/${route.params.database}/${route.params.table}`,
+                      //             {
+                      //               method: "POST",
+                      //               body: items.splice(0, chunkSize),
+                      //             }
+                      //           );
+                      //           if (
+                      //             data.value &&
+                      //             data.value.result &&
+                      //             data.value.result.length > 0
+                      //           ) {
+                      //             UploadProgress.value =
+                      //               ((index + 1) * 100) / newItems.length;
+                      //             if (UploadProgress.value === 100) {
+                      //               message.success(data.value.message.en);
+                      //               setTimeout(
+                      //                 () => (UploadProgress.value = null),
+                      //                 1500
+                      //               );
+                      //             }
+                      //           } else message.error(data.value.message.en);
+                      //         }
+                      //         refreshTableData();
+                      //       } else message.error("File not valid");
+                      //     } catch (error) {
+                      //       console.log(error);
+                      //     }
+                      //     e.target.value = null;
+                      //   }
+                      // );
+                      // reader.readAsText(e.target.files[0]);
                     },
                   }),
                   h(
@@ -1587,8 +1625,8 @@ export default defineNuxtComponent({
                         (!TableData.value?.result ||
                           !database.value.tables ||
                           !database.value.tables.find(
-                            (item) => item.slug === route.params.table
-                          ).schema),
+                            ({ slug }) => slug === route.params.table
+                          )?.schema),
                       style: {
                         maxHeight: "240px",
                         width: Window.value.width < 700 ? "300px" : "500px",
@@ -1612,9 +1650,9 @@ export default defineNuxtComponent({
                                     (!TableData.value?.result ||
                                       !database.value.tables ||
                                       !database.value.tables.find(
-                                        (item) =>
-                                          item.slug === route.params.table
-                                      ).schema),
+                                        ({ slug }) =>
+                                          slug === route.params.table
+                                      )?.schema),
                                   onClick: () => {
                                     if (
                                       !searchArray.value ||
@@ -1701,98 +1739,129 @@ export default defineNuxtComponent({
                             },
                           },
                           () =>
-                            searchArray.value.map((item, index) =>
-                              h(NInputGroup, () => [
-                                h(NSelect, {
-                                  tag: true,
-                                  filterable: true,
-                                  value: searchArray.value[index][0],
-                                  onUpdateValue: (v, option) => (
-                                    (searchField.value[index] = option.ty),
-                                    (searchArray.value[index][0] = v)
-                                  ),
-                                  options:
-                                    database.value.tables &&
-                                    database.value.tables.find(
-                                      (item) => item.slug === route.params.table
-                                    ).schema
-                                      ? database.value.tables
-                                          .find(
-                                            (item) =>
-                                              item.slug === route.params.table
-                                          )
-                                          .schema.map((item, _index, schema) =>
-                                            GenerateSearchInOptions(
-                                              schema,
-                                              item
+                            searchArray.value.map(
+                              (item: any, index: string | number) =>
+                                h(NInputGroup, () => [
+                                  h(NSelect, {
+                                    tag: true,
+                                    filterable: true,
+                                    value: searchArray.value[index][0],
+                                    onUpdateValue: (v, option) => (
+                                      (searchField.value[index] = (
+                                        option as any
+                                      ).label),
+                                      (searchArray.value[index][0] = v)
+                                    ),
+                                    options:
+                                      database.value.tables &&
+                                      database.value.tables.find(
+                                        ({ slug }) =>
+                                          slug === route.params.table
+                                      )?.schema
+                                        ? database.value.tables
+                                            .find(
+                                              ({ slug }) =>
+                                                slug === route.params.table
                                             )
-                                          )
-                                          .flat(Infinity)
-                                      : [],
-                                  style: {
-                                    width: "33.33%",
-                                  },
-                                }),
-                                h(NSelect, {
-                                  filterable: true,
-                                  defaultValue: "=",
-                                  value: searchArray.value[index][1],
-                                  onUpdateValue: (v) =>
-                                    (searchArray.value[index][1] = v),
-                                  options: searchField.value[index]
-                                    ? ["date", "number"].includes(
-                                        searchField.value[index]
-                                      )
-                                      ? [
-                                          {
-                                            label: t(
-                                              "search_conditions.equal_to"
-                                            ),
-                                            value: "=",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.not_equal_to"
-                                            ),
-                                            value: "!",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.greater_than"
-                                            ),
-                                            value: ">",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.greater_equal_to"
-                                            ),
-                                            value: ">=",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.less_than"
-                                            ),
-                                            value: "<",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.less_equal_to"
-                                            ),
-                                            value: "<=",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.contains"
-                                            ),
-                                            value: "like",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.not_contain"
-                                            ),
-                                            value: "not like",
-                                          },
-                                        ]
+                                            ?.schema.map(
+                                              (item, _index: any, schema) =>
+                                                GenerateSearchInOptions(
+                                                  schema,
+                                                  item
+                                                )
+                                            )
+                                            .flat(Infinity)
+                                        : [],
+                                    style: {
+                                      width: "33.33%",
+                                    },
+                                  }),
+                                  h(NSelect, {
+                                    filterable: true,
+                                    defaultValue: "=",
+                                    value: searchArray.value[index][1],
+                                    onUpdateValue: (v) =>
+                                      (searchArray.value[index][1] = v),
+                                    options: searchField.value[index]
+                                      ? ["date", "number"].includes(
+                                          searchField.value[index]
+                                        )
+                                        ? [
+                                            {
+                                              label: t(
+                                                "search_conditions.equal_to"
+                                              ),
+                                              value: "=",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.not_equal_to"
+                                              ),
+                                              value: "!",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.greater_than"
+                                              ),
+                                              value: ">",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.greater_equal_to"
+                                              ),
+                                              value: ">=",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.less_than"
+                                              ),
+                                              value: "<",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.less_equal_to"
+                                              ),
+                                              value: "<=",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.contains"
+                                              ),
+                                              value: "like",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.not_contain"
+                                              ),
+                                              value: "not like",
+                                            },
+                                          ]
+                                        : [
+                                            {
+                                              label: t(
+                                                "search_conditions.equal_to"
+                                              ),
+                                              value: "=",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.not_equal_to"
+                                              ),
+                                              value: "!",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.contains"
+                                              ),
+                                              value: "like",
+                                            },
+                                            {
+                                              label: t(
+                                                "search_conditions.not_contain"
+                                              ),
+                                              value: "not like",
+                                            },
+                                          ]
                                       : [
                                           {
                                             label: t(
@@ -1818,80 +1887,54 @@ export default defineNuxtComponent({
                                             ),
                                             value: "not like",
                                           },
-                                        ]
-                                    : [
-                                        {
-                                          label: t(
-                                            "search_conditions.equal_to"
+                                        ],
+                                    style: {
+                                      width: "33.33%",
+                                    },
+                                  }),
+                                  (() => {
+                                    switch (searchField.value[index] ?? null) {
+                                      case "date":
+                                        return h(NDatePicker, {
+                                          value: searchArray.value[index][2]
+                                            ? searchArray.value[index][2] * 1000
+                                            : Date.now(),
+                                          onConfirm: (e) => (
+                                            (searchArray.value[index][2] =
+                                              e / 1000),
+                                            (searchInput.value =
+                                              searchArray.value &&
+                                              searchArray.value.length > 0
+                                                ? JSON.stringify(
+                                                    searchArray.value
+                                                  )
+                                                : null),
+                                            refreshTableData()
                                           ),
-                                          value: "=",
-                                        },
-                                        {
-                                          label: t(
-                                            "search_conditions.not_equal_to"
-                                          ),
-                                          value: "!",
-                                        },
-                                        {
-                                          label: t(
-                                            "search_conditions.contains"
-                                          ),
-                                          value: "like",
-                                        },
-                                        {
-                                          label: t(
-                                            "search_conditions.not_contain"
-                                          ),
-                                          value: "not like",
-                                        },
-                                      ],
-                                  style: {
-                                    width: "33.33%",
-                                  },
-                                }),
-                                (() => {
-                                  switch (searchField.value[index] ?? null) {
-                                    case "date":
-                                      return h(NDatePicker, {
-                                        value: searchArray.value[index][2]
-                                          ? searchArray.value[index][2] * 1000
-                                          : Date.now(),
-                                        onConfirm: (e) => (
-                                          (searchArray.value[index][2] =
-                                            e / 1000),
-                                          (searchInput.value =
-                                            searchArray.value &&
-                                            searchArray.value.length > 0
-                                              ? JSON.stringify(
-                                                  searchArray.value
-                                                )
-                                              : null),
-                                          refreshTableData()
-                                        ),
-                                        type: "datetime",
-                                      });
-                                    default:
-                                      return h(NInput, {
-                                        onKeyup: (e) =>
-                                          e.code === "Enter" &&
-                                          ((searchInput.value =
-                                            searchArray.value &&
-                                            searchArray.value.length > 0
-                                              ? JSON.stringify(
-                                                  searchArray.value
-                                                )
-                                              : null),
-                                          refreshTableData()),
-                                        value: searchArray.value[index][2],
-                                        onUpdateValue: (v) =>
-                                          (searchArray.value[index][2] = v),
-                                        style: {
-                                          width: "33.33%",
-                                        },
-                                      });
-                                  }
-                                })(),
-                              ])
+                                          type: "datetime",
+                                        });
+                                      default:
+                                        return h(NInput, {
+                                          onKeyup: (e) =>
+                                            e.code === "Enter" &&
+                                            ((searchInput.value =
+                                              searchArray.value &&
+                                              searchArray.value.length > 0
+                                                ? JSON.stringify(
+                                                    searchArray.value
+                                                  )
+                                                : null),
+                                            refreshTableData()),
+                                          value: searchArray.value[index][2],
+                                          onUpdateValue: (v) =>
+                                            (searchArray.value[index][2] = v),
+                                          style: {
+                                            width: "33.33%",
+                                          },
+                                        });
+                                    }
+                                  })(),
+                                ])
                             )
                         ),
                     }
@@ -1975,29 +2018,30 @@ export default defineNuxtComponent({
                             disabled:
                               !database.value.tables ||
                               !database.value.tables.find(
-                                (item) => item.slug === route.params.table
-                              ).schema,
+                                ({ slug }) => slug === route.params.table
+                              )?.schema,
                             tag: "a",
                             href:
                               !database.value.tables ||
                               !database.value.tables.find(
-                                (item) => item.slug === route.params.table
-                              ).schema
+                                ({ slug }) => slug === route.params.table
+                              )?.schema
                                 ? null
                                 : `/${route.params.database}/admin/tables/${route.params.table}/new`,
                             onClick: (e) => (
                               e.preventDefault(),
                               Window.value.width >= 700
-                                ? ((Drawer.value.table = route.params.table),
+                                ? ((Drawer.value.table = route.params
+                                    .table as string),
                                   (Drawer.value.id = null),
                                   (Drawer.value.data = {}),
                                   (Drawer.value.show = true))
                                 : navigateTo(
                                     !database.value.tables ||
                                       !database.value.tables.find(
-                                        (item) =>
-                                          item.slug === route.params.table
-                                      ).schema
+                                        ({ slug }) =>
+                                          slug === route.params.table
+                                      )?.schema
                                       ? null
                                       : `/${route.params.database}/admin/tables/${route.params.table}/new`
                                   )
@@ -2046,16 +2090,16 @@ export default defineNuxtComponent({
                   resizable: true,
                   id: "DataTable",
                   remote: true,
-                  ref: TableDataRef,
-                  columns: columns,
+                  ref: TableDataRef as any,
+                  columns: columns as any,
                   data: TableData.value?.result || [],
                   loading: Loading.value["TableData"],
                   pagination: pagination.value,
                   rowKey: (row) => row.id,
                   checkedRowKeys: checkedRowKeys.value,
-                  "on-update:checked-row-keys": (keys) =>
+                  "on-update:checked-row-keys": (keys: never[]) =>
                     (checkedRowKeys.value = keys),
-                  "on-update:sorter": (sorter) => console.log(sorter),
+                  "on-update:sorter": (sorter: any) => console.log(sorter),
                 });
               },
             }

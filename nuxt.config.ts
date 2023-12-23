@@ -2,6 +2,9 @@ import { join } from "node:path";
 
 export default defineNuxtConfig({
   ssr: true,
+  imports: {
+    dirs: ["types/*.d.ts"],
+  },
   nitro: {
     hooks: {
       "dev:reload": () => require("sharp"),
