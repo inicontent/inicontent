@@ -1,8 +1,15 @@
 import Inibase from "inibase";
 import { isExists } from "inibase/file";
 import { join } from "node:path";
+import { readdirSync } from "node:fs";
 
 const POST_Session = async (event: any, slug: string) => {
+  console.log("using CWD:");
+  console.log(readdirSync(process.cwd()));
+
+  console.log("using Runtime:");
+  console.log(readdirSync(process.cwd()));
+
   const db = new Inibase(slug, useRuntimeConfig().databasePath);
   const session_data = {
       ip: getUserIP(event),
