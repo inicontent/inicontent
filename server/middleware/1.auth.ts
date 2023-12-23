@@ -4,12 +4,6 @@ import { join } from "node:path";
 import { readdirSync } from "node:fs";
 
 const POST_Session = async (event: any, slug: string) => {
-  console.log("using CWD:");
-  console.log(readdirSync(process.cwd()));
-
-  console.log("using Runtime:");
-  console.log(readdirSync(useRuntimeConfig().databasePath));
-
   const db = new Inibase(slug, useRuntimeConfig().databasePath);
   const session_data = {
       ip: getUserIP(event),
@@ -63,6 +57,11 @@ export default defineWrappedResponseHandler(async (event: any) => {
     .pathname.split("/")
     .slice(1);
   if (api !== "api") return;
+  console.log("using CWD:");
+  console.log(readdirSync(process.cwd()));
+
+  console.log("using Runtime:");
+  console.log(readdirSync(useRuntimeConfig().databasePath));
 
   if (!DatabaseSlug) throw new Error("db_not_ found");
 
