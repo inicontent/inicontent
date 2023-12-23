@@ -57,12 +57,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     .pathname.split("/")
     .slice(1);
   if (api !== "api") return;
-  console.log("using CWD:");
-  console.log(readdirSync(process.cwd()));
-
-  console.log("using Runtime:");
-  console.log(readdirSync(useRuntimeConfig().databasePath));
-
+  console.log(readdirSync(join(process.cwd(), "public")));
   if (!DatabaseSlug) throw new Error("db_not_ found");
 
   if (await isExists(join(useRuntimeConfig().databasePath, DatabaseSlug)))
