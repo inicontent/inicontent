@@ -7,7 +7,7 @@ import {
   NScrollbar,
   NSpace,
 } from "naive-ui";
-import objectPath from "object-path";
+import { getProperty } from "dot-prop";
 import VueApexCharts from "vue3-apexcharts";
 import { GridLayout } from "@noction/vue-draggable-grid";
 import "@noction/vue-draggable-grid/styles";
@@ -219,7 +219,7 @@ export default defineNuxtComponent({
             },
             {
               default: () =>
-                objectPath.get(
+                getProperty(
                   FETCH_DATA.value[item.url],
                   item.value,
                   h(NSkeleton, { text: true, round: true })
@@ -246,9 +246,9 @@ export default defineNuxtComponent({
               h(NSpace, { vertical: true }, () =>
                 FETCH_DATA.value[item.url] &&
                 typeof FETCH_DATA.value[item.url] !== "boolean"
-                  ? objectPath
-                      .get(FETCH_DATA.value[item.url], item.value, [])
-                      .map((element) => h(NText, () => element))
+                  ? getProperty(FETCH_DATA.value[item.url], item.value, []).map(
+                      (element) => h(NText, () => element)
+                    )
                   : [...Array(5).keys()].map(() =>
                       h(NSkeleton, { text: true, round: true })
                     )
@@ -272,7 +272,7 @@ export default defineNuxtComponent({
                 },
               },
               xaxis: {
-                categories: objectPath.get(
+                categories: getProperty(
                   FETCH_DATA.value[item.url],
                   item.keys,
                   []
@@ -308,9 +308,11 @@ export default defineNuxtComponent({
             series: [
               {
                 name: item.title,
-                data: objectPath
-                  .get(FETCH_DATA.value[item.url], item.data, [])
-                  .map((val) => val.replace(/[^\d.-]/g, "")),
+                data: getProperty(
+                  FETCH_DATA.value[item.url],
+                  item.data,
+                  []
+                ).map((val) => val.replace(/[^\d.-]/g, "")),
               },
             ],
           });
