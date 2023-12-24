@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { join } from "node:path";
 
 export default defineNuxtConfig({
   ssr: false,
@@ -34,6 +34,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    databasePath: resolve("databases"),
+    databasePath: join(process.cwd(), "databases"),
   },
 });
