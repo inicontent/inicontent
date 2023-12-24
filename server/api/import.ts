@@ -10,7 +10,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     return [null, 404];
 
   if (!(await isExists(useRuntimeConfig().databasePath)))
-    mkdirSync(useRuntimeConfig().databasePath);
+    mkdirSync(useRuntimeConfig().databasePath, { recursive: true });
 
   const tmpFilePath = `${
     useRuntimeConfig().databasePath
