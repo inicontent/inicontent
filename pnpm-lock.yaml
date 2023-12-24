@@ -49,6 +49,9 @@ devDependencies:
   mime-types:
     specifier: ^2.1.35
     version: 2.1.35
+  node-stream-zip:
+    specifier: ^1.15.0
+    version: 1.15.0
   nodemailer:
     specifier: ^6.9.7
     version: 6.9.7
@@ -4905,6 +4908,11 @@ packages:
 
   /node-releases@2.0.14:
     resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
+    dev: true
+
+  /node-stream-zip@1.15.0:
+    resolution: {integrity: sha512-LN4fydt9TqhZhThkZIVQnF9cwjU3qmUH9h78Mx/K7d3VvfRqqwthLwJEUOEL0QPZ0XQmNN7be5Ggit5+4dq3Bw==}
+    engines: {node: '>=0.12.0'}
     dev: true
 
   /node-vibrant@3.2.1-alpha.1:

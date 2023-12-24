@@ -1,7 +1,6 @@
 import Inibase from "inibase";
 import { isExists } from "inibase/file";
-import { join, resolve } from "node:path";
-import { readdirSync } from "node:fs";
+import { join } from "node:path";
 
 const POST_Session = async (event: any, slug: string) => {
   const db = new Inibase(slug, useRuntimeConfig().databasePath);
@@ -56,8 +55,8 @@ export default defineWrappedResponseHandler(async (event: any) => {
   const [api, DatabaseSlug, tableSlug, idSlug] = getRequestURL(event)
     .pathname.split("/")
     .slice(1);
-  if (api !== "api") return;
-  console.log(readdirSync(resolve("public")));
+  if (api !== "api" || DatabaseSlug === "import") return;
+
   if (!DatabaseSlug) throw new Error("db_not_ found");
 
   if (await isExists(join(useRuntimeConfig().databasePath, DatabaseSlug)))

@@ -1,7 +1,7 @@
-import { join } from "node:path";
+import { resolve } from "node:path";
 
 export default defineNuxtConfig({
-  ssr: true,
+  ssr: false,
   imports: {
     dirs: ["types/*.d.ts"],
   },
@@ -34,6 +34,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    databasePath: join(process.cwd(), "databases"),
+    databasePath: resolve("databases"),
   },
 });

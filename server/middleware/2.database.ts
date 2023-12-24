@@ -46,7 +46,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
   const [api, DatabaseSlug, tableSlug, idSlug] = getRequestURL(event)
     .pathname.split("/")
     .slice(1);
-  if (api !== "api") return;
+  if (api !== "api" || DatabaseSlug === "import") return;
 
   if (!DatabaseSlug) throw new Error("db_not_found");
 

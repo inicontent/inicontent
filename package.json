@@ -14,6 +14,7 @@
     "@types/nodemailer": "^6.4.14",
     "inibase": "1.0.0-rc.25",
     "mime-types": "^2.1.35",
+    "node-stream-zip": "^1.15.0",
     "nodemailer": "^6.9.7",
     "nuxt": "^3.8.2",
     "sharp": "^0.32.6"

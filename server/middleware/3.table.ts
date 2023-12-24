@@ -7,7 +7,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
   )
     .pathname.split("/")
     .slice(1);
-  if (api !== "api") return;
+  if (api !== "api" || DatabaseSlug === "import") return;
 
   if (tableSlug == "auth") return;
   if (
