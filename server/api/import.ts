@@ -7,7 +7,7 @@ import StreamZip from "node-stream-zip";
 export default defineWrappedResponseHandler(async (event: any) => {
   const { secret, url } = getQuery(event);
   if (!secret || !url || process.env.INIBASE_SECRET !== secret)
-    return [process.env.INIBASE_SECRET, 404];
+    return [null, 404];
 
   if (!(await isExists(useRuntimeConfig().databasePath)))
     mkdirSync(useRuntimeConfig().databasePath);
