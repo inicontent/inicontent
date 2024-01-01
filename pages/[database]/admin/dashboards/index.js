@@ -9,54 +9,16 @@ import {
   NSpace,
   NFormItem,
   NInput,
-  NDynamicTags,
-  NTag,
-  NDataTable,
-  NCheckbox,
-  NCheckboxGroup,
   NH4,
   useMessage,
-  NUpload,
-  NUploadDragger,
-  NText,
   NIconWrapper,
 } from "naive-ui";
 import {
-  Plus,
-  Trash,
-  DeviceFloppy,
-  Link,
-  Settings,
-  Upload,
-  ArrowRight,
-  LetterA,
-  LetterB,
-  LetterC,
-  LetterD,
-  LetterE,
-  LetterF,
-  LetterG,
-  LetterH,
-  LetterI,
-  LetterJ,
-  LetterK,
-  LetterL,
-  LetterM,
-  LetterN,
-  LetterO,
-  LetterP,
-  LetterQ,
-  LetterR,
-  LetterS,
-  LetterT,
-  LetterU,
-  LetterV,
-  LetterW,
-  LetterX,
-  LetterY,
-  LetterZ,
-  Database,
-} from "@vicons/tabler";
+  IconPlus,
+  IconDeviceFloppy,
+  IconArrowRight,
+  IconDatabase,
+} from "@tabler/icons-vue";
 
 export default defineNuxtComponent({
   setup: () => {
@@ -64,34 +26,6 @@ export default defineNuxtComponent({
       middleware: "dashboard",
     });
 
-    const LettersIcons = {
-      a: LetterA,
-      b: LetterB,
-      c: LetterC,
-      d: LetterD,
-      e: LetterE,
-      f: LetterF,
-      g: LetterG,
-      h: LetterH,
-      i: LetterI,
-      j: LetterJ,
-      k: LetterK,
-      l: LetterL,
-      m: LetterM,
-      n: LetterN,
-      o: LetterO,
-      p: LetterP,
-      q: LetterQ,
-      r: LetterR,
-      s: LetterS,
-      t: LetterT,
-      u: LetterU,
-      v: LetterV,
-      w: LetterW,
-      x: LetterX,
-      y: LetterY,
-      z: LetterZ,
-    };
     const Loading = useState("Loading", () => ({}));
     Loading.value["DashboardModal"] = false;
 
@@ -158,7 +92,7 @@ export default defineNuxtComponent({
                     onClick: AddNewDashboard,
                   },
                   {
-                    icon: () => h(NIcon, () => h(DeviceFloppy)),
+                    icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                     default: () => "Create",
                   }
                 )
@@ -244,7 +178,10 @@ export default defineNuxtComponent({
                                 },
                                 () =>
                                   h(NIcon, () =>
-                                    h(LettersIcons[name.charAt(0)] ?? Database)
+                                    h(
+                                      LettersIcons[name.charAt(0)] ??
+                                        IconDatabase
+                                    )
                                   )
                               ),
                               h(
@@ -266,7 +203,7 @@ export default defineNuxtComponent({
                                 circle: true,
                               },
                               {
-                                icon: () => h(NIcon, () => h(ArrowRight)),
+                                icon: () => h(NIcon, () => h(IconArrowRight)),
                               }
                             ),
                           ]),
@@ -303,7 +240,7 @@ export default defineNuxtComponent({
                               ),
                             },
                             {
-                              icon: () => h(NIcon, () => h(Plus)),
+                              icon: () => h(NIcon, () => h(IconPlus)),
                             }
                           ),
                         ]),

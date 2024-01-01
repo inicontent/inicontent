@@ -1,4 +1,3 @@
-import { FileText } from "@vicons/tabler";
 import {
   NCard,
   NA,
@@ -13,6 +12,7 @@ import {
   NText,
   NTime,
 } from "naive-ui";
+import { IconFileText } from "@tabler/icons-vue";
 
 export default defineNuxtComponent({
   async setup() {
@@ -258,7 +258,7 @@ export default defineNuxtComponent({
                                   },
                                 },
                                 () =>
-                                  h(FileText, {
+                                  h(IconFileText, {
                                     style: {
                                       width: "100%",
                                       height: "100%",

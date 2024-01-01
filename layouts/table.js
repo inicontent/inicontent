@@ -1,12 +1,12 @@
 import { NLayout, NLayoutSider, NMenu, NLayoutContent, NIcon } from "naive-ui";
 import {
-  Plus,
-  Eye,
-  Folders,
-  Language as LanguageIcon,
-  Users,
-  Fingerprint,
-} from "@vicons/tabler";
+  IconPlus,
+  IconEye,
+  IconFolders,
+  IconLanguage,
+  IconUsers,
+  IconFingerprint,
+} from "@tabler/icons-vue";
 import { NuxtLayout, NuxtLink } from "#components";
 
 export default defineComponent({
@@ -112,7 +112,7 @@ export default defineComponent({
                                             { default: () => t("show_all") }
                                           ),
                                         key: slug,
-                                        icon: () => h(NIcon, () => h(Eye)),
+                                        icon: () => h(NIcon, () => h(IconEye)),
                                       },
                                       {
                                         label: () =>
@@ -124,7 +124,7 @@ export default defineComponent({
                                             { default: () => t("add_new") }
                                           ),
                                         key: `new-${slug}`,
-                                        icon: () => h(NIcon, () => h(Plus)),
+                                        icon: () => h(NIcon, () => h(IconPlus)),
                                       },
                                     ]
                                   : null,
@@ -184,13 +184,13 @@ export default defineComponent({
                                 h(NIcon, () => {
                                   switch (slug) {
                                     case "asset":
-                                      return h(Folders);
+                                      return h(IconFolders);
                                     case "translation":
-                                      return h(LanguageIcon);
+                                      return h(IconLanguage);
                                     case "user":
-                                      return h(Users);
+                                      return h(IconUsers);
                                     case "session":
-                                      return h(Fingerprint);
+                                      return h(IconFingerprint);
                                     default:
                                       return t(slug).charAt(0).toUpperCase();
                                   }
@@ -214,7 +214,7 @@ export default defineComponent({
                                             { default: () => t("show_all") }
                                           ),
                                         key: slug,
-                                        icon: () => h(NIcon, () => h(Eye)),
+                                        icon: () => h(NIcon, () => h(IconEye)),
                                       },
                                       {
                                         label: () =>
@@ -226,7 +226,7 @@ export default defineComponent({
                                             { default: () => t("add_new") }
                                           ),
                                         key: `new-${slug}`,
-                                        icon: () => h(NIcon, () => h(Plus)),
+                                        icon: () => h(NIcon, () => h(IconPlus)),
                                       },
                                     ]
                                   : null,

@@ -8,7 +8,7 @@ import {
   NForm,
   useMessage,
 } from "naive-ui";
-import { Send } from "@vicons/tabler";
+import { IconSend } from "@tabler/icons-vue";
 
 import { LazyRenderFields } from "#components";
 
@@ -122,7 +122,7 @@ export default defineNuxtComponent({
                             loading: Loading.value["CREATE"],
                           },
                           {
-                            icon: () => h(NIcon, () => h(Send)),
+                            icon: () => h(NIcon, () => h(IconSend)),
                           }
                         ),
                       default: () => t("publish"),
@@ -142,7 +142,7 @@ export default defineNuxtComponent({
                   loading: Loading.value["CREATE"],
                 },
                 {
-                  icon: () => h(NIcon, () => h(Send)),
+                  icon: () => h(NIcon, () => h(IconSend)),
                   default: () => t("publish"),
                 }
               ),

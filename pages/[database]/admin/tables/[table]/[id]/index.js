@@ -7,7 +7,7 @@ import {
   NPopover,
   useMessage,
 } from "naive-ui";
-import { Printer, Pencil, Settings } from "@vicons/tabler";
+import { IconPrinter, IconPencil, IconSettings } from "@tabler/icons-vue";
 import { LazyRenderDatas } from "#components";
 export default defineNuxtComponent({
   async setup() {
@@ -98,7 +98,7 @@ export default defineNuxtComponent({
                         secondary: true,
                       },
                       {
-                        icon: () => h(NIcon, () => h(Settings)),
+                        icon: () => h(NIcon, () => h(IconSettings)),
                       }
                     ),
                   default: () => t("settings"),
@@ -125,7 +125,7 @@ export default defineNuxtComponent({
                         type: "info",
                       },
                       {
-                        icon: () => h(NIcon, () => h(Pencil)),
+                        icon: () => h(NIcon, () => h(IconPencil)),
                       }
                     ),
                   default: () => t("edit"),
@@ -146,7 +146,7 @@ export default defineNuxtComponent({
                         loading: Loading.value["PRINT"],
                       },
                       {
-                        icon: () => h(NIcon, () => h(Printer)),
+                        icon: () => h(NIcon, () => h(IconPrinter)),
                       }
                     ),
                   default: () => t("print"),
@@ -165,7 +165,7 @@ export default defineNuxtComponent({
                   loading: Loading.value["PRINT"],
                 },
                 {
-                  icon: () => h(NIcon, () => h(Printer)),
+                  icon: () => h(NIcon, () => h(IconPrinter)),
                   default: () => t("print"),
                 }
               ),

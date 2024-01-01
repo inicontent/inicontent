@@ -12,31 +12,31 @@ import {
   NUpload,
 } from "naive-ui";
 import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Heading,
-  H1,
-  H2,
-  H3,
-  H4,
-  H5,
-  H6,
-  ArrowForwardUp,
-  ArrowBackUp,
-  ColorPicker as ColorPickerIcon,
-  Highlight,
-  Upload,
-  Link,
-  Plus,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  ListNumbers,
-  List,
-  TextResize,
-} from "@vicons/tabler";
+  IconBold,
+  IconItalic,
+  IconUnderline,
+  IconStrikethrough,
+  IconHeading,
+  IconH1,
+  IconH2,
+  IconH3,
+  IconH4,
+  IconH5,
+  IconH6,
+  IconArrowForwardUp,
+  IconArrowBackUp,
+  IconColorPicker,
+  IconHighlight,
+  IconUpload,
+  IconLink,
+  IconPlus,
+  IconAlignLeft,
+  IconAlignCenter,
+  IconAlignRight,
+  IconListNumbers,
+  IconList,
+  IconTextResize,
+} from "@tabler/icons-vue";
 import { LazyColorPicker } from "#components";
 function saveSelection() {
   if (
@@ -67,20 +67,20 @@ export default defineNuxtComponent({
   setup: (props, { emit }) => {
     const Language = useGlobalCookie("Language");
 
-    const Loading = <any>useState("Loading", () => ({}));
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["Upload"] = false;
 
     const route = useRoute(),
       EditorText = JSON.parse(JSON.stringify(props.modelValue)),
       id = Math.random().toString(36).replace("0.", "RichEditor"),
-      isFocused = <any>ref(false),
-      currentSelection = <any>ref(null),
-      foreColor = <any>ref(null),
-      showForeColorPicker = <any>ref(false),
-      backColor = <any>ref(null),
-      showBackColorPicker = <any>ref(false),
-      aHref = <any>ref(null),
-      user = <any>useState("user");
+      isFocused = ref<any>(false),
+      currentSelection = ref<any>(null),
+      foreColor = ref<any>(null),
+      showForeColorPicker = ref<any>(false),
+      backColor = ref<any>(null),
+      showBackColorPicker = ref<any>(false),
+      aHref = ref<any>(null),
+      user = useState<any>("user");
 
     onMounted(() => {
       document.execCommand("enableObjectResizing", false, "true");
@@ -121,7 +121,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("bold"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(Bold)),
+                      icon: () => h(NIcon, () => h(IconBold)),
                     }
                   ),
                   h(
@@ -134,7 +134,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("italic"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(Italic)),
+                      icon: () => h(NIcon, () => h(IconItalic)),
                     }
                   ),
                   h(
@@ -147,7 +147,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("underline"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(Underline)),
+                      icon: () => h(NIcon, () => h(IconUnderline)),
                     }
                   ),
                   h(
@@ -160,7 +160,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("strikeThrough"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(Strikethrough)),
+                      icon: () => h(NIcon, () => h(IconStrikethrough)),
                     }
                   ),
                   h(
@@ -181,37 +181,37 @@ export default defineNuxtComponent({
                           label: () =>
                             h("h1", { style: { margin: 0 } }, "Heading 1"),
                           value: "h1",
-                          icon: () => h(NIcon, () => h(H1)),
+                          icon: () => h(NIcon, () => h(IconH1)),
                         },
                         {
                           label: () =>
                             h("h2", { style: { margin: 0 } }, "Heading 2"),
                           value: "h2",
-                          icon: () => h(NIcon, () => h(H2)),
+                          icon: () => h(NIcon, () => h(IconH2)),
                         },
                         {
                           label: () =>
                             h("h3", { style: { margin: 0 } }, "Heading 3"),
                           value: "h3",
-                          icon: () => h(NIcon, () => h(H3)),
+                          icon: () => h(NIcon, () => h(IconH3)),
                         },
                         {
                           label: () =>
                             h("h4", { style: { margin: 0 } }, "Heading 4"),
                           value: "h4",
-                          icon: () => h(NIcon, () => h(H4)),
+                          icon: () => h(NIcon, () => h(IconH4)),
                         },
                         {
                           label: () =>
                             h("h5", { style: { margin: 0 } }, "Heading 5"),
                           value: "h5",
-                          icon: () => h(NIcon, () => h(H5)),
+                          icon: () => h(NIcon, () => h(IconH5)),
                         },
                         {
                           label: () =>
                             h("h6", { style: { margin: 0 } }, "Heading 6"),
                           value: "h6",
-                          icon: () => h(NIcon, () => h(H6)),
+                          icon: () => h(NIcon, () => h(IconH6)),
                         },
                       ],
                     },
@@ -229,7 +229,7 @@ export default defineNuxtComponent({
                               : "default",
                         },
                         {
-                          icon: () => h(NIcon, () => h(Heading)),
+                          icon: () => h(NIcon, () => h(IconHeading)),
                         }
                       )
                   ),
@@ -268,7 +268,7 @@ export default defineNuxtComponent({
                             ),
                           },
                           {
-                            icon: () => h(NIcon, () => h(ColorPickerIcon)),
+                            icon: () => h(NIcon, () => h(IconColorPicker)),
                           }
                         ),
                       default: () =>
@@ -317,7 +317,7 @@ export default defineNuxtComponent({
                             ),
                           },
                           {
-                            icon: () => h(NIcon, () => h(Highlight)),
+                            icon: () => h(NIcon, () => h(IconHighlight)),
                           }
                         ),
                       default: () =>
@@ -437,7 +437,7 @@ export default defineNuxtComponent({
                           disabled: !currentSelection.value,
                         },
                         {
-                          icon: () => h(NIcon, () => h(TextResize)),
+                          icon: () => h(NIcon, () => h(IconTextResize)),
                         }
                       )
                   ),
@@ -512,7 +512,7 @@ export default defineNuxtComponent({
                               },
                               loading: Loading.value["Upload"],
                             },
-                            { icon: () => h(NIcon, () => h(Upload)) }
+                            { icon: () => h(NIcon, () => h(IconUpload)) }
                           )
                       )
                     : null,
@@ -539,7 +539,7 @@ export default defineNuxtComponent({
                                 : "default",
                           },
                           {
-                            icon: () => h(NIcon, () => h(Link)),
+                            icon: () => h(NIcon, () => h(IconLink)),
                           }
                         ),
                       default: () =>
@@ -567,7 +567,7 @@ export default defineNuxtComponent({
                                 (aHref.value = null)
                               ),
                             },
-                            () => h(NIcon, () => h(Plus))
+                            () => h(NIcon, () => h(IconPlus))
                           ),
                         ]),
                     }
@@ -582,7 +582,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("insertOrderedList"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(ListNumbers)),
+                      icon: () => h(NIcon, () => h(IconListNumbers)),
                     }
                   ),
                   h(
@@ -596,7 +596,7 @@ export default defineNuxtComponent({
                         document.execCommand("insertUnorderedList"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(List)),
+                      icon: () => h(NIcon, () => h(IconList)),
                     }
                   ),
                 ]
@@ -618,7 +618,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("justifyLeft"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(AlignLeft)),
+                      icon: () => h(NIcon, () => h(IconAlignLeft)),
                     }
                   ),
                   h(
@@ -631,7 +631,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("justifyCenter"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(AlignCenter)),
+                      icon: () => h(NIcon, () => h(IconAlignCenter)),
                     }
                   ),
                   h(
@@ -644,7 +644,7 @@ export default defineNuxtComponent({
                       onClick: () => document.execCommand("justifyRight"),
                     },
                     {
-                      icon: () => h(NIcon, () => h(AlignRight)),
+                      icon: () => h(NIcon, () => h(IconAlignRight)),
                     }
                   ),
                 ]
@@ -669,7 +669,7 @@ export default defineNuxtComponent({
                                 }
                               : null,
                         },
-                        () => h(ArrowBackUp)
+                        () => h(IconArrowBackUp)
                       ),
                   }
                 ),
@@ -691,7 +691,7 @@ export default defineNuxtComponent({
                                 }
                               : null,
                         },
-                        () => h(ArrowForwardUp)
+                        () => h(IconArrowForwardUp)
                       ),
                   }
                 ),

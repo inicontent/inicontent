@@ -60,7 +60,7 @@ export default defineNuxtComponent({
           id: "a1dq057000f4ab8bd4e97eee569a299a11",
           key: "icon",
           type: "array",
-          subtype: "upload",
+          subType: "upload",
           children: "url",
           required: false,
         },

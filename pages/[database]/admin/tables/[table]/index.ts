@@ -29,28 +29,29 @@ import {
   NProgress,
 } from "naive-ui";
 import {
-  Check,
-  X,
-  Pencil,
-  Trash,
-  DeviceFloppy,
-  Search,
-  Settings,
-  Plus,
-  Tools,
-  Minus,
-  QuestionMark,
-  ExternalLink,
-  FileUpload,
-  TableImport,
-  TableExport,
-  Eye,
-  ChevronRight,
-  ChevronLeft,
-} from "@vicons/tabler";
-import { getProperty } from "dot-prop";
+  IconCheck,
+  IconX,
+  IconPencil,
+  IconTrash,
+  IconDeviceFloppy,
+  IconSearch,
+  IconSettings,
+  IconPlus,
+  IconTools,
+  IconMinus,
+  IconQuestionMark,
+  IconExternalLink,
+  IconFileUpload,
+  IconTableImport,
+  IconTableExport,
+  IconEye,
+  IconChevronRight,
+  IconChevronLeft,
+  IconSwitchHorizontal,
+} from "@tabler/icons-vue";
+import { deleteProperty, getProperty, setProperty } from "dot-prop";
 import { LazyRenderFields } from "#components";
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfObjects, FormatObjectCriteriaValue } from "inibase/utils";
 import { type Database, type User } from "@/types";
 export default defineNuxtComponent({
   async setup() {
@@ -133,32 +134,44 @@ export default defineNuxtComponent({
       },
     });
 
-    const Loading = <any>useState("Loading", () => ({})),
-      Window = <any>useState("Window"),
-      searchInput = <any>useState(() => route.query.search ?? null),
-      searchArray = <any>(
-        useState(() =>
-          route.query.search
-            ? JSON.parse(route.query.search as string).filter(
-                (searchItem: string[]) => !["deletedAt"].includes(searchItem[0])
-              )
-            : []
-        )
+    const parseSearchInput = (search: any) => {
+      let RETURN: any = {};
+      Object.entries(search).forEach(([condition, items]) => {
+        if (!RETURN[condition]) RETURN[condition] = [];
+        Object.entries(items).forEach(([key, value]) => {
+          if (["and", "or"].includes(key))
+            RETURN[condition].push({ [key]: parseSearchInput(value) });
+          else
+            RETURN[condition].push([key, ...FormatObjectCriteriaValue(value)]);
+        });
+      });
+      return RETURN;
+    };
+
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
+      Window = useState<any>("Window"),
+      searchInput = useState<any>("searchInput"),
+      searchArray = useState<{
+        and?: [string | null, string, any][];
+        or?: [string | null, string, any][];
+      }>("searchArray"),
+      searchField = useState<any>(() => []),
+      ShowDeleted = useState<any>(() =>
+        route.query.hasOwnProperty("show_deleted") ? true : false
       ),
-      searchField = <any>useState(() => []),
-      ShowDeleted = <any>(
-        useState(() =>
-          route.query.hasOwnProperty("show_deleted") ? true : false
-        )
-      );
+      DisabledItem = useState<boolean[]>(() => []);
+    searchInput.value = route.query.search ?? null;
+    searchArray.value = route.query.search
+      ? parseSearchInput(JSON.parse(route.query.search as string))
+      : { and: [[null, "=", null]] };
     Loading.value["TableData"] = false;
     Loading.value["DrawerContent"] = false;
-    Loading.value["Drawer"] = {};
+    Loading.value["Drawer"] = false;
 
     const user = useState<User | any>("user"),
       message = useMessage(),
       ImportInput = ref(),
-      UploadProgress = <any>ref(null),
+      UploadProgress = ref<any>(null),
       DrawerFormRef = useState(() => null),
       Drawer = useState<{
         show: boolean;
@@ -174,20 +187,15 @@ export default defineNuxtComponent({
         width: 251,
       })),
       LoadDrawer = async () => {
-        Loading.value["Drawer"] = {
-          ...Loading.value["Drawer"],
-          [`${Drawer.value.table}_${Drawer.value.id}`]: true,
-        };
+        Loading.value[`Drawer_${Drawer.value.table}_${Drawer.value.id}`] = true;
         await useFetch(
           `/api/${route.params.database}/${Drawer.value.table}/${Drawer.value.id}`,
           {
             transform: (res: any) => (Drawer.value.data = res.result),
           }
         );
-        Loading.value["Drawer"] = {
-          ...Loading.value["Drawer"],
-          [`${Drawer.value.table}_${Drawer.value.id}`]: false,
-        };
+        Loading.value[`Drawer_${Drawer.value.table}_${Drawer.value.id}`] =
+          false;
         Drawer.value.show = true;
       },
       UpdateDrawer = async () => {
@@ -291,10 +299,10 @@ export default defineNuxtComponent({
             _where: searchInput.value
               ? ShowDeleted.value
                 ? JSON.stringify({
-                    ...searchInput.value,
+                    ...JSON.parse(searchInput.value),
                     deletedAt: ">0",
                   })
-                : JSON.stringify(searchInput.value)
+                : searchInput.value
               : ShowDeleted.value
               ? JSON.stringify({ deletedAt: ">0" })
               : null,
@@ -341,7 +349,7 @@ export default defineNuxtComponent({
                     {
                       size: 16,
                     },
-                    () => h(X)
+                    () => h(IconX)
                   )
               );
             case "array":
@@ -411,8 +419,10 @@ export default defineNuxtComponent({
                           LoadDrawer()
                         ),
                         loading:
-                          Loading.value["Drawer"][
-                            `${item.key}_${([].concat(value)[0] as any).id}`
+                          Loading.value[
+                            `Drawer_${item.key}_${
+                              ([].concat(value)[0] as any).id
+                            }`
                           ],
                         size: "small",
                         round: true,
@@ -618,7 +628,7 @@ export default defineNuxtComponent({
                               LoadDrawer()
                             ),
                             loading:
-                              Loading.value["Drawer"][`${item.key}_${col.id}`],
+                              Loading.value[`Drawer_${item.key}_${col.id}`],
                             size: "small",
                             round: true,
                           },
@@ -873,7 +883,7 @@ export default defineNuxtComponent({
                     {
                       size: 16,
                     },
-                    () => h(value === true ? Check : X)
+                    () => h(value === true ? IconCheck : IconX)
                   )
               );
             case "url":
@@ -924,8 +934,8 @@ export default defineNuxtComponent({
                       bordered: false,
                     },
                     () =>
-                      item.subtype
-                        ? RenderSchema(_value, { ...item, type: item.subtype })
+                      item.subType
+                        ? RenderSchema(_value, { ...item, type: item.subType })
                         : h(
                             NEllipsis,
                             {
@@ -1004,7 +1014,7 @@ export default defineNuxtComponent({
                           previewSrc: link,
                           width: 32,
                         })
-                      : h(NIcon, () => h(FileUpload))
+                      : h(NIcon, () => h(IconFileUpload))
                   )
                 : h(NImageGroup, () =>
                     h(NSpace, { align: "center" }, () =>
@@ -1031,7 +1041,7 @@ export default defineNuxtComponent({
                                       previewSrc: link,
                                       width: 32,
                                     })
-                                  : h(NIcon, () => h(FileUpload))
+                                  : h(NIcon, () => h(IconFileUpload))
                               ),
                             `+${[].concat(value).length - 3}`,
                           ]
@@ -1053,7 +1063,7 @@ export default defineNuxtComponent({
                                   previewSrc: link,
                                   width: 32,
                                 })
-                              : h(NIcon, () => h(FileUpload))
+                              : h(NIcon, () => h(IconFileUpload))
                           )
                     )
                   );
@@ -1085,8 +1095,8 @@ export default defineNuxtComponent({
                 }
               );
             case "string":
-              if (item.subtype)
-                return RenderSchema(value, { ...item, type: item.subtype });
+              if (item.subType)
+                return RenderSchema(value, { ...item, type: item.subType });
               else return RenderSchema(value, { ...item, type: "text" });
             case "array":
               if (!item.children) throw new Error("no children");
@@ -1199,7 +1209,7 @@ export default defineNuxtComponent({
                 label: t("delete"),
                 key: "delete",
                 disabled: checkedRowKeys.value.length === 0,
-                icon: () => h(NIcon, () => h(Trash)),
+                icon: () => h(NIcon, () => h(IconTrash)),
                 onSelect: async () => {
                   Loading.value["TableData"] = true;
                   await useFetch(
@@ -1229,9 +1239,9 @@ export default defineNuxtComponent({
                     ...(children ?? []),
                   ])
                   .find(({ key }) =>
-                    item.subtype ? key === item.subtype : key === item.type
+                    item.subType ? key === item.subType : key === item.type
                   )
-                  ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                  ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                 t(item.key),
               ]),
             width:
@@ -1273,7 +1283,7 @@ export default defineNuxtComponent({
                             circle: true,
                             type: "primary",
                           },
-                          { icon: () => h(NIcon, () => h(Eye)) }
+                          { icon: () => h(NIcon, () => h(IconEye)) }
                         ),
                       default: () => t("view_item"),
                     }
@@ -1298,7 +1308,7 @@ export default defineNuxtComponent({
                             circle: true,
                             type: "info",
                           },
-                          { icon: () => h(NIcon, () => h(Pencil)) }
+                          { icon: () => h(NIcon, () => h(IconPencil)) }
                         ),
                       default: () => t("edit"),
                     }
@@ -1325,7 +1335,7 @@ export default defineNuxtComponent({
                                       type: "error",
                                     },
                                     {
-                                      icon: () => h(NIcon, () => h(Trash)),
+                                      icon: () => h(NIcon, () => h(IconTrash)),
                                     }
                                   ),
                                 default: () => t("delete"),
@@ -1348,7 +1358,7 @@ export default defineNuxtComponent({
                                 type: "error",
                                 onClick: () => DELETE(row.id),
                               },
-                              { icon: () => h(NIcon, () => h(Trash)) }
+                              { icon: () => h(NIcon, () => h(IconTrash)) }
                             ),
                           default: () => t("move_to_trash"),
                         }
@@ -1357,7 +1367,291 @@ export default defineNuxtComponent({
               );
             },
           },
-        ].filter((i) => i !== null);
+        ].filter((i) => i !== null),
+      RenderSearch = (path?: string) =>
+        h(NCollapse, () =>
+          Object.entries(
+            getProperty(searchArray.value, path ?? "") ?? searchArray.value
+          ).map(([condition, items]: any, index) =>
+            h(
+              NCollapseItem,
+              {
+                title: t(condition),
+                disabled: DisabledItem.value[index],
+              },
+              {
+                "header-extra": () =>
+                  h(NSpace, {}, () => [
+                    h(
+                      NDropdown,
+                      {
+                        options: [
+                          {
+                            key: "and",
+                            label: t("and"),
+                          },
+                          {
+                            key: "or",
+                            label: t("or"),
+                          },
+                        ],
+                        style: {
+                          maxHeight: "200px",
+                        },
+                        scrollable: true,
+                        onSelect: (selected_condition) =>
+                          setProperty(
+                            searchArray.value,
+                            `${path ? `${path}.` : ""}${condition}[${
+                              items.length
+                            }]`,
+                            { [selected_condition]: [[null, "=", null]] }
+                          ),
+                      },
+                      () =>
+                        h(
+                          NButton,
+                          {
+                            onClick: () => (
+                              (DisabledItem.value[index] = true),
+                              setTimeout(
+                                () => (DisabledItem.value[index] = false),
+                                1
+                              ),
+                              setProperty(
+                                searchArray.value,
+                                `${path ? `${path}.` : ""}${condition}[${
+                                  items.length
+                                }]`,
+                                [null, "=", null]
+                              )
+                            ),
+                            circle: true,
+                            size: "small",
+                          },
+                          {
+                            icon: () => h(NIcon, () => h(IconPlus)),
+                          }
+                        )
+                    ),
+                    h(
+                      NButton,
+                      {
+                        onClick: () => (
+                          (DisabledItem.value[index] = true),
+                          setTimeout(
+                            () => (DisabledItem.value[index] = false),
+                            1
+                          ),
+                          setProperty(
+                            searchArray.value,
+                            `${path ? `${path}.` : ""}${
+                              condition === "and" ? "or" : "and"
+                            }`,
+                            getProperty(
+                              searchArray.value,
+                              `${path ? `${path}.` : ""}${condition}`,
+                              [[null, "=", null]]
+                            )
+                          ),
+                          deleteProperty(
+                            searchArray.value,
+                            `${path ? `${path}.` : ""}${condition}`
+                          )
+                        ),
+                        circle: true,
+                        size: "small",
+                      },
+                      {
+                        icon: () => h(NIcon, () => h(IconSwitchHorizontal)),
+                      }
+                    ),
+                    h(
+                      NButton,
+                      {
+                        disabled:
+                          `${path ? `${path}.` : ""}${condition}` === "and",
+                        onClick: () => (
+                          (DisabledItem.value[index] = true),
+                          setTimeout(
+                            () => (DisabledItem.value[index] = false),
+                            1
+                          ),
+                          deleteProperty(
+                            searchArray.value,
+                            `${path ? `${path}.` : ""}${condition}`
+                          )
+                        ),
+                        circle: true,
+                        size: "small",
+                      },
+                      {
+                        icon: () => h(NIcon, () => h(IconTrash)),
+                      }
+                    ),
+                  ]),
+                default: () =>
+                  h(
+                    NSpace,
+                    {
+                      itemStyle: {
+                        width: "100%",
+                      },
+                    },
+                    () =>
+                      items.map((item: any, index: string | number) =>
+                        Array.isArray(item)
+                          ? h(NInputGroup, () => [
+                              h(NSelect, {
+                                tag: true,
+                                filterable: true,
+                                value: item[0],
+                                onUpdateValue: (v, option) => (
+                                  (searchField.value[index] = (
+                                    option as any
+                                  ).label),
+                                  (item[0] = v)
+                                ),
+                                options:
+                                  database.value.tables
+                                    ?.find(
+                                      ({ slug }) => slug === route.params.table
+                                    )
+                                    ?.schema?.map((item, _index: any, schema) =>
+                                      GenerateSearchInOptions(schema, item)
+                                    )
+                                    .flat(Infinity) ?? [],
+                                style: {
+                                  width: "33.33%",
+                                },
+                              }),
+                              h(NSelect, {
+                                filterable: true,
+                                defaultValue: "=",
+                                value: item[1],
+                                onUpdateValue: (v) => (item[1] = v),
+                                options: [
+                                  ...(searchField.value[index] &&
+                                  ["date", "number"].includes(
+                                    searchField.value[index]
+                                  )
+                                    ? [
+                                        {
+                                          label: t(
+                                            "search_conditions.greater_than"
+                                          ),
+                                          value: ">",
+                                        },
+                                        {
+                                          label: t(
+                                            "search_conditions.greater_equal_to"
+                                          ),
+                                          value: ">=",
+                                        },
+                                        {
+                                          label: t(
+                                            "search_conditions.less_than"
+                                          ),
+                                          value: "<",
+                                        },
+                                        {
+                                          label: t(
+                                            "search_conditions.less_equal_to"
+                                          ),
+                                          value: "<=",
+                                        },
+                                      ]
+                                    : []),
+                                  {
+                                    label: t("search_conditions.equal_to"),
+                                    value: "=",
+                                  },
+                                  {
+                                    label: t("search_conditions.not_equal_to"),
+                                    value: "!",
+                                  },
+                                  {
+                                    label: t("search_conditions.contains"),
+                                    value: "*",
+                                  },
+                                  {
+                                    label: t("search_conditions.not_contain"),
+                                    value: "!*",
+                                  },
+                                ],
+                                style: {
+                                  width: "33.33%",
+                                },
+                              }),
+                              (() => {
+                                switch (searchField.value[index] ?? null) {
+                                  case "date":
+                                    return h(NDatePicker, {
+                                      value: item[2]
+                                        ? item[2] * 1000
+                                        : Date.now(),
+                                      type: "datetime",
+                                    });
+                                  default:
+                                    return h(NInput, {
+                                      value: item[2],
+                                      onUpdateValue: (v) => (item[2] = v),
+                                      style: {
+                                        width: "33.33%",
+                                      },
+                                    });
+                                }
+                              })(),
+
+                              h(
+                                NButton,
+                                {
+                                  disabled:
+                                    `${
+                                      path ? `${path}.` : ""
+                                    }${condition}[${index}]` === "and[0]",
+                                  onClick: () =>
+                                    deleteProperty(
+                                      searchArray.value,
+                                      `${
+                                        path ? `${path}.` : ""
+                                      }${condition}[${index}]`
+                                    ),
+                                },
+                                {
+                                  icon: () => h(NIcon, () => h(IconMinus)),
+                                }
+                              ),
+                            ])
+                          : RenderSearch(
+                              `${path ? `${path}.` : ""}${condition}[${index}]`
+                            )
+                      )
+                  ),
+              }
+            )
+          )
+        ),
+      generateSearchInput = (search: any) => {
+        let RETURN: any = {};
+        Object.entries(search).forEach(([condition, items]) => {
+          items.forEach((item: any) => {
+            if (!RETURN[condition]) RETURN[condition] = {};
+            if (Array.isArray(item))
+              RETURN[condition][item[0]] = `${item[1]}${item[2]}`;
+            else RETURN[condition] = generateSearchInput(item);
+          });
+        });
+        return RETURN;
+      };
+
+    Drawer.value = {
+      show: false,
+      id: null,
+      table: null,
+      data: {},
+      width: 251,
+    };
 
     watch(searchInput, (v) => {
       const { search, ...Query }: any = route.query;
@@ -1365,7 +1659,7 @@ export default defineNuxtComponent({
         ? router.push({
             query: {
               ...(Query ?? {}),
-              search: v,
+              search: JSON.stringify(v),
             },
           })
         : router.push({
@@ -1436,7 +1730,7 @@ export default defineNuxtComponent({
                             },
                             () => [
                               t(Drawer.value.table),
-                              h(NIcon, () => h(ExternalLink)),
+                              h(NIcon, () => h(IconExternalLink)),
                             ]
                           ),
                         ]
@@ -1472,8 +1766,8 @@ export default defineNuxtComponent({
                                     h(
                                       Drawer.value.width >=
                                         window.screen.width / 2
-                                        ? ChevronRight
-                                        : ChevronLeft
+                                        ? IconChevronRight
+                                        : IconChevronLeft
                                     )
                                   ),
                               }
@@ -1491,7 +1785,7 @@ export default defineNuxtComponent({
                             loading: Loading.value["DrawerContent"],
                           },
                           {
-                            icon: () => h(NIcon, () => h(DeviceFloppy)),
+                            icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                             default: () =>
                               Drawer.value.id ? t("update") : t("create"),
                           }
@@ -1509,9 +1803,14 @@ export default defineNuxtComponent({
                         h(LazyRenderFields, {
                           modelValue: Drawer.value.data,
                           schema:
-                            database.value.tables.find(
-                              ({ slug }) => slug === Drawer.value.table
-                            )?.schema ?? [],
+                            database.value.tables
+                              ?.find(({ slug }) => slug === Drawer.value.table)
+                              ?.schema?.filter(
+                                ({ key }) =>
+                                  !["id", "createdAt", "updatedAt"].includes(
+                                    key
+                                  )
+                              ) ?? [],
                         })
                     ),
                 }
@@ -1653,46 +1952,16 @@ export default defineNuxtComponent({
                                         ({ slug }) =>
                                           slug === route.params.table
                                       )?.schema),
-                                  onClick: () => {
-                                    if (
-                                      !searchArray.value ||
-                                      searchArray.value.length === 0
-                                    )
-                                      searchArray.value = [[null, "=", null]];
-                                  },
                                 },
                                 {
-                                  icon: () => h(NIcon, () => h(Search)),
+                                  icon: () => h(NIcon, () => h(IconSearch)),
                                 }
                               ),
                             default: () => t("search"),
                           }
                         ),
                       footer: () =>
-                        h(NSpace, { justify: "space-between" }, () => [
-                          h(NSpace, {}, () => [
-                            searchArray.value && searchArray.value.length > 1
-                              ? h(
-                                  NButton,
-                                  {
-                                    onClick: () => searchArray.value.splice(-1),
-                                  },
-                                  {
-                                    icon: () => h(NIcon, () => h(Minus)),
-                                  }
-                                )
-                              : null,
-                            h(
-                              NButton,
-                              {
-                                onClick: () =>
-                                  searchArray.value.push([null, "=", null]),
-                              },
-                              {
-                                icon: () => h(NIcon, () => h(Plus)),
-                              }
-                            ),
-                          ]),
+                        h(NSpace, { justify: "end" }, () => [
                           h(NSpace, {}, () => [
                             h(
                               NButton,
@@ -1700,13 +1969,15 @@ export default defineNuxtComponent({
                                 disabled: searchInput.value === null,
                                 loading: Loading.value["TableData"],
                                 onClick: () => (
-                                  (searchArray.value = [[null, "=", null]]),
+                                  (searchArray.value = {
+                                    and: [[null, "=", null]],
+                                  }),
                                   (searchInput.value = null),
                                   refreshTableData()
                                 ),
                               },
                               {
-                                icon: () => h(NIcon, () => h(X)),
+                                icon: () => h(NIcon, () => h(IconX)),
                                 default: () => t("reset"),
                               }
                             ),
@@ -1715,228 +1986,25 @@ export default defineNuxtComponent({
                               {
                                 loading: Loading.value["TableData"],
                                 onClick: () => (
+                                  console.log(
+                                    generateSearchInput(searchArray.value)
+                                  ),
                                   (searchInput.value =
                                     searchArray.value &&
-                                    searchArray.value.length > 0
-                                      ? JSON.stringify(searchArray.value)
+                                    Object.values(searchArray.value).length > 0
+                                      ? generateSearchInput(searchArray.value)
                                       : null),
                                   refreshTableData()
                                 ),
                               },
                               {
-                                icon: () => h(NIcon, () => h(Search)),
+                                icon: () => h(NIcon, () => h(IconSearch)),
                                 default: () => t("search"),
                               }
                             ),
                           ]),
                         ]),
-                      default: () =>
-                        h(
-                          NSpace,
-                          {
-                            itemStyle: {
-                              width: "100%",
-                            },
-                          },
-                          () =>
-                            searchArray.value.map(
-                              (item: any, index: string | number) =>
-                                h(NInputGroup, () => [
-                                  h(NSelect, {
-                                    tag: true,
-                                    filterable: true,
-                                    value: searchArray.value[index][0],
-                                    onUpdateValue: (v, option) => (
-                                      (searchField.value[index] = (
-                                        option as any
-                                      ).label),
-                                      (searchArray.value[index][0] = v)
-                                    ),
-                                    options:
-                                      database.value.tables &&
-                                      database.value.tables.find(
-                                        ({ slug }) =>
-                                          slug === route.params.table
-                                      )?.schema
-                                        ? database.value.tables
-                                            .find(
-                                              ({ slug }) =>
-                                                slug === route.params.table
-                                            )
-                                            ?.schema.map(
-                                              (item, _index: any, schema) =>
-                                                GenerateSearchInOptions(
-                                                  schema,
-                                                  item
-                                                )
-                                            )
-                                            .flat(Infinity)
-                                        : [],
-                                    style: {
-                                      width: "33.33%",
-                                    },
-                                  }),
-                                  h(NSelect, {
-                                    filterable: true,
-                                    defaultValue: "=",
-                                    value: searchArray.value[index][1],
-                                    onUpdateValue: (v) =>
-                                      (searchArray.value[index][1] = v),
-                                    options: searchField.value[index]
-                                      ? ["date", "number"].includes(
-                                          searchField.value[index]
-                                        )
-                                        ? [
-                                            {
-                                              label: t(
-                                                "search_conditions.equal_to"
-                                              ),
-                                              value: "=",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.not_equal_to"
-                                              ),
-                                              value: "!",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.greater_than"
-                                              ),
-                                              value: ">",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.greater_equal_to"
-                                              ),
-                                              value: ">=",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.less_than"
-                                              ),
-                                              value: "<",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.less_equal_to"
-                                              ),
-                                              value: "<=",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.contains"
-                                              ),
-                                              value: "like",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.not_contain"
-                                              ),
-                                              value: "not like",
-                                            },
-                                          ]
-                                        : [
-                                            {
-                                              label: t(
-                                                "search_conditions.equal_to"
-                                              ),
-                                              value: "=",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.not_equal_to"
-                                              ),
-                                              value: "!",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.contains"
-                                              ),
-                                              value: "like",
-                                            },
-                                            {
-                                              label: t(
-                                                "search_conditions.not_contain"
-                                              ),
-                                              value: "not like",
-                                            },
-                                          ]
-                                      : [
-                                          {
-                                            label: t(
-                                              "search_conditions.equal_to"
-                                            ),
-                                            value: "=",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.not_equal_to"
-                                            ),
-                                            value: "!",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.contains"
-                                            ),
-                                            value: "like",
-                                          },
-                                          {
-                                            label: t(
-                                              "search_conditions.not_contain"
-                                            ),
-                                            value: "not like",
-                                          },
-                                        ],
-                                    style: {
-                                      width: "33.33%",
-                                    },
-                                  }),
-                                  (() => {
-                                    switch (searchField.value[index] ?? null) {
-                                      case "date":
-                                        return h(NDatePicker, {
-                                          value: searchArray.value[index][2]
-                                            ? searchArray.value[index][2] * 1000
-                                            : Date.now(),
-                                          onConfirm: (e) => (
-                                            (searchArray.value[index][2] =
-                                              e / 1000),
-                                            (searchInput.value =
-                                              searchArray.value &&
-                                              searchArray.value.length > 0
-                                                ? JSON.stringify(
-                                                    searchArray.value
-                                                  )
-                                                : null),
-                                            refreshTableData()
-                                          ),
-                                          type: "datetime",
-                                        });
-                                      default:
-                                        return h(NInput, {
-                                          onKeyup: (e) =>
-                                            e.code === "Enter" &&
-                                            ((searchInput.value =
-                                              searchArray.value &&
-                                              searchArray.value.length > 0
-                                                ? JSON.stringify(
-                                                    searchArray.value
-                                                  )
-                                                : null),
-                                            refreshTableData()),
-                                          value: searchArray.value[index][2],
-                                          onUpdateValue: (v) =>
-                                            (searchArray.value[index][2] = v),
-                                          style: {
-                                            width: "33.33%",
-                                          },
-                                        });
-                                    }
-                                  })(),
-                                ])
-                            )
-                        ),
+                      default: () => RenderSearch(),
                     }
                   ),
                   h(
@@ -1944,12 +2012,12 @@ export default defineNuxtComponent({
                     {
                       options: [
                         {
-                          icon: () => h(NIcon, () => h(TableImport)),
+                          icon: () => h(NIcon, () => h(IconTableImport)),
                           label: t("import"),
                           key: "import",
                         },
                         {
-                          icon: () => h(NIcon, () => h(TableExport)),
+                          icon: () => h(NIcon, () => h(IconTableExport)),
                           label: t("export"),
                           key: "export",
                           disabled: !TableData.value?.result,
@@ -2000,7 +2068,7 @@ export default defineNuxtComponent({
                                         percentage: UploadProgress.value,
                                         strokeWidth: 20,
                                       })
-                                    : h(NIcon, () => h(Tools)),
+                                    : h(NIcon, () => h(IconTools)),
                               }
                             ),
                           default: () => t("tools"),
@@ -2048,7 +2116,7 @@ export default defineNuxtComponent({
                             ),
                           },
                           {
-                            icon: () => h(NIcon, () => h(Plus)),
+                            icon: () => h(NIcon, () => h(IconPlus)),
                           }
                         ),
                       default: () => t("add_new"),
@@ -2073,7 +2141,7 @@ export default defineNuxtComponent({
                                 ),
                               },
                               {
-                                icon: () => h(NIcon, () => h(Settings)),
+                                icon: () => h(NIcon, () => h(IconSettings)),
                               }
                             ),
                           default: () => t("edit_schema"),

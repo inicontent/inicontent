@@ -59,6 +59,7 @@ export default defineWrappedResponseHandler(async (event: any) => {
     undefined,
     true
   );
+
   event.context._options = db.pageInfo;
 
   if (!database) throw new Error("db_not_found");

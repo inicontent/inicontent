@@ -9,7 +9,12 @@ import {
   NForm,
   useMessage,
 } from "naive-ui";
-import { DeviceFloppy, Send, Trash, Eye } from "@vicons/tabler";
+import {
+  IconDeviceFloppy,
+  IconSend,
+  IconTrash,
+  IconEye,
+} from "@tabler/icons-vue";
 
 import { LazyRenderFields } from "#components";
 
@@ -51,7 +56,7 @@ export default defineNuxtComponent({
       schema = database.value.tables
         .find((item) => item.slug === route.params.table)
         .schema.filter(
-          (field) => !["id", "createdAt", "updatedAt"].includes(field.key)
+          ({ key }) => !["id", "createdAt", "updatedAt"].includes(key)
         ),
       message = useMessage(),
       { data: single } = await useFetch(
@@ -159,7 +164,7 @@ export default defineNuxtComponent({
                             secondary: true,
                           },
                           {
-                            icon: () => h(NIcon, () => h(Eye)),
+                            icon: () => h(NIcon, () => h(IconEye)),
                           }
                         ),
                       default: () => t("view"),
@@ -184,7 +189,7 @@ export default defineNuxtComponent({
                                   loading: Loading.value["DELETE"],
                                 },
                                 {
-                                  icon: () => h(NIcon, () => h(Trash)),
+                                  icon: () => h(NIcon, () => h(IconTrash)),
                                 }
                               ),
                             default: () =>
@@ -214,7 +219,7 @@ export default defineNuxtComponent({
                             loading: Loading.value["UPDATE"],
                           },
                           {
-                            icon: () => h(NIcon, () => h(DeviceFloppy)),
+                            icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                           }
                         ),
                       default: () => t("update"),
@@ -236,7 +241,7 @@ export default defineNuxtComponent({
                                 loading: Loading.value["UPDATE"],
                               },
                               {
-                                icon: () => h(NIcon, () => h(Send)),
+                                icon: () => h(NIcon, () => h(IconSend)),
                               }
                             ),
                           default: () => t("publish"),
@@ -261,7 +266,7 @@ export default defineNuxtComponent({
                         loading: Loading.value["DELETE"],
                       },
                       {
-                        icon: () => h(NIcon, () => h(Trash)),
+                        icon: () => h(NIcon, () => h(IconTrash)),
                         default: () =>
                           single.value.deleted_at
                             ? t("delete")
@@ -284,7 +289,7 @@ export default defineNuxtComponent({
                   loading: Loading.value["UPDATE"],
                 },
                 {
-                  icon: () => h(NIcon, () => h(DeviceFloppy)),
+                  icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                   default: () => t("update"),
                 }
               ),
@@ -299,7 +304,7 @@ export default defineNuxtComponent({
                       loading: Loading.value["UPDATE"],
                     },
                     {
-                      icon: () => h(NIcon, () => h(Send)),
+                      icon: () => h(NIcon, () => h(IconSend)),
                       default: () => t("publish"),
                     }
                   )

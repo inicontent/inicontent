@@ -15,7 +15,7 @@ import {
   NScrollbar,
   NPopover,
 } from "naive-ui";
-import { Check, X, FileText, User } from "@vicons/tabler";
+import { IconCheck, IconX, IconFileText, IconUser } from "@tabler/icons-vue";
 import { getProperty, hasProperty } from "dot-prop";
 import { type Schema } from "inibase";
 export default defineNuxtComponent({
@@ -31,7 +31,7 @@ export default defineNuxtComponent({
   },
   setup: (props, { emit }) => {
     const Language = useGlobalCookie("Language");
-    const Loading: any = useState("Loading");
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["Drawer"] = false;
     const single = computed({
         get: () => props.modelValue,
@@ -69,7 +69,7 @@ export default defineNuxtComponent({
                           {
                             size: 16,
                           },
-                          () => h(X)
+                          () => h(IconX)
                         )
                     ),
                 }
@@ -300,7 +300,7 @@ export default defineNuxtComponent({
                                   previewSrc: link,
                                   width: 32,
                                 })
-                              : h(NIcon, () => h(FileText))
+                              : h(NIcon, () => h(IconFileText))
                           )
                       : h(NImageGroup, () =>
                           h(NSpace, { align: "center" }, () =>
@@ -328,7 +328,7 @@ export default defineNuxtComponent({
                                       previewSrc: link,
                                       width: 32,
                                     })
-                                  : h(NIcon, () => h(FileText))
+                                  : h(NIcon, () => h(IconFileText))
                               )
                           )
                         ),
@@ -424,8 +424,8 @@ export default defineNuxtComponent({
                                 single.value,
                                 (path ?? "") + getPath(props.schema, field.id)
                               )
-                                ? Check
-                                : X
+                                ? IconCheck
+                                : IconX
                             )
                         )
                     ),
@@ -596,7 +596,7 @@ export default defineNuxtComponent({
                               (path ?? "") + getPath(props.schema, field.id)
                             )
                           ),
-                        icon: () => h(NIcon, () => h(User)),
+                        icon: () => h(NIcon, () => h(IconUser)),
                       }
                     ),
                 }

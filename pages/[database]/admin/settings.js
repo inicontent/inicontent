@@ -10,7 +10,7 @@ import {
   NAnchor,
   NAnchorLink,
 } from "naive-ui";
-import { DeviceFloppy } from "@vicons/tabler";
+import { IconDeviceFloppy } from "@tabler/icons-vue";
 
 import { LazyRenderFields } from "#components";
 
@@ -105,7 +105,7 @@ export default defineNuxtComponent({
                     },
                     {
                       default: () => t("save"),
-                      icon: () => h(NIcon, () => h(DeviceFloppy)),
+                      icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                     }
                   ),
                 default: () =>
@@ -160,7 +160,7 @@ export default defineNuxtComponent({
                                   key: "roles",
                                   type: "array",
                                   children: "string",
-                                  default_value: ["admin", "user", "guest"],
+                                  defaultValue: ["admin", "user", "guest"],
                                   required: true,
                                 },
                               ],
@@ -207,7 +207,7 @@ export default defineNuxtComponent({
                                       key: "slug",
                                       type: "text",
                                       required: true,
-                                      input_props: (value) =>
+                                      inputProps: (value) =>
                                         [
                                           "user",
                                           "session",
@@ -229,7 +229,7 @@ export default defineNuxtComponent({
                                           id: 9,
                                           key: "role",
                                           type: "text",
-                                          input_props: {
+                                          inputProps: {
                                             disabled: true,
                                           },
                                           required: true,
@@ -239,7 +239,7 @@ export default defineNuxtComponent({
                                           key: "methods",
                                           type: "array",
                                           children: "string",
-                                          subtype: "checkbox",
+                                          subType: "checkbox",
                                           values: ["c", "r", "u", "d"],
                                           required: true,
                                         },

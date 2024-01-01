@@ -1,5 +1,11 @@
 import { NLayout, NLayoutSider, NMenu, NLayoutContent, NIcon } from "naive-ui";
-import { Eye, Folders, Pencil, Plus, Trash } from "@vicons/tabler";
+import {
+  IconEye,
+  IconFolders,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from "@tabler/icons-vue";
 import { NuxtLayout, NuxtLink } from "#components";
 
 export default defineNuxtComponent({
@@ -78,7 +84,7 @@ export default defineNuxtComponent({
                                           { default: () => "GET" }
                                         ),
                                       key: "get",
-                                      icon: () => h(NIcon, () => h(Eye)),
+                                      icon: () => h(NIcon, () => h(IconEye)),
                                     }
                                   : null,
                                 user.value.role === "admin" ||
@@ -97,7 +103,7 @@ export default defineNuxtComponent({
                                           { default: () => "POST" }
                                         ),
                                       key: "post",
-                                      icon: () => h(NIcon, () => h(Plus)),
+                                      icon: () => h(NIcon, () => h(IconPlus)),
                                     }
                                   : null,
                                 user.value.role === "admin" ||
@@ -116,7 +122,7 @@ export default defineNuxtComponent({
                                           { default: () => "PUT" }
                                         ),
                                       key: "put",
-                                      icon: () => h(NIcon, () => h(Pencil)),
+                                      icon: () => h(NIcon, () => h(IconPencil)),
                                     }
                                   : null,
                                 user.value.role === "admin" ||
@@ -135,7 +141,7 @@ export default defineNuxtComponent({
                                           { default: () => "DELETE" }
                                         ),
                                       key: "delete",
-                                      icon: () => h(NIcon, () => h(Trash)),
+                                      icon: () => h(NIcon, () => h(IconTrash)),
                                     }
                                   : null,
                               ].filter((i) => i !== null)
@@ -156,7 +162,7 @@ export default defineNuxtComponent({
                           { default: () => t("Assets") }
                         ),
                       key: "assets",
-                      icon: () => h(NIcon, () => h(Folders)),
+                      icon: () => h(NIcon, () => h(IconFolders)),
                       children: [
                         {
                           label: () =>
@@ -168,7 +174,7 @@ export default defineNuxtComponent({
                               { default: () => "GET" }
                             ),
                           key: "assets-get",
-                          icon: () => h(NIcon, () => h(Eye)),
+                          icon: () => h(NIcon, () => h(IconEye)),
                         },
                         {
                           label: () =>
@@ -180,7 +186,7 @@ export default defineNuxtComponent({
                               { default: () => "POST" }
                             ),
                           key: "assets-post",
-                          icon: () => h(NIcon, () => h(Plus)),
+                          icon: () => h(NIcon, () => h(IconPlus)),
                         },
                         {
                           label: () =>
@@ -192,7 +198,7 @@ export default defineNuxtComponent({
                               { default: () => "PUT" }
                             ),
                           key: "assets-put",
-                          icon: () => h(NIcon, () => h(Pencil)),
+                          icon: () => h(NIcon, () => h(IconPencil)),
                         },
                         {
                           label: () =>
@@ -204,7 +210,7 @@ export default defineNuxtComponent({
                               { default: () => "DELETE" }
                             ),
                           key: "assets-delete",
-                          icon: () => h(NIcon, () => h(Trash)),
+                          icon: () => h(NIcon, () => h(IconTrash)),
                         },
                       ],
                     },

@@ -17,13 +17,13 @@ import {
   NSelect,
 } from "naive-ui";
 import {
-  QuestionMark,
-  DeviceFloppy,
-  Plus,
-  Trash,
-  Menu2,
-  Asterisk,
-} from "@vicons/tabler";
+  IconQuestionMark,
+  IconDeviceFloppy,
+  IconPlus,
+  IconTrash,
+  IconMenu2,
+  IconAsterisk,
+} from "@tabler/icons-vue";
 import draggable from "vuedraggable";
 import { objectToDotNotation } from "inibase/utils";
 
@@ -352,7 +352,7 @@ export default defineNuxtComponent({
                                   },
                             size: 18,
                           },
-                          () => h(Menu2)
+                          () => h(IconMenu2)
                         ),
                         element.key ? t(element.key) : "--",
                       ],
@@ -395,7 +395,7 @@ export default defineNuxtComponent({
                                         size: "small",
                                       },
                                       {
-                                        icon: () => h(NIcon, () => h(Plus)),
+                                        icon: () => h(NIcon, () => h(IconPlus)),
                                       }
                                     )
                                 ),
@@ -424,7 +424,7 @@ export default defineNuxtComponent({
                                     ),
                                   },
                                   {
-                                    icon: () => h(NIcon, () => h(Asterisk)),
+                                    icon: () => h(NIcon, () => h(IconAsterisk)),
                                     default: () =>
                                       Window.value.width < 700
                                         ? null
@@ -472,7 +472,7 @@ export default defineNuxtComponent({
                                       )
                                       .find(({ key }) => key === element.type)
                                       ?.icon() ??
-                                    h(NIcon, () => h(QuestionMark)),
+                                    h(NIcon, () => h(IconQuestionMark)),
                                   default: () =>
                                     Window.value.width < 700
                                       ? null
@@ -511,7 +511,7 @@ export default defineNuxtComponent({
                               type: "error",
                             },
                             {
-                              icon: () => h(NIcon, () => h(Trash)),
+                              icon: () => h(NIcon, () => h(IconTrash)),
                             }
                           ),
                         ]),
@@ -631,7 +631,7 @@ export default defineNuxtComponent({
                   },
                   {
                     default: () => t("save"),
-                    icon: () => h(NIcon, () => h(DeviceFloppy)),
+                    icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                   }
                 ),
               default: () =>
@@ -673,7 +673,7 @@ export default defineNuxtComponent({
                             NButton,
                             { round: true },
                             {
-                              icon: () => h(NIcon, () => h(Plus)),
+                              icon: () => h(NIcon, () => h(IconPlus)),
                             }
                           )
                       ),

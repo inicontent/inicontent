@@ -39,18 +39,18 @@ import {
   type FormInst,
 } from "naive-ui";
 import {
-  Pencil,
-  Plus,
-  Trash,
-  ChevronRight,
-  Upload,
-  Link,
-  Books,
-  Check,
-  X,
-  DeviceFloppy,
-  QuestionMark,
-} from "@vicons/tabler";
+  IconPencil,
+  IconPlus,
+  IconTrash,
+  IconChevronRight,
+  IconUpload,
+  IconLink,
+  IconBooks,
+  IconCheck,
+  IconX,
+  IconDeviceFloppy,
+  IconQuestionMark,
+} from "@tabler/icons-vue";
 import {
   isArrayOfObjects,
   isURL,
@@ -65,15 +65,16 @@ import {
   deleteProperty,
 } from "dot-prop";
 import { LazyRichEditor, LazyRenderFields } from "#components";
-import { type Schema } from "inibase";
+import type { Database, Field, Schema } from "~/types";
+import type { FieldType } from "inibase";
 export default defineNuxtComponent({
   props: {
     schema: {
-      type: Object as PropType<Schema>,
+      type: Object as PropType<Schema | never>,
       default: [],
     },
     modelValue: {
-      type: Object,
+      type: Object as PropType<any>,
       default: {},
     },
   },
@@ -89,18 +90,23 @@ export default defineNuxtComponent({
         actions: "Actions",
       },
     });
-    const Loading = <any>useState("Loading");
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["Drawer"] = false;
     const modelValue = toRef(props, "modelValue"),
       message = useMessage(),
-      database = <any>useState("database"),
-      schema = <any>toRef(props, "schema"),
+      database = useState<Database>("database"),
+      schema = toRef(props, "schema"),
       route = useRoute(),
-      user = <any>useState("user"),
-      OPTIONS = <any>ref({}),
-      DisabledItem = <any>ref({}),
+      user = useState<any>("user"),
+      OPTIONS = ref<any>({}),
+      DisabledItem = ref<any>({}),
       DrawerFormRef = ref<FormInst | null>(null),
-      Drawer = ref({
+      Drawer = ref<{
+        show: boolean;
+        id?: null | string;
+        table?: null | string;
+        data?: any;
+      }>({
         show: false,
         id: null,
         table: null,
@@ -173,35 +179,40 @@ export default defineNuxtComponent({
         } else {
           if (
             hasProperty(modelValue.value, CurrentField.value.path) &&
-            getProperty(modelValue.value, CurrentField.value.path).includes(url)
+            getProperty(
+              modelValue.value,
+              CurrentField.value.path,
+              ""
+            )?.includes(url)
           )
             deleteProperty(
               modelValue.value,
               CurrentField.value.path +
                 `.${getProperty(
                   modelValue.value,
-                  CurrentField.value.path
-                ).indexOf(url)}`
+                  CurrentField.value.path,
+                  ""
+                )?.indexOf(url)}`
             );
           else
             setProperty(
               modelValue.value,
               `${CurrentField.value.path}[${
-                getProperty(modelValue.value, CurrentField.value.path, [])
-                  .length + 1
+                (getProperty(modelValue.value, CurrentField.value.path, [])
+                  ?.length ?? 0) + 1
               }]`,
               url
             );
         }
       },
-      RenderField = (field: any, path?: string): any => {
+      RenderField = (field: Field, path?: string): any => {
         switch (field.type) {
           case "string":
-            if (field.subtype)
+            if (field.subType)
               return RenderField(
                 {
                   ...field,
-                  type: field.subtype,
+                  type: field.subType as any,
                 },
                 path
               );
@@ -224,15 +235,15 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "Please select an option",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -267,15 +278,15 @@ export default defineNuxtComponent({
                   required: field.required,
                   trigger: ["blur", "input"],
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -294,15 +305,15 @@ export default defineNuxtComponent({
                       ),
                     placeholder: t(field.key),
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -313,11 +324,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -331,15 +342,15 @@ export default defineNuxtComponent({
                   required: field.required,
                   trigger: ["blur", "input"],
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -358,15 +369,15 @@ export default defineNuxtComponent({
                       ),
                     placeholder: t(field.key),
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -377,11 +388,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -399,15 +410,15 @@ export default defineNuxtComponent({
                       ? new Error("This field is required")
                       : true,
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -415,7 +426,7 @@ export default defineNuxtComponent({
                   NInput,
                   {
                     type: "textarea",
-                    rows: field.is_table ? 1 : 3,
+                    rows: field.isTable ? 1 : 3,
                     value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
@@ -429,15 +440,15 @@ export default defineNuxtComponent({
                     placeholder: t(field.key),
                     showCount: true,
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -448,11 +459,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -467,15 +478,15 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "Please select an option",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -492,20 +503,20 @@ export default defineNuxtComponent({
                         (path ?? "") + getPath(schema.value, field.id),
                         value
                       ),
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   () =>
                     h(NSpace, {}, () =>
-                      field.values.map((value: any) =>
+                      field.values?.map((value: any) =>
                         h(NRadio, {
                           value: value,
                           label: t(value),
@@ -520,28 +531,31 @@ export default defineNuxtComponent({
               {
                 label: t(field.key),
                 path: (path ?? "") + getPath(schema.value, field.id),
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
-              () => field.children.map((child: any) => RenderField(child, path))
+              () =>
+                (field.children as Schema).map((child: any) =>
+                  RenderField(child, path)
+                )
             );
           case "array":
             if (!field.children) throw new Error("no children");
-            if (field.subtype)
+            if (field.subType)
               return RenderField(
                 {
                   ...field,
-                  type: field.subtype,
+                  type: field.subType,
                   single: false,
-                },
+                } as Field,
                 path
               );
             else if (!isArrayOfObjects(field.children))
@@ -550,7 +564,7 @@ export default defineNuxtComponent({
                   ...field,
                   type: "tags",
                   single: false,
-                },
+                } as Field,
                 path
               );
             else
@@ -579,7 +593,7 @@ export default defineNuxtComponent({
                           []
                         )?.length === 0
                           ? ""
-                          : h(NIcon, () => h(ChevronRight)),
+                          : h(NIcon, () => h(IconChevronRight)),
                       default: () =>
                         h(
                           NCollapseItem,
@@ -633,12 +647,12 @@ export default defineNuxtComponent({
                                         (path ?? "") +
                                         getPath(schema.value, field.id)
                                       }[${
-                                        getProperty(
+                                        (getProperty(
                                           modelValue.value,
                                           (path ?? "") +
                                             getPath(schema.value, field.id),
                                           []
-                                        ).length + 1
+                                        )?.length ?? 0) + 1
                                       }]`,
                                       field.onCreate
                                         ? (field.onCreate instanceof Function
@@ -649,7 +663,7 @@ export default defineNuxtComponent({
                                   ),
                                 },
                                 {
-                                  icon: () => h(NIcon, () => h(Plus)),
+                                  icon: () => h(NIcon, () => h(IconPlus)),
                                 }
                               ),
                             default: () =>
@@ -668,7 +682,7 @@ export default defineNuxtComponent({
                                         modelValue.value,
                                         path ?? getPath(schema.value, field.id),
                                         []
-                                      ).map((item: any, index: number) =>
+                                      )?.map((_item: any, index: number) =>
                                         h(
                                           NCollapseItem,
                                           {
@@ -689,8 +703,8 @@ export default defineNuxtComponent({
                                                 NButton,
                                                 {
                                                   disabled:
-                                                    field.disabled_items &&
-                                                    field.disabled_items.includes(
+                                                    field.disabledItems &&
+                                                    field.disabledItems.includes(
                                                       index
                                                     ),
                                                   quaternary: true,
@@ -708,36 +722,39 @@ export default defineNuxtComponent({
                                                 },
                                                 {
                                                   icon: () =>
-                                                    h(NIcon, () => h(Trash)),
+                                                    h(NIcon, () =>
+                                                      h(IconTrash)
+                                                    ),
                                                 }
                                               ),
                                             default: () =>
-                                              field.children.map((child: any) =>
-                                                RenderField(
-                                                  {
-                                                    ...child,
-                                                    ...(field.disabled_items
-                                                      ? {
-                                                          input_props: {
-                                                            disabled:
-                                                              field.disabled_items &&
-                                                              field.disabled_items.includes(
-                                                                index
-                                                              ),
-                                                          },
-                                                        }
-                                                      : {}),
-                                                  },
-                                                  (path ??
-                                                    getPath(
-                                                      schema.value,
-                                                      field.id
-                                                    )) +
-                                                    "." +
-                                                    index +
-                                                    "." +
-                                                    child.key
-                                                )
+                                              (field.children as Schema).map(
+                                                (child) =>
+                                                  RenderField(
+                                                    {
+                                                      ...child,
+                                                      ...(field.disabledItems
+                                                        ? {
+                                                            inputProps: {
+                                                              disabled:
+                                                                field.disabledItems &&
+                                                                field.disabledItems.includes(
+                                                                  index
+                                                                ),
+                                                            },
+                                                          }
+                                                        : {}),
+                                                    },
+                                                    (path ??
+                                                      getPath(
+                                                        schema.value,
+                                                        field.id
+                                                      )) +
+                                                      "." +
+                                                      index +
+                                                      "." +
+                                                      child.key
+                                                  )
                                               ),
                                           }
                                         )
@@ -772,24 +789,24 @@ export default defineNuxtComponent({
                                       (path ?? "") +
                                       getPath(schema.value, field.id)
                                     }[${
-                                      getProperty(
+                                      (getProperty(
                                         modelValue.value,
                                         (path ?? "") +
                                           getPath(schema.value, field.id),
                                         []
-                                      ).length + 1
+                                      )?.length ?? 0) + 1
                                     }]`,
                                     {}
                                   ),
                               },
                               {
-                                icon: () => h(NIcon, () => h(Plus)),
+                                icon: () => h(NIcon, () => h(IconPlus)),
                               }
                             ),
                       default: () =>
                         h(NDataTable, {
                           columns: [
-                            ...field.children.map((child: any) => ({
+                            ...(field.children as any).map((child: any) => ({
                               width:
                                 t(child.key) && child.key.length > 10
                                   ? child.key.length * 15
@@ -810,19 +827,19 @@ export default defineNuxtComponent({
                                 (path ?? "") +
                                 getPath(schema.value, field.id) +
                                 `.${child.key}`,
-                              render: (item: any, index: number) =>
+                              render: (_item: any, index: number) =>
                                 RenderField(
                                   {
                                     ...child,
-                                    ...(field.disabled_items &&
-                                    field.disabled_items.includes(index)
+                                    ...(field.disabledItems &&
+                                    field.disabledItems.includes(index)
                                       ? {
-                                          input_props: {
+                                          inputProps: {
                                             disabled: true,
                                           },
                                         }
                                       : {}),
-                                    label_props: {
+                                    labelProps: {
                                       showLabel: false,
                                     },
                                   },
@@ -842,7 +859,7 @@ export default defineNuxtComponent({
                                   align: "center",
                                   width: 100,
                                   key: "actions",
-                                  render(row, index) {
+                                  render(_row, index) {
                                     return h(
                                       NPopover,
                                       {},
@@ -852,8 +869,8 @@ export default defineNuxtComponent({
                                             NButton,
                                             {
                                               disabled:
-                                                field.disabled_items &&
-                                                field.disabled_items.includes(
+                                                field.disabledItems &&
+                                                field.disabledItems.includes(
                                                   index
                                                 ),
                                               strong: true,
@@ -873,7 +890,7 @@ export default defineNuxtComponent({
                                             },
                                             {
                                               icon: () =>
-                                                h(NIcon, () => h(Trash)),
+                                                h(NIcon, () => h(IconTrash)),
                                             }
                                           ),
                                         default: () => t("delete"),
@@ -886,7 +903,7 @@ export default defineNuxtComponent({
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           ),
-                          scrollX: field.children.reduce(
+                          scrollX: (field.children as Schema).reduce(
                             (accumulator: number, child: any) => {
                               return (
                                 accumulator +
@@ -911,15 +928,15 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "Please select an option",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               {
@@ -952,7 +969,7 @@ export default defineNuxtComponent({
                               Drawer.value.show = true;
                             },
                           },
-                          { icon: () => h(NIcon, () => h(Pencil)) }
+                          { icon: () => h(NIcon, () => h(IconPencil)) }
                         )
                       : null,
                     user.value.role === "admin" ||
@@ -974,7 +991,7 @@ export default defineNuxtComponent({
                               (Drawer.value.show = true)
                             ),
                           },
-                          { icon: () => h(NIcon, () => h(Plus)) }
+                          { icon: () => h(NIcon, () => h(IconPlus)) }
                         )
                       : null,
                   ]),
@@ -989,16 +1006,18 @@ export default defineNuxtComponent({
                             .concat(
                               getProperty(
                                 modelValue.value,
-                                (path ?? "") + getPath(schema.value, field.id)
-                              )
+                                (path ?? "") + getPath(schema.value, field.id),
+                                []
+                              ) ?? []
                             )
                             .map((i: any) => i.id)[0]
                         : []
                             .concat(
                               getProperty(
                                 modelValue.value,
-                                (path ?? "") + getPath(schema.value, field.id)
-                              )
+                                (path ?? "") + getPath(schema.value, field.id),
+                                []
+                              ) ?? []
                             )
                             .map((i: any) => i.id)
                       : null,
@@ -1019,12 +1038,13 @@ export default defineNuxtComponent({
                             .concat(
                               getProperty(
                                 modelValue.value,
-                                (path ?? "") + getPath(schema.value, field.id)
-                              )
+                                (path ?? "") + getPath(schema.value, field.id),
+                                []
+                              ) ?? []
                             )
                             .map((single_value: any) => ({
                               label: field.label
-                                .map((single_label: any) =>
+                                ?.map((single_label: any) =>
                                   t(
                                     getProperty(single_value, single_label) ??
                                       ""
@@ -1032,11 +1052,9 @@ export default defineNuxtComponent({
                                 )
                                 .join(" "),
                               value: single_value.id,
-                              image: getProperty(
-                                single_value,
-                                field.image,
-                                null
-                              ),
+                              image: field.image
+                                ? getProperty(single_value, field.image, null)
+                                : null,
                               raw: single_value,
                             })),
                           OPTIONS.value ? OPTIONS.value[field.key] ?? [] : []
@@ -1210,7 +1228,7 @@ export default defineNuxtComponent({
                               params: {
                                 _where: JSON.stringify(
                                   field.search
-                                    .flatMap((search: any) => [
+                                    ?.flatMap((search: any) => [
                                       [search, "like", v],
                                       "OR",
                                     ])
@@ -1221,7 +1239,7 @@ export default defineNuxtComponent({
                                 res.result
                                   ? res.result.map((single_result: any) => ({
                                       label: field.label
-                                        .map((single_label: any) =>
+                                        ?.map((single_label: any) =>
                                           t(
                                             getProperty(
                                               single_result,
@@ -1277,15 +1295,15 @@ export default defineNuxtComponent({
                         trigger: "change",
                         message: "This field is required",
                       },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               {
@@ -1313,7 +1331,7 @@ export default defineNuxtComponent({
                                 secondary: true,
                                 size: "tiny",
                               },
-                              { icon: () => h(NIcon, () => h(Link)) }
+                              { icon: () => h(NIcon, () => h(IconLink)) }
                             ),
                           default: () =>
                             h(
@@ -1334,12 +1352,12 @@ export default defineNuxtComponent({
                                           (path ?? "") +
                                           getPath(schema.value, field.id)
                                         }[${
-                                          getProperty(
+                                          (getProperty(
                                             modelValue.value,
                                             (path ?? "") +
                                               getPath(schema.value, field.id),
                                             []
-                                          ).length + 1
+                                          )?.length ?? 0) + 1
                                         }]`,
                                         value
                                       ),
@@ -1347,7 +1365,7 @@ export default defineNuxtComponent({
                                 clearable: true,
                               },
                               {
-                                suffix: () => h(NIcon, () => h(Link)),
+                                suffix: () => h(NIcon, () => h(IconLink)),
                               }
                             ),
                         }
@@ -1368,7 +1386,7 @@ export default defineNuxtComponent({
                             (ShowAssets.value = true)
                           ),
                         },
-                        { icon: () => h(NIcon, () => h(Books)) }
+                        { icon: () => h(NIcon, () => h(IconBooks)) }
                       ),
                     ]
                   ),
@@ -1404,8 +1422,9 @@ export default defineNuxtComponent({
                             .concat(
                               getProperty(
                                 modelValue.value,
-                                (path ?? "") + getPath(schema.value, field.id)
-                              )
+                                (path ?? "") + getPath(schema.value, field.id),
+                                []
+                              ) ?? []
                             )
                             .map((src: string | object) =>
                               typeof src === "object"
@@ -1454,12 +1473,12 @@ export default defineNuxtComponent({
                           ? window.open(url, "blank")?.focus() ?? undefined
                           : undefined,
                       listType:
-                        field.single === true && field.is_table !== true
+                        field.single === true && field.isTable !== true
                           ? "image"
                           : "image-card",
                     },
                     () =>
-                      field.single === true && field.is_table !== true
+                      field.single === true && field.isTable !== true
                         ? h(NUploadDragger, () => [
                             h(
                               "div",
@@ -1468,7 +1487,9 @@ export default defineNuxtComponent({
                                   marginBottom: "12px",
                                 },
                               },
-                              h(NIcon, { size: 48, depth: 3 }, () => h(Upload))
+                              h(NIcon, { size: 48, depth: 3 }, () =>
+                                h(IconUpload)
+                              )
                             ),
                             h(
                               NText,
@@ -1492,15 +1513,15 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "This field is required",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1516,15 +1537,15 @@ export default defineNuxtComponent({
                       (path ?? "") + getPath(schema.value, field.id),
                       value
                     ),
-                  ...(field.input_props
-                    ? field.input_props instanceof Function
-                      ? field.input_props(
+                  ...(field.inputProps
+                    ? field.inputProps instanceof Function
+                      ? field.inputProps(
                           getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
                         ) ?? {}
-                      : field.input_props
+                      : field.inputProps
                     : {}),
                 })
             );
@@ -1536,7 +1557,7 @@ export default defineNuxtComponent({
                 path: (path ?? "") + getPath(schema.value, field.id),
                 rule: {
                   required: field.required,
-                  validator(rule, value) {
+                  validator(_rule, value) {
                     if (!value)
                       return field.required
                         ? new Error("This field is required")
@@ -1546,15 +1567,15 @@ export default defineNuxtComponent({
                   },
                   trigger: "change",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1574,15 +1595,15 @@ export default defineNuxtComponent({
                       ),
                     placeholder: t(field.key),
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -1593,11 +1614,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -1620,15 +1641,15 @@ export default defineNuxtComponent({
                       return new Error("Please type a valid email");
                   },
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1665,15 +1686,15 @@ export default defineNuxtComponent({
                       ),
                     placeholder: t(field.key),
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -1684,11 +1705,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -1716,15 +1737,15 @@ export default defineNuxtComponent({
                   trigger: ["blur", "change"],
                   message: "Please select a valid date",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1747,15 +1768,15 @@ export default defineNuxtComponent({
                       e
                     ),
                   type: "datetime",
-                  ...(field.input_props
-                    ? field.input_props instanceof Function
-                      ? field.input_props(
+                  ...(field.inputProps
+                    ? field.inputProps instanceof Function
+                      ? field.inputProps(
                           getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
                         ) ?? {}
-                      : field.input_props
+                      : field.inputProps
                     : {}),
                 })
             );
@@ -1770,15 +1791,15 @@ export default defineNuxtComponent({
                   trigger: ["blur", "input"],
                   message: "Please write something",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1793,15 +1814,15 @@ export default defineNuxtComponent({
                       (path ?? "") + getPath(schema.value, field.id),
                       v
                     ),
-                  ...(field.input_props
-                    ? field.input_props instanceof Function
-                      ? field.input_props(
+                  ...(field.inputProps
+                    ? field.inputProps instanceof Function
+                      ? field.inputProps(
                           getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
                         ) ?? {}
-                      : field.input_props
+                      : field.inputProps
                     : {}),
                 })
             );
@@ -1820,15 +1841,15 @@ export default defineNuxtComponent({
                       ? new Error("Please type a valid number")
                       : true,
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1848,15 +1869,15 @@ export default defineNuxtComponent({
                     placeholder: t(field.key),
                     showButton: false,
                     clearable: true,
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   {
@@ -1867,11 +1888,11 @@ export default defineNuxtComponent({
                           ...(children ?? []),
                         ])
                         .find(({ key }) =>
-                          field.subtype
-                            ? key === field.subtype
+                          field.subType
+                            ? key === field.subType
                             : key === field.type
                         )
-                        ?.icon() ?? h(NIcon, () => h(QuestionMark)),
+                        ?.icon() ?? h(NIcon, () => h(IconQuestionMark)),
                   }
                 )
             );
@@ -1914,15 +1935,15 @@ export default defineNuxtComponent({
                       ? new Error("This field is required")
                       : true,
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1940,15 +1961,15 @@ export default defineNuxtComponent({
                       value
                     ),
                   placeholder: t(field.key),
-                  ...(field.input_props
-                    ? field.input_props instanceof Function
-                      ? field.input_props(
+                  ...(field.inputProps
+                    ? field.inputProps instanceof Function
+                      ? field.inputProps(
                           getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
                         ) ?? {}
-                      : field.input_props
+                      : field.inputProps
                     : {}),
                 })
             );
@@ -1959,15 +1980,15 @@ export default defineNuxtComponent({
                 labelPlacement: "left",
                 label: t(field.key),
                 path: (path ?? "") + getPath(schema.value, field.id),
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -1990,12 +2011,12 @@ export default defineNuxtComponent({
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
-              field.default_value
+              field.defaultValue
             )
               setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
-                field.default_value
+                field.defaultValue
               );
             return h(
               NFormItem,
@@ -2008,20 +2029,20 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "Please select an option",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
                 h(NSelect, {
-                  defaultValue: field.default_value ?? [],
+                  defaultValue: field.defaultValue ?? [],
                   value: getProperty(
                     modelValue.value,
                     (path ?? "") + getPath(schema.value, field.id)
@@ -2032,21 +2053,21 @@ export default defineNuxtComponent({
                       (path ?? "") + getPath(schema.value, field.id),
                       value
                     ),
-                  options: field.values.map((value: any) => ({
+                  options: field.values?.map((value: any) => ({
                     value: value,
                     label: t(value),
                   })),
                   filterable: true,
                   multiple: field.single === false,
-                  ...(field.input_props
-                    ? field.input_props instanceof Function
-                      ? field.input_props(
+                  ...(field.inputProps
+                    ? field.inputProps instanceof Function
+                      ? field.inputProps(
                           getProperty(
                             modelValue.value,
                             (path ?? "") + getPath(schema.value, field.id)
                           )
                         ) ?? {}
-                      : field.input_props
+                      : field.inputProps
                     : {}),
                 })
             );
@@ -2056,12 +2077,12 @@ export default defineNuxtComponent({
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id)
               ) &&
-              field.default_value
+              field.defaultValue
             )
               setProperty(
                 modelValue.value,
                 (path ?? "") + getPath(schema.value, field.id),
-                field.default_value
+                field.defaultValue
               );
             return h(
               NFormItem,
@@ -2074,15 +2095,15 @@ export default defineNuxtComponent({
                   trigger: "change",
                   message: "Please select an option",
                 },
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
               },
               () =>
@@ -2099,15 +2120,15 @@ export default defineNuxtComponent({
                         (path ?? "") + getPath(schema.value, field.id),
                         value
                       ),
-                    ...(field.input_props
-                      ? field.input_props instanceof Function
-                        ? field.input_props(
+                    ...(field.inputProps
+                      ? field.inputProps instanceof Function
+                        ? field.inputProps(
                             getProperty(
                               modelValue.value,
                               (path ?? "") + getPath(schema.value, field.id)
                             )
                           ) ?? {}
-                        : field.input_props
+                        : field.inputProps
                       : {}),
                   },
                   () =>
@@ -2118,7 +2139,7 @@ export default defineNuxtComponent({
                         align: "center",
                       },
                       () =>
-                        field.values.map((value: any) =>
+                        field.values?.map((value: any) =>
                           h(NCheckbox, {
                             value: value,
                             label: t(value),
@@ -2128,24 +2149,24 @@ export default defineNuxtComponent({
                 )
             );
           case "tags":
-            if (field.default_value)
+            if (field.defaultValue)
               []
-                .concat(field.default_value)
+                .concat(field.defaultValue)
                 .forEach(
                   (value) =>
                     !getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id),
                       []
-                    ).includes(value) &&
+                    )?.includes(value) &&
                     setProperty(
                       modelValue.value,
                       `${(path ?? "") + getPath(schema.value, field.id)}[${
-                        getProperty(
+                        (getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id),
                           []
-                        ).length + 1
+                        )?.length ?? 0) + 1
                       }]`,
                       value
                     )
@@ -2155,27 +2176,32 @@ export default defineNuxtComponent({
               {
                 label: t(field.key),
                 path: (path ?? "") + getPath(schema.value, field.id),
-                ...(field.label_props
-                  ? field.label_props instanceof Function
-                    ? field.label_props(
+                ...(field.labelProps
+                  ? field.labelProps instanceof Function
+                    ? field.labelProps(
                         getProperty(
                           modelValue.value,
                           (path ?? "") + getPath(schema.value, field.id)
                         )
                       ) ?? {}
-                    : field.label_props
+                    : field.labelProps
                   : {}),
                 rule: {
                   type: "array",
                   required: field.required,
                   trigger: ["change"],
-                  validator(rule, values) {
+                  validator(_rule, values) {
                     if (!Array.isArray(values) || values.length === 0)
                       return field.required
                         ? new Error("This field is required")
                         : true;
                     for (const value of values)
-                      if (!validateFieldType(value, field.children))
+                      if (
+                        !validateFieldType(
+                          value,
+                          field.children as FieldType | FieldType[]
+                        )
+                      )
                         return new Error(
                           "Please type a valid " +
                             (Array.isArray(field.children)
@@ -2192,7 +2218,7 @@ export default defineNuxtComponent({
                   {
                     inputProps: {
                       placeholder: Array.isArray(field.children)
-                        ? field.children
+                        ? (field.children as string[])
                             .map(
                               (child: string) =>
                                 ({
@@ -2208,7 +2234,7 @@ export default defineNuxtComponent({
                             number: "123456",
                           }[field.children as string] ?? "Type here",
                     },
-                    defaultValue: field.default_value ?? [],
+                    defaultValue: field.defaultValue ?? [],
                     value: getProperty(
                       modelValue.value,
                       (path ?? "") + getPath(schema.value, field.id)
@@ -2232,7 +2258,7 @@ export default defineNuxtComponent({
                           onClick: activate,
                         },
                         {
-                          icon: () => h(NIcon, () => h(Plus)),
+                          icon: () => h(NIcon, () => h(IconPlus)),
                         }
                       ),
                   }
@@ -2278,7 +2304,7 @@ export default defineNuxtComponent({
             {
               title: Drawer.value.id
                 ? `${t(Drawer.value.table)} | ${Drawer.value.id}`
-                : `New ${t(Drawer.value.table)}`,
+                : `${t("new")} ${t(Drawer.value.table)}`,
               closable: true,
               nativeScrollbar: false,
             },
@@ -2291,10 +2317,10 @@ export default defineNuxtComponent({
                     secondary: true,
                     type: "primary",
                     onClick: Drawer.value.id ? UpdateDrawer : CreateDrawer,
-                    loading: Loading["Drawer"],
+                    loading: Loading.value["Drawer"],
                   },
                   {
-                    icon: () => h(NIcon, () => h(DeviceFloppy)),
+                    icon: () => h(NIcon, () => h(IconDeviceFloppy)),
                     default: () => (Drawer.value.id ? "UPDATE" : "CREATE"),
                   }
                 ),
@@ -2308,15 +2334,16 @@ export default defineNuxtComponent({
                   () =>
                     h(LazyRenderFields, {
                       modelValue: Drawer.value.data,
-                      schema: database.value.tables.find(
-                        (item: any) => item.slug === Drawer.value.table
-                      ).schema,
+                      schema:
+                        database.value.tables?.find(
+                          (item: any) => item.slug === Drawer.value.table
+                        )?.schema ?? ([] as any),
                     })
                 ),
             }
           )
       ),
-      ...schema.value.map((item: any) => RenderField(item)),
+      ...schema.value.map((item) => RenderField(item)),
       h(
         NDrawer,
         {
@@ -2430,8 +2457,8 @@ export default defineNuxtComponent({
                                             .includes(
                                               (Asset?.public_url ?? "") as never
                                             )
-                                            ? Check
-                                            : X
+                                            ? IconCheck
+                                            : IconX
                                         )
                                       ),
                                   }
@@ -2479,7 +2506,7 @@ export default defineNuxtComponent({
                                             target: "_blank",
                                           },
                                           () =>
-                                            h(Upload, {
+                                            h(IconUpload, {
                                               style: {
                                                 width: "100%",
                                                 height: "100%",

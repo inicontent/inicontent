@@ -18,15 +18,15 @@ import {
   NPopover,
 } from "naive-ui";
 import {
-  Moon,
-  Sun,
-  Settings,
-  Copyright,
-  User,
-  Pencil,
-  Logout,
-  Language as LanguageIcon,
-} from "@vicons/tabler";
+  IconMoon,
+  IconSun,
+  IconSettings,
+  IconCopyright,
+  IconUser,
+  IconPencil,
+  IconLogout,
+  IconLanguage,
+} from "@tabler/icons-vue";
 
 export default defineNuxtComponent({
   setup: async (props, { slots }) => {
@@ -219,12 +219,14 @@ export default defineNuxtComponent({
                                         {
                                           label: t("profile"),
                                           key: "edit",
-                                          icon: () => h(NIcon, () => h(Pencil)),
+                                          icon: () =>
+                                            h(NIcon, () => h(IconPencil)),
                                         },
                                         {
                                           label: t("logout"),
                                           key: "logout",
-                                          icon: () => h(NIcon, () => h(Logout)),
+                                          icon: () =>
+                                            h(NIcon, () => h(IconLogout)),
                                         },
                                       ],
                                       onSelect: async (v) => {
@@ -260,7 +262,8 @@ export default defineNuxtComponent({
                                           circle: true,
                                         },
                                         {
-                                          icon: () => h(NIcon, () => h(User)),
+                                          icon: () =>
+                                            h(NIcon, () => h(IconUser)),
                                         }
                                       )
                                   ),
@@ -286,7 +289,9 @@ export default defineNuxtComponent({
                                               },
                                               {
                                                 icon: () =>
-                                                  h(NIcon, () => h(Settings)),
+                                                  h(NIcon, () =>
+                                                    h(IconSettings)
+                                                  ),
                                               }
                                             ),
                                           default: () => t("settings"),
@@ -314,8 +319,8 @@ export default defineNuxtComponent({
                                       icon: () =>
                                         h(NIcon, () =>
                                           Theme.value === "light"
-                                            ? h(Moon)
-                                            : h(Sun)
+                                            ? h(IconMoon)
+                                            : h(IconSun)
                                         ),
                                     }
                                   ),
@@ -343,7 +348,7 @@ export default defineNuxtComponent({
                                   NButton,
                                   { size: "small", round: true },
                                   {
-                                    icon: () => h(NIcon, () => h(LanguageIcon)),
+                                    icon: () => h(NIcon, () => h(IconLanguage)),
                                     default: () => Language.value.toUpperCase(),
                                   }
                                 )
@@ -385,7 +390,7 @@ export default defineNuxtComponent({
               () =>
                 h(NText, {}, () => [
                   t("copyright"),
-                  h(NIcon, { size: 12 }, () => h(Copyright)),
+                  h(NIcon, { size: 12 }, () => h(IconCopyright)),
                   new Date().getFullYear(),
                 ])
             ),

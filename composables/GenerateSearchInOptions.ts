@@ -1,4 +1,4 @@
-import type { Field, Schema } from "inibase";
+import type { Field, Schema } from "~/types";
 
 function GenerateSearchInOptions(
   schema: Schema,
@@ -29,7 +29,7 @@ function GenerateSearchInOptions(
         key: (path ?? "") + key,
         children:
           (
-            (<any>useState("database")).value?.tables?.find(
+            useState<any>("database").value?.tables?.find(
               ({ slug }: any) => slug === key
             )?.schema as Schema | undefined
           )
