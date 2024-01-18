@@ -25,7 +25,8 @@ import {
 } from "naive-ui";
 import Vibrant from "node-vibrant";
 import { NuxtLayout, NuxtPage, NuxtLoadingIndicator } from "#components";
-import type { ThemeConfig } from "~/types";
+import { Database, type apiResponse, type ThemeConfig } from "~/types";
+import { deepMerge } from "inibase/utils";
 
 export default defineNuxtComponent({
   async setup() {
@@ -48,9 +49,9 @@ export default defineNuxtComponent({
         unstableInputRtl,
         unstableAvatarGroupRtl,
       ],
-      Language: any = useGlobalCookie("Language"),
-      Theme: any = useGlobalCookie("Theme"),
-      database: any = useState("database", () => ({
+      Language = useGlobalCookie<string>("Language"),
+      Theme = useGlobalCookie<string>("Theme"),
+      database = useState<Database>("database", () => ({
         name: "Inicontent",
         icon: "/favicon.ico",
       })),
@@ -91,6 +92,10 @@ export default defineNuxtComponent({
         console.error(error);
       }
     }
+
+    onMounted(fetchTranslation);
+    watch(Language, fetchTranslation);
+
     return () =>
       h("div", [
         h(

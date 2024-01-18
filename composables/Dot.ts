@@ -1,4 +1,4 @@
-import { isNumber, isObject } from "inibase/utils";
+import { isNumber } from "inibase/utils";
 /**
  * Regex to test if a string is a valid array index key.
  */
@@ -8,6 +8,29 @@ const indexer: RegExp = /^[0-9]+$/;
  * Disallowed keys.
  */
 const disallowed: string[] = ["__proto__", "prototype", "constructor"];
+
+/**
+ * Converts keys of an object to dot notation recursively.
+ *
+ * @param object - The input object to convert.
+ * @param prefix - The prefix to use for the current level of recursion (default is an empty string).
+ * @returns A new object with keys converted to dot notation.
+ */
+export const objectToDotNotation = (object: any, prefix?: string): any =>
+  Object.keys(object || {}).reduce((acc, key) => {
+    const value = object[key];
+    const outputKey = prefix ? `${prefix}.${key}` : `${key}`;
+
+    // NOTE: remove `&& (!Array.isArray(value) || value.length)` to exclude empty arrays from the output
+    if (
+      value &&
+      typeof value === "object" &&
+      (!Array.isArray(value) || value.length)
+    )
+      return { ...acc, ...objectToDotNotation(value, outputKey) };
+
+    return { ...acc, [outputKey]: value };
+  }, {});
 
 /**
  * Get object property value.
