@@ -15,7 +15,7 @@ export default defineNuxtComponent({
     return () =>
       h(
         NCard,
-        { title: t("Tables"), style: "background: none", bordered: false },
+        { title: t("tables"), style: "background: none", bordered: false },
         () => h(LazyTablesGrid, { modelValue: database.value })
       );
   },
