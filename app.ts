@@ -25,6 +25,7 @@ import {
 } from "naive-ui";
 import Vibrant from "node-vibrant";
 import { NuxtLayout, NuxtPage, NuxtLoadingIndicator } from "#components";
+import type { ThemeConfig } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -53,7 +54,7 @@ export default defineNuxtComponent({
         name: "Inicontent",
         icon: "/favicon.ico",
       })),
-      ThemeConfig = useState("ThemeConfig", () => ({
+      ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
         primaryColor: "#FF9800",
         primaryColorHover: "#F7A42A",
         primaryColorPressed: "#E19421",

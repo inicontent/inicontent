@@ -465,14 +465,14 @@ export default defineNuxtComponent({
                           max: 1,
                           multiple: false,
                           accept: "image/*",
-                          action: `/api/${
+                          action: `${useRuntimeConfig().public.apiBase}${
                             route.params.database ?? "inicontent"
                           }/asset`,
                           onBeforeUpload: () =>
                             (Loading.value["Upload"] = true),
                           onFinish: ({ file, event }: any) => {
                             const src = JSON.parse(event.target.response).result
-                              .public_url;
+                              .publicURL;
                             var selRanges = window.getSelection();
                             if (selRanges && selRanges.rangeCount > 0) {
                               var curRange = selRanges.getRangeAt(0); // Range object

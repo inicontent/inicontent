@@ -1,4 +1,4 @@
-import type { FieldType } from "inibase";
+import type { FieldType, Options } from "inibase";
 type CMS_FieldType =
   | "text"
   | "upload"
@@ -7,14 +7,18 @@ type CMS_FieldType =
   | "checkbox"
   | "tags"
   | "color"
-  | "list"
+  | "select"
   | "role";
 export type Field = {
   id?: string | number;
   key: string;
   children?: string | string[] | Schema;
   required?: boolean;
-  type: FieldType | CMS_FieldType | (FieldType | CMS_FieldType)[];
+  type:
+    | FieldType
+    | CMS_FieldType
+    | string
+    | (FieldType | CMS_FieldType | string)[];
   subType?: string;
   accept?: string[];
   single?: boolean;
@@ -35,10 +39,11 @@ export type Schema = Field[];
 export type Table = {
   id?: string;
   slug: string;
-  allowed_methods: {
-    role: string;
-    methods: ("c" | "r" | "u" | "d" | "s")[];
-  }[];
+  allowed_methods?:
+    | {
+        role: string;
+        methods: ("c" | "r" | "u" | "d" | "s")[] | string[];
+      }[];
   schema?: Schema;
 };
 export type Item = {
@@ -63,3 +68,32 @@ export type Database = {
   tables?: Table[];
   user?: User;
 };
+
+export type apiResponse<T = any> = {
+  result: T;
+  message: Record<string, string>;
+  options: Options;
+};
+
+export type Asset = {
+  name?: string;
+  type?: string | null;
+  size?: number;
+  createdAt?: number;
+  updatedAt?: number;
+  publicURL?: string;
+  user?: any;
+};
+
+export type ThemeConfig = {
+  primaryColor: string;
+  primaryColorHover: string;
+  primaryColorPressed: string;
+  primaryColorSuppl: string;
+};
+
+declare module "nuxt/schema" {
+  interface PublicRuntimeConfig {
+    apiBase: string;
+  }
+}

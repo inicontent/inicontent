@@ -60,7 +60,9 @@ export default defineNuxtComponent({
         ),
       message = useMessage(),
       { data: single } = await useFetch(
-        `/api/${route.params.database}/${route.params.table}/${route.params.id}`,
+        `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+          route.params.table
+        }/${route.params.id}`,
         {
           transform: (res) => {
             if (!res.result || !res.result.id) {
@@ -82,13 +84,15 @@ export default defineNuxtComponent({
         formRef.value?.validate(async (errors) => {
           if (!errors) {
             Loading.value["UPDATE"] = true;
-            const { deleted_at, ...withoutDeleted } = single.value;
+            const { deletedAt, ...withoutDeleted } = single.value;
             const { data } = await useFetch(
-              `/api/${route.params.database}/${route.params.table}/${route.params.id}`,
+              `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+                route.params.table
+              }/${route.params.id}`,
               {
                 method: "PUT",
                 body:
-                  single.value.deleted_at && publish
+                  single.value.deletedAt && publish
                     ? withoutDeleted
                     : single.value,
               }
@@ -104,7 +108,9 @@ export default defineNuxtComponent({
       DELETE = async () => {
         Loading.value["DELETE"] = true;
         const { data } = await useFetch(
-          `/api/${route.params.database}/${route.params.table}/${route.params.id}`,
+          `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+            route.params.table
+          }/${route.params.id}`,
           {
             method: "DELETE",
           }
@@ -112,7 +118,7 @@ export default defineNuxtComponent({
         if (data.value.code === 204) {
           message.success(data.value.message.en);
           Loading.value["DELETE"] = false;
-          if (single.value.deleted_at)
+          if (single.value.deletedAt)
             return navigateTo(
               `/${route.params.database}/admin/tables/${route.params.table}`
             );
@@ -193,13 +199,13 @@ export default defineNuxtComponent({
                                 }
                               ),
                             default: () =>
-                              single.value.deleted_at
+                              single.value.deletedAt
                                 ? t("delete")
                                 : t("move_to_trash"),
                           }
                         ),
                       default: () =>
-                        single.value.deleted_at
+                        single.value.deletedAt
                           ? t("confirm_delete_permanently")
                           : t("confirm_delete"),
                     }
@@ -214,7 +220,7 @@ export default defineNuxtComponent({
                           {
                             secondary: true,
                             circle: true,
-                            type: single.value.deleted_at ? "info" : "primary",
+                            type: single.value.deletedAt ? "info" : "primary",
                             onClick: UPDATE,
                             loading: Loading.value["UPDATE"],
                           },
@@ -225,7 +231,7 @@ export default defineNuxtComponent({
                       default: () => t("update"),
                     }
                   ),
-                  single.value.deleted_at
+                  single.value.deletedAt
                     ? h(
                         NPopover,
                         {},
@@ -268,13 +274,13 @@ export default defineNuxtComponent({
                       {
                         icon: () => h(NIcon, () => h(IconTrash)),
                         default: () =>
-                          single.value.deleted_at
+                          single.value.deletedAt
                             ? t("delete")
                             : t("move_to_trash"),
                       }
                     ),
                   default: () =>
-                    single.value.deleted_at
+                    single.value.deletedAt
                       ? t("confirm_delete_permanently")
                       : t("confirm_delete"),
                 }
@@ -284,7 +290,7 @@ export default defineNuxtComponent({
                 {
                   round: true,
                   secondary: true,
-                  type: single.value.deleted_at ? "info" : "primary",
+                  type: single.value.deletedAt ? "info" : "primary",
                   onClick: UPDATE,
                   loading: Loading.value["UPDATE"],
                 },
@@ -293,7 +299,7 @@ export default defineNuxtComponent({
                   default: () => t("update"),
                 }
               ),
-              single.value.deleted_at
+              single.value.deletedAt
                 ? h(
                     NButton,
                     {

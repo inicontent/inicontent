@@ -8,8 +8,12 @@ export default defineNuxtComponent({
         email: "karim.amahtil@gmail.com",
         role: "admin",
         icon: [
-          "http://localhost:3000/api/inicontent/asset/57cc3d9df7a98973c647874e880e291a.square_E.jpg",
-          "http://localhost:3000/api/inicontent/asset/57cc3d9df7a98973c647874e880e291a.2-ar.png",
+          `${
+            useRuntimeConfig().public.apiBase
+          }inicontent/asset/57cc3d9df7a98973c647874e880e291a.square_E.jpg`,
+          `${
+            useRuntimeConfig().public.apiBase
+          }inicontent/asset/57cc3d9df7a98973c647874e880e291a.2-ar.png`,
         ],
       }),
       userRef = ref(),

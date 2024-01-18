@@ -150,7 +150,7 @@ export default function (): FieldsList[] {
     },
     {
       label: t("fields.list"),
-      key: "list",
+      key: "select",
       icon: () => h(NIcon, () => h(IconListCheck)),
     },
     {

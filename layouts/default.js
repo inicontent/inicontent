@@ -238,7 +238,10 @@ export default defineNuxtComponent({
                                             break;
                                           case "logout":
                                             await $fetch(
-                                              `/api/${
+                                              `${
+                                                useRuntimeConfig().public
+                                                  .apiBase
+                                              }${
                                                 route.params.database ??
                                                 "inicontent"
                                               }/auth/signout`,

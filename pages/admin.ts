@@ -17,7 +17,7 @@ import {
   IconArrowRight,
 } from "@tabler/icons-vue";
 import { LazyTablesGrid, LazyRenderFields } from "#components";
-import type { Database } from "~/types";
+import type { Database, apiResponse } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -49,29 +49,31 @@ export default defineNuxtComponent({
 
     const database = useState<Database>("database"),
       message = useMessage(),
-      DisabledItem = useState<boolean[]>(() => []),
+      DisabledItem = useState<Record<string | number, boolean>>(() => ({})),
       Window = useState("Window", () => ({
         width: 0,
       })),
-      { data: databases } = await useFetch("/api/inicontent/database", {
-        transform: (i: any) => i.result as Database[],
-      }),
+      { data: databases } = await useFetch<apiResponse<Database[]>>(
+        `${useRuntimeConfig().public.apiBase}inicontent/database`
+      ),
       ShowDatabaseModal = ref(false),
       DatabaseRef = ref<FormInst | null>(null),
       DatabaseModal = ref<Database>(),
-      Database = async () => {
+      DatabaseSave = async () => {
         DatabaseRef.value?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["Database"] = true;
-            const { data }: any = await useFetch(
-              `/api/inicontent/database/${
-                DatabaseModal.value?.id ? DatabaseModal.value.id : ""
+            const { data } = await useFetch<apiResponse>(
+              `${useRuntimeConfig().public.apiBase}inicontent/database${
+                DatabaseModal.value?.id ? `/${DatabaseModal.value.slug}` : ""
               }`,
               {
                 method: DatabaseModal.value?.id ? "PUT" : "POST",
                 body: DatabaseModal.value,
-              } as any
+              }
             );
+            if (!data.value) return message.error(t("error"));
+
             if (data.value?.result) {
               database.value = data.value.result;
               Loading.value["Database"] = false;
@@ -99,129 +101,7 @@ export default defineNuxtComponent({
               {
                 circle: true,
                 onClick: () => (
-                  (DatabaseModal.value = {
-                    tables: [
-                      {
-                        slug: "user",
-                        allowed_methods: [
-                          {
-                            role: "user",
-                            methods: ["c", "r", "u", "d"],
-                          },
-                          { role: "guest", methods: ["c"] },
-                        ],
-                        schema: [
-                          {
-                            key: "username",
-                            type: "string",
-                            required: true,
-                          },
-                          {
-                            key: "password",
-                            type: "password",
-                            required: true,
-                          },
-                          {
-                            key: "email",
-                            type: "email",
-                            required: true,
-                          },
-                          {
-                            key: "role",
-                            type: "string",
-                            subType: "role",
-                            required: true,
-                          },
-                          {
-                            key: "user",
-                            type: ["array", "table"],
-                            children: "table",
-                            required: false,
-                          },
-                        ],
-                      },
-                      {
-                        slug: "session",
-                        allowed_methods: [
-                          { role: "user", methods: ["c", "r", "u", "d"] },
-                        ],
-                        schema: [
-                          {
-                            key: "ip",
-                            type: "ip",
-                            required: true,
-                          },
-                          {
-                            key: "userAgent",
-                            type: "string",
-                            required: true,
-                          },
-                          {
-                            key: "user",
-                            type: "table",
-                            required: true,
-                          },
-                        ],
-                      },
-                      {
-                        slug: "translation",
-                        allowed_methods: [
-                          {
-                            role: "user",
-                            methods: ["c", "r", "u", "d"],
-                          },
-                          { role: "guest", methods: ["r"] },
-                        ],
-                        schema: [
-                          {
-                            key: "original",
-                            type: "string",
-                            required: true,
-                          },
-                          {
-                            key: "translated",
-                            type: "string",
-                            required: true,
-                          },
-                          {
-                            key: "table",
-                            type: "string",
-                            required: false,
-                          },
-                          {
-                            key: "item",
-                            type: "id",
-                            required: false,
-                          },
-                          {
-                            key: "locale",
-                            type: "string",
-                            required: true,
-                          },
-                          {
-                            key: "user",
-                            type: ["array", "table"],
-                            children: "table",
-                            required: true,
-                          },
-                        ],
-                      },
-                      {
-                        slug: "asset",
-                        allowed_methods: [
-                          {
-                            role: "user",
-                            methods: ["c", "r", "u", "d"],
-                          },
-                          {
-                            role: "guest",
-                            methods: ["r"],
-                          },
-                        ],
-                      },
-                    ],
-                  }),
-                  (ShowDatabaseModal.value = true)
+                  (DatabaseModal.value = {}), (ShowDatabaseModal.value = true)
                 ),
               },
               { icon: () => h(NIcon, () => h(IconPlus)) }
@@ -279,80 +159,27 @@ export default defineNuxtComponent({
                             key: "allowed_domains",
                             type: "array",
                             children: "url",
-                            required: true,
+                            required: false,
                           },
                           {
                             id: 4,
                             key: "languages",
                             type: "array",
+                            subType: "select",
                             children: "string",
-                            required: true,
+                            values: Languages,
+                            single: false,
+                            required: false,
                           },
                           {
                             id: 5,
                             key: "roles",
                             type: "array",
+                            subType: "tags",
                             children: "string",
+                            disabledItems: [0, 1, 2],
                             defaultValue: ["admin", "user", "guest"],
-                            required: true,
-                          },
-                          {
-                            id: 6,
-                            key: "tables",
-                            type: "array",
-                            onCreate: () => ({
-                              allowed_methods: DatabaseModal.value?.roles
-                                ?.filter((role) => role !== "admin")
-                                .map((role) => ({
-                                  role: role,
-                                  methods: [],
-                                })),
-                            }),
-                            children: [
-                              {
-                                id: 7,
-                                key: "slug",
-                                type: "text",
-                                required: true,
-                                inputProps: (value: string) =>
-                                  [
-                                    "user",
-                                    "session",
-                                    "translation",
-                                    "asset",
-                                  ].includes(value)
-                                    ? {
-                                        disabled: true,
-                                      }
-                                    : null,
-                              },
-                              {
-                                id: 8,
-                                key: "allowed_methods",
-                                type: "array",
-                                disableActions: true,
-                                children: [
-                                  {
-                                    id: 9,
-                                    key: "role",
-                                    type: "text",
-                                    inputProps: {
-                                      disabled: true,
-                                    },
-                                    required: true,
-                                  },
-                                  {
-                                    id: 10,
-                                    key: "methods",
-                                    type: "array",
-                                    children: "string",
-                                    subType: "checkbox",
-                                    values: ["c", "r", "u", "d"],
-                                    required: true,
-                                  },
-                                ],
-                              },
-                            ] as any,
+                            required: false,
                           },
                         ],
                       })
@@ -363,7 +190,7 @@ export default defineNuxtComponent({
                       NButton,
                       {
                         loading: Loading.value["Database"],
-                        onClick: Database,
+                        onClick: DatabaseSave,
                       },
                       {
                         default: () =>
@@ -376,15 +203,17 @@ export default defineNuxtComponent({
                   ]),
               }
             ),
-            databases.value && databases.value.length
+            databases.value &&
+            databases.value.result &&
+            databases.value.result.length
               ? h(
                   NCollapse,
                   {
-                    defaultExpandedNames: t(databases.value[0]?.slug),
+                    defaultExpandedNames: t(databases.value.result[0]?.slug),
                     accordion: true,
                   },
                   () =>
-                    databases.value?.map((database, index) =>
+                    databases.value?.result?.map((database, index) =>
                       h(
                         NCollapseItem,
                         {
@@ -400,7 +229,7 @@ export default defineNuxtComponent({
                                 {
                                   circle: true,
                                   onClick: () =>
-                                    databases.value
+                                    databases.value?.result
                                       ? ((DisabledItem.value[index] = true),
                                         setTimeout(
                                           () =>
@@ -408,7 +237,9 @@ export default defineNuxtComponent({
                                           1
                                         ),
                                         (DatabaseModal.value = JSON.parse(
-                                          JSON.stringify(databases.value[index])
+                                          JSON.stringify(
+                                            databases.value.result[index]
+                                          )
                                         )),
                                         (ShowDatabaseModal.value = true))
                                       : null,

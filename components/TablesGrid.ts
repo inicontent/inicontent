@@ -8,6 +8,11 @@ import {
   NIconWrapper,
   NH4,
   NPopover,
+  NForm,
+  NModal,
+  type FormInst,
+  useMessage,
+  NDropdown,
 } from "naive-ui";
 import {
   IconSettings,
@@ -16,8 +21,12 @@ import {
   IconLanguage,
   IconUsers,
   IconFingerprint,
+  IconDeviceFloppy,
+  IconDots,
+  IconArrowRight,
 } from "@tabler/icons-vue";
-import type { Database, User } from "~/types";
+import type { Database, Table, User, apiResponse } from "~/types";
+import { LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
   props: {
@@ -39,11 +48,124 @@ export default defineNuxtComponent({
         table_settings: "Table Settings",
       },
     });
-    const Loading = useState("Loading", () => ({}));
-    const user = useState<User>("user"),
-      database = toRef(props, "modelValue");
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+    Loading.value["Table"] = false;
 
-    return () =>
+    const user = useState<User>("user"),
+      database = toRef(props, "modelValue"),
+      Window = useState("Window", () => ({
+        width: 0,
+      })),
+      Hover = useState<Record<string, boolean>>("Loading", () => ({})),
+      message = useMessage(),
+      ShowTableModal = ref(false),
+      TableRef = ref<FormInst | null>(null),
+      TableModal = ref<Table>(),
+      TableSave = async () => {
+        TableRef.value?.validate(async (errors: any) => {
+          if (!errors) {
+            Loading.value["Table"] = true;
+            const { data } = await useFetch<apiResponse>(
+              `${useRuntimeConfig().public.apiBase}inicontent/database/${
+                database.value.slug
+              }`,
+              {
+                method: "PUT",
+                body: TableModal.value,
+              } as any
+            );
+            if (data.value?.result) {
+              database.value = data.value.result;
+              Loading.value["Database"] = false;
+              ShowTableModal.value = false;
+              message.success(data.value.message.en);
+            } else message.error(data.value?.message.en ?? "Error");
+            Loading.value["Table"] = false;
+          } else message.error("The inputs are Invalid");
+        });
+      };
+
+    return () => [
+      h(
+        NModal,
+        {
+          show: ShowTableModal.value,
+          "on-update:show": (v: boolean) => (ShowTableModal.value = v),
+          style: {
+            width: Window.value.width > 600 ? "600px" : "100%",
+          },
+          preset: "card",
+          title: t("create_table"),
+          bordered: false,
+          size: "huge",
+          segmented: {
+            content: "soft",
+            footer: "soft",
+          },
+        },
+        {
+          default: () =>
+            h(
+              NForm,
+              {
+                ref: TableRef as any,
+                model: TableModal.value as any,
+              },
+              () =>
+                h(LazyRenderFields, {
+                  modelValue: TableModal.value,
+                  schema: [
+                    {
+                      id: 1,
+                      key: "slug",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      id: 2,
+                      key: "allowed_methods",
+                      type: "array",
+                      disableActions: true,
+                      children: [
+                        {
+                          id: 3,
+                          key: "role",
+                          type: "text",
+                          inputProps: {
+                            disabled: true,
+                          },
+                          required: true,
+                        },
+                        {
+                          id: 4,
+                          key: "methods",
+                          type: "array",
+                          children: "string",
+                          subType: "checkbox",
+                          values: ["c", "r", "u", "d"],
+                          required: true,
+                        },
+                      ],
+                    },
+                  ],
+                })
+            ),
+          footer: () =>
+            h(NSpace, { justify: "end" }, () => [
+              h(
+                NButton,
+                {
+                  loading: Loading.value["Table"],
+                  onClick: TableSave,
+                },
+                {
+                  default: () => t("create"),
+                  icon: () => h(NIcon, () => h(IconDeviceFloppy)),
+                }
+              ),
+            ]),
+        }
+      ),
       h(NGrid, { xGap: 12, yGap: 12, cols: "1 500:2 800:4" }, () => [
         ...(database.value.tables
           ?.filter(
@@ -52,7 +174,7 @@ export default defineNuxtComponent({
               (user.value.role === "admin" ||
                 slug === "user" ||
                 allowed_methods
-                  ?.find((method) => method.role === user.value.role)
+                  ?.find(({ role }) => role === user.value.role)
                   ?.methods?.includes("r"))
           )
           .toSorted(
@@ -102,65 +224,82 @@ export default defineNuxtComponent({
                       ),
                     ]),
                   "header-extra": () =>
-                    h(NSpace, () => [
-                      user.value.role === "admin" ||
-                      table.allowed_methods
-                        ?.find((method) => method.role === user.value.role)
-                        ?.methods?.includes("c")
-                        ? h(
-                            NPopover,
-                            {},
-                            {
-                              trigger: () =>
-                                h(
-                                  NButton,
-                                  {
-                                    tag: "a",
-                                    href: `/${database.value.slug}/admin/tables/${table.slug}/new`,
-                                    onClick: (e) => (
-                                      e.preventDefault(),
-                                      navigateTo(
-                                        `/${database.value.slug}/admin/tables/${table.slug}/new`
-                                      )
-                                    ),
-                                    circle: true,
-                                  },
-                                  {
-                                    icon: () => h(NIcon, () => h(IconPlus)),
-                                  }
-                                ),
-                              default: () => t("add_new"),
-                            }
-                          )
-                        : null,
-                      user.value.role === "admin"
-                        ? h(
-                            NPopover,
-                            {},
-                            {
-                              trigger: () =>
-                                h(
-                                  NButton,
-                                  {
-                                    circle: true,
-                                    tag: "a",
-                                    href: `/${database.value.slug}/admin/tables/${table.slug}/settings`,
-                                    onClick: (e) => (
-                                      e.preventDefault(),
-                                      navigateTo(
-                                        `/${database.value.slug}/admin/tables/${table.slug}/settings`
-                                      )
-                                    ),
-                                  },
-                                  {
-                                    icon: () => h(NIcon, () => h(IconSettings)),
-                                  }
-                                ),
-                              default: () => t("table_settings"),
-                            }
-                          )
-                        : null,
-                    ]),
+                    table.slug === "asset"
+                      ? h(
+                          NButton,
+                          {
+                            tag: "a",
+                            href: `/${database.value.slug}/admin/tables/${table.slug}`,
+                            onClick: (e) => (
+                              e.preventDefault(),
+                              navigateTo(
+                                `/${database.value.slug}/admin/tables/${table.slug}`
+                              )
+                            ),
+                            circle: true,
+                          },
+                          {
+                            icon: () => h(NIcon, () => h(IconArrowRight)),
+                          }
+                        )
+                      : h(
+                          NDropdown,
+                          {
+                            options: [
+                              {
+                                key: `/${database.value.slug}/admin/tables/${table.slug}/new`,
+                                label: t("add_new"),
+                                icon: () => h(IconPlus),
+                                show:
+                                  user.value.role === "admin" ||
+                                  table.allowed_methods
+                                    ?.find(
+                                      ({ role }) => role === user.value.role
+                                    )
+                                    ?.methods?.includes("c"),
+                              },
+                              {
+                                key: `/${database.value.slug}/admin/tables/${table.slug}/settings`,
+                                label: t("table_settings"),
+                                icon: () => h(IconSettings),
+                                show: user.value.role === "admin",
+                              },
+                            ],
+                            renderLabel: (option) =>
+                              h(
+                                "a",
+                                {
+                                  href: option.key,
+                                  onClick: (e) => (
+                                    e.preventDefault(),
+                                    navigateTo(option.key as string)
+                                  ),
+                                },
+                                option.label as string
+                              ),
+                          },
+                          () =>
+                            h(
+                              NButton,
+                              {
+                                circle: true,
+                                onmouseover: () =>
+                                  (Hover.value[table.slug] = true),
+                                onmouseleave: () =>
+                                  (Hover.value[table.slug] = false),
+                              },
+                              {
+                                icon: () =>
+                                  h(NIcon, () =>
+                                    h(
+                                      Hover.value[table.slug]
+                                        ? IconArrowRight
+                                        : IconDots
+                                    )
+                                  ),
+                              }
+                            )
+                        ),
                 }
               )
             )
@@ -174,7 +313,17 @@ export default defineNuxtComponent({
                 h(
                   NCard,
                   {
-                    onClick: () => null,
+                    onClick: () => (
+                      (TableModal.value = {
+                        slug: "",
+                        allowed_methods:
+                          database.value.roles?.map((role) => ({
+                            role: role,
+                            methods: [],
+                          })) ?? [],
+                      }),
+                      (ShowTableModal.value = true)
+                    ),
                     style: {
                       cursor: "pointer",
                     },
@@ -197,6 +346,7 @@ export default defineNuxtComponent({
             }
           )
         ),
-      ]);
+      ]),
+    ];
   },
 });

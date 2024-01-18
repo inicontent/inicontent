@@ -46,12 +46,17 @@ export default defineNuxtComponent({
           if (database.value.dashboards)
             database.value.dashboards.push(DashboardModal.value);
           else database.value.dashboards = [DashboardModal.value];
-          await useFetch(`/api/inicontent/database/${database.value.slug}`, {
-            method: "PUT",
-            body: {
-              dashboards: database.value.dashboards,
-            },
-          });
+          await useFetch(
+            `${useRuntimeConfig().public.apiBase}inicontent/database/${
+              database.value.slug
+            }`,
+            {
+              method: "PUT",
+              body: {
+                dashboards: database.value.dashboards,
+              },
+            }
+          );
           Loading.value["DashboardModal"] = false;
           ShowDashboardModal.value = false;
         } else message.error("The inputs are Invalid");

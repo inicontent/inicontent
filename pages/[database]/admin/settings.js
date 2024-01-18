@@ -61,7 +61,9 @@ export default defineNuxtComponent({
           if (!errors) {
             Loading.value["UpdateDatabase"] = true;
             const { data } = await useFetch(
-              `/api/inicontent/database/${database.value.slug}`,
+              `${useRuntimeConfig().public.apiBase}inicontent/database/${
+                database.value.slug
+              }`,
               {
                 method: "PUT",
                 body: databaseCopy.value,

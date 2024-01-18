@@ -49,10 +49,9 @@ import {
   IconChevronLeft,
   IconSwitchHorizontal,
 } from "@tabler/icons-vue";
-import { deleteProperty, getProperty, setProperty } from "dot-prop";
 import { LazyRenderFields } from "#components";
 import { isArrayOfObjects, FormatObjectCriteriaValue } from "inibase/utils";
-import { type Database, type User } from "@/types";
+import type { Database, User, apiResponse } from "~/types";
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
@@ -159,7 +158,7 @@ export default defineNuxtComponent({
       ShowDeleted = useState<any>(() =>
         route.query.hasOwnProperty("show_deleted") ? true : false
       ),
-      DisabledItem = useState<boolean[]>(() => []);
+      DisabledItem = useState<Record<string | number, boolean>>(() => ({}));
     searchInput.value = route.query.search ?? null;
     searchArray.value = route.query.search
       ? parseSearchInput(JSON.parse(route.query.search as string))
@@ -171,7 +170,7 @@ export default defineNuxtComponent({
     const user = useState<User | any>("user"),
       message = useMessage(),
       ImportInput = ref(),
-      UploadProgress = ref<any>(null),
+      UploadProgress = ref<null | number>(null),
       DrawerFormRef = useState(() => null),
       Drawer = useState<{
         show: boolean;
@@ -188,8 +187,10 @@ export default defineNuxtComponent({
       })),
       LoadDrawer = async () => {
         Loading.value[`Drawer_${Drawer.value.table}_${Drawer.value.id}`] = true;
-        await useFetch(
-          `/api/${route.params.database}/${Drawer.value.table}/${Drawer.value.id}`,
+        await useFetch<apiResponse>(
+          `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+            Drawer.value.table
+          }/${Drawer.value.id}`,
           {
             transform: (res: any) => (Drawer.value.data = res.result),
           }
@@ -202,13 +203,17 @@ export default defineNuxtComponent({
         (DrawerFormRef.value as any)?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["DrawerContent"] = true;
-            const { data }: any = await useFetch(
-              `/api/${route.params.database}/${Drawer.value.table}/${Drawer.value.id}`,
+            const { data } = await useFetch<apiResponse>(
+              `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+                Drawer.value.table
+              }/${Drawer.value.id}`,
               {
                 method: "PUT",
                 body: Drawer.value.data,
               }
             );
+            if (!data.value) return message.error(t("error"));
+
             if (data.value.result && data.value.result.id) {
               message.success(data.value.message.en);
               Loading.value["DrawerContent"] = false;
@@ -224,8 +229,10 @@ export default defineNuxtComponent({
         (DrawerFormRef.value as any)?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["DrawerContent"] = true;
-            const { data } = await useFetch(
-              `/api/${route.params.database}/${Drawer.value.table}`,
+            const { data } = await useFetch<apiResponse>(
+              `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+                Drawer.value.table
+              }`,
               {
                 method: "POST",
                 body: Drawer.value.data,
@@ -236,11 +243,14 @@ export default defineNuxtComponent({
                 },
               }
             );
+            if (!data.value) return message.error(t("error"));
+
             if (data.value.result && data.value.result.id) {
               message.success(data.value.message.en);
               Loading.value["DrawerContent"] = false;
               Drawer.value.show = false;
-              TableData.value.result.unshift(data.value.result);
+              if (TableData.value)
+                TableData.value.result.unshift(data.value.result);
               Drawer.value.data = {};
             } else message.error(data.value.message.en);
             Loading.value["DrawerContent"] = false;
@@ -286,27 +296,32 @@ export default defineNuxtComponent({
           return refreshTableData();
         },
       }),
-      { data: TableData, refresh: refreshTableData }: any = await useLazyFetch(
-        `/api/${route.params.database}/${route.params.table}`,
+      { data: TableData, refresh: refreshTableData } = await useLazyFetch<
+        apiResponse<any[]>
+      >(
+        `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+          route.params.table
+        }`,
         {
           onRequest: () => (Loading.value["TableData"] = true),
-          params: {
+          query: {
             _options: JSON.stringify({
               page: pagination.value.page,
               per_page: pagination.value.pageSize,
               columns: [],
             }),
-            _where: searchInput.value
+            _where: searchInput
               ? ShowDeleted.value
                 ? JSON.stringify({
                     ...JSON.parse(searchInput.value),
                     deletedAt: ">0",
                   })
-                : searchInput.value
+                : searchInput
               : ShowDeleted.value
               ? JSON.stringify({ deletedAt: ">0" })
               : null,
           },
+          // watch: false,
           transform: (res: any) => {
             Loading.value["TableData"] = false;
             if (res.options.total < res.options.per_page)
@@ -319,15 +334,18 @@ export default defineNuxtComponent({
       ),
       DELETE = async (id: any) => {
         Loading.value["TableData"] = true;
-        await useFetch(
-          `/api/${route.params.database}/${route.params.table}/${id}`,
+        await useFetch<apiResponse>(
+          `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+            route.params.table
+          }/${id}`,
           {
             method: "DELETE",
           }
         );
-        TableData.value.result = TableData.value.result.filter(
-          (item: { id: any }) => item.id !== id
-        );
+        if (TableData.value)
+          TableData.value.result = TableData.value.result.filter(
+            (item: { id: any }) => item.id !== id
+          );
         pagination.value.itemCount--;
         message.success("Deleted Successfully");
         Loading.value["TableData"] = false;
@@ -389,8 +407,8 @@ export default defineNuxtComponent({
                       NButton,
                       {
                         size: "small",
-                        onClick: () => (
-                          navigator.clipboard.writeText(value),
+                        onClick: async () => (
+                          await copyToClipboard(value),
                           message.success(t("text_copied"))
                         ),
                         secondary: true,
@@ -408,126 +426,147 @@ export default defineNuxtComponent({
               );
             case "table":
               return item.single === true
-                ? Window.value.width >= 700
-                  ? h(
-                      NButton,
-                      {
-                        onClick: () => (
-                          (Drawer.value.id = ([].concat(value)[0] as any).id),
-                          (Drawer.value.table = item.key),
-                          (Drawer.value.data = {}),
-                          LoadDrawer()
-                        ),
-                        loading:
-                          Loading.value[
-                            `Drawer_${item.key}_${
-                              ([].concat(value)[0] as any).id
-                            }`
-                          ],
-                        size: "small",
-                        round: true,
-                      },
-                      item.image
-                        ? {
-                            icon: () =>
-                              h(NIcon, () => {
-                                const img = []
-                                  .concat(
-                                    getProperty(value, item.image, []) as any
-                                  )
-                                  .map((link: string) =>
-                                    link &&
-                                    link.includes("cdn.inicontent") &&
-                                    [
-                                      "png",
-                                      "jpg",
-                                      "jpeg",
-                                      "ico",
-                                      "webp",
-                                      "svg",
-                                      "gif",
-                                    ].includes(link.split(".").pop() ?? "")
-                                      ? `${link}?fit=18`
-                                      : link
-                                  )[0];
-                                return img
-                                  ? h(NAvatar, {
-                                      style: {
-                                        width: "18px",
-                                        height: "18px",
-                                      },
-                                      round: true,
-                                      src: img,
-                                    })
-                                  : h(
-                                      "span",
-                                      { style: { padding: "0 5px" } },
-                                      item.key.charAt(0).toUpperCase()
-                                    );
-                              }),
-                            default: () =>
-                              h(
-                                NEllipsis,
-                                {
-                                  tooltip: true,
-                                  style: {
-                                    maxWidth:
-                                      (item.key && item.key.length > 10
-                                        ? item.key.length * 12
-                                        : 120) + "px",
-                                  },
-                                },
-                                () =>
-                                  item.label
-                                    ? item.label
-                                        .map((single_label: any) =>
-                                          getProperty(value, single_label)
-                                        )
-                                        .join(" ")
-                                    : value.id
-                              ),
-                          }
-                        : {
-                            icon: () =>
-                              h(NIcon, () =>
-                                h(
-                                  "span",
-                                  { style: { padding: "0 5px" } },
-                                  item.key.charAt(0).toUpperCase()
+                ? h(
+                    NButton,
+                    {
+                      tag: "a",
+                      href: `/${route.params.database}/admin/tables/${
+                        item.key
+                      }/${([].concat(value)[0] as any).id}/edit`,
+                      onClick: (e) => (
+                        e.preventDefault(),
+                        Window.value.width >= 700
+                          ? ((Drawer.value.id = (
+                              [].concat(value)[0] as any
+                            ).id),
+                            (Drawer.value.table = item.key),
+                            (Drawer.value.data = {}),
+                            LoadDrawer())
+                          : navigateTo(
+                              `/${route.params.database}/admin/tables/${
+                                item.key
+                              }/${([].concat(value)[0] as any).id}/edit`
+                            )
+                      ),
+                      loading:
+                        Loading.value[
+                          `Drawer_${item.key}_${
+                            ([].concat(value)[0] as any).id
+                          }`
+                        ],
+                      size: "small",
+                      round: true,
+                    },
+                    item.image
+                      ? {
+                          icon: () =>
+                            h(NIcon, () => {
+                              const img = []
+                                .concat(
+                                  getProperty(value, item.image, []) as any
                                 )
-                              ),
-                            default: () =>
-                              h(
-                                NEllipsis,
-                                {
-                                  tooltip: true,
-                                  style: {
-                                    maxWidth:
-                                      (item.key && item.key.length > 10
-                                        ? item.key.length * 12
-                                        : 120) + "px",
-                                  },
+                                .map((link: string) =>
+                                  link &&
+                                  link.includes("cdn.inicontent") &&
+                                  [
+                                    "png",
+                                    "jpg",
+                                    "jpeg",
+                                    "ico",
+                                    "webp",
+                                    "svg",
+                                    "gif",
+                                  ].includes(link.split(".").pop() ?? "")
+                                    ? `${link}?fit=18`
+                                    : link
+                                )[0];
+                              return img
+                                ? h(NAvatar, {
+                                    style: {
+                                      width: "18px",
+                                      height: "18px",
+                                    },
+                                    round: true,
+                                    src: img,
+                                  })
+                                : h(
+                                    "span",
+                                    { style: { padding: "0 5px" } },
+                                    item.key.charAt(0).toUpperCase()
+                                  );
+                            }),
+                          default: () =>
+                            h(
+                              NEllipsis,
+                              {
+                                tooltip: true,
+                                style: {
+                                  maxWidth:
+                                    (item.key && item.key.length > 10
+                                      ? item.key.length * 12
+                                      : 120) + "px",
                                 },
-                                () =>
-                                  item.label
-                                    ? item.label
-                                        .map((single_label: any) =>
-                                          getProperty(value, single_label)
-                                        )
-                                        .join(" ")
-                                    : value.id
-                              ),
-                          }
-                    )
-                  : h(
+                              },
+                              () =>
+                                item.label
+                                  ? item.label
+                                      .map((single_label: any) =>
+                                        getProperty(value, single_label)
+                                      )
+                                      .join(" ")
+                                  : value.id
+                            ),
+                        }
+                      : {
+                          icon: () =>
+                            h(NIcon, () =>
+                              h(
+                                "span",
+                                { style: { padding: "0 5px" } },
+                                item.key.charAt(0).toUpperCase()
+                              )
+                            ),
+                          default: () =>
+                            h(
+                              NEllipsis,
+                              {
+                                tooltip: true,
+                                style: {
+                                  maxWidth:
+                                    (item.key && item.key.length > 10
+                                      ? item.key.length * 12
+                                      : 120) + "px",
+                                },
+                              },
+                              () =>
+                                item.label
+                                  ? item.label
+                                      .map((single_label: any) =>
+                                        getProperty(value, single_label)
+                                      )
+                                      .join(" ")
+                                  : value.id
+                            ),
+                        }
+                  )
+                : [].concat(value).map((col: any) =>
+                    h(
                       NButton,
                       {
-                        onClick: () =>
-                          navigateTo(
-                            `/${route.params.database}/admin/tables/${
-                              item.key
-                            }/${([].concat(value)[0] as any).id}`
-                          ),
+                        tag: "a",
+                        href: `/${route.params.database}/admin/tables/${item.key}/${col.id}/edit`,
+                        onClick: (e) => (
+                          e.preventDefault(),
+                          Window.value.width >= 700
+                            ? ((Drawer.value.id = col.id),
+                              (Drawer.value.table = item.key),
+                              (Drawer.value.data = {}),
+                              LoadDrawer())
+                            : navigateTo(
+                                `/${route.params.database}/admin/tables/${item.key}/${col.id}/edit`
+                              )
+                        ),
+                        loading: Loading.value[`Drawer_${item.key}_${col.id}`],
                         size: "small",
                         round: true,
                       },
@@ -543,7 +582,7 @@ export default defineNuxtComponent({
                                   round: true,
                                   src: []
                                     .concat(
-                                      getProperty(value, item.image, []) as any
+                                      getProperty(col, item.image, []) as any
                                     )
                                     .map((link: string) =>
                                       link &&
@@ -578,10 +617,10 @@ export default defineNuxtComponent({
                                   item.label
                                     ? item.label
                                         .map((single_label: any) =>
-                                          getProperty(value, single_label)
+                                          getProperty(col, single_label)
                                         )
                                         .join(" ")
-                                    : ([].concat(value)[0] as any).id
+                                    : col.id
                               ),
                           }
                         : {
@@ -609,225 +648,13 @@ export default defineNuxtComponent({
                                   item.label
                                     ? item.label
                                         .map((single_label: any) =>
-                                          getProperty(value, single_label)
+                                          getProperty(col, single_label)
                                         )
                                         .join(" ")
-                                    : ([].concat(value)[0] as any).id
+                                    : col.id
                               ),
                           }
                     )
-                : [].concat(value).map((col: any) =>
-                    Window.value.width >= 700
-                      ? h(
-                          NButton,
-                          {
-                            onClick: () => (
-                              (Drawer.value.id = col.id),
-                              (Drawer.value.table = item.key),
-                              (Drawer.value.data = {}),
-                              LoadDrawer()
-                            ),
-                            loading:
-                              Loading.value[`Drawer_${item.key}_${col.id}`],
-                            size: "small",
-                            round: true,
-                          },
-                          item.image
-                            ? {
-                                icon: () =>
-                                  h(NIcon, () =>
-                                    h(NAvatar, {
-                                      style: {
-                                        width: "18px",
-                                        height: "18px",
-                                      },
-                                      round: true,
-                                      src: []
-                                        .concat(
-                                          getProperty(
-                                            col,
-                                            item.image,
-                                            []
-                                          ) as any
-                                        )
-                                        .map((link: string) =>
-                                          link &&
-                                          link.includes("cdn.inicontent") &&
-                                          [
-                                            "png",
-                                            "jpg",
-                                            "jpeg",
-                                            "ico",
-                                            "webp",
-                                            "svg",
-                                            "gif",
-                                          ].includes(
-                                            link.split(".").pop() ?? ""
-                                          )
-                                            ? `${link}?fit=18`
-                                            : link
-                                        )[0],
-                                    })
-                                  ),
-                                default: () =>
-                                  h(
-                                    NEllipsis,
-                                    {
-                                      tooltip: true,
-                                      style: {
-                                        maxWidth:
-                                          (item.key && item.key.length > 10
-                                            ? item.key.length * 12
-                                            : 120) + "px",
-                                      },
-                                    },
-                                    () =>
-                                      item.label
-                                        ? item.label
-                                            .map((single_label: any) =>
-                                              getProperty(col, single_label)
-                                            )
-                                            .join(" ")
-                                        : col.id
-                                  ),
-                              }
-                            : {
-                                icon: () =>
-                                  h(NIcon, () =>
-                                    h(
-                                      "span",
-                                      { style: { padding: "0 5px" } },
-                                      item.key.charAt(0).toUpperCase()
-                                    )
-                                  ),
-                                default: () =>
-                                  h(
-                                    NEllipsis,
-                                    {
-                                      tooltip: true,
-                                      style: {
-                                        maxWidth:
-                                          (item.key && item.key.length > 10
-                                            ? item.key.length * 12
-                                            : 120) + "px",
-                                      },
-                                    },
-                                    () =>
-                                      item.label
-                                        ? item.label
-                                            .map((single_label: any) =>
-                                              getProperty(col, single_label)
-                                            )
-                                            .join(" ")
-                                        : col.id
-                                  ),
-                              }
-                        )
-                      : h(
-                          NButton,
-                          {
-                            tag: "a",
-                            href: `/${route.params.database}/admin/tables/${item.key}/${col.id}`,
-                            onClick: (e) => (
-                              e.preventDefault(),
-                              navigateTo(
-                                `/${route.params.database}/admin/tables/${item.key}/${col.id}`
-                              )
-                            ),
-                            size: "small",
-                            round: true,
-                          },
-                          item.image
-                            ? {
-                                icon: () =>
-                                  h(NIcon, () =>
-                                    h(NAvatar, {
-                                      style: {
-                                        width: "18px",
-                                        height: "18px",
-                                      },
-                                      round: true,
-                                      src: []
-                                        .concat(
-                                          getProperty(
-                                            col,
-                                            item.image,
-                                            []
-                                          ) as any
-                                        )
-                                        .map((link: string) =>
-                                          link &&
-                                          link.includes("cdn.inicontent") &&
-                                          [
-                                            "png",
-                                            "jpg",
-                                            "jpeg",
-                                            "ico",
-                                            "webp",
-                                            "svg",
-                                            "gif",
-                                          ].includes(
-                                            link.split(".").pop() ?? ""
-                                          )
-                                            ? `${link}?fit=18`
-                                            : link
-                                        )[0],
-                                    })
-                                  ),
-                                default: () =>
-                                  h(
-                                    NEllipsis,
-                                    {
-                                      tooltip: true,
-                                      style: {
-                                        maxWidth:
-                                          (item.key && item.key.length > 10
-                                            ? item.key.length * 12
-                                            : 120) + "px",
-                                      },
-                                    },
-                                    () =>
-                                      item.label
-                                        ? item.label
-                                            .map((single_label: any) =>
-                                              getProperty(col, single_label)
-                                            )
-                                            .join(" ")
-                                        : col.id
-                                  ),
-                              }
-                            : {
-                                icon: () =>
-                                  h(NIcon, () =>
-                                    h(
-                                      "span",
-                                      { style: { padding: "0 5px" } },
-                                      item.key.charAt(0).toUpperCase()
-                                    )
-                                  ),
-                                default: () =>
-                                  h(
-                                    NEllipsis,
-                                    {
-                                      tooltip: true,
-                                      style: {
-                                        maxWidth:
-                                          (item.key && item.key.length > 10
-                                            ? item.key.length * 12
-                                            : 120) + "px",
-                                      },
-                                    },
-                                    () =>
-                                      item.label
-                                        ? item.label
-                                            .map((single_label: any) =>
-                                              getProperty(col, single_label)
-                                            )
-                                            .join(" ")
-                                        : col.id
-                                  ),
-                              }
-                        )
                   );
             case "email":
               return h(
@@ -924,7 +751,7 @@ export default defineNuxtComponent({
                     () => value
                   )
               );
-            case "list":
+            case "select":
             case "tags":
               return h(NSpace, () =>
                 [].concat(value).map((_value) =>
@@ -1212,8 +1039,10 @@ export default defineNuxtComponent({
                 icon: () => h(NIcon, () => h(IconTrash)),
                 onSelect: async () => {
                   Loading.value["TableData"] = true;
-                  await useFetch(
-                    `/api/${route.params.database}/${route.params.table}`,
+                  await useFetch<apiResponse>(
+                    `${useRuntimeConfig().public.apiBase}${
+                      route.params.database
+                    }/${route.params.table}`,
                     {
                       method: "DELETE",
                       body: checkedRowKeys.value,
@@ -1882,8 +1711,8 @@ export default defineNuxtComponent({
                       //           ...Array(Math.ceil(items.length / chunkSize)),
                       //         ].map((_, index) => index);
                       //         for await (const index of newItems) {
-                      //           const { data }:any = await useFetch(
-                      //             `/api/${route.params.database}/${route.params.table}`,
+                      //           const { data }:any = await useFetch<apiResponse>(
+                      //             `${useRuntimeConfig().public.apiBase}${route.params.database}/${route.params.table}`,
                       //             {
                       //               method: "POST",
                       //               body: items.splice(0, chunkSize),
@@ -1928,7 +1757,7 @@ export default defineNuxtComponent({
                           )?.schema),
                       style: {
                         maxHeight: "240px",
-                        width: Window.value.width < 700 ? "300px" : "500px",
+                        width: Window.value.width < 800 ? "350px" : "500px",
                       },
                       placement: "bottom-end",
                       trigger: "click",
@@ -1985,10 +1814,7 @@ export default defineNuxtComponent({
                               NButton,
                               {
                                 loading: Loading.value["TableData"],
-                                onClick: () => (
-                                  console.log(
-                                    generateSearchInput(searchArray.value)
-                                  ),
+                                onClick: async () => (
                                   (searchInput.value =
                                     searchArray.value &&
                                     Object.values(searchArray.value).length > 0

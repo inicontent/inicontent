@@ -16,8 +16,7 @@ import {
   NPopover,
 } from "naive-ui";
 import { IconCheck, IconX, IconFileText, IconUser } from "@tabler/icons-vue";
-import { getProperty, hasProperty } from "dot-prop";
-import { type Schema } from "inibase";
+import type { Schema } from "~/types";
 export default defineNuxtComponent({
   props: {
     schema: {
@@ -133,7 +132,7 @@ export default defineNuxtComponent({
           }
         else
           switch (field.type) {
-            case "list":
+            case "select":
             case "tags":
               return h(
                 NListItem,

@@ -15,6 +15,7 @@ import {
   NCollapseItem,
   NInput,
   NSelect,
+  NTooltip,
 } from "naive-ui";
 import {
   IconQuestionMark,
@@ -23,9 +24,10 @@ import {
   IconTrash,
   IconMenu2,
   IconAsterisk,
+  IconArrowsSort,
 } from "@tabler/icons-vue";
 import draggable from "vuedraggable";
-import { objectToDotNotation } from "inibase/utils";
+import type { Schema, Database, apiResponse } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -64,7 +66,7 @@ export default defineNuxtComponent({
         label_image: "Label Image",
       },
     });
-    const Loading: any = useState("Loading", () => ({}));
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["schemaModal"] = false;
     const Language = useGlobalCookie("Language");
     const route = useRoute(),
@@ -73,10 +75,10 @@ export default defineNuxtComponent({
       Window = useState("Window", () => ({
         width: 0,
       })),
-      database: any = useState("database"),
-      DisabledItem: any = ref({}),
+      database = useState<Database>("database"),
+      DisabledItem = useState<Record<string | number, boolean>>(() => ({})),
       ShowschemaModal = useState("ShowschemaModal", () => false),
-      schemaModal = ref(
+      schemaModal = ref<Schema>(
         JSON.parse(
           JSON.stringify(
             database.value?.tables?.find(
@@ -87,22 +89,27 @@ export default defineNuxtComponent({
       ),
       SaveschemaModal = async () => {
         Loading.value["schemaModal"] = true;
-        await useFetch(`/api/inicontent/database/${database.value.slug}`, {
-          method: "PUT",
-          body: {
-            tables: database.value.tables.map((item: any) => {
-              if (item.slug === route.params.table)
-                item.schema = schemaModal.value;
-              return item;
-            }),
-          },
-        });
+        await useFetch<apiResponse>(
+          `${useRuntimeConfig().public.apiBase}inicontent/database/${
+            database.value.slug
+          }`,
+          {
+            method: "PUT",
+            body: {
+              tables: database.value.tables?.map((item: any) => {
+                if (item.slug === route.params.table)
+                  item.schema = schemaModal.value;
+                return item;
+              }),
+            },
+          }
+        );
         Loading.value["schemaModal"] = false;
         ShowschemaModal.value = false;
         message.success("schema Updated Successfully");
         database.value = {
           ...database.value,
-          tables: database.value.tables.map((item: any) => {
+          tables: database.value.tables?.map((item) => {
             if (item.slug === route.params.table)
               item.schema = schemaModal.value;
             return item;
@@ -182,7 +189,7 @@ export default defineNuxtComponent({
                   })
               ),
             ];
-          case "list":
+          case "select":
             return [
               h(
                 NFormItem,
@@ -244,9 +251,9 @@ export default defineNuxtComponent({
                       onUpdateValue: (v) => (field.search = v),
                       options: field.key
                         ? database.value.tables
-                            .find(({ slug }: any) => slug === field.key)
-                            ?.schema.filter(({ type }: any) => type !== "table")
-                            .map((element: any, _index: number, schema: any) =>
+                            ?.find(({ slug }) => slug === field.key)
+                            ?.schema?.filter(({ type }) => type !== "table")
+                            .map((element: any, _index: number, schema) =>
                               GenerateSearchInOptions(schema, element)
                             )
                             .flat(Infinity) ?? []
@@ -270,11 +277,9 @@ export default defineNuxtComponent({
                       onUpdateValue: (value: string) => (field.label = value),
                       options: field.key
                         ? database.value.tables
-                            .find(({ slug }: any) => slug === field.key)
-                            ?.schema?.filter(
-                              ({ type }: any) => type !== "table"
-                            )
-                            .map((element: any, _index: number, schema: any) =>
+                            ?.find(({ slug }) => slug === field.key)
+                            ?.schema?.filter(({ type }) => type !== "table")
+                            .map((element: any, _index: number, schema) =>
                               GenerateLabelOptions(schema, element)
                             )
                             .flat(Infinity) ?? []
@@ -297,11 +302,9 @@ export default defineNuxtComponent({
                       onUpdateValue: (value: string) => (field.image = value),
                       options: field.key
                         ? database.value.tables
-                            .find(({ slug }: any) => slug === field.key)
-                            ?.schema?.filter(
-                              ({ type }: any) => type !== "table"
-                            )
-                            .map((element: any, _index: number, schema: any) =>
+                            ?.find(({ slug }) => slug === field.key)
+                            ?.schema?.filter(({ type }) => type !== "table")
+                            .map((element: any, _index: number, schema) =>
                               GenerateLabelOptions(schema, element)
                             )
                             .flat(Infinity) ?? []
@@ -535,12 +538,12 @@ export default defineNuxtComponent({
                                         (schema[index].image = null)
                                       ),
                                       options: database.value.tables
-                                        .filter(
-                                          ({ slug }: any) =>
+                                        ?.filter(
+                                          ({ slug }) =>
                                             slug !== route.params.table ||
                                             route.params.table === "user"
                                         )
-                                        .map(({ slug }: any) => ({
+                                        .map(({ slug }) => ({
                                           label: t(slug),
                                           value: slug,
                                         })),
@@ -583,34 +586,12 @@ export default defineNuxtComponent({
 
     useHead({
       title: `${database.value.slug} | ${t(
-        database.value.tables.find(
-          ({ slug }: any) => slug === route.params.table
-        )?.slug ?? "--"
+        database.value.tables?.find(({ slug }) => slug === route.params.table)
+          ?.slug ?? "--"
       )} Settings`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      link: [{ rel: "icon", href: database.value?.icon ?? "" }],
     });
-    onMounted(async () => {
-      if (Language.value) {
-        await useFetch(`/api/${route.params.database}/translation`, {
-          params: {
-            _where: JSON.stringify({
-              original:
-                "[]" +
-                Object.entries(
-                  objectToDotNotation(
-                    (useState("LanguageMessages").value ?? {})[
-                      Language.value
-                    ] ?? {}
-                  )
-                )
-                  .filter(([key, value]: any) => value === null)
-                  .map(([key, value]) => key)
-                  .join(","),
-            }),
-          },
-        });
-      }
-    });
+
     return () =>
       h(NGrid, { xGap: 12, cols: 12, itemResponsive: true }, () => [
         h(NGi, { span: 11 }, () =>
@@ -644,39 +625,62 @@ export default defineNuxtComponent({
                   },
                   {
                     "header-extra": () =>
-                      h(
-                        NDropdown,
-                        {
-                          options: FieldsList(),
-                          style: {
-                            maxHeight: "200px",
+                      h(NSpace, () => [
+                        h(
+                          NTooltip,
+                          {},
+                          {
+                            default: () => t("change_order"),
+                            trigger: () =>
+                              h(
+                                NButton,
+                                {
+                                  round: true,
+                                  type: showDraggable.value
+                                    ? "primary"
+                                    : "default",
+                                  onClick: () =>
+                                    (showDraggable.value =
+                                      !showDraggable.value),
+                                },
+                                () => h(NIcon, () => h(IconArrowsSort))
+                              ),
+                          }
+                        ),
+                        h(
+                          NDropdown,
+                          {
+                            options: FieldsList(),
+                            style: {
+                              maxHeight: "200px",
+                            },
+                            scrollable: true,
+                            onSelect: (type) =>
+                              schemaModal.value.push(
+                                (["array", "object"].includes(type)
+                                  ? {
+                                      key: null,
+                                      required: false,
+                                      type: type,
+                                      children: [],
+                                    }
+                                  : {
+                                      key: null,
+                                      required: false,
+                                      type: type,
+                                    }) as any
+                              ),
                           },
-                          scrollable: true,
-                          onSelect: (type) =>
-                            schemaModal.value.push(
-                              ["array", "object"].includes(type)
-                                ? {
-                                    key: null,
-                                    required: false,
-                                    type: type,
-                                    children: [],
-                                  }
-                                : {
-                                    key: null,
-                                    required: false,
-                                    type: type,
-                                  }
-                            ),
-                        },
-                        () =>
-                          h(
-                            NButton,
-                            { round: true },
-                            {
-                              icon: () => h(NIcon, () => h(IconPlus)),
-                            }
-                          )
-                      ),
+                          () =>
+                            h(
+                              NButton,
+                              { round: true },
+                              {
+                                icon: () => h(NIcon, () => h(IconPlus)),
+                              }
+                            )
+                        ),
+                      ]),
                     default: () => [
                       showDraggable.value
                         ? null
@@ -693,7 +697,18 @@ export default defineNuxtComponent({
                             {
                               size: "small",
                             },
-                            () => RenderSchemaElement(schemaModal.value)
+                            () =>
+                              RenderSchemaElement(
+                                schemaModal.value.filter(
+                                  ({ key }) =>
+                                    ![
+                                      "id",
+                                      "createdAt",
+                                      "updatedAt",
+                                      "user",
+                                    ].includes(key)
+                                )
+                              )
                           ),
                     ],
                   }

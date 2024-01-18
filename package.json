@@ -9,25 +9,16 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@types/mime-types": "^2.1.4",
-    "@types/node": "^20.10.6",
-    "@types/nodemailer": "^6.4.14",
-    "mime-types": "^2.1.35",
-    "node-stream-zip": "^1.15.0",
-    "nodemailer": "^6.9.8",
-    "nuxt": "^3.9.0",
-    "sharp": "^0.33.1",
+    "inibase": "1.0.0-rc.38",
+    "nuxt": "^3.9.2",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@css-render/vue3-ssr": "^0.15.12",
-    "@noction/vue-draggable-grid": "^1.9.11",
     "@tabler/icons-vue": "^2.44.0",
-    "apexcharts": "3.45.1",
-    "dot-prop": "^8.0.2",
-    "naive-ui": "^2.36.0",
-    "node-vibrant": "3.2.1-alpha.1",
-    "vue3-apexcharts": "1.4.4",
+    "apexcharts": "^3.45.1",
+    "naive-ui": "^2.37.0",
+    "node-vibrant": "^3.2.1-alpha.1",
+    "vue3-apexcharts": "^1.4.4",
     "vuedraggable": "4.1.0"
   }
 }

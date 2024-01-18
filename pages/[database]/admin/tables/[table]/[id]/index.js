@@ -37,7 +37,9 @@ export default defineNuxtComponent({
       ).schema,
       message = useMessage(),
       { data: single } = await useFetch(
-        `/api/${route.params.database}/${route.params.table}/${route.params.id}`,
+        `${useRuntimeConfig().public.apiBase}${route.params.database}/${
+          route.params.table
+        }/${route.params.id}`,
         {
           transform: (res) => {
             if (!res.result || !res.result.id) {

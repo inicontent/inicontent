@@ -1,4 +1,4 @@
-import type { Database, User } from "~/types";
+import type { Database, User, apiResponse } from "~/types";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp(),
@@ -11,15 +11,19 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // todo: save from path and use it to redirect
   if (!user.value)
     user.value = (
-      await $fetch<any>(
-        `/api/${to.params.database ?? "inicontent"}/auth/current`
+      await $fetch<apiResponse>(
+        `${useRuntimeConfig().public.apiBase}${
+          to.params.database ?? "inicontent"
+        }/auth/current`
       )
     ).result;
 
   if (!database.value || database.value.slug !== to.params.database)
     database.value = (
-      await $fetch<any>(
-        `/api/inicontent/database/${to.params.database ?? "inicontent"}`
+      await $fetch<apiResponse>(
+        `${useRuntimeConfig().public.apiBase}inicontent/database/${
+          to.params.database ?? "inicontent"
+        }`
       )
     ).result;
 
