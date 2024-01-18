@@ -29,18 +29,10 @@ export default defineNuxtComponent({
       ar: {
         add_new: "أضف عنصر جديد",
         table_settings: "إعدادات الجدول",
-        c: "c",
-        r: "r",
-        u: "c",
-        d: "d",
       },
       en: {
         add_new: "Add New Item",
         table_settings: "Table Settings",
-        c: "c",
-        r: "r",
-        u: "c",
-        d: "d",
       },
     });
 
@@ -122,9 +114,7 @@ export default defineNuxtComponent({
                     ? t("update_database")
                     : t("create_database"),
                 bordered: false,
-                size: "huge",
                 segmented: {
-                  content: "soft",
                   footer: "soft",
                 },
               },

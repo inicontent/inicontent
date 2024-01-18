@@ -41,11 +41,19 @@ export default defineNuxtComponent({
         add_new_table: "أضف جدول جديد",
         add_new: "أضف عنصر جديد",
         table_settings: "إعدادات الجدول",
+        c: "إضافة",
+        r: "قراءة",
+        u: "تعديل",
+        d: "حذف",
       },
       en: {
         add_new_table: "Add new table",
         add_new: "Add New Item",
         table_settings: "Table Settings",
+        c: "Create",
+        r: "Read",
+        u: "Update",
+        d: "Delete",
       },
     });
     const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -62,6 +70,7 @@ export default defineNuxtComponent({
       TableRef = ref<FormInst | null>(null),
       TableModal = ref<Table>(),
       TableSave = async () => {
+        const bodyContent = JSON.parse(JSON.stringify(TableModal.value));
         TableRef.value?.validate(async (errors: any) => {
           if (!errors) {
             Loading.value["Table"] = true;
@@ -71,8 +80,11 @@ export default defineNuxtComponent({
               }`,
               {
                 method: "PUT",
-                body: TableModal.value,
-              } as any
+                body: {
+                  ...database.value,
+                  tables: [...(database.value.tables ?? []), bodyContent],
+                },
+              }
             );
             if (data.value?.result) {
               database.value = data.value.result;
@@ -97,9 +109,7 @@ export default defineNuxtComponent({
           preset: "card",
           title: t("create_table"),
           bordered: false,
-          size: "huge",
           segmented: {
-            content: "soft",
             footer: "soft",
           },
         },
