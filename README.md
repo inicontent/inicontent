@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this prject we are using Nuxt 3, look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+In this prject we are using [Nuxt 3](https://nuxt.com/docs/getting-started/introduction), and [Naive UI](https://naiveui.com) as a component library.
 
 ## Architecture
 
