@@ -1,5 +1,3 @@
-import type { Database, User, apiResponse } from "~/types";
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp(),
     user = useState<User>("user"),

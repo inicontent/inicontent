@@ -39,7 +39,7 @@ export default defineNuxtComponent({
       DashboardModalRef = ref(null),
       DashboardModal = ref({});
 
-    const AddNewDashboard = async () => {
+    const newDashboard = async () => {
       DashboardModalRef.value?.validate(async (errors) => {
         if (!errors) {
           Loading.value["DashboardModal"] = true;
@@ -94,7 +94,7 @@ export default defineNuxtComponent({
                   NButton,
                   {
                     loading: Loading.value["DashboardModal"],
-                    onClick: AddNewDashboard,
+                    onClick: newDashboard,
                   },
                   {
                     icon: () => h(NIcon, () => h(IconDeviceFloppy)),

@@ -1,4 +1,3 @@
-import type { Asset, Database, apiResponse } from "~/types";
 import { LazyAssetCard } from "#components";
 
 export default defineNuxtComponent({
@@ -8,22 +7,18 @@ export default defineNuxtComponent({
       layout: "table",
     });
 
-    const database = useState<Database>("database");
+    const route = useRoute(),
+      database = useState<Database>("database");
 
     useHead({
-      title: `${database.value.slug} | ${t("assets")}`,
-      link: [{ rel: "icon", href: database.value.icon ?? "" }],
+      title: `${database.value.slug} | ${t("assets")}${
+        route.params.folder
+          ? ` | /${[].concat(route.params.folder as any).join("/")}`
+          : ""
+      }`,
+      link: [{ rel: "icon", href: database.value?.icon ?? "" }],
     });
 
-    const route = useRoute(),
-      { data: assets } = await useLazyFetch<apiResponse<Asset[]>>(
-        `${useRuntimeConfig().public.apiBase}${database.value.slug}/asset${
-          route.params.folder
-            ? `/${[].concat(route.params.folder as any).join("/")}`
-            : ""
-        }`
-      );
-
-    return () => h(LazyAssetCard, { modelValue: assets.value?.result });
+    return () => h(LazyAssetCard);
   },
 });

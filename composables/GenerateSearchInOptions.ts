@@ -1,50 +1,45 @@
-import type { Field, Schema } from "~/types";
+import { isArrayOfObjects } from "inibase/utils";
 
 function GenerateSearchInOptions(
   schema: Schema,
   { key, type, children }: Field,
   path?: string
 ): any {
-  switch (type) {
-    case "array":
-    case "object":
-      return {
-        type: "group",
-        label: t(key),
-        key: (path ?? "") + key,
-        children: (children as Schema)
-          .filter(({ type }) =>
-            Array.isArray(type)
-              ? type.some((t) => !["table", "array", "object"].includes(t))
-              : !["table", "array", "object"].includes(type)
-          )
-          .map((field) =>
+  if ((type === "object" || type === "array") && isArrayOfObjects(children))
+    return {
+      // type: "group",
+      label: t(key),
+      value: (path ?? "") + key,
+      // key: (path ?? "") + key,
+      children: (children as Schema)
+        .filter(({ type }) =>
+          Array.isArray(type)
+            ? type.some((t) => !["table", "array", "object"].includes(t))
+            : !["table", "array", "object"].includes(type)
+        )
+        .map((field) =>
+          GenerateSearchInOptions(schema, field, (path ?? "") + key + ".")
+        ),
+    };
+  else if (type === "table")
+    return {
+      // type: "group",
+      label: t(key),
+      // key: (path ?? "") + key,
+      value: (path ?? "") + key,
+      children:
+        useState<Database>("database")
+          .value?.tables?.find(({ slug }) => slug === key)
+          ?.schema?.map((field, _index, schema) =>
             GenerateSearchInOptions(schema, field, (path ?? "") + key + ".")
-          ),
-      };
-    case "table":
-      return {
-        type: "group",
-        label: t(key),
-        key: (path ?? "") + key,
-        children:
-          (
-            useState<any>("database").value?.tables?.find(
-              ({ slug }: any) => slug === key
-            )?.schema as Schema | undefined
-          )
-            ?.filter(({ type }: any) => !["table"].includes(type))
-            .map((field, _index, schema) =>
-              GenerateSearchInOptions(schema, field, (path ?? "") + key + ".")
-            ) ?? [],
-      };
-    default:
-      return {
-        label: t(key),
-        value: (path ?? "") + key,
-        ty: type,
-      };
-  }
+          ) ?? [],
+    };
+  else
+    return {
+      label: t(key),
+      value: (path ?? "") + key,
+      ty: type,
+    };
 }
 
 export default GenerateSearchInOptions;

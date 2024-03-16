@@ -17,36 +17,40 @@ import {
 
 export default defineNuxtComponent({
   props: ["type"],
-  setup: ({ type }) => {
-    if (!type) return () => h(IconFileText);
+  setup: (props) => {
+    const type = toRef(props, "type");
 
-    if (type === "folder") return () => h(IconFolder);
-    else if (type.startsWith("video/")) return () => h(IconVideo);
-    else if (type.startsWith("audio/")) return () => h(IconFileMusic);
-    else if (type.startsWith("font/")) return () => h(IconFileTypography);
-    else if (type?.startsWith("application/")) {
-      if (type === "application/pdf") return () => h(IconFileTypePdf);
-      else if (type === "application/zip") return () => h(IconFileTypeZip);
-      else if (type === "application/msword") return () => h(IconFileTypeDoc);
+    if (!type.value) return () => h(IconFileText);
+
+    if (type.value === "folder") return () => h(IconFolder);
+    else if (type.value.startsWith("video/")) return () => h(IconVideo);
+    else if (type.value.startsWith("audio/")) return () => h(IconFileMusic);
+    else if (type.value.startsWith("font/")) return () => h(IconFileTypography);
+    else if (type.value?.startsWith("application/")) {
+      if (type.value === "application/pdf") return () => h(IconFileTypePdf);
+      else if (type.value === "application/zip")
+        return () => h(IconFileTypeZip);
+      else if (type.value === "application/msword")
+        return () => h(IconFileTypeDoc);
       else if (
-        type ===
+        type.value ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       )
         return () => h(IconFileTypeDocx);
       else if (
-        type ===
+        type.value ===
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-        type === "application/vnd.ms-excel"
+        type.value === "application/vnd.ms-excel"
       )
         return () => h(IconFileSpreadsheet);
-      else if (type === "application/x-7z-compressed")
+      else if (type.value === "application/x-7z-compressed")
         return () => h(IconFileZip);
-    } else if (type.startsWith("text/")) {
-      if (type === "text/html") return () => h(IconFileTypeHtml);
-      else if (type === "text/css") return () => h(IconFileTypeCss);
-      else if (type === "text/js") return () => h(IconFileTypeJs);
-      else if (type === "text/csv") return () => h(IconFileSpreadsheet);
-      else if (type === "text/plain") return () => h(IconFileText);
+    } else if (type.value.startsWith("text/")) {
+      if (type.value === "text/html") return () => h(IconFileTypeHtml);
+      else if (type.value === "text/css") return () => h(IconFileTypeCss);
+      else if (type.value === "text/js") return () => h(IconFileTypeJs);
+      else if (type.value === "text/csv") return () => h(IconFileSpreadsheet);
+      else if (type.value === "text/plain") return () => h(IconFileText);
     }
     return () => h(IconFileText);
   },

@@ -12,7 +12,7 @@ import { LazyRenderDatas } from "#components";
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
-      middleware: "dashboard",
+      middleware: ["dashboard", "table"],
       layout: "table",
     });
 
@@ -27,21 +27,18 @@ export default defineNuxtComponent({
       },
     });
 
-    const Loading = useState("Loading", () => ({}));
-    Loading.value["PRINT"] = false;
-
     const route = useRoute(),
-      database = useState("database"),
-      schema = database.value.tables.find(
+      database = useState<Database>("database"),
+      table = database.value.tables?.find(
         ({ slug }) => slug === route.params.table
-      ).schema,
+      ),
       message = useMessage(),
-      { data: single } = await useFetch(
+      { data: single } = await useFetch<Item>(
         `${useRuntimeConfig().public.apiBase}${route.params.database}/${
           route.params.table
         }/${route.params.id}`,
         {
-          transform: (res) => {
+          transform: (res: any) => {
             if (!res.result || !res.result.id) {
               message.error("Item not found");
               setTimeout(
@@ -52,39 +49,27 @@ export default defineNuxtComponent({
                 1000
               );
             }
-            return res.result ?? {};
+            return res.result;
           },
         }
       ),
-      PRINT = () => {
-        {
-          Loading.value["PRINT"] = true;
-          window.print();
-          Loading.value["PRINT"] = false;
-          return true;
-        }
-      };
+      label = renderLabel(table?.label, table?.schema, single.value);
     useHead({
-      title: `${database.value.slug} | ${t(route.params.table)} ${t(
-        "table"
-      )} : ${route.params.id}`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      title: `${t(database.value.slug)} | ${t(
+        route.params.table as string
+      )} ${t("table")} : ${label}`,
+      link: [{ rel: "icon", href: database.value.icon ?? "" }],
     });
 
     return () =>
       h(
         NCard,
         {
-          title: "View item",
           style: "height: fit-content",
-          onKeyup: (e) =>
-            e.preventDefault() && e.code === "e" && (e.ctrlKey || e.metaKey)
-              ? PRINT()
-              : null,
         },
         {
           header: () =>
-            h(NEllipsis, () => `${t(route.params.table)} #${single.value.id}`),
+            h(NEllipsis, () => `${t(route.params.table as string)} : ${label}`),
           "header-extra": () =>
             h(NSpace, {}, () => [
               h(
@@ -144,8 +129,7 @@ export default defineNuxtComponent({
                         circle: true,
                         secondary: true,
                         type: "primary",
-                        onClick: PRINT,
-                        loading: Loading.value["PRINT"],
+                        onClick: () => window.print(),
                       },
                       {
                         icon: () => h(NIcon, () => h(IconPrinter)),
@@ -163,8 +147,7 @@ export default defineNuxtComponent({
                   round: true,
                   secondary: true,
                   type: "primary",
-                  onClick: PRINT,
-                  loading: Loading.value["PRINT"],
+                  onClick: () => window.print(),
                 },
                 {
                   icon: () => h(NIcon, () => h(IconPrinter)),
@@ -174,8 +157,8 @@ export default defineNuxtComponent({
             ]),
           default: () =>
             h(LazyRenderDatas, {
-              modelValue: single.value,
-              schema: schema,
+              modelValue: single.value as Item,
+              schema: table?.schema,
             }),
         }
       );

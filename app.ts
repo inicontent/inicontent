@@ -25,8 +25,6 @@ import {
 } from "naive-ui";
 import Vibrant from "node-vibrant";
 import { NuxtLayout, NuxtPage, NuxtLoadingIndicator } from "#components";
-import { Database, type apiResponse, type ThemeConfig } from "~/types";
-import { deepMerge } from "inibase/utils";
 
 export default defineNuxtComponent({
   async setup() {
@@ -93,92 +91,38 @@ export default defineNuxtComponent({
       }
     }
 
+    useHead({
+      bodyAttrs: {
+        class: computed(() =>
+          [
+            Language.value === "ar" ? "rtl" : "ltr",
+            Theme.value === "dark" ? "dark" : "light",
+          ].join(" ")
+        ),
+      },
+    });
+
     onMounted(fetchTranslation);
     watch(Language, fetchTranslation);
 
     return () =>
-      h("div", [
-        h(
-          "style",
-          `
-      a {
-        text-decoration: none !important;
-      }
-      
-      .n-input-number,
-      .n-date-picker {
-        width: 100%;
-      }
-      
-      .rich-editor {
-        border: 1px solid;
-        border-radius: 10px;
-        padding: 15px;
-        width: calc(100% - 32px);
-      }
-      
-      [dir="rtl"],
-      [dir="rtl"] * {
-        /* --n-label-padding: 0 0 0 12px !important; */
-        --n-prefix-margin: 0 0 0 8px !important;
-        --n-padding-single: 0 12px 0 26px !important;
-        --n-padding-multiple: 3px 12px 0 26px !important;
-      }
-      
-      [dir="rtl"] .n-data-table .n-data-table-check-extra {
-        left: -4px;
-        right: unset !important;
-      }
-      
-      [dir="rtl"] .n-base-selection .n-base-suffix {
-        left: 10px;
-        right: unset !important;
-      }
-      
-      [dir="rtl"]
-        .n-pagination
-        .n-pagination-item.n-pagination-item--button
-        .n-base-icon,
-      [dir="rtl"] .n-layout-sider .n-layout-toggle-bar,
-      [dir="rtl"]
-        .n-collapse
-        .n-collapse-item
-        .n-collapse-item__header
-        .n-collapse-item-arrow
-        .n-icon,
-      [dir="rtl"] .n-switch {
-        transform: scaleX(-1) !important;
-      }
-      
-      [dir="rtl"] .n-layout-sider .n-layout-toggle-bar {
-        left: -28px;
-        right: unset !important;
-      }
-      
-      [dir="rtl"] .n-menu .n-menu-item-content .n-menu-item-content__icon {
-        margin-left: 8px;
-        margin-right: unset !important;
-      }      
-      `
-        ),
-        h(
-          NConfigProvider,
-          {
-            dir: Language.value === "ar" ? "rtl" : "ltr",
-            rtl: Language.value === "ar" ? rtlStyles : undefined,
-            theme: Theme.value === "dark" ? darkTheme : null,
-            themeOverrides: { common: ThemeConfig.value },
-            locale: (Locales as any)[Language.value],
-            dateLocale: (dateLocales as any)[Language.value],
-          },
-          () => [
-            h(NuxtLoadingIndicator, {
-              color: ThemeConfig.value.primaryColor,
-              height: 2,
-            }),
-            h(NuxtLayout, () => h(NuxtPage)),
-          ]
-        ),
-      ]);
+      h(
+        NConfigProvider,
+        {
+          dir: Language.value === "ar" ? "rtl" : "ltr",
+          rtl: Language.value === "ar" ? rtlStyles : undefined,
+          theme: Theme.value === "dark" ? darkTheme : null,
+          themeOverrides: { common: ThemeConfig.value },
+          locale: (Locales as any)[Language.value],
+          dateLocale: (dateLocales as any)[Language.value],
+        },
+        () => [
+          h(NuxtLoadingIndicator, {
+            color: ThemeConfig.value.primaryColor,
+            height: 2,
+          }),
+          h(NuxtLayout, () => h(NuxtPage)),
+        ]
+      );
   },
 });

@@ -1,18 +1,23 @@
 import { NLayout, NLayoutSider, NMenu, NLayoutContent, NIcon } from "naive-ui";
 import {
+  IconPlus,
   IconEye,
   IconFolders,
-  IconPencil,
-  IconPlus,
-  IconTrash,
+  IconLanguage,
+  IconUsers,
+  IconFingerprint,
 } from "@tabler/icons-vue";
 import { NuxtLayout, NuxtLink } from "#components";
 
-export default defineNuxtComponent({
+export default defineComponent({
   setup: (props, { slots }) => {
     const Language = useGlobalCookie("Language");
+
     useLanguage({
-      ar: {},
+      ar: {
+        showAll: "أظهر الكل",
+        newItem: "عنصر جديد",
+      },
       en: {},
     });
 
@@ -23,243 +28,217 @@ export default defineNuxtComponent({
       user = useState("user"),
       isMenuOpen = useState("isMenuOpen", () => false),
       database = useState("database");
+
     return () =>
-      h(NuxtLayout, { name: "default" }, () =>
-        h(
-          NLayout,
-          {
-            position: "absolute",
-            hasSider: true,
-          },
-          () => [
-            h(
-              NLayoutSider,
-              {
-                collapsed: !isMenuOpen.value,
-                onCollapse: () => (isMenuOpen.value = false),
-                onExpand: () => (isMenuOpen.value = true),
-                style: "z-index: 999",
-                bordered: true,
-                showTrigger: "bar",
-                collapseMode: "width",
-                collapsedWidth: Window.value.width < 700 ? 0 : 64,
-                width: 240,
-                nativeScrollbar: false,
-              },
-              () =>
-                h(NMenu, {
+      h(
+        "div",
+        h(NuxtLayout, { name: "default" }, () =>
+          h(
+            NLayout,
+            {
+              position: "absolute",
+              hasSider: true,
+            },
+            () => [
+              h(
+                NLayoutSider,
+                {
                   collapsed: !isMenuOpen.value,
-                  collapsedIconSize: 22,
+                  onCollapse: () => (isMenuOpen.value = false),
+                  onExpand: () => (isMenuOpen.value = true),
+                  style: "z-index: 999",
+                  bordered: true,
+                  showTrigger: "bar",
+                  collapseMode: "width",
                   collapsedWidth: Window.value.width < 700 ? 0 : 64,
-                  options: [
-                    ...database.value.tables.map(
-                      ({ slug, allowed_methods }) => ({
-                        label: () =>
-                          h(
-                            NuxtLink,
-                            {
-                              to: `/${route.params.database}/admin/tables/${slug}`,
-                            },
-                            { default: () => t(slug) }
-                          ),
-                        key: slug,
-                        icon: () => t(slug).charAt(0),
-                        children:
-                          (user.value.role === "admin" || slug === "user") &&
-                          allowed_methods
-                            ? [
-                                user.value.role === "admin" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("r")
-                                  ? {
-                                      label: () =>
-                                        h(
-                                          NuxtLink,
-                                          {
-                                            to: `/${route.params.database}/api/${slug}/get`,
-                                          },
-                                          { default: () => "GET" }
-                                        ),
-                                      key: "get",
-                                      icon: () => h(NIcon, () => h(IconEye)),
-                                    }
-                                  : null,
-                                user.value.role === "admin" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("c")
-                                  ? {
-                                      label: () =>
-                                        h(
-                                          NuxtLink,
-                                          {
-                                            to: `/${route.params.database}/api/${slug}/post`,
-                                          },
-                                          { default: () => "POST" }
-                                        ),
-                                      key: "post",
-                                      icon: () => h(NIcon, () => h(IconPlus)),
-                                    }
-                                  : null,
-                                user.value.role === "admin" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("u")
-                                  ? {
-                                      label: () =>
-                                        h(
-                                          NuxtLink,
-                                          {
-                                            to: `/${route.params.database}/api/${slug}/put`,
-                                          },
-                                          { default: () => "PUT" }
-                                        ),
-                                      key: "put",
-                                      icon: () => h(NIcon, () => h(IconPencil)),
-                                    }
-                                  : null,
-                                user.value.role === "admin" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("d")
-                                  ? {
-                                      label: () =>
-                                        h(
-                                          NuxtLink,
-                                          {
-                                            to: `/${route.params.database}/api/${slug}/delete`,
-                                          },
-                                          { default: () => "DELETE" }
-                                        ),
-                                      key: "delete",
-                                      icon: () => h(NIcon, () => h(IconTrash)),
-                                    }
-                                  : null,
-                              ].filter((i) => i !== null)
-                            : null,
-                      })
-                    ),
-                    {
-                      key: "divider-1",
-                      type: "divider",
-                    },
-                    {
-                      label: () =>
-                        h(
-                          NuxtLink,
-                          {
-                            to: `/${route.params.database}/admin/tables/asset`,
-                          },
-                          { default: () => t("Assets") }
-                        ),
-                      key: "assets",
-                      icon: () => h(NIcon, () => h(IconFolders)),
-                      children: [
-                        {
-                          label: () =>
-                            h(
-                              NuxtLink,
-                              {
-                                to: `/${route.params.database}/api/asset/get`,
-                              },
-                              { default: () => "GET" }
-                            ),
-                          key: "assets-get",
-                          icon: () => h(NIcon, () => h(IconEye)),
-                        },
-                        {
-                          label: () =>
-                            h(
-                              NuxtLink,
-                              {
-                                to: `/${route.params.database}/api/asset/post`,
-                              },
-                              { default: () => "POST" }
-                            ),
-                          key: "assets-post",
-                          icon: () => h(NIcon, () => h(IconPlus)),
-                        },
-                        {
-                          label: () =>
-                            h(
-                              NuxtLink,
-                              {
-                                to: `/${route.params.database}/api/asset/put`,
-                              },
-                              { default: () => "PUT" }
-                            ),
-                          key: "assets-put",
-                          icon: () => h(NIcon, () => h(IconPencil)),
-                        },
-                        {
-                          label: () =>
-                            h(
-                              NuxtLink,
-                              {
-                                to: `/${route.params.database}/api/asset/delete`,
-                              },
-                              { default: () => "DELETE" }
-                            ),
-                          key: "assets-delete",
-                          icon: () => h(NIcon, () => h(IconTrash)),
-                        },
-                      ],
-                    },
-                  ],
-                  defaultExpandedKeys: [
-                    route.params.table ??
-                      route.path.split("/").filter(Boolean).pop(),
-                  ],
-                  value:
-                    route.params.table ??
-                    route.path.split("/").filter(Boolean).pop(),
-                  accordion: true,
-                })
-            ),
-            h(
-              NLayoutContent,
-              {
-                position: "absolute",
-                contentStyle: {
-                  padding:
-                    Window.value.width < 700
-                      ? "24px"
-                      : Language.value === "ar"
-                      ? "24px 88px 24px 24px"
-                      : "24px 24px 24px 88px",
+                  width: 240,
+                  nativeScrollbar: false,
                 },
-                nativeScrollbar: false,
-                id: "page_content",
-              },
-              () => [
-                isMenuOpen.value
-                  ? h("div", {
-                      onClick: () => (isMenuOpen.value = false),
-                      style: {
-                        width: "100%",
-                        height: "100%",
-                        right: "0px",
-                        top: "0px",
-                        backgroundColor: "#0000006e",
-                        position: "absolute",
-                        zIndex: 99,
-                        cursor: "pointer",
-                      },
-                    })
-                  : null,
-                slots.default(),
-              ]
-            ),
-          ]
+                () =>
+                  h(NMenu, {
+                    collapsed: !isMenuOpen.value,
+                    collapsedIconSize: 22,
+                    collapsedWidth: Window.value.width < 700 ? 0 : 64,
+                    options: database.value.tables
+                      ? [
+                          ...database.value.tables
+                            ?.filter(
+                              ({ slug, allowedMethods }) =>
+                                ![
+                                  "user",
+                                  "session",
+                                  "asset",
+                                  "translation",
+                                ].includes(slug) &&
+                                allowedMethods?.includes("r")
+                            )
+                            .map(({ slug, allowedMethods }) => ({
+                              label: () =>
+                                h(
+                                  NuxtLink,
+                                  {
+                                    to: `/${route.params.database}/admin/tables/${slug}`,
+                                  },
+                                  { default: () => t(slug) }
+                                ),
+                              key: slug,
+                              icon: () => t(slug).charAt(0).toUpperCase(),
+                              children: allowedMethods?.includes("c")
+                                ? [
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}`,
+                                          },
+                                          { default: () => t("showAll") }
+                                        ),
+                                      key: slug,
+                                      icon: () => h(NIcon, () => h(IconEye)),
+                                    },
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}/new`,
+                                          },
+                                          { default: () => t("newItem") }
+                                        ),
+                                      key: `new-${slug}`,
+                                      icon: () => h(NIcon, () => h(IconPlus)),
+                                    },
+                                  ]
+                                : null,
+                            })),
+                          database.value.tables?.filter(
+                            ({ slug, allowedMethods }) =>
+                              [
+                                "user",
+                                "session",
+                                "asset",
+                                "translation",
+                              ].includes(slug) && allowedMethods?.includes("r")
+                          ).length
+                            ? {
+                                key: "divider-1",
+                                type: "divider",
+                              }
+                            : null,
+                          ...database.value.tables
+                            ?.filter(
+                              ({ slug, allowedMethods }) =>
+                                [
+                                  "user",
+                                  "session",
+                                  "asset",
+                                  "translation",
+                                ].includes(slug) &&
+                                allowedMethods?.includes("r")
+                            )
+                            .map(({ slug, allowedMethods }) => ({
+                              label: () =>
+                                h(
+                                  NuxtLink,
+                                  {
+                                    to: `/${route.params.database}/admin/tables/${slug}`,
+                                  },
+                                  { default: () => t(slug) }
+                                ),
+                              key: slug,
+                              icon: () =>
+                                h(NIcon, () => {
+                                  switch (slug) {
+                                    case "asset":
+                                      return h(IconFolders);
+                                    case "translation":
+                                      return h(IconLanguage);
+                                    case "user":
+                                      return h(IconUsers);
+                                    case "session":
+                                      return h(IconFingerprint);
+                                    default:
+                                      return t(slug).charAt(0).toUpperCase();
+                                  }
+                                }),
+                              children: allowedMethods?.includes("c")
+                                ? [
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}`,
+                                          },
+                                          { default: () => t("showAll") }
+                                        ),
+                                      key: slug,
+                                      icon: () => h(NIcon, () => h(IconEye)),
+                                    },
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            to: `/${route.params.database}/admin/tables/${slug}/new`,
+                                          },
+                                          { default: () => t("newItem") }
+                                        ),
+                                      key: `new-${slug}`,
+                                      icon: () => h(NIcon, () => h(IconPlus)),
+                                    },
+                                  ]
+                                : null,
+                            })),
+                        ]
+                      : [],
+                    defaultExpandedKeys: [
+                      route.params.table ??
+                        route.path.split("/").filter(Boolean).pop(),
+                    ],
+                    value:
+                      route.params.table ??
+                      route.path.split("/").filter(Boolean).pop(),
+                    accordion: true,
+                  })
+              ),
+              h(
+                NLayoutContent,
+                {
+                  position: "absolute",
+                  contentStyle: {
+                    padding:
+                      Window.value.width < 700
+                        ? "24px"
+                        : Language.value === "ar"
+                        ? "24px 88px 24px 24px"
+                        : "24px 24px 24px 88px",
+                  },
+                  nativeScrollbar: false,
+                  id: "page_content",
+                },
+                () => [
+                  isMenuOpen.value
+                    ? h("div", {
+                        onClick: () => (isMenuOpen.value = false),
+                        style: {
+                          width: "100%",
+                          height: "100%",
+                          right: "0px",
+                          top: "0px",
+                          backgroundColor: "#0000006e",
+                          position: "absolute",
+                          zIndex: 99,
+                          cursor: "pointer",
+                        },
+                      })
+                    : null,
+                  slots.default(),
+                ]
+              ),
+            ]
+          )
         )
       );
   },

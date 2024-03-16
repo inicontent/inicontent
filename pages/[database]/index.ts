@@ -1,5 +1,8 @@
 export default defineNuxtComponent({
   async setup() {
-    return () => h("span", {}, "Nothing Here");
+    definePageMeta({
+      middleware: "dashboard",
+    });
+    return () => h("span", {}, "A page builder is coming soon!");
   },
 });

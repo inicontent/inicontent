@@ -16,105 +16,214 @@ import {
   NInput,
   NSelect,
   NTooltip,
+  NPopconfirm,
+  NEmpty,
+  NFlex,
+  NCascader,
+  NMention,
+  type FormInst,
+  type MentionOption,
 } from "naive-ui";
 import {
-  IconQuestionMark,
   IconDeviceFloppy,
   IconPlus,
   IconTrash,
   IconMenu2,
   IconAsterisk,
   IconArrowsSort,
+  IconPhoto,
+  IconVideo,
+  IconMusic,
+  IconFileDescription,
+  IconFileZip,
 } from "@tabler/icons-vue";
+import { isArrayOfObjects } from "inibase/utils";
 import draggable from "vuedraggable";
-import type { Schema, Database, apiResponse } from "~/types";
+import { LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
-      middleware: "dashboard",
+      middleware: ["dashboard", "table"],
+      layout: "table",
     });
+
+    onMounted(() => {
+      document.onkeydown = function (e) {
+        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+        e.preventDefault();
+        updateTable();
+      };
+    });
+
     useLanguage({
       ar: {
-        table_settings: "إعدادات الجدول",
-        schema: "الأعمدة",
+        tableSettings: "إعدادات الجدول",
+        generalSettings: "إعدادات عامة",
+        schemaSettings: "إعدادات الأعمدة",
         save: "حِفظ",
         required: "إلزامي",
         duplicatable: "قابل للنسخ",
-        field_name: "إسم الحقل",
-        allowed_files: "الملفات المسموح بها",
+        fieldName: "إسم الحقل",
+        allowedFiles: "الملفات المسموح بها",
         options: "الخيارات",
-        content_type: "نوع المحتوى",
-        show_as_table: "أظهر كجدول",
-        label_text: "نص التسمية",
-        search_in: "البحث في",
-        label_image: "صورة التسمية",
+        contentType: "نوع المحتوى",
+        showAsTable: "أظهر كجدول",
+        labelText: "نص التسمية",
+        searchIn: "البحث في",
+        labelImage: "صورة التسمية",
+        changeOrder: "تغيير الترتيب",
+        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
       },
-      en: {
-        table_settings: "Table Settings",
-        schema: "schema",
-        save: "Save",
-        required: "Required",
-        duplicatable: "Duplicatable",
-        field_name: "Field Name",
-        allowed_files: "Allowed Files",
-        options: "Options",
-        content_type: "Content Type",
-        show_as_table: "Show as table",
-        label_text: "Label Text",
-        search_in: "Search in",
-        label_image: "Label Image",
-      },
+      en: {},
     });
     const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-    Loading.value["schemaModal"] = false;
+    Loading.value["updateTable"] = false;
+    Loading.value["deleteTable"] = false;
     const Language = useGlobalCookie("Language");
     const route = useRoute(),
+      router = useRouter(),
       message = useMessage(),
       showDraggable = ref(false),
       Window = useState("Window", () => ({
         width: 0,
       })),
       database = useState<Database>("database"),
-      DisabledItem = useState<Record<string | number, boolean>>(() => ({})),
-      ShowschemaModal = useState("ShowschemaModal", () => false),
-      schemaModal = ref<Schema>(
+      tableRef = ref<FormInst | null>(null),
+      tableCopy = ref(
         JSON.parse(
-          JSON.stringify(
-            database.value?.tables?.find(
-              ({ slug }: any) => slug === route.params.table
-            )?.schema ?? []
-          )
+          JSON.stringify({
+            ...database.value?.tables?.find(
+              ({ slug }) => slug === route.params.table
+            ),
+            schema:
+              database.value?.tables
+                ?.find(({ slug }) => slug === route.params.table)
+                ?.schema?.filter(
+                  ({ key }) =>
+                    !["id", "createdAt", "updatedAt", "user"].includes(key)
+                ) ?? [],
+          })
         )
       ),
-      SaveschemaModal = async () => {
-        Loading.value["schemaModal"] = true;
-        await useFetch<apiResponse>(
+      handleSelectedType = (type: string) => {
+        switch (type) {
+          case "textarea":
+            return {
+              type: "string",
+              subType: "textarea",
+            };
+          case "role":
+            return {
+              type: "string",
+              subType: "role",
+            };
+          case "upload":
+            return {
+              type: "url",
+              subType: "upload",
+            };
+          case "array-upload":
+            return {
+              type: "array",
+              children: "url",
+              subType: "upload",
+            };
+          case "array-table":
+            return {
+              type: "array",
+              children: "table",
+              subType: "table",
+            };
+          case "tags":
+            return {
+              type: "array",
+              subType: "tags",
+            };
+          case "select":
+            return {
+              type: ["string", "number"],
+              subType: "select",
+            };
+          case "array-select":
+            return {
+              type: "array",
+              children: ["string", "number"],
+              subType: "select",
+            };
+          case "color":
+            return {
+              type: "string",
+              subType: "color",
+            };
+          case "array":
+          case "object":
+            return {
+              type: type,
+              children: [],
+            };
+          default:
+            return { type };
+        }
+      },
+      updateTable = async () => {
+        tableRef.value?.validate(async (errors) => {
+          if (!errors) {
+            const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
+            Loading.value["updateTable"] = true;
+
+            const data = await $fetch<apiResponse>(
+              `${useRuntimeConfig().public.apiBase}inicontent/database/${
+                database.value.slug
+              }/${route.params.table}`,
+              {
+                method: "PUT",
+                body: bodyContent,
+              }
+            );
+            const tableIndex = database.value.tables?.findIndex(
+              ({ slug }) => slug === route.params.table
+            );
+            if (tableIndex && database.value.tables && data?.result) {
+              database.value.tables[tableIndex] = data.result;
+              if (route.params.table !== data.result.slug)
+                router.replace({
+                  params: { table: data.result.slug },
+                });
+              message.success(data?.message ?? "Success");
+            } else message.error(data?.message ?? "Error");
+            Loading.value["updateTable"] = false;
+          } else message.error("The inputs are Invalid");
+        });
+      },
+      deleteTable = async () => {
+        Loading.value["deleteTable"] = true;
+        const data = await $fetch<apiResponse>(
           `${useRuntimeConfig().public.apiBase}inicontent/database/${
             database.value.slug
-          }`,
+          }/${route.params.table}`,
           {
-            method: "PUT",
-            body: {
-              tables: database.value.tables?.map((item: any) => {
-                if (item.slug === route.params.table)
-                  item.schema = schemaModal.value;
-                return item;
-              }),
-            },
+            method: "DELETE",
           }
         );
-        Loading.value["schemaModal"] = false;
-        ShowschemaModal.value = false;
-        message.success("schema Updated Successfully");
-        database.value = {
-          ...database.value,
-          tables: database.value.tables?.map((item) => {
-            if (item.slug === route.params.table)
-              item.schema = schemaModal.value;
-            return item;
-          }),
-        };
+        if (data?.result) {
+          const tableIndex = database.value.tables?.findIndex(
+            ({ slug }) => slug === route.params.table
+          );
+          if (tableIndex)
+            database.value.tables = database.value.tables?.toSpliced(
+              tableIndex,
+              1
+            );
+          Loading.value["deleteTable"] = false;
+          message.success(data?.message ?? "Success");
+          setTimeout(
+            async () =>
+              await navigateTo(`/${database.value.slug}/admin/tables`),
+            800
+          );
+        } else message.error(data?.message ?? "Error");
+        Loading.value["deleteTable"] = false;
       },
       GenerateLabelOptions = (
         schema: any,
@@ -146,42 +255,52 @@ export default defineNuxtComponent({
           case "array":
             return { id, key, type: newType, required, children };
           default:
-            return { id, key, type: newType, required };
+            return { id, key, ...handleSelectedType(newType), required };
         }
       },
       CustomFields = (field: any) => {
-        switch (field.type) {
+        switch (field.subType ?? field.type) {
           case "upload":
             return [
               h(
                 NFormItem,
                 {
-                  label: t("allowed_files"),
+                  label: t("allowedFiles"),
                 },
                 () =>
                   h(NSelect, {
                     multiple: true,
-                    placeholder: t("allowed_files"),
+                    placeholder: t("allowedFiles"),
+                    renderLabel: (option: any) =>
+                      h(NFlex, { align: "center" }, () => [
+                        h(NIcon, () => option.icon),
+                        option.label as string,
+                      ]),
                     options: [
                       {
                         label: t("image"),
                         value: "image",
+                        icon: h(IconPhoto),
                       },
                       {
                         label: t("video"),
                         value: "video",
+                        icon: h(IconVideo),
                       },
                       {
                         label: t("audio"),
                         value: "audio",
+                        icon: h(IconMusic),
                       },
                       {
                         label: t("documents"),
                         value: "document",
+                        icon: h(IconFileDescription),
                       },
                       {
                         label: t("archive"),
                         value: "archive",
+                        icon: h(IconFileZip),
                       },
                     ],
                     value: field.accept,
@@ -213,23 +332,35 @@ export default defineNuxtComponent({
               h(
                 NFormItem,
                 {
-                  label: t("content_type"),
+                  label: t("contentType"),
                 },
                 () =>
                   h(NSelect, {
-                    value: field.content_type,
-                    onUpdateValue: (v) => (field.content_type = v),
+                    value: field.children,
+                    onUpdateValue: (v) => (field.children = v),
                     filterable: true,
-                    options: FieldsList()
-                      .flatMap(({ label, key, icon, children }) => [
-                        { label, key, icon },
-                        ...(children ?? []),
-                      ])
-                      .filter(({ key }) =>
-                        ["text", "number", "email", "url", "color"].includes(
-                          key
-                        )
-                      ),
+                    multiple: true,
+                    renderLabel: (option: any) =>
+                      h(NFlex, { align: "center" }, () => [
+                        option.icon(),
+                        option.label as string,
+                      ]),
+                    options: flatFieldsList()
+                      ?.filter(({ key }) =>
+                        [
+                          "string",
+                          "number",
+                          "password",
+                          "email",
+                          "url",
+                          "id",
+                        ].includes(key)
+                      )
+                      .map((field) => ({
+                        label: field.label,
+                        value: field.key,
+                        icon: field.icon,
+                      })),
                   })
               ),
             ];
@@ -239,73 +370,25 @@ export default defineNuxtComponent({
                 NFormItem,
                 {
                   disabled: !field.key,
-                  label: t("search_in"),
+                  label: t("searchIn"),
                 },
                 {
                   default: () =>
-                    h(NSelect, {
+                    h(NCascader, {
                       disabled: !field.key,
                       multiple: true,
+                      clearable: true,
                       filterable: true,
-                      value: field.search,
-                      onUpdateValue: (v) => (field.search = v),
+                      expandTrigger: "hover",
+                      checkStrategy: "child",
+                      cascade: false,
+                      value: field.searchIn,
+                      onUpdateValue: (v) => (field.searchIn = v),
                       options: field.key
                         ? database.value.tables
                             ?.find(({ slug }) => slug === field.key)
-                            ?.schema?.filter(({ type }) => type !== "table")
-                            .map((element: any, _index: number, schema) =>
-                              GenerateSearchInOptions(schema, element)
-                            )
-                            .flat(Infinity) ?? []
-                        : [],
-                    }),
-                }
-              ),
-              h(
-                NFormItem,
-                {
-                  disabled: !field.key,
-                  label: t("label_text"),
-                },
-                {
-                  default: () =>
-                    h(NSelect, {
-                      disabled: !field.key,
-                      multiple: true,
-                      filterable: true,
-                      value: field.label,
-                      onUpdateValue: (value: string) => (field.label = value),
-                      options: field.key
-                        ? database.value.tables
-                            ?.find(({ slug }) => slug === field.key)
-                            ?.schema?.filter(({ type }) => type !== "table")
-                            .map((element: any, _index: number, schema) =>
-                              GenerateLabelOptions(schema, element)
-                            )
-                            .flat(Infinity) ?? []
-                        : [],
-                    }),
-                }
-              ),
-              h(
-                NFormItem,
-                {
-                  disabled: !field.key,
-                  label: t("label_image"),
-                },
-                {
-                  default: () =>
-                    h(NSelect, {
-                      disabled: !field.key,
-                      filterable: true,
-                      value: field.image,
-                      onUpdateValue: (value: string) => (field.image = value),
-                      options: field.key
-                        ? database.value.tables
-                            ?.find(({ slug }) => slug === field.key)
-                            ?.schema?.filter(({ type }) => type !== "table")
-                            .map((element: any, _index: number, schema) =>
-                              GenerateLabelOptions(schema, element)
+                            ?.schema?.map((_item, _index: number, schema) =>
+                              GenerateSearchInOptions(schema, _item)
                             )
                             .flat(Infinity) ?? []
                         : [],
@@ -322,13 +405,14 @@ export default defineNuxtComponent({
           NCollapse,
           {
             accordion: true,
+            triggerAreas: ["main", "arrow"],
           },
           () =>
             h(
               draggable,
               {
                 list: schema,
-                itemKey: "key",
+                itemKey: "id",
                 handle: ".handle",
               },
               {
@@ -337,7 +421,6 @@ export default defineNuxtComponent({
                     NCollapseItem,
                     {
                       name: index,
-                      disabled: DisabledItem.value[index],
                     },
                     {
                       header: () => [
@@ -361,7 +444,8 @@ export default defineNuxtComponent({
                       ],
                       "header-extra": () =>
                         h(NSpace, () => [
-                          ...(["array", "object"].includes(element.type)
+                          ...(["array", "object"].includes(element.type) &&
+                          isArrayOfObjects(element.children)
                             ? [
                                 h(
                                   NDropdown,
@@ -375,8 +459,10 @@ export default defineNuxtComponent({
                                       (schema[index].children = [
                                         ...(schema[index].children ?? []),
                                         {
-                                          type: type,
+                                          id: `temp-${randomID()}`,
+                                          key: null,
                                           required: false,
+                                          ...handleSelectedType(type),
                                         },
                                       ]),
                                   },
@@ -384,15 +470,6 @@ export default defineNuxtComponent({
                                     h(
                                       NButton,
                                       {
-                                        onClick: () => (
-                                          (DisabledItem.value[index] = true),
-                                          setTimeout(
-                                            () =>
-                                              (DisabledItem.value[index] =
-                                                false),
-                                            1
-                                          )
-                                        ),
                                         disabled: element.key ? false : true,
                                         circle: true,
                                         size: "small",
@@ -415,16 +492,9 @@ export default defineNuxtComponent({
                                     type: schema[index].required
                                       ? "error"
                                       : "tertiary",
-                                    onClick: () => (
-                                      ((DisabledItem.value[index] = true),
-                                      setTimeout(
-                                        () =>
-                                          (DisabledItem.value[index] = false),
-                                        1
-                                      )),
+                                    onClick: () =>
                                       (schema[index].required =
-                                        !schema[index].required)
-                                    ),
+                                        !schema[index].required),
                                   },
                                   {
                                     icon: () => h(NIcon, () => h(IconAsterisk)),
@@ -445,19 +515,15 @@ export default defineNuxtComponent({
                               trigger: "click",
                               scrollable: true,
                               onSelect: (type) =>
-                                (element = changeFieldType(element, type)),
+                                (schema[index] = changeFieldType(
+                                  schema[index],
+                                  type
+                                )),
                             },
                             () =>
                               h(
                                 NButton,
                                 {
-                                  onClick: () => (
-                                    (DisabledItem.value[index] = true),
-                                    setTimeout(
-                                      () => (DisabledItem.value[index] = false),
-                                      1
-                                    )
-                                  ),
                                   strong: true,
                                   secondary: true,
                                   round: true,
@@ -465,49 +531,22 @@ export default defineNuxtComponent({
                                   type: "primary",
                                 },
                                 {
-                                  icon: () =>
-                                    FieldsList()
-                                      .flatMap(
-                                        ({ label, key, icon, children }) => [
-                                          { label, key, icon },
-                                          ...(children ?? []),
-                                        ]
-                                      )
-                                      .find(({ key }) => key === element.type)
-                                      ?.icon() ??
-                                    h(NIcon, () => h(IconQuestionMark)),
+                                  icon: getField(
+                                    element.subType ?? element.type
+                                  ).icon,
                                   default: () =>
                                     Window.value.width < 700
                                       ? null
-                                      : FieldsList()
-                                          .flatMap(
-                                            ({
-                                              label,
-                                              key,
-                                              icon,
-                                              children,
-                                            }) => [
-                                              { label, key, icon },
-                                              ...(children ?? []),
-                                            ]
-                                          )
-                                          .find(
-                                            ({ key }) => key === element.type
-                                          )?.label ?? "Custom",
+                                      : getField(
+                                          element.subType ?? element.type
+                                        ).label,
                                 }
                               )
                           ),
                           h(
                             NButton,
                             {
-                              onClick: () => (
-                                ((DisabledItem.value[index] = true),
-                                setTimeout(
-                                  () => (DisabledItem.value[index] = false),
-                                  1
-                                )),
-                                schema.splice(index, 1)
-                              ),
+                              onClick: () => schema.splice(index, 1),
                               circle: true,
                               secondary: true,
                               size: "small",
@@ -530,20 +569,16 @@ export default defineNuxtComponent({
                                   default: () =>
                                     h(NSelect, {
                                       filterable: true,
-                                      value: schema[index].key,
-                                      onUpdateValue: (v) => (
-                                        (schema[index].key = v),
-                                        (schema[index].search = null),
-                                        (schema[index].label = null),
-                                        (schema[index].image = null)
-                                      ),
+                                      value: schema[index].table,
+                                      onUpdateValue: (v) =>
+                                        (schema[index].table = v),
                                       options: database.value.tables
                                         ?.filter(
                                           ({ slug }) =>
                                             slug !== route.params.table ||
                                             route.params.table === "user"
                                         )
-                                        .map(({ slug }) => ({
+                                        .map(({ slug, id }) => ({
                                           label: t(slug),
                                           value: slug,
                                         })),
@@ -556,14 +591,18 @@ export default defineNuxtComponent({
                               h(
                                 NFormItem,
                                 {
-                                  label: t("field_name"),
+                                  label: t("fieldName"),
                                   style: {
                                     marginBottom: "30px",
                                   },
                                 },
                                 {
                                   feedback: () =>
-                                    `#${getPath(schema, element.id)}`,
+                                    `#${getPath(
+                                      tableCopy.value.schema,
+                                      element.id,
+                                      true
+                                    )}`,
                                   default: () =>
                                     h(NInput, {
                                       value: schema[index].key,
@@ -574,7 +613,8 @@ export default defineNuxtComponent({
                               ),
                               ...CustomFields(schema[index]),
                               element.children &&
-                              ["array", "object"].includes(element.type)
+                              ["array", "object"].includes(element.type) &&
+                              isArrayOfObjects(element.children)
                                 ? RenderSchemaElement(element.children)
                                 : null,
                             ],
@@ -582,153 +622,260 @@ export default defineNuxtComponent({
                   ),
               }
             )
-        );
+        ),
+      generateMentionOptions = (
+        schema: Schema,
+        prefix?: string
+      ): MentionOption[] => {
+        let RETURN: MentionOption[] = [];
+        for (const field of schema) {
+          if (
+            (Array.isArray(field.type) && field.subType !== "tags") ||
+            (field.type === "array" &&
+              field.children &&
+              isArrayOfObjects(field.children)) ||
+            field.type === "table"
+          )
+            continue;
+          if (field.children && isArrayOfObjects(field.children))
+            RETURN = [
+              ...RETURN,
+              ...generateMentionOptions(field.children, field.key),
+            ];
+          else
+            RETURN.push({
+              label: (prefix ? `${prefix}/` : "") + field.key,
+              value: field.key,
+            });
+        }
+        return RETURN;
+      };
 
     useHead({
       title: `${database.value.slug} | ${t(
         database.value.tables?.find(({ slug }) => slug === route.params.table)
           ?.slug ?? "--"
-      )} Settings`,
+      )} ${t("settings")}`,
       link: [{ rel: "icon", href: database.value?.icon ?? "" }],
     });
 
     return () =>
-      h(NGrid, { xGap: 12, cols: 12, itemResponsive: true }, () => [
-        h(NGi, { span: 11 }, () =>
-          h(
-            NCard,
-            {
-              title: t("table_settings"),
-              hoverable: true,
-            },
-            {
-              "header-extra": () =>
-                h(
-                  NButton,
-                  {
-                    round: true,
-                    loading: Loading.value["schemaModal"],
-                    onClick: SaveschemaModal,
-                  },
-                  {
-                    default: () => t("save"),
-                    icon: () => h(NIcon, () => h(IconDeviceFloppy)),
-                  }
-                ),
-              default: () =>
-                h(
-                  NCard,
-                  {
-                    title: t("schema"),
-                    id: "schema",
-                    hoverable: true,
-                  },
-                  {
-                    "header-extra": () =>
-                      h(NSpace, () => [
-                        h(
-                          NTooltip,
-                          {},
-                          {
-                            default: () => t("change_order"),
-                            trigger: () =>
-                              h(
-                                NButton,
-                                {
-                                  round: true,
-                                  type: showDraggable.value
-                                    ? "primary"
-                                    : "default",
-                                  onClick: () =>
-                                    (showDraggable.value =
-                                      !showDraggable.value),
-                                },
-                                () => h(NIcon, () => h(IconArrowsSort))
-                              ),
-                          }
-                        ),
-                        h(
-                          NDropdown,
-                          {
-                            options: FieldsList(),
-                            style: {
-                              maxHeight: "200px",
-                            },
-                            scrollable: true,
-                            onSelect: (type) =>
-                              schemaModal.value.push(
-                                (["array", "object"].includes(type)
-                                  ? {
-                                      key: null,
-                                      required: false,
-                                      type: type,
-                                      children: [],
-                                    }
-                                  : {
-                                      key: null,
-                                      required: false,
-                                      type: type,
-                                    }) as any
-                              ),
-                          },
-                          () =>
-                            h(
-                              NButton,
-                              { round: true },
-                              {
-                                icon: () => h(NIcon, () => h(IconPlus)),
-                              }
-                            )
-                        ),
-                      ]),
-                    default: () => [
-                      showDraggable.value
-                        ? null
-                        : h("style", ".handle {display:none}"),
-                      !schemaModal.value || schemaModal.value.length === 0
-                        ? h("div", {
-                            style: {
-                              display: "block",
-                              height: "50px",
-                            },
-                          })
-                        : h(
-                            NForm,
+      h(
+        NGrid,
+        { xGap: 12, cols: 12, itemResponsive: true, responsive: "screen" },
+        () => [
+          h(NGi, { span: "12 s:10" }, () =>
+            h(
+              NCard,
+              {
+                title: t("tableSettings"),
+                hoverable: true,
+              },
+              {
+                "header-extra": () =>
+                  h(NSpace, () => [
+                    h(
+                      NTooltip,
+                      {},
+                      {
+                        trigger: () =>
+                          h(
+                            NPopconfirm,
                             {
-                              size: "small",
+                              showIcon: false,
+                              onPositiveClick: deleteTable,
                             },
-                            () =>
-                              RenderSchemaElement(
-                                schemaModal.value.filter(
-                                  ({ key }) =>
-                                    ![
-                                      "id",
-                                      "createdAt",
-                                      "updatedAt",
-                                      "user",
-                                    ].includes(key)
-                                )
-                              )
+                            {
+                              activator: () =>
+                                h(
+                                  NButton,
+                                  {
+                                    type: "error",
+                                    tertiary: true,
+                                    round: true,
+                                    loading: Loading.value["deleteTable"],
+                                  },
+                                  {
+                                    icon: () => h(NIcon, () => h(IconTrash)),
+                                  }
+                                ),
+                              default: () =>
+                                t("theFollowingActionIsIrreversible"),
+                            }
                           ),
-                    ],
-                  }
-                ),
-            }
-          )
-        ),
-        h(NGi, { span: 1 }, () => [
-          h(
-            NAnchor,
-            {
-              affix: true,
-              listenTo: "#container",
-              top: 88,
-              style: "z-index: 1",
-              bound: 24,
-            },
-            () => [h(NAnchorLink, { title: t("schema"), href: "#schema" })]
+                        default: () => t("deleteTable"),
+                      }
+                    ),
+                    h(
+                      NButton,
+                      {
+                        round: true,
+                        loading: Loading.value["updateTable"],
+                        onClick: updateTable,
+                      },
+                      {
+                        default: () => t("save"),
+                        icon: () => h(NIcon, () => h(IconDeviceFloppy)),
+                      }
+                    ),
+                  ]),
+                default: () =>
+                  h(NSpace, { vertical: true }, () => [
+                    h(
+                      NCard,
+                      {
+                        title: t("generalSettings"),
+                        id: "generalSettings",
+                        hoverable: true,
+                      },
+                      () => [
+                        h(
+                          NForm,
+                          {
+                            ref: tableRef,
+                            model: tableCopy.value,
+                          },
+                          () => [
+                            h(LazyRenderFields, {
+                              modelValue: tableCopy.value,
+                              schema: [
+                                {
+                                  id: 1,
+                                  key: "slug",
+                                  type: "string",
+                                  required: true,
+                                },
+                              ],
+                            }),
+                            h(
+                              NFormItem,
+                              {
+                                required: true,
+                                label: t("label"),
+                                path: "label",
+                              },
+                              () =>
+                                h(NMention, {
+                                  value: tableCopy.value.label,
+                                  onUpdateValue: (value) =>
+                                    (tableCopy.value.label = value),
+                                  options: generateMentionOptions(
+                                    database.value.tables?.find(
+                                      ({ slug }) => slug === route.params.table
+                                    )?.schema ?? []
+                                  ),
+                                })
+                            ),
+                          ]
+                        ),
+                      ]
+                    ),
+                    h(
+                      NCard,
+                      {
+                        title: t("schemaSettings"),
+                        id: "schemaSettings",
+                        hoverable: true,
+                      },
+                      {
+                        "header-extra": () =>
+                          h(NSpace, () => [
+                            !tableCopy.value.schema ||
+                            tableCopy.value.schema.length < 2
+                              ? null
+                              : h(
+                                  NTooltip,
+                                  {},
+                                  {
+                                    default: () => t("changeOrder"),
+                                    trigger: () =>
+                                      h(
+                                        NButton,
+                                        {
+                                          round: true,
+                                          type: showDraggable.value
+                                            ? "primary"
+                                            : "default",
+                                          onClick: () =>
+                                            (showDraggable.value =
+                                              !showDraggable.value),
+                                        },
+                                        () => h(NIcon, () => h(IconArrowsSort))
+                                      ),
+                                  }
+                                ),
+                            h(
+                              NDropdown,
+                              {
+                                options: FieldsList(),
+                                style: {
+                                  maxHeight: "200px",
+                                },
+                                scrollable: true,
+                                onSelect: (type) =>
+                                  tableCopy.value.schema.push({
+                                    id: `temp-${randomID()}`,
+                                    key: null,
+                                    required: false,
+                                    ...handleSelectedType(type),
+                                  }),
+                              },
+                              () =>
+                                h(
+                                  NButton,
+                                  { round: true },
+                                  {
+                                    icon: () => h(NIcon, () => h(IconPlus)),
+                                  }
+                                )
+                            ),
+                          ]),
+                        default: () =>
+                          !tableCopy.value.schema ||
+                          tableCopy.value.schema.length === 0
+                            ? h(NEmpty)
+                            : [
+                                showDraggable.value
+                                  ? null
+                                  : h("style", ".handle {display:none}"),
+                                h(
+                                  NForm,
+                                  {
+                                    size: "small",
+                                  },
+                                  () =>
+                                    RenderSchemaElement(tableCopy.value.schema)
+                                ),
+                              ],
+                      }
+                    ),
+                  ]),
+              }
+            )
           ),
-        ]),
-      ]);
+          h(NGi, { span: "0 s:2" }, () => [
+            h(
+              NAnchor,
+              {
+                affix: true,
+                listenTo: "#container",
+                top: 88,
+                style: "z-index: 1",
+                bound: 24,
+              },
+              () => [
+                h(NAnchorLink, {
+                  title: t("generalSettings"),
+                  href: "#generalSettings",
+                }),
+                h(NAnchorLink, {
+                  title: t("schemaSettings"),
+                  href: "#schemaSettings",
+                }),
+              ]
+            ),
+          ]),
+        ]
+      );
   },
 });

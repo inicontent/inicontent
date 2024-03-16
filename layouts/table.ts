@@ -11,26 +11,23 @@ import { NuxtLayout, NuxtLink } from "#components";
 
 export default defineComponent({
   setup: (props, { slots }) => {
-    const Language = useGlobalCookie("Language");
+    const Language = useGlobalCookie<string>("Language");
 
     useLanguage({
       ar: {
-        show_all: "أظهر الكل",
-        add_new: "عنصر جديد",
+        showAll: "أظهر الكل",
+        newItem: "عنصر جديد",
       },
-      en: {
-        show_all: "Show All",
-        add_new: "New Item",
-      },
+      en: {},
     });
 
     const route = useRoute(),
-      Window = useState("Window", () => ({
+      Window = useState<Record<string, any>>("Window", () => ({
         width: 0,
       })),
-      user = useState("user"),
+      user = useState<User>("user"),
       isMenuOpen = useState("isMenuOpen", () => false),
-      database = useState("database");
+      database = useState<Database>("database");
 
     return () =>
       h(
@@ -47,8 +44,8 @@ export default defineComponent({
                 NLayoutSider,
                 {
                   collapsed: !isMenuOpen.value,
-                  onCollapse: () => (isMenuOpen.value = false),
-                  onExpand: () => (isMenuOpen.value = true),
+                  onUpdateCollapsed: (collapsed) =>
+                    (isMenuOpen.value = !collapsed),
                   style: "z-index: 999",
                   bordered: true,
                   showTrigger: "bar",
@@ -62,89 +59,74 @@ export default defineComponent({
                     collapsed: !isMenuOpen.value,
                     collapsedIconSize: 22,
                     collapsedWidth: Window.value.width < 700 ? 0 : 64,
-                    options: database.value.tables
+                    onMouseover: () => (isMenuOpen.value = true),
+                    onMouseleave: () => (isMenuOpen.value = false),
+                    options: (database.value.tables
                       ? [
                           ...database.value.tables
                             ?.filter(
-                              ({ slug, allowed_methods }) =>
+                              ({ slug, allowedMethods }) =>
                                 ![
                                   "user",
                                   "session",
                                   "asset",
                                   "translation",
                                 ].includes(slug) &&
-                                (user.value.role === "admin" ||
-                                  slug === "user" ||
-                                  allowed_methods
-                                    ?.find(
-                                      (method) =>
-                                        method.role === user.value.role
-                                    )
-                                    ?.methods?.includes("r"))
+                                allowedMethods?.includes("r")
                             )
-                            .map(({ slug, allowed_methods }) => ({
+                            .map(({ slug, allowedMethods }) => ({
                               label: () =>
                                 h(
                                   NuxtLink,
                                   {
+                                    onClick: () => (isMenuOpen.value = false),
                                     to: `/${route.params.database}/admin/tables/${slug}`,
                                   },
                                   { default: () => t(slug) }
                                 ),
                               key: slug,
                               icon: () => t(slug).charAt(0).toUpperCase(),
-                              children:
-                                user.value.role === "admin" ||
-                                slug === "user" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("c")
-                                  ? [
-                                      {
-                                        label: () =>
-                                          h(
-                                            NuxtLink,
-                                            {
-                                              to: `/${route.params.database}/admin/tables/${slug}`,
-                                            },
-                                            { default: () => t("show_all") }
-                                          ),
-                                        key: slug,
-                                        icon: () => h(NIcon, () => h(IconEye)),
-                                      },
-                                      {
-                                        label: () =>
-                                          h(
-                                            NuxtLink,
-                                            {
-                                              to: `/${route.params.database}/admin/tables/${slug}/new`,
-                                            },
-                                            { default: () => t("add_new") }
-                                          ),
-                                        key: `new-${slug}`,
-                                        icon: () => h(NIcon, () => h(IconPlus)),
-                                      },
-                                    ]
-                                  : null,
+                              children: allowedMethods?.includes("c")
+                                ? [
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            onClick: () =>
+                                              (isMenuOpen.value = false),
+                                            to: `/${route.params.database}/admin/tables/${slug}`,
+                                          },
+                                          { default: () => t("showAll") }
+                                        ),
+                                      key: slug,
+                                      icon: () => h(NIcon, () => h(IconEye)),
+                                    },
+                                    {
+                                      label: () =>
+                                        h(
+                                          NuxtLink,
+                                          {
+                                            onClick: () =>
+                                              (isMenuOpen.value = false),
+                                            to: `/${route.params.database}/admin/tables/${slug}/new`,
+                                          },
+                                          { default: () => t("newItem") }
+                                        ),
+                                      key: `new-${slug}`,
+                                      icon: () => h(NIcon, () => h(IconPlus)),
+                                    },
+                                  ]
+                                : null,
                             })),
                           database.value.tables?.filter(
-                            ({ slug, allowed_methods }) =>
+                            ({ slug, allowedMethods }) =>
                               [
                                 "user",
                                 "session",
                                 "asset",
                                 "translation",
-                              ].includes(slug) &&
-                              user.value.role &&
-                              (user.value.role === "admin" ||
-                                slug === "user" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("r"))
+                              ].includes(slug) && allowedMethods?.includes("r")
                           ).length
                             ? {
                                 key: "divider-1",
@@ -153,28 +135,21 @@ export default defineComponent({
                             : null,
                           ...database.value.tables
                             ?.filter(
-                              ({ slug, allowed_methods }) =>
+                              ({ slug, allowedMethods }) =>
                                 [
                                   "user",
                                   "session",
                                   "asset",
                                   "translation",
                                 ].includes(slug) &&
-                                user.value.role &&
-                                (user.value.role === "admin" ||
-                                  slug === "user" ||
-                                  allowed_methods
-                                    ?.find(
-                                      (method) =>
-                                        method.role === user.value.role
-                                    )
-                                    ?.methods?.includes("r"))
+                                allowedMethods?.includes("r")
                             )
-                            .map(({ slug, allowed_methods }) => ({
+                            .map(({ slug, allowedMethods }) => ({
                               label: () =>
                                 h(
                                   NuxtLink,
                                   {
+                                    onClick: () => (isMenuOpen.value = false),
                                     to: `/${route.params.database}/admin/tables/${slug}`,
                                   },
                                   { default: () => t(slug) }
@@ -196,22 +171,19 @@ export default defineComponent({
                                   }
                                 }),
                               children:
-                                user.value.role === "admin" ||
-                                slug === "user" ||
-                                allowed_methods
-                                  ?.find(
-                                    (method) => method.role === user.value.role
-                                  )
-                                  ?.methods?.includes("c")
+                                slug !== "asset" &&
+                                allowedMethods?.includes("c")
                                   ? [
                                       {
                                         label: () =>
                                           h(
                                             NuxtLink,
                                             {
+                                              onClick: () =>
+                                                (isMenuOpen.value = false),
                                               to: `/${route.params.database}/admin/tables/${slug}`,
                                             },
-                                            { default: () => t("show_all") }
+                                            { default: () => t("showAll") }
                                           ),
                                         key: slug,
                                         icon: () => h(NIcon, () => h(IconEye)),
@@ -221,9 +193,11 @@ export default defineComponent({
                                           h(
                                             NuxtLink,
                                             {
+                                              onClick: () =>
+                                                (isMenuOpen.value = false),
                                               to: `/${route.params.database}/admin/tables/${slug}/new`,
                                             },
-                                            { default: () => t("add_new") }
+                                            { default: () => t("newItem") }
                                           ),
                                         key: `new-${slug}`,
                                         icon: () => h(NIcon, () => h(IconPlus)),
@@ -232,14 +206,19 @@ export default defineComponent({
                                   : null,
                             })),
                         ]
-                      : [],
-                    defaultExpandedKeys: [
-                      route.params.table ??
-                        route.path.split("/").filter(Boolean).pop(),
-                    ],
-                    value:
-                      route.params.table ??
-                      route.path.split("/").filter(Boolean).pop(),
+                      : []) as any,
+                    defaultExpandedKeys: (route.params.table ||
+                    route.path.split("/").filter(Boolean)?.length
+                      ? [
+                          route.params.table ??
+                            route.path.split("/").filter(Boolean).pop(),
+                        ]
+                      : []) as any,
+                    value: route.params.table
+                      ? (route.path.split("/").filter(Boolean).pop() === "new"
+                          ? "new-"
+                          : "") + route.params.table
+                      : route.path.split("/").filter(Boolean).pop(),
                     accordion: true,
                   })
               ),
@@ -274,7 +253,7 @@ export default defineComponent({
                         },
                       })
                     : null,
-                  slots.default(),
+                  slots.default ? slots.default() : null,
                 ]
               ),
             ]

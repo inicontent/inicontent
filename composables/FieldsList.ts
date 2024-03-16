@@ -19,20 +19,25 @@ import {
   IconTypography,
   IconShieldLock,
   IconId,
+  IconQuestionMark,
 } from "@tabler/icons-vue";
+import { detectFieldType } from "inibase/utils";
+import Inison from "inison";
+
 type FieldsList = {
   label: string;
   key: string;
   icon: any;
   children?: FieldsList[];
 };
-export default function (): FieldsList[] {
+
+export default function FieldsList(): FieldsList[] {
   useLanguage({
     ar: {
       fields: {
-        text: "نص",
-        short_text: "نص قصير",
-        long_text: "نص طويل",
+        string: "نص",
+        shortText: "نص قصير",
+        longText: "نص طويل",
         html: "محرر نصوص",
         number: "رقم",
         password: "كلمة مرور",
@@ -44,50 +49,33 @@ export default function (): FieldsList[] {
         date: "تاريخ",
         toggle: "سحب",
         list: "قائمة",
-        array: "Array",
-        object: "Object",
+        array: "مصفوفة",
+        object: "كائن",
         table: "جدول",
-        role: "Role",
+        role: "دور",
         id: "معرف",
       },
     },
     en: {
       fields: {
-        text: "Text",
-        short_text: "Short Text",
-        long_text: "Long Text",
         html: "Rich Editor",
-        number: "Number",
-        password: "Password",
-        email: "Email",
-        link: "Link",
-        color: "Color",
-        upload: "Upload",
-        tags: "Tags",
-        date: "Date",
-        toggle: "Toggle",
-        list: "ListCheck",
-        array: "Array",
-        object: "Object",
-        table: "Table",
-        role: "Role",
-        id: "ID",
+        list: "Select",
       },
     },
   });
   return [
     {
-      label: t("fields.text"),
-      key: "string",
+      label: t("fields.string"),
+      key: "text",
       icon: () => h(NIcon, () => h(IconTypography)),
       children: [
         {
-          label: t("fields.short_text"),
-          key: "text",
+          label: t("fields.shortText"),
+          key: "string",
           icon: () => h(NIcon, () => h(IconLetterCase)),
         },
         {
-          label: t("fields.long_text"),
+          label: t("fields.longText"),
           key: "textarea",
           icon: () => h(NIcon, () => h(IconAlignJustified)),
         },
@@ -112,31 +100,26 @@ export default function (): FieldsList[] {
           icon: () => h(NIcon, () => h(IconLink)),
         },
         {
+          label: t("fields.color"),
+          key: "color",
+          icon: () => h(NIcon, () => h(IconPalette)),
+        },
+        {
           label: t("fields.role"),
           key: "role",
           icon: () => h(NIcon, () => h(IconShieldLock)),
         },
-        {
-          label: t("fields.id"),
-          key: "id",
-          icon: () => h(NIcon, () => h(IconId)),
-        },
       ],
+    },
+    {
+      label: t("fields.id"),
+      key: "id",
+      icon: () => h(NIcon, () => h(IconId)),
     },
     {
       label: t("fields.number"),
       key: "number",
       icon: () => h(NIcon, () => h(IconRelationOneToOne)),
-    },
-    {
-      label: t("fields.upload"),
-      key: "upload",
-      icon: () => h(NIcon, () => h(IconUpload)),
-    },
-    {
-      label: t("fields.tags"),
-      key: "tags",
-      icon: () => h(NIcon, () => h(IconTags)),
     },
     {
       label: t("fields.date"),
@@ -149,19 +132,46 @@ export default function (): FieldsList[] {
       icon: () => h(NIcon, () => h(IconToggleLeft)),
     },
     {
+      label: t("fields.upload"),
+      key: "upload",
+      icon: () => h(NIcon, () => h(IconUpload)),
+    },
+    {
       label: t("fields.list"),
       key: "select",
       icon: () => h(NIcon, () => h(IconListCheck)),
     },
     {
-      label: t("fields.color"),
-      key: "color",
-      icon: () => h(NIcon, () => h(IconPalette)),
-    },
-    {
       label: t("fields.array"),
       key: "array",
       icon: () => h(NIcon, () => h(IconBrackets)),
+      children: [
+        {
+          label: t("fields.tags"),
+          key: "tags",
+          icon: () => h(NIcon, () => h(IconTags)),
+        },
+        {
+          label: t("fields.list"),
+          key: "array-select",
+          icon: () => h(NIcon, () => h(IconListCheck)),
+        },
+        {
+          label: t("fields.upload"),
+          key: "array-upload",
+          icon: () => h(NIcon, () => h(IconUpload)),
+        },
+        {
+          label: t("fields.table"),
+          key: "array-table",
+          icon: () => h(NIcon, () => h(IconTable)),
+        },
+        {
+          label: t("fields.object"),
+          key: "array",
+          icon: () => h(NIcon, () => h(IconBraces)),
+        },
+      ],
     },
     {
       label: t("fields.object"),
@@ -174,4 +184,32 @@ export default function (): FieldsList[] {
       icon: () => h(NIcon, () => h(IconTable)),
     },
   ];
+}
+
+const defaultUnfoundField = {
+  key: "custom",
+  label: "custom",
+  icon: () => h(NIcon, () => h(IconQuestionMark)),
+};
+
+export function flatFieldsList() {
+  return FieldsList().flatMap(({ label, key, icon, children }) => [
+    { label, key, icon },
+    ...(children ?? []),
+  ]);
+}
+export function getField(fieldType?: string | string[], value?: any) {
+  if (Array.isArray(fieldType))
+    fieldType = detectFieldType(
+      value && typeof value === "object"
+        ? value.id
+          ? value.id
+          : Inison.stringify(value)
+        : value,
+      fieldType as any
+    );
+  if (!fieldType) return defaultUnfoundField;
+  return (
+    flatFieldsList().find(({ key }) => key === fieldType) ?? defaultUnfoundField
+  );
 }

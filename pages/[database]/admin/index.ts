@@ -1,6 +1,5 @@
 import { NCard, NText } from "naive-ui";
 import { LazyTablesGrid } from "#components";
-import type { Database } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -10,13 +9,10 @@ export default defineNuxtComponent({
 
     useLanguage({
       ar: {
-        add_new: "أضف عنصر جديد",
-        table_settings: "إعدادات الجدول",
+        newItem: "عنصر جديد",
+        tableSettings: "إعدادات الجدول",
       },
-      en: {
-        add_new: "Add New Item",
-        table_settings: "Table Settings",
-      },
+      en: {},
     });
 
     const Loading = useState("Loading", () => ({}));

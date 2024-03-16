@@ -8,6 +8,7 @@ import {
   NPopconfirm,
   NForm,
   useMessage,
+  type FormInst,
 } from "naive-ui";
 import {
   IconDeviceFloppy,
@@ -21,8 +22,16 @@ import { LazyRenderFields } from "#components";
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
-      middleware: "dashboard",
+      middleware: ["dashboard", "table"],
       layout: "table",
+    });
+
+    onMounted(() => {
+      document.onkeydown = function (e) {
+        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+        e.preventDefault();
+        UPDATE();
+      };
     });
 
     useLanguage({
@@ -31,40 +40,28 @@ export default defineNuxtComponent({
         update: "حِفظ",
         publish: "نشر",
         delete: "حذف",
-        move_to_trash: "نقل لسلة المهملات",
-        confirm_delete: "هل انت متأكد؟",
-        confirm_delete_permanently: "حذف بصفة نهائية?",
+        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
       },
-      en: {
-        view: "View",
-        update: "Update",
-        publish: "Publish",
-        delete: "Delete",
-        move_to_trash: "Move to trash",
-        confirm_delete: "Are you sure?",
-        confirm_delete_permanently: "Delete Permanently?",
-      },
+      en: {},
     });
 
-    const Loading = useState("Loading", () => ({}));
+    const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["UPDATE"] = false;
     Loading.value["DELETE"] = false;
     Loading.value["EDITOR"] = false;
 
     const route = useRoute(),
-      database = useState("database"),
-      schema = database.value.tables
-        .find((item) => item.slug === route.params.table)
-        .schema.filter(
-          ({ key }) => !["id", "createdAt", "updatedAt"].includes(key)
-        ),
+      database = useState<Database>("database"),
+      table = database.value.tables?.find(
+        (item) => item.slug === route.params.table
+      ),
       message = useMessage(),
-      { data: single } = await useFetch(
+      { data: single } = await useFetch<Item>(
         `${useRuntimeConfig().public.apiBase}${route.params.database}/${
           route.params.table
         }/${route.params.id}`,
         {
-          transform: (res) => {
+          transform: (res: any) => {
             if (!res.result || !res.result.id) {
               message.error("Item not found");
               setTimeout(
@@ -75,39 +72,36 @@ export default defineNuxtComponent({
                 1000
               );
             }
-            return res.result ?? {};
+            return res.result as Item;
           },
         }
       ),
-      formRef = ref(),
+      formRef = ref<FormInst | null>(null),
       UPDATE = async (publish = false) => {
         formRef.value?.validate(async (errors) => {
           if (!errors) {
+            const bodyContent = JSON.parse(JSON.stringify(single.value));
             Loading.value["UPDATE"] = true;
-            const { deletedAt, ...withoutDeleted } = single.value;
-            const { data } = await useFetch(
+            const data = await $fetch<apiResponse<Item>>(
               `${useRuntimeConfig().public.apiBase}${route.params.database}/${
                 route.params.table
               }/${route.params.id}`,
               {
                 method: "PUT",
-                body:
-                  single.value.deletedAt && publish
-                    ? withoutDeleted
-                    : single.value,
+                body: bodyContent,
               }
             );
-            if (data.value.result && data.value.result.id) {
-              single.value = data.value.result;
-              message.success(data.value.message.en);
-            } else message.error(data.value.message.en);
+            if (data.result && data.result.id) {
+              single.value = data.result;
+              message.success(data.message);
+            } else message.error(data.message);
             Loading.value["UPDATE"] = false;
           } else message.error("The inputs are Invalid");
         });
       },
       DELETE = async () => {
         Loading.value["DELETE"] = true;
-        const { data } = await useFetch(
+        const data = await $fetch<apiResponse<Item>>(
           `${useRuntimeConfig().public.apiBase}${route.params.database}/${
             route.params.table
           }/${route.params.id}`,
@@ -115,40 +109,36 @@ export default defineNuxtComponent({
             method: "DELETE",
           }
         );
-        if (data.value.code === 204) {
-          message.success(data.value.message.en);
+        if (data.result) {
+          message.success(data.message);
           Loading.value["DELETE"] = false;
-          if (single.value.deletedAt)
-            return navigateTo(
-              `/${route.params.database}/admin/tables/${route.params.table}`
-            );
-          else single.value = data.value.result;
-        } else message.error(data.value.message.en);
+          return navigateTo(
+            `/${route.params.database}/admin/tables/${route.params.table}`
+          );
+        } else message.error(data.message);
         Loading.value["DELETE"] = false;
-      };
+      },
+      label = renderLabel(table?.label, table?.schema, single.value);
 
     useHead({
-      title: `${database.value.slug} | ${t(route.params.table)} ${t(
+      title: `${database.value.slug} | ${t(route.params.table as string)} ${t(
         "table"
-      )} : ${route.params.id}`,
-      link: [{ rel: "icon", href: database.value.icon }],
+      )} : ${label}`,
+      link: [{ rel: "icon", href: database.value?.icon ?? "" }],
     });
     return () =>
       h(
         NCard,
         {
-          title: "Edit item",
           style: "height: fit-content",
-          onKeyup: (e) =>
-            e.preventDefault() && e.code === "s" && (e.ctrlKey || e.metaKey)
-              ? UPDATE()
-              : null,
         },
         {
           header: () =>
-            h(NEllipsis, () => `${t(route.params.table)} #${single.value.id}`),
+            h(NEllipsis, () => `${t(route.params.table as string)} : ${label}`),
           "header-extra": () =>
-            schema.length > 4
+            table?.schema?.filter(
+              ({ key }) => !["id", "createdAt", "updatedAt"].includes(key)
+            ).length
               ? h(NSpace, {}, () => [
                   h(
                     NPopover,
@@ -198,16 +188,10 @@ export default defineNuxtComponent({
                                   icon: () => h(NIcon, () => h(IconTrash)),
                                 }
                               ),
-                            default: () =>
-                              single.value.deletedAt
-                                ? t("delete")
-                                : t("move_to_trash"),
+                            default: () => t("delete"),
                           }
                         ),
-                      default: () =>
-                        single.value.deletedAt
-                          ? t("confirm_delete_permanently")
-                          : t("confirm_delete"),
+                      default: () => t("theFollowingActionIsIrreversible"),
                     }
                   ),
                   h(
@@ -220,8 +204,8 @@ export default defineNuxtComponent({
                           {
                             secondary: true,
                             circle: true,
-                            type: single.value.deletedAt ? "info" : "primary",
-                            onClick: UPDATE,
+                            type: "primary",
+                            onClick: async () => await UPDATE(),
                             loading: Loading.value["UPDATE"],
                           },
                           {
@@ -231,29 +215,6 @@ export default defineNuxtComponent({
                       default: () => t("update"),
                     }
                   ),
-                  single.value.deletedAt
-                    ? h(
-                        NPopover,
-                        {},
-                        {
-                          trigger: () =>
-                            h(
-                              NButton,
-                              {
-                                secondary: true,
-                                circle: true,
-                                type: "primary",
-                                onClick: () => UPDATE(true),
-                                loading: Loading.value["UPDATE"],
-                              },
-                              {
-                                icon: () => h(NIcon, () => h(IconSend)),
-                              }
-                            ),
-                          default: () => t("publish"),
-                        }
-                      )
-                    : null,
                 ])
               : null,
           action: () =>
@@ -273,16 +234,10 @@ export default defineNuxtComponent({
                       },
                       {
                         icon: () => h(NIcon, () => h(IconTrash)),
-                        default: () =>
-                          single.value.deletedAt
-                            ? t("delete")
-                            : t("move_to_trash"),
+                        default: () => t("delete"),
                       }
                     ),
-                  default: () =>
-                    single.value.deletedAt
-                      ? t("confirm_delete_permanently")
-                      : t("confirm_delete"),
+                  default: () => t("theFollowingActionIsIrreversible"),
                 }
               ),
               h(
@@ -290,8 +245,8 @@ export default defineNuxtComponent({
                 {
                   round: true,
                   secondary: true,
-                  type: single.value.deletedAt ? "info" : "primary",
-                  onClick: UPDATE,
+                  type: "primary",
+                  onClick: async () => await UPDATE(),
                   loading: Loading.value["UPDATE"],
                 },
                 {
@@ -299,34 +254,20 @@ export default defineNuxtComponent({
                   default: () => t("update"),
                 }
               ),
-              single.value.deletedAt
-                ? h(
-                    NButton,
-                    {
-                      round: true,
-                      secondary: true,
-                      type: "primary",
-                      onClick: () => UPDATE(true),
-                      loading: Loading.value["UPDATE"],
-                    },
-                    {
-                      icon: () => h(NIcon, () => h(IconSend)),
-                      default: () => t("publish"),
-                    }
-                  )
-                : null,
             ]),
           default: () =>
             h(
               NForm,
               {
-                model: single.value,
-                ref: formRef,
+                model: single.value as any,
+                ref: formRef as any,
               },
               () =>
                 h(LazyRenderFields, {
                   modelValue: single.value,
-                  schema: schema,
+                  schema: table?.schema?.filter(
+                    ({ key }) => !["id", "createdAt", "updatedAt"].includes(key)
+                  ),
                 })
             ),
         }

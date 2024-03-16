@@ -716,10 +716,11 @@ export default defineNuxtComponent({
                 innerHTML: EditorText,
                 onFocusin: () => (isFocused.value = true),
                 onFocusout: () => (isFocused.value = false),
-                onKeyup: (e: KeyboardEvent) =>
-                  e.code === "Enter" &&
-                  e.ctrlKey &&
-                  document.execCommand("insertParagraph", false, ""),
+                onKeydown: (e) => {
+                  if (!(e.key === "Enter" && (e.ctrlKey || e.metaKey))) return;
+                  e.preventDefault();
+                  document.execCommand("insertParagraph", false, "");
+                },
                 onInput: (event: Event) =>
                   emit(
                     "update:modelValue",

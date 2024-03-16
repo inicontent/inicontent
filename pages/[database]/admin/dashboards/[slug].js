@@ -7,7 +7,7 @@ import {
   NScrollbar,
   NSpace,
 } from "naive-ui";
-import { getProperty } from "dot-prop";
+import { getProperty } from "inidot";
 import VueApexCharts from "vue3-apexcharts";
 import { GridLayout } from "@noction/vue-draggable-grid";
 import "@noction/vue-draggable-grid/styles";

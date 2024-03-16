@@ -1,4 +1,5 @@
-export default function (bytes: number) {
+export default function (bytes?: number) {
+  if (!bytes) bytes = 0;
   const thresh = 1024;
 
   if (Math.abs(bytes) < thresh) {

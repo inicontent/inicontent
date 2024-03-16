@@ -75,7 +75,7 @@ In this prject we are using [Nuxt 3](https://nuxt.com/docs/getting-started/intro
 ```shell
 ────📁 layouts
     ├───📄 default.js # Header and Footer
-    ├───📄 table.js # Header and Footer + Side Navigation Menu displaying tables and as subItems(add_new, display_all)[]
+    ├───📄 table.js # Header and Footer + Side Navigation Menu displaying tables and as subItems(newItem, display_all)[]
     ├───📄 api.js # Header and Footer + Side Navigation Menu displaying tables and as subItems (available_table_methods)[]
     ├───🖊️ # ToDo: Move to typescript
     └───🖊️ # ToDo: Add Editor Layout

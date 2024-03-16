@@ -8,11 +8,10 @@ import {
   NIconWrapper,
   NH4,
   NPopover,
-  NForm,
-  NModal,
-  type FormInst,
   useMessage,
   NDropdown,
+  NInput,
+  NInputGroup,
 } from "naive-ui";
 import {
   IconSettings,
@@ -21,12 +20,11 @@ import {
   IconLanguage,
   IconUsers,
   IconFingerprint,
-  IconDeviceFloppy,
   IconDots,
   IconArrowRight,
+  IconLetterCase,
+  IconChevronRight,
 } from "@tabler/icons-vue";
-import type { Database, Table, User, apiResponse } from "~/types";
-import { LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
   props: {
@@ -38,155 +36,45 @@ export default defineNuxtComponent({
   setup: (props) => {
     useLanguage({
       ar: {
-        add_new_table: "أضف جدول جديد",
-        add_new: "أضف عنصر جديد",
-        table_settings: "إعدادات الجدول",
-        c: "إضافة",
-        r: "قراءة",
-        u: "تعديل",
-        d: "حذف",
+        newTable: "جدول جديد",
+        newItem: "عنصر جديد",
+        tableSettings: "إعدادات الجدول",
       },
-      en: {
-        add_new_table: "Add new table",
-        add_new: "Add New Item",
-        table_settings: "Table Settings",
-        c: "Create",
-        r: "Read",
-        u: "Update",
-        d: "Delete",
-      },
+      en: {},
     });
     const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
     Loading.value["Table"] = false;
 
     const user = useState<User>("user"),
       database = toRef(props, "modelValue"),
-      Window = useState("Window", () => ({
-        width: 0,
-      })),
       Hover = useState<Record<string, boolean>>("Loading", () => ({})),
       message = useMessage(),
-      ShowTableModal = ref(false),
-      TableRef = ref<FormInst | null>(null),
-      TableModal = ref<Table>(),
-      TableSave = async () => {
-        const bodyContent = JSON.parse(JSON.stringify(TableModal.value));
-        TableRef.value?.validate(async (errors: any) => {
-          if (!errors) {
-            Loading.value["Table"] = true;
-            const { data } = await useFetch<apiResponse>(
-              `${useRuntimeConfig().public.apiBase}inicontent/database/${
-                database.value.slug
-              }`,
-              {
-                method: "PUT",
-                body: {
-                  ...database.value,
-                  tables: [...(database.value.tables ?? []), bodyContent],
-                },
-              }
-            );
-            if (data.value?.result) {
-              database.value = data.value.result;
-              Loading.value["Database"] = false;
-              ShowTableModal.value = false;
-              message.success(data.value.message.en);
-            } else message.error(data.value?.message.en ?? "Error");
-            Loading.value["Table"] = false;
-          } else message.error("The inputs are Invalid");
-        });
+      Table = ref<string | null>(null),
+      createTable = async () => {
+        if (Table.value) {
+          const bodyContent = JSON.parse(JSON.stringify(Table.value));
+          Loading.value["Table"] = true;
+          const data = await $fetch<apiResponse>(
+            `${useRuntimeConfig().public.apiBase}inicontent/database/${
+              database.value.slug
+            }/${bodyContent}`,
+            {
+              method: "POST",
+            }
+          );
+          if (data.result) {
+            database.value.tables?.push(data.result);
+            message.success(data.message);
+            Table.value = null;
+          } else message.error(data.message ?? "Error");
+          Loading.value["Table"] = false;
+        } else message.error("The inputs are Invalid");
       };
-
-    return () => [
-      h(
-        NModal,
-        {
-          show: ShowTableModal.value,
-          "on-update:show": (v: boolean) => (ShowTableModal.value = v),
-          style: {
-            width: Window.value.width > 600 ? "600px" : "100%",
-          },
-          preset: "card",
-          title: t("create_table"),
-          bordered: false,
-          segmented: {
-            footer: "soft",
-          },
-        },
-        {
-          default: () =>
-            h(
-              NForm,
-              {
-                ref: TableRef as any,
-                model: TableModal.value as any,
-              },
-              () =>
-                h(LazyRenderFields, {
-                  modelValue: TableModal.value,
-                  schema: [
-                    {
-                      id: 1,
-                      key: "slug",
-                      type: "text",
-                      required: true,
-                    },
-                    {
-                      id: 2,
-                      key: "allowed_methods",
-                      type: "array",
-                      disableActions: true,
-                      children: [
-                        {
-                          id: 3,
-                          key: "role",
-                          type: "text",
-                          inputProps: {
-                            disabled: true,
-                          },
-                          required: true,
-                        },
-                        {
-                          id: 4,
-                          key: "methods",
-                          type: "array",
-                          children: "string",
-                          subType: "checkbox",
-                          values: ["c", "r", "u", "d"],
-                          required: true,
-                        },
-                      ],
-                    },
-                  ],
-                })
-            ),
-          footer: () =>
-            h(NSpace, { justify: "end" }, () => [
-              h(
-                NButton,
-                {
-                  loading: Loading.value["Table"],
-                  onClick: TableSave,
-                },
-                {
-                  default: () => t("create"),
-                  icon: () => h(NIcon, () => h(IconDeviceFloppy)),
-                }
-              ),
-            ]),
-        }
-      ),
+    Hover.value = {};
+    return () =>
       h(NGrid, { xGap: 12, yGap: 12, cols: "1 500:2 800:4" }, () => [
         ...(database.value.tables
-          ?.filter(
-            ({ slug, allowed_methods }) =>
-              user.value &&
-              (user.value.role === "admin" ||
-                slug === "user" ||
-                allowed_methods
-                  ?.find(({ role }) => role === user.value.role)
-                  ?.methods?.includes("r"))
-          )
+          ?.filter(({ allowedMethods }) => allowedMethods?.includes("r"))
           .toSorted(
             (a, b) =>
               Number(
@@ -258,21 +146,17 @@ export default defineNuxtComponent({
                             options: [
                               {
                                 key: `/${database.value.slug}/admin/tables/${table.slug}/new`,
-                                label: t("add_new"),
+                                label: t("newItem"),
                                 icon: () => h(IconPlus),
-                                show:
-                                  user.value.role === "admin" ||
-                                  table.allowed_methods
-                                    ?.find(
-                                      ({ role }) => role === user.value.role
-                                    )
-                                    ?.methods?.includes("c"),
+                                show: table.allowedMethods?.includes("c"),
                               },
                               {
                                 key: `/${database.value.slug}/admin/tables/${table.slug}/settings`,
-                                label: t("table_settings"),
+                                label: t("tableSettings"),
                                 icon: () => h(IconSettings),
-                                show: user.value.role === "admin",
+                                show:
+                                  user.value?.role ===
+                                  "d7b3d61a582e53ee29b5a1d02a436d55",
                               },
                             ],
                             renderLabel: (option) =>
@@ -317,46 +201,64 @@ export default defineNuxtComponent({
         h(NGi, () =>
           h(
             NPopover,
-            {},
+            { placement: "bottom" },
             {
               trigger: () =>
                 h(
-                  NCard,
+                  NPopover,
                   {
-                    onClick: () => (
-                      (TableModal.value = {
-                        slug: "",
-                        allowed_methods:
-                          database.value.roles?.map((role) => ({
-                            role: role,
-                            methods: [],
-                          })) ?? [],
-                      }),
-                      (ShowTableModal.value = true)
-                    ),
-                    style: {
-                      cursor: "pointer",
-                    },
-                    contentStyle: {
-                      padding: "15px 0",
-                    },
-                    hoverable: true,
+                    trigger: "click",
                   },
-                  () =>
-                    h(
-                      NSpace,
-                      {
-                        justify: "center",
-                        align: "center",
-                      },
-                      () => h(NIcon, { size: 36 }, () => h(IconPlus))
-                    )
+                  {
+                    trigger: () =>
+                      h(
+                        NCard,
+                        {
+                          style: {
+                            cursor: "pointer",
+                          },
+                          contentStyle: {
+                            padding: "15px 0",
+                          },
+                          hoverable: true,
+                        },
+                        () =>
+                          h(
+                            NSpace,
+                            {
+                              justify: "center",
+                              align: "center",
+                            },
+                            () => h(NIcon, { size: 36 }, () => h(IconPlus))
+                          )
+                      ),
+
+                    default: () =>
+                      h(NInputGroup, () => [
+                        h(
+                          NInput,
+                          {
+                            onUpdateValue: (value) => (Table.value = value),
+                            onKeydown: ({ key }) =>
+                              key === "Enter" ? createTable() : null,
+                            placeholder: t("tableSlug"),
+                          },
+                          {
+                            suffix: () => h(NIcon, () => h(IconLetterCase)),
+                          }
+                        ),
+                        h(
+                          NButton,
+                          { onClick: createTable },
+                          { icon: () => h(NIcon, () => h(IconChevronRight)) }
+                        ),
+                      ]),
+                  }
                 ),
-              default: () => t("add_new_table"),
+              default: () => t("newTable"),
             }
           )
         ),
-      ]),
-    ];
+      ]);
   },
 });

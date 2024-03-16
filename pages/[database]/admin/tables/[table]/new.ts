@@ -11,13 +11,20 @@ import {
 } from "naive-ui";
 import { IconSend } from "@tabler/icons-vue";
 import { LazyRenderFields } from "#components";
-import type { apiResponse, Database } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
-      middleware: "dashboard",
+      middleware: ["dashboard", "table"],
       layout: "table",
+    });
+
+    onMounted(() => {
+      document.onkeydown = function (e) {
+        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+        e.preventDefault();
+        CREATE();
+      };
     });
 
     useLanguage({
@@ -47,31 +54,26 @@ export default defineNuxtComponent({
       CREATE = async () => {
         formRef.value?.validate(async (errors) => {
           if (!errors) {
+            const bodyContent = JSON.parse(JSON.stringify(single.value));
             Loading.value["CREATE"] = true;
-            const { data } = await useFetch<apiResponse>(
+            const data = await $fetch<apiResponse>(
               `${useRuntimeConfig().public.apiBase}${route.params.database}/${
                 route.params.table
               }`,
               {
                 method: "POST",
-                body: single.value,
-
-                transform: (res) => {
-                  if (res.result) res.result = [].concat(res.result)[0];
-                  return res;
-                },
+                body: bodyContent,
               }
             );
-            if (!data.value) return message.error(t("error"));
-
-            if (data.value.result && data.value.result.id) {
-              message.success(data.value.message.en);
-              Loading.value["CREATE"] = false;
-              return navigateTo(
-                `/${route.params.database}/admin/tables/${route.params.table}/${data.value.result.id}/edit`
-              );
-            } else message.error(data.value.message.en);
             Loading.value["CREATE"] = false;
+
+            if (!data.result || !data.result.id)
+              return message.error(data.message);
+
+            message.success(data.message);
+            return navigateTo(
+              `/${route.params.database}/admin/tables/${route.params.table}/${data.result.id}/edit`
+            );
           } else message.error("The inputs are Invalid");
         });
       };
@@ -93,10 +95,6 @@ export default defineNuxtComponent({
             )?.slug ?? "--"
           )}`,
           style: "height: fit-content",
-          onKeyup: (e: KeyboardEvent) => (
-            e.preventDefault(),
-            e.code === "s" && (e.ctrlKey || e.metaKey) ? CREATE() : null
-          ),
         },
         {
           header: () =>

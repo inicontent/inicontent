@@ -12,7 +12,6 @@ import {
   NGrid,
   NGi,
 } from "naive-ui";
-import type { Database, apiResponse } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -26,16 +25,11 @@ export default defineNuxtComponent({
     useLanguage({
       ar: {
         homepage: "الرئيسية",
-        pick_a_plan: "إختر خطة",
-        monthly_plan: "الخطة الشهرية",
-        subscription_success: "تم الإشتراك بنجاح",
+        pickAPlan: "إختر خطة",
+        monthlyPlan: "الخطة الشهرية",
+        subscribedSuccessfully: "تم الإشتراك بنجاح",
       },
-      en: {
-        homepage: "Homepage",
-        pick_a_plan: "Pick a plan",
-        monthly_plan: "Monthly Plan",
-        subscription_success: "Subscribed Successfully",
-      },
+      en: {},
     });
 
     useHead({
@@ -466,7 +460,7 @@ export default defineNuxtComponent({
             h(
               NCard,
               {
-                title: t("pick_a_plan"),
+                title: t("pickAPlan"),
                 headerStyle: { textAlign: "center" },
                 hoverable: true,
               },

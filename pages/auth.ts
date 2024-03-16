@@ -10,7 +10,6 @@ import {
   type TabsInst,
 } from "naive-ui";
 import { LazyRenderFields } from "#components";
-import type { Database, User } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -23,10 +22,7 @@ export default defineNuxtComponent({
         signin: "تسجيل الدخول",
         signup: "إنشاء حساب",
       },
-      en: {
-        signin: "Sign in",
-        signup: "Sign up",
-      },
+      en: {},
     });
 
     const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -60,9 +56,12 @@ export default defineNuxtComponent({
           required: true,
         },
       ],
-      SignupColumns = database.value?.tables?.find(
-        ({ slug }) => slug === "user"
-      )?.schema ?? [
+      SignupColumns = database.value?.tables
+        ?.find((item) => item.slug === "user")
+        ?.schema?.filter(
+          (field) =>
+            !["id", "createdAt", "updatedAt", "role"].includes(field.key)
+        ) ?? [
         {
           id: 1,
           key: "username",
@@ -90,20 +89,18 @@ export default defineNuxtComponent({
           const bodyContent = JSON.parse(JSON.stringify(SignupForm.value));
           if (Loading.value["Signup"] !== true) {
             Loading.value["Signup"] = true;
-            const { data } = await useFetch<Record<string, any>>(
-              `${useRuntimeConfig().public.apiBase}${
-                database.value.slug
-              }/auth/signup`,
+            const data = await $fetch<Record<string, any>>(
+              `${useRuntimeConfig().public.apiBase}${database.value.slug}/user`,
               {
                 method: "POST",
                 body: bodyContent,
               }
             );
-            if (data.value?.result) {
-              message.success(data.value.message.en);
+            if (data.result) {
+              message.success(data.message);
               tabsValue.value = "signin";
               tabsInstRef.value?.syncBarPosition();
-            } else message.error(data.value?.message.en);
+            } else message.error(data.message);
             Loading.value["Signup"] = false;
           }
         } else message.error("The inputs are Invalid");
@@ -126,11 +123,11 @@ export default defineNuxtComponent({
               }
             );
             if (data.value?.result && data.value?.result.id) {
-              message.success(data.value.message.en);
+              message.success(data.value.message);
               user.value = data.value.result;
-              clearNuxtState("database");
+              // clearNuxtState("database");
               navigateTo(`/${database.value.slug}/admin`);
-            } else message.error(data.value?.message.en);
+            } else message.error(data.value?.message);
             Loading.value["Signin"] = false;
           }
         } else message.error("The inputs are Invalid");
@@ -138,7 +135,7 @@ export default defineNuxtComponent({
     };
     useHead({
       title: t("authentication"),
-      link: [{ rel: "icon", href: database.value.icon ?? "" }],
+      link: [{ rel: "icon", href: database.value?.icon ?? "" }],
     });
 
     return () =>

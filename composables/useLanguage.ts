@@ -1,11 +1,58 @@
 import { deepMerge } from "inibase/utils";
-import type { apiResponse } from "~/types";
+import { getProperty, setProperty, hasProperty } from "inidot";
+import Inison from "inison";
 
 export const useLanguage = (messages: Record<string, any>) => {
   const Messages = useState<Record<string, any>>("LanguageMessages");
   if (Messages.value) Messages.value = deepMerge(Messages.value, messages);
   else Messages.value = messages;
 };
+
+function formatUnfoundTranslation(input: string, language: string): string {
+  if (input.includes(".")) input = input.split(".").pop() ?? "";
+  if (language !== "en") return input;
+
+  const lowercaseWords = [
+    "is",
+    "and",
+    "or",
+    "but",
+    "the",
+    "an",
+    "a",
+    "as",
+    "at",
+  ];
+
+  // Split by capital letters and underscores
+  const words = input.split(/(?=[A-Z_])/);
+
+  // Process each word
+  const formattedWords = words.map((word, index) => {
+    if (word.charAt(0) === "_") word = word.slice(1);
+    // Capitalize the first character
+    if (index === 0 || !lowercaseWords.includes(word.toLowerCase())) {
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }
+
+    // Check if the word is in the linking or lowercase words and convert to lowercase
+    if (lowercaseWords.includes(word.toLowerCase())) {
+      return word.toLowerCase();
+    }
+
+    // Replace underscores with space
+    const wordWithoutUnderscore = word.replace("_", " ");
+
+    // Add space before each capitalized character
+    return wordWithoutUnderscore
+      .replace(/([A-Z])/g, " $1")
+      .trim()
+      .toLowerCase();
+  });
+
+  // Join the formatted words with spaces
+  return formattedWords.join(" ");
+}
 
 export const t = (key: string | null | undefined): string => {
   if (!key) return "";
@@ -19,7 +66,8 @@ export const t = (key: string | null | undefined): string => {
     setProperty(UnfoundMessages.value as any, key, null);
   }
   return (
-    getProperty(Messages.value ?? {}, `${Language.value}.${key}`, key) ?? key
+    getProperty(Messages.value ?? {}, `${Language.value}.${key}`) ??
+    formatUnfoundTranslation(key, Language.value)
   );
 };
 
@@ -30,30 +78,26 @@ export const fetchTranslation = async () => {
     UnfoundMessages = useState<Record<string, any>>("UnfoundLanguageMessages");
 
   if (Language.value && UnfoundMessages.value) {
-    await useFetch<apiResponse>(
-      `${useRuntimeConfig().public.apiBase}${
-        route.params?.database ?? "inicontent"
-      }/translation`,
-      {
-        params: {
-          _where: JSON.stringify({
-            original: "[]" + Object.keys(UnfoundMessages.value).join(","),
-            locale: Language.value,
-          }),
-        },
-        transform: (res) => {
-          if (res.result)
-            res.result.forEach((translation: Record<string, string>) => {
-              if (!Messages.value[`${Language.value}`])
-                Messages.value[`${Language.value}`] = {};
-              Messages.value[`${Language.value}`][`${translation.original}`] =
-                translation.translated;
-            });
-
-          return res;
-        },
-      }
-    );
+    (
+      await $fetch<apiResponse<Item[]>>(
+        `${useRuntimeConfig().public.apiBase}${
+          route.params?.database ?? "inicontent"
+        }/translation`,
+        {
+          params: {
+            where: Inison.stringify({
+              original: "[]" + Object.keys(UnfoundMessages.value).join(","),
+              locale: Language.value,
+            }),
+          },
+        }
+      )
+    ).result?.forEach((translation) => {
+      if (!Messages.value[`${Language.value}`])
+        Messages.value[`${Language.value}`] = {};
+      Messages.value[`${Language.value}`][`${translation.original}`] =
+        translation.translated;
+    });
   }
 };
 

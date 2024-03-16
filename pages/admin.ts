@@ -17,7 +17,6 @@ import {
   IconArrowRight,
 } from "@tabler/icons-vue";
 import { LazyTablesGrid, LazyRenderFields } from "#components";
-import type { Database, apiResponse } from "~/types";
 
 export default defineNuxtComponent({
   async setup() {
@@ -27,13 +26,10 @@ export default defineNuxtComponent({
 
     useLanguage({
       ar: {
-        add_new: "أضف عنصر جديد",
-        table_settings: "إعدادات الجدول",
+        newItem: "عنصر جديد",
+        tableSettings: "إعدادات الجدول",
       },
-      en: {
-        add_new: "Add New Item",
-        table_settings: "Table Settings",
-      },
+      en: {},
     });
 
     const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -41,37 +37,42 @@ export default defineNuxtComponent({
 
     const database = useState<Database>("database"),
       message = useMessage(),
-      DisabledItem = useState<Record<string | number, boolean>>(() => ({})),
       Window = useState("Window", () => ({
         width: 0,
       })),
       { data: databases } = await useFetch<apiResponse<Database[]>>(
         `${useRuntimeConfig().public.apiBase}inicontent/database`
       ),
+      defaultOpenedDatabase = ref(databases.value?.result[0]?.slug ?? null),
       ShowDatabaseModal = ref(false),
       DatabaseRef = ref<FormInst | null>(null),
       DatabaseModal = ref<Database>(),
       DatabaseSave = async () => {
         DatabaseRef.value?.validate(async (errors: any) => {
           if (!errors) {
+            const bodyContent = JSON.parse(JSON.stringify(DatabaseModal.value));
             Loading.value["Database"] = true;
-            const { data } = await useFetch<apiResponse>(
+            const data = await $fetch<apiResponse>(
               `${useRuntimeConfig().public.apiBase}inicontent/database${
-                DatabaseModal.value?.id ? `/${DatabaseModal.value.slug}` : ""
+                bodyContent.id ? `/${bodyContent.slug}` : ""
               }`,
               {
-                method: DatabaseModal.value?.id ? "PUT" : "POST",
-                body: DatabaseModal.value,
+                method: bodyContent.id ? "PUT" : "POST",
+                body: bodyContent,
               }
             );
-            if (!data.value) return message.error(t("error"));
+            if (!data.result) return message.error(data.message);
 
-            if (data.value?.result) {
-              database.value = data.value.result;
-              Loading.value["Database"] = false;
-              ShowDatabaseModal.value = false;
-              message.success(data.value.message.en);
-            } else message.error(data.value.message.en);
+            if (databases.value) {
+              if (databases.value.result)
+                databases.value.result.push(data.result);
+              else databases.value.result = [data.result];
+              defaultOpenedDatabase.value = data.result.slug;
+            }
+            Loading.value["Database"] = false;
+            ShowDatabaseModal.value = false;
+            message.success(data.message);
+
             Loading.value["Database"] = false;
           } else message.error("The inputs are Invalid");
         });
@@ -141,12 +142,11 @@ export default defineNuxtComponent({
                             key: "icon",
                             type: "url",
                             subType: "upload",
-                            single: true,
                             required: true,
                           },
                           {
                             id: 3,
-                            key: "allowed_domains",
+                            key: "allowedDomains",
                             type: "array",
                             children: "url",
                             required: false,
@@ -158,7 +158,6 @@ export default defineNuxtComponent({
                             subType: "select",
                             children: "string",
                             values: Languages,
-                            single: false,
                             required: false,
                           },
                           {
@@ -199,17 +198,19 @@ export default defineNuxtComponent({
               ? h(
                   NCollapse,
                   {
-                    defaultExpandedNames: t(databases.value.result[0]?.slug),
+                    defaultExpandedNames: defaultOpenedDatabase.value,
+                    onUpdateExpandedNames: (v) =>
+                      (defaultOpenedDatabase.value = v ? v[0] : null),
+                    triggerAreas: ["main", "arrow"],
                     accordion: true,
                   },
                   () =>
-                    databases.value?.result?.map((database, index) =>
+                    databases.value?.result?.map((childDatabase) =>
                       h(
                         NCollapseItem,
                         {
-                          title: t(database.slug),
-                          name: database.slug,
-                          disabled: DisabledItem.value[index],
+                          title: t(childDatabase.slug),
+                          name: childDatabase.slug,
                         },
                         {
                           "header-extra": () =>
@@ -217,22 +218,16 @@ export default defineNuxtComponent({
                               h(
                                 NButton,
                                 {
+                                  tag: "a",
+                                  href: `/${childDatabase.slug}/admin/settings`,
+                                  onClick: (e) => (
+                                    e.preventDefault(),
+                                    navigateTo(
+                                      `/${childDatabase.slug}/admin/settings`
+                                    )
+                                  ),
                                   circle: true,
-                                  onClick: () =>
-                                    databases.value?.result
-                                      ? ((DisabledItem.value[index] = true),
-                                        setTimeout(
-                                          () =>
-                                            (DisabledItem.value[index] = false),
-                                          1
-                                        ),
-                                        (DatabaseModal.value = JSON.parse(
-                                          JSON.stringify(
-                                            databases.value.result[index]
-                                          )
-                                        )),
-                                        (ShowDatabaseModal.value = true))
-                                      : null,
+                                  type: "primary",
                                 },
                                 { icon: () => h(NIcon, () => h(IconSettings)) }
                               ),
@@ -240,15 +235,10 @@ export default defineNuxtComponent({
                                 NButton,
                                 {
                                   tag: "a",
-                                  href: `/${database.slug}/admin`,
+                                  href: `/${childDatabase.slug}/admin`,
                                   onClick: (e) => (
                                     e.preventDefault(),
-                                    (DisabledItem.value[index] = true),
-                                    setTimeout(
-                                      () => (DisabledItem.value[index] = false),
-                                      1
-                                    ),
-                                    navigateTo(`/${database.slug}/admin`)
+                                    navigateTo(`/${childDatabase.slug}/admin`)
                                   ),
                                   circle: true,
                                   type: "primary",
@@ -259,7 +249,7 @@ export default defineNuxtComponent({
                               ),
                             ]),
                           default: () =>
-                            h(LazyTablesGrid, { modelValue: database }),
+                            h(LazyTablesGrid, { modelValue: childDatabase }),
                         }
                       )
                     )
