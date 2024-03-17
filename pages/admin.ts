@@ -16,7 +16,7 @@ import {
   IconSettings,
   IconArrowRight,
 } from "@tabler/icons-vue";
-import { LazyTablesGrid, LazyRenderFields } from "#components";
+import { LazyTableGrid, LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
   async setup() {
@@ -249,7 +249,7 @@ export default defineNuxtComponent({
                               ),
                             ]),
                           default: () =>
-                            h(LazyTablesGrid, { modelValue: childDatabase }),
+                            h(LazyTableGrid, { modelValue: childDatabase }),
                         }
                       )
                     )

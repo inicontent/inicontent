@@ -105,6 +105,9 @@ In this prject we are using [Nuxt 3](https://nuxt.com/docs/getting-started/intro
     │   ├───📄 Grid.ts
     │   │   └───🖊️ # ToDo: Create a new file called "item.ts" and embed it to "Grid.ts"
     │   └───📄 Icon.ts # Display asset icon based on mime-type, if it's not an image
+    ├───📁 Table
+    │   ├───📄 Drawer.ts # Used to display child item inside an item 
+    │   └───📄 Grid.ts # Display tables as grid
     ├───📄 ColorPicker.js
     │   ├───🖊️ # ToDo: Use block based selector instead of circle gradient
     │   └───🖊️ # ToDo: Move to typescript
@@ -115,8 +118,6 @@ In this prject we are using [Nuxt 3](https://nuxt.com/docs/getting-started/intro
     │   ├───🖊️ # ToDo: Add Table, Image, Embed
     │   ├───🖊️ # ToDo: Add a built-in command menu when typing "/" (ie: /image supposed to auto-trigger the upload input)
     │   └───🖊️ # ToDo: https://github.com/ianstormtaylor/slate
-    ├───📄 TablesGrid.ts
-    │   └───🖊️ # ToDo: use same structure as "Asset" components
     └───🖊️ # ToDo: add pageBuilder https://everright.site/en/formEditor/introduction.html
 ```
 

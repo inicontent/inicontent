@@ -1,5 +1,5 @@
 import { NCard } from "naive-ui";
-import { LazyTablesGrid } from "#components";
+import { LazyTableGrid } from "#components";
 
 export default defineNuxtComponent({
   async setup() {
@@ -16,7 +16,7 @@ export default defineNuxtComponent({
       h(
         NCard,
         { title: t("tables"), style: "background: none", bordered: false },
-        () => h(LazyTablesGrid, { modelValue: database.value })
+        () => h(LazyTableGrid, { modelValue: database.value })
       );
   },
 });
