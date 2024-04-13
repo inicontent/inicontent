@@ -25,3 +25,4 @@ logs
 
 # Databases list
 databases/*
+biome.json

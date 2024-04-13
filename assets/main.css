@@ -8,10 +8,14 @@ a {
 }
 
 .rich-editor {
-  border: 1px solid;
+  border: 1px solid #efeff2;
   border-radius: 10px;
   padding: 15px;
   width: calc(100% - 32px);
+}
+
+.dark .rich-editor {
+  border-color: #2d2d31;
 }
 
 .rtl,
@@ -121,4 +125,58 @@ a {
 
 .n-breadcrumb .n-breadcrumb-item .n-breadcrumb-item__separator {
   margin: 0 2px !important;
+}
+
+.colorPicker {
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 2px solid #fff;
+}
+
+.dark .colorPicker {
+  border-color: #000;
+}
+
+.colorPicker div {
+  display: flex;
+}
+
+.colorPicker div span {
+  width: 20px;
+  height: 20px;
+}
+
+.colorPicker div span:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px #00000011;
+  border-radius: 5px;
+}
+
+.masonry {
+  column-count: 1;
+  column-gap: 1rem;
+  width: 100%;
+}
+
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+@media only screen and (min-width: 869px) and (max-width: 1200px) {
+  .masonry {
+    columns: 2;
+  }
+}
+@media only screen and (min-width: 1201px) {
+  .masonry {
+    columns: 3;
+  }
+}
+
+.n-tabs .n-tabs-nav {
+  position: relative;
 }

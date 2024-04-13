@@ -3,7 +3,7 @@ import { LazyAssetCard } from "#components";
 export default defineNuxtComponent({
   async setup() {
     definePageMeta({
-      middleware: "dashboard",
+      middleware: ["dashboard", "table"],
       layout: "table",
     });
 
