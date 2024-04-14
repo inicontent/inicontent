@@ -3,7 +3,6 @@ export default defineNuxtConfig({
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
-	components: { global: true, dirs: ["~/components"] },
 	experimental: {
 		payloadExtraction: false,
 	},
