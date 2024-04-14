@@ -9,21 +9,18 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.6.4",
-    "naive-ui": "^2.38.1",
-    "nuxt": "^3.11.1",
-    "typescript": "^5.3.3",
-    "vue-tsc": "^1.8.27"
+    "@biomejs/biome": "1.6.4"
   },
   "dependencies": {
-    "@tabler/icons-vue": "^2.47.0",
-    "apexcharts": "^3.45.2",
+    "naive-ui": "^2.38.1",
+    "nuxt": "^3.11.2",
+    "@tabler/icons-vue": "^3.2.0",
     "inibase": "1.0.0-rc.52",
     "inidot": "1.0.0-rc.2",
-    "inison": "^1.0.0-rc.2",
-    "node-vibrant": "3.1.6",
-    "vue": "^3.4.19",
-    "vue-router": "^4.2.5",
+    "inison": "1.0.0-rc.2",
+    "node-vibrant": "3.2.1-alpha.1",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
     "vue3-apexcharts": "^1.5.2",
     "vuedraggable": "4.1.0"
   }
