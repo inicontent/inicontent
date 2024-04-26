@@ -9,8 +9,8 @@ dependencies:
     specifier: ^3.2.0
     version: 3.2.0(vue@3.4.21)
   inibase:
-    specifier: 1.0.0-rc.52
-    version: 1.0.0-rc.52
+    specifier: 1.0.0-rc.53
+    version: 1.0.0-rc.53
   inidot:
     specifier: 1.0.0-rc.2
     version: 1.0.0-rc.2
@@ -4197,8 +4197,8 @@ packages:
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
     dev: false
 
-  /inibase@1.0.0-rc.52:
-    resolution: {integrity: sha512-gI3W6WfCFiUrVJ/sujoX7M4AF0DhftD3rAV6zw2wDiNyHVvlhWJRPbbMEPe07Pg/EcFcPoLcmqBc535/Bc+1KA==}
+  /inibase@1.0.0-rc.53:
+    resolution: {integrity: sha512-CdDDwBS2S5i5B3TKJefPsWL3V2jfzOV1qYQOA24Gq3wKPI+6OGePZbURHTTOVsPrsyJWBMcFmX4onUibr58wzQ==}
     engines: {node: '>=16'}
     dependencies:
       inison: 1.0.0-rc.2
