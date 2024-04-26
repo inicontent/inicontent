@@ -19,21 +19,21 @@ jobs:
         with:
           node-version: "21"
 
-      - name: Cache npm dependencies
+      - name: Cache pnpm dependencies
         uses: actions/cache@v3
         id: cache-node-modules
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: 🔨 Install Dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: |
-          npm install
+          pnpm install
           git reset --hard
 
       - name: Build server files
-        run: npm run build
+        run: pnpm build
 
       - name: 📂 Sync folders and files to the server
         uses: SamKirkland/FTP-Deploy-Action@4.3.3

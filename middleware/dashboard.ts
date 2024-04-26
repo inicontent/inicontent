@@ -28,8 +28,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
 			return nuxtApp.runWithContext(() =>
 				navigateTo(
-					fromPath.value ??
-						(to.params.database ? `/${to.params.database}/admin` : "/admin"),
+					fromPath.value && fromPath.value !== "/auth"
+						? fromPath.value
+						: to.params.database
+							? `/${to.params.database}/admin`
+							: "/admin",
 				),
 			);
 		}
