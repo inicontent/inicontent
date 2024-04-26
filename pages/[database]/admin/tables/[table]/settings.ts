@@ -96,7 +96,13 @@ export default defineNuxtComponent({
 						schema:
 							table.value.schema?.filter(
 								({ key }) =>
-									!["id", "createdAt", "updatedAt", "user"].includes(key),
+									![
+										"id",
+										"createdAt",
+										"createdBy",
+										"updatedAt",
+										"user",
+									].includes(key),
 							) ?? [],
 					}),
 				),

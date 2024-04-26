@@ -138,7 +138,8 @@ export default defineNuxtComponent({
 						h(NEllipsis, () => `${t(route.params.table as string)} : ${label}`),
 					"header-extra": () =>
 						table?.schema?.filter(
-							({ key }) => !["id", "createdAt", "updatedAt"].includes(key),
+							({ key }) =>
+								!["id", "createdAt", "createdBy", "updatedAt"].includes(key),
 						).length
 							? h(NSpace, {}, () => [
 									h(
@@ -268,7 +269,9 @@ export default defineNuxtComponent({
 									modelValue: single.value,
 									schema: table?.schema?.filter(
 										({ key }) =>
-											!["id", "createdAt", "updatedAt"].includes(key),
+											!["id", "createdAt", "createdBy", "updatedAt"].includes(
+												key,
+											),
 									),
 								}),
 						),

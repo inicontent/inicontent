@@ -247,7 +247,12 @@ export default defineNuxtComponent({
 													?.find(({ slug }) => slug === Drawer.value.table)
 													?.schema?.filter(
 														({ key }) =>
-															!["id", "createdAt", "updatedAt"].includes(key),
+															![
+																"id",
+																"createdAt",
+																"createdBy",
+																"updatedAt",
+															].includes(key),
 													) ?? [],
 										}),
 								),

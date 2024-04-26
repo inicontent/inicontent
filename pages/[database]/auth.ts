@@ -60,7 +60,9 @@ export default defineNuxtComponent({
 				?.find((item) => item.slug === "user")
 				?.schema?.filter(
 					(field) =>
-						!["id", "createdAt", "updatedAt", "role"].includes(field.key),
+						!["id", "createdAt", "createdBy", "updatedAt", "role"].includes(
+							field.key,
+						),
 				) ?? [
 				{
 					id: 1,

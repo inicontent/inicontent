@@ -46,7 +46,8 @@ export default defineNuxtComponent({
 			schema = database.value.tables
 				?.find(({ slug }) => slug === route.params.table)
 				?.schema?.filter(
-					(field) => !["id", "createdAt", "updatedAt"].includes(field.key),
+					(field) =>
+						!["id", "createdAt", "createdBy", "updatedAt"].includes(field.key),
 				),
 			message = useMessage(),
 			single = ref({}),
