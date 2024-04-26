@@ -10,29 +10,38 @@ jobs:
 
     steps:
       - name: 🚚 Get latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
       - name: Use Node.js 21
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "21"
+          node-version: 21
 
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v3
-        id: cache-node-modules
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+          version: 8
+          run_install: false
 
-      - name: 🔨 Install Dependencies
-        if: steps.npm-cache.outputs.cache-hit != 'true'
+      - name: Get pnpm store directory
+        shell: bash
         run: |
-          pnpm install
-          git reset --hard
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Build server files
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build app
         run: pnpm build
 
       - name: 📂 Sync folders and files to the server
