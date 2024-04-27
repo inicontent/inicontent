@@ -43,22 +43,22 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 			)
 		).result;
 
-	// if (user.value) {
-	// 	if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
-	// 		return nuxtApp.runWithContext(() =>
-	// 			navigateTo(
-	// 				!fromPath.value?.endsWith("/auth")
-	// 					? fromPath.value
-	// 					: to.params.database
-	// 						? `/${to.params.database}/admin`
-	// 						: "/admin",
-	// 			),
-	// 		);
-	// 	}
-	// } else if (!["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
-	// 	fromPath.value = from.fullPath;
-	// 	return nuxtApp.runWithContext(() =>
-	// 		navigateTo(to.params.database ? `/${to.params.database}/auth` : "/auth"),
-	// 	);
-	// }
+	if (user.value) {
+		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
+			return nuxtApp.runWithContext(() =>
+				navigateTo(
+					fromPath.value && !fromPath.value.endsWith("/auth")
+						? fromPath.value
+						: to.params.database
+							? `/${to.params.database}/admin`
+							: "/admin",
+				),
+			);
+		}
+	} else if (!["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
+		fromPath.value = from.fullPath;
+		return nuxtApp.runWithContext(() =>
+			navigateTo(to.params.database ? `/${to.params.database}/auth` : "/auth"),
+		);
+	}
 });
