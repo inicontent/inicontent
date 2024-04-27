@@ -271,32 +271,34 @@ export default defineNuxtComponent({
 							},
 						),
 					),
-					h(NGi, { span: !isMobile ? 2 : 0 }, () => [
-						h(
-							NAnchor,
-							{
-								affix: true,
-								listenTo: "#container",
-								top: 88,
-								style: "z-index: 1",
-								bound: 90,
-							},
-							() => [
-								h(NAnchorLink, {
-									title: t("generalSettings"),
-									href: "#generalSettings",
-								}),
-								h(NAnchorLink, {
-									title: t("translationSettings"),
-									href: "#translationSettings",
-								}),
-								h(NAnchorLink, {
-									title: t("emailSettings"),
-									href: "#emailSettings",
-								}),
-							],
-						),
-					]),
+					!isMobile
+						? h(NGi, { span: 2 }, () => [
+								h(
+									NAnchor,
+									{
+										affix: true,
+										listenTo: "#container",
+										top: 88,
+										style: "z-index: 1",
+										bound: 90,
+									},
+									() => [
+										h(NAnchorLink, {
+											title: t("generalSettings"),
+											href: "#generalSettings",
+										}),
+										h(NAnchorLink, {
+											title: t("translationSettings"),
+											href: "#translationSettings",
+										}),
+										h(NAnchorLink, {
+											title: t("emailSettings"),
+											href: "#emailSettings",
+										}),
+									],
+								),
+							])
+						: null,
 				],
 			);
 	},
