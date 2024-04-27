@@ -31,7 +31,6 @@ import {
 	LazyRenderFieldBoolean,
 	LazyRenderFieldCheckbox,
 	LazyRenderFieldTags,
-	ClientOnly,
 } from "#components";
 import { getProperty, setProperty, deleteProperty, hasProperty } from "inidot";
 
@@ -632,13 +631,11 @@ export default defineNuxtComponent({
 							field,
 						});
 					case "upload":
-						return h(ClientOnly, () =>
-							h(LazyRenderFieldUpload, {
-								modelValue,
-								path: fieldPath,
-								field,
-							}),
-						);
+						return h(LazyRenderFieldUpload, {
+							modelValue,
+							path: fieldPath,
+							field,
+						});
 					case "color":
 						return h(LazyRenderFieldColor, {
 							modelValue,

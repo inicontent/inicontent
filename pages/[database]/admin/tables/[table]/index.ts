@@ -42,7 +42,7 @@ import {
 	IconEye,
 	IconSwitchHorizontal,
 } from "@tabler/icons-vue";
-import { ClientOnly, LazyTableDrawer } from "#components";
+import { LazyTableDrawer } from "#components";
 import { isArrayOfObjects, FormatObjectCriteriaValue } from "inibase/utils";
 import { getProperty, setProperty, deleteProperty } from "inidot";
 import { getField as getFieldFromSchema } from "inibase/utils";
@@ -189,7 +189,6 @@ export default defineNuxtComponent({
 					onRequest: () => {
 						Loading.value.TableData = true;
 					},
-					server: false,
 					query: {
 						options: Inison.stringify({
 							page: pagination.value.page,
@@ -1617,26 +1616,24 @@ export default defineNuxtComponent({
 							],
 							default: () => {
 								const columns = GenerateColumns();
-								return h(ClientOnly, () =>
-									h(NDataTable, {
-										scrollX: columns.reduce((accumulator, value) => {
-											return accumulator + (value.width ?? 0);
-										}, 40),
-										resizable: true,
-										id: "DataTable",
-										remote: true,
-										ref: TableDataRef as any,
-										columns: columns as any,
-										data: TableData.value?.result || [],
-										loading: Loading.value.TableData,
-										pagination: pagination.value,
-										rowKey: (row) => row.id,
-										checkedRowKeys: checkedRowKeys.value,
-										"on-update:checked-row-keys": (keys: never[]) =>
-											(checkedRowKeys.value = keys),
-										"on-update:sorter": (sorter: any) => console.log(sorter),
-									}),
-								);
+								return h(NDataTable, {
+									scrollX: columns.reduce((accumulator, value) => {
+										return accumulator + (value.width ?? 0);
+									}, 40),
+									resizable: true,
+									id: "DataTable",
+									remote: true,
+									ref: TableDataRef as any,
+									columns: columns as any,
+									data: TableData.value?.result || [],
+									loading: Loading.value.TableData,
+									pagination: pagination.value,
+									rowKey: (row) => row.id,
+									checkedRowKeys: checkedRowKeys.value,
+									"on-update:checked-row-keys": (keys: never[]) =>
+										(checkedRowKeys.value = keys),
+									"on-update:sorter": (sorter: any) => console.log(sorter),
+								});
 							},
 						},
 					)

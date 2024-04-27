@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@css-render/vue3-ssr':
-        specifier: ^0.15.12
-        version: 0.15.12(vue@3.4.21)
       '@tabler/icons-vue':
         specifier: ^2.47.0
         version: 2.47.0(vue@3.4.21)

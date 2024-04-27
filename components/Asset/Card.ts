@@ -66,7 +66,6 @@ export default defineNuxtComponent({
 						},
 					),
 				{
-					server: false,
 					transform: (res) => {
 						Loading.value.AssetData = false;
 

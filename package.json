@@ -13,7 +13,6 @@
 		"@nuxtjs/device": "^3.1.1"
 	},
 	"dependencies": {
-		"@css-render/vue3-ssr": "^0.15.12",
 		"@tabler/icons-vue": "^2.47.0",
 		"inibase": "1.0.0-rc.53",
 		"inidot": "1.0.0-rc.2",
