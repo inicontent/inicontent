@@ -54,6 +54,7 @@ export default defineNuxtComponent({
 		Loading.value.deleteDatabase = false;
 
 		const route = useRoute(),
+			device = useState<Device>("device"),
 			router = useRouter(),
 			database = useState<Database>("database"),
 			message = useMessage(),
@@ -123,9 +124,13 @@ export default defineNuxtComponent({
 		return () =>
 			h(
 				NGrid,
-				{ xGap: 12, cols: 12, itemResponsive: true, responsive: "screen" },
+				{
+					xGap: 12,
+					cols: 12,
+					layoutShiftDisabled: true,
+				},
 				() => [
-					h(NGi, { span: "12 s:10" }, () =>
+					h(NGi, { span: device.value.width >= 700 ? 10 : 12 }, () =>
 						h(
 							NCard,
 							{
@@ -266,7 +271,7 @@ export default defineNuxtComponent({
 							},
 						),
 					),
-					h(NGi, { span: "0 s:2" }, () => [
+					h(NGi, { span: device.value.width >= 700 ? 2 : 0 }, () => [
 						h(
 							NAnchor,
 							{

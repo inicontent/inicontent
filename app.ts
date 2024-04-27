@@ -113,6 +113,7 @@ export default defineNuxtComponent({
 			h(
 				NConfigProvider,
 				{
+					inlineThemeDisabled: true,
 					dir: Language.value === "ar" ? "rtl" : "ltr",
 					rtl: Language.value === "ar" ? rtlStyles : undefined,
 					theme: Theme.value === "dark" ? darkTheme : null,

@@ -31,6 +31,7 @@ import {
 	LazyRenderFieldBoolean,
 	LazyRenderFieldCheckbox,
 	LazyRenderFieldTags,
+	ClientOnly,
 } from "#components";
 import { getProperty, setProperty, deleteProperty, hasProperty } from "inidot";
 
@@ -70,13 +71,13 @@ export default defineNuxtComponent({
 					!hasProperty(
 						modelValue.value,
 						(path ?? "") +
-						(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 					)
 				)
 					setProperty(
 						modelValue.value,
 						(path ?? "") +
-						(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 						field.defaultValue,
 					);
 
@@ -93,7 +94,7 @@ export default defineNuxtComponent({
 					hasProperty(
 						modelValue.value,
 						(path ?? "") +
-						(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 					)
 				)
 					deletectedFieldType = getField(
@@ -101,7 +102,7 @@ export default defineNuxtComponent({
 						getProperty(
 							modelValue.value,
 							(path ?? "") +
-							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+								(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 						),
 					).key;
 				switch (deletectedFieldType) {
@@ -206,413 +207,424 @@ export default defineNuxtComponent({
 							(f: any) => f.type === "array" && isArrayOfObjects(f.children),
 						).length
 							? h(
-								NCollapse,
-								{
-									displayDirective: "show",
-									style: {
-										margin: "0 0 20px",
+									NCollapse,
+									{
+										displayDirective: "show",
+										style: {
+											margin: "0 0 20px",
+										},
+										arrowPlacement: "right",
+										triggerAreas: ["main", "arrow"],
+										accordion: true,
 									},
-									arrowPlacement: "right",
-									triggerAreas: ["main", "arrow"],
-									accordion: true,
-								},
-								{
-									arrow: () =>
-										!hasProperty(
-											modelValue.value,
-											(path ?? "") +
-											(isAbsolutePath
-												? ""
-												: getPath(schema.value, field.id)),
-										) ||
-											getProperty(
+									{
+										arrow: () =>
+											!hasProperty(
 												modelValue.value,
 												(path ?? "") +
-												(isAbsolutePath
-													? ""
-													: getPath(schema.value, field.id)),
-												[],
-											)?.length === 0
-											? ""
-											: h(NIcon, () => h(IconChevronRight)),
-									default: () =>
-										h(
-											NCollapseItem,
-											{
-												displayDirective: "show",
-												disabled:
-													!hasProperty(
-														modelValue.value,
-														(path ?? "") +
-														(isAbsolutePath
-															? ""
-															: getPath(schema.value, field.id)),
-													) ||
-													getProperty(
-														modelValue.value,
-														(path ?? "") +
-														(isAbsolutePath
-															? ""
-															: getPath(schema.value, field.id)),
-														[],
-													)?.length === 0,
-												title: t(field.key),
-												name:
-													(path ?? "") +
 													(isAbsolutePath
 														? ""
 														: getPath(schema.value, field.id)),
-											},
-											{
-												"header-extra": () =>
-													h(
+											) ||
+											getProperty(
+												modelValue.value,
+												(path ?? "") +
+													(isAbsolutePath
+														? ""
+														: getPath(schema.value, field.id)),
+												[],
+											)?.length === 0
+												? ""
+												: h(NIcon, () => h(IconChevronRight)),
+										default: () =>
+											h(
+												NCollapseItem,
+												{
+													displayDirective: "show",
+													disabled:
+														!hasProperty(
+															modelValue.value,
+															(path ?? "") +
+																(isAbsolutePath
+																	? ""
+																	: getPath(schema.value, field.id)),
+														) ||
+														getProperty(
+															modelValue.value,
+															(path ?? "") +
+																(isAbsolutePath
+																	? ""
+																	: getPath(schema.value, field.id)),
+															[],
+														)?.length === 0,
+													title: t(field.key),
+													name:
+														(path ?? "") +
+														(isAbsolutePath
+															? ""
+															: getPath(schema.value, field.id)),
+												},
+												{
+													"header-extra": () =>
+														h(
+															NButton,
+															{
+																size: "small",
+																round: true,
+																onClick: () =>
+																	setProperty(
+																		modelValue.value,
+																		`${
+																			(path ?? "") +
+																			(isAbsolutePath
+																				? ""
+																				: getPath(schema.value, field.id))
+																		}.${
+																			getProperty(
+																				modelValue.value,
+																				(path ?? "") +
+																					(isAbsolutePath
+																						? ""
+																						: getPath(schema.value, field.id)),
+																				[],
+																			)?.length ?? 0
+																		}`,
+																		field.onCreate
+																			? field.onCreate instanceof Function
+																				? field.onCreate(
+																						getProperty(
+																							modelValue.value,
+																							(path ?? "") +
+																								(isAbsolutePath
+																									? ""
+																									: getPath(
+																											schema.value,
+																											field.id,
+																										)),
+																							[],
+																						)?.length ?? 0,
+																					)
+																				: field.onCreate
+																			: {},
+																	),
+															},
+															{
+																icon: () => h(NIcon, () => h(IconPlus)),
+															},
+														),
+													default: () =>
+														h(
+															NCollapse,
+															{
+																displayDirective: "show",
+																accordion: true,
+															},
+															() =>
+																getProperty(
+																	modelValue.value,
+																	path ??
+																		(isAbsolutePath
+																			? ""
+																			: getPath(schema.value, field.id)),
+																	[],
+																)?.map((_item: any, index: number) =>
+																	h(
+																		NCollapseItem,
+																		{
+																			displayDirective: "show",
+																			title: `${t(field.key)} ${index}`,
+																			name: `${
+																				(path ?? "") +
+																				(isAbsolutePath
+																					? ""
+																					: getPath(schema.value, field.id))
+																			}.${index}`,
+																		},
+																		{
+																			"header-extra": () =>
+																				h(
+																					NButton,
+																					{
+																						disabled:
+																							field.disabledItems?.includes(
+																								index,
+																							),
+																						quaternary: true,
+																						circle: true,
+																						type: "error",
+																						onClick: () =>
+																							deleteProperty(
+																								modelValue.value,
+																								`${
+																									(path ?? "") +
+																									(isAbsolutePath
+																										? ""
+																										: getPath(
+																												schema.value,
+																												field.id,
+																											))
+																								}.${index}`,
+																							),
+																					},
+																					{
+																						icon: () =>
+																							h(NIcon, () => h(IconTrash)),
+																					},
+																				),
+																			default: () =>
+																				(field.children as Schema).map(
+																					(child) =>
+																						RenderField(
+																							{
+																								...child,
+																								...(field.disabledItems
+																									? {
+																											inputProps: {
+																												disabled:
+																													field.disabledItems?.includes(
+																														index,
+																													),
+																											},
+																										}
+																									: {}),
+																							},
+																							`${
+																								(path ?? "") +
+																								(isAbsolutePath
+																									? ""
+																									: getPath(
+																											schema.value,
+																											field.id,
+																										))
+																							}.${index}.${child.key}`,
+																							true,
+																						),
+																				),
+																		},
+																	),
+																),
+														),
+												},
+											),
+									},
+								)
+							: h(
+									NCard,
+									{
+										title: t(field.key),
+										bordered: false,
+										contentStyle: {
+											paddingLeft: 0,
+											paddingRight: 0,
+										},
+										headerStyle: {
+											paddingTop: 0,
+											paddingLeft: 0,
+											paddingRight: 0,
+										},
+									},
+									{
+										"header-extra": () =>
+											field.disableActions === true
+												? null
+												: h(
 														NButton,
 														{
 															size: "small",
 															round: true,
-															onClick: () =>
-																setProperty(
+															onClick() {
+																const currentFieldValue = getProperty(
 																	modelValue.value,
-																	`${(path ?? "") +
-																	(isAbsolutePath
-																		? ""
-																		: getPath(schema.value, field.id))
-																	}.${getProperty(
-																		modelValue.value,
-																		(path ?? "") +
+																	(path ?? "") +
 																		(isAbsolutePath
 																			? ""
 																			: getPath(schema.value, field.id)),
-																		[],
-																	)?.length ?? 0
-																	}`,
-																	field.onCreate
-																		? field.onCreate instanceof Function
-																			? field.onCreate(
-																				getProperty(
-																					modelValue.value,
-																					(path ?? "") +
-																					(isAbsolutePath
-																						? ""
-																						: getPath(
-																							schema.value,
-																							field.id,
-																						)),
-																					[],
-																				)?.length ?? 0,
-																			)
-																			: field.onCreate
-																		: {},
-																),
+																);
+																if (currentFieldValue)
+																	if (Array.isArray(currentFieldValue))
+																		setProperty(
+																			modelValue.value,
+																			`${
+																				(path ?? "") +
+																				(isAbsolutePath
+																					? ""
+																					: getPath(schema.value, field.id))
+																			}.${currentFieldValue.length}`,
+																			field.onCreate
+																				? field.onCreate instanceof Function
+																					? field.onCreate(
+																							currentFieldValue.length,
+																						)
+																					: field.onCreate
+																				: {},
+																		);
+																	else
+																		setProperty(
+																			modelValue.value,
+																			`${
+																				(path ?? "") +
+																				(isAbsolutePath
+																					? ""
+																					: getPath(schema.value, field.id))
+																			}`,
+																			[
+																				field.onCreate
+																					? field.onCreate instanceof Function
+																						? field.onCreate(0)
+																						: field.onCreate
+																					: {},
+																			],
+																		);
+																else
+																	setProperty(
+																		modelValue.value,
+																		`${
+																			(path ?? "") +
+																			(isAbsolutePath
+																				? ""
+																				: getPath(schema.value, field.id))
+																		}`,
+																		[
+																			field.onCreate
+																				? field.onCreate instanceof Function
+																					? field.onCreate(0)
+																					: field.onCreate
+																				: {},
+																		],
+																	);
+															},
 														},
 														{
 															icon: () => h(NIcon, () => h(IconPlus)),
 														},
 													),
-												default: () =>
-													h(
-														NCollapse,
-														{
-															displayDirective: "show",
-															accordion: true,
-														},
-														() =>
-															getProperty(
-																modelValue.value,
-																path ??
-																(isAbsolutePath
-																	? ""
-																	: getPath(schema.value, field.id)),
-																[],
-															)?.map((_item: any, index: number) =>
-																h(
-																	NCollapseItem,
-																	{
-																		displayDirective: "show",
-																		title: `${t(field.key)} ${index}`,
-																		name: `${(path ?? "") +
-																			(isAbsolutePath
-																				? ""
-																				: getPath(schema.value, field.id))
-																			}.${index}`,
-																	},
-																	{
-																		"header-extra": () =>
-																			h(
-																				NButton,
-																				{
-																					disabled:
-																						field.disabledItems?.includes(
-																							index,
-																						),
-																					quaternary: true,
-																					circle: true,
-																					type: "error",
-																					onClick: () =>
-																						deleteProperty(
-																							modelValue.value,
-																							`${(path ?? "") +
-																							(isAbsolutePath
-																								? ""
-																								: getPath(
-																									schema.value,
-																									field.id,
-																								))
-																							}.${index}`,
-																						),
-																				},
-																				{
-																					icon: () =>
-																						h(NIcon, () => h(IconTrash)),
-																				},
-																			),
-																		default: () =>
-																			(field.children as Schema).map(
-																				(child) =>
-																					RenderField(
-																						{
-																							...child,
-																							...(field.disabledItems
-																								? {
-																									inputProps: {
-																										disabled:
-																											field.disabledItems?.includes(
-																												index,
-																											),
-																									},
-																								}
-																								: {}),
-																						},
-																						`${(path ?? "") +
-																						(isAbsolutePath
-																							? ""
-																							: getPath(
-																								schema.value,
-																								field.id,
-																							))
-																						}.${index}.${child.key}`,
-																						true,
-																					),
-																			),
-																	},
-																),
-															),
-													),
-											},
-										),
-								},
-							)
-							: h(
-								NCard,
-								{
-									title: t(field.key),
-									bordered: false,
-									contentStyle: {
-										paddingLeft: 0,
-										paddingRight: 0,
-									},
-									headerStyle: {
-										paddingTop: 0,
-										paddingLeft: 0,
-										paddingRight: 0,
-									},
-								},
-								{
-									"header-extra": () =>
-										field.disableActions === true
-											? null
-											: h(
-												NButton,
-												{
-													size: "small",
-													round: true,
-													onClick() {
-														const currentFieldValue = getProperty(
-															modelValue.value,
+										default: () =>
+											h(NDataTable, {
+												columns: [
+													...(field.children as any).map((child: any) => ({
+														width:
+															t(child.key) && child.key.length > 10
+																? child.key.length * 15
+																: 200,
+														title: () => [
+															t(child.key),
+															child.required
+																? h(
+																		NText,
+																		{
+																			type: "error",
+																		},
+																		() => " *",
+																	)
+																: null,
+														],
+														key: `${
 															(path ?? "") +
 															(isAbsolutePath
 																? ""
-																: getPath(schema.value, field.id)),
-														);
-														if (currentFieldValue)
-															if (Array.isArray(currentFieldValue))
-																setProperty(
-																	modelValue.value,
-																	`${(path ?? "") +
-																	(isAbsolutePath
-																		? ""
-																		: getPath(schema.value, field.id))
-																	}.${currentFieldValue.length}`,
-																	field.onCreate
-																		? field.onCreate instanceof Function
-																			? field.onCreate(
-																				currentFieldValue.length,
-																			)
-																			: field.onCreate
-																		: {},
-																);
-															else
-																setProperty(
-																	modelValue.value,
-																	`${(path ?? "") +
-																	(isAbsolutePath
-																		? ""
-																		: getPath(schema.value, field.id))
-																	}`,
-																	[
-																		field.onCreate
-																			? field.onCreate instanceof Function
-																				? field.onCreate(0)
-																				: field.onCreate
-																			: {},
-																	],
-																);
-														else
-															setProperty(
-																modelValue.value,
-																`${(path ?? "") +
-																(isAbsolutePath
-																	? ""
-																	: getPath(schema.value, field.id))
-																}`,
-																[
-																	field.onCreate
-																		? field.onCreate instanceof Function
-																			? field.onCreate(0)
-																			: field.onCreate
-																		: {},
-																],
-															);
-													},
-												},
-												{
-													icon: () => h(NIcon, () => h(IconPlus)),
-												},
-											),
-									default: () =>
-										h(NDataTable, {
-											columns: [
-												...(field.children as any).map((child: any) => ({
-													width:
-														t(child.key) && child.key.length > 10
-															? child.key.length * 15
-															: 200,
-													title: () => [
-														t(child.key),
-														child.required
-															? h(
-																NText,
+																: getPath(schema.value, field.id))
+														}.${child.key}`,
+														render: (_item: any, index: number) =>
+															RenderField(
 																{
-																	type: "error",
+																	...child,
+																	...(field.disabledItems?.includes(index)
+																		? {
+																				inputProps: {
+																					disabled: true,
+																				},
+																			}
+																		: {}),
+																	labelProps: {
+																		style: {
+																			marginTop: "24px",
+																		},
+																		showLabel: false,
+																	},
+																	isArray: true,
+																	isTable: true,
 																},
-																() => " *",
-															)
-															: null,
-													],
-													key: `${(path ?? "") +
+																`${
+																	(path ?? "") +
+																	(isAbsolutePath
+																		? ""
+																		: getPath(schema.value, field.id))
+																}.${index}.${child.key}`,
+																true,
+															),
+													})),
+													field.disableActions === true
+														? {}
+														: {
+																title: t("actions"),
+																fixed: "right",
+																align: "center",
+																width: 100,
+																key: "actions",
+																render(_row, index) {
+																	return h(
+																		NPopover,
+																		{},
+																		{
+																			trigger: () =>
+																				h(
+																					NButton,
+																					{
+																						disabled:
+																							field.disabledItems?.includes(
+																								index,
+																							),
+																						strong: true,
+																						secondary: true,
+																						circle: true,
+																						type: "error",
+																						onClick: () =>
+																							deleteProperty(
+																								modelValue.value,
+																								`${
+																									(path ?? "") +
+																									(isAbsolutePath
+																										? ""
+																										: getPath(
+																												schema.value,
+																												field.id,
+																											))
+																								}.${index}`,
+																							),
+																					},
+																					{
+																						icon: () =>
+																							h(NIcon, () => h(IconTrash)),
+																					},
+																				),
+																			default: () => t("delete"),
+																		},
+																	);
+																},
+															},
+												],
+												data: getProperty(
+													modelValue.value,
+													(path ?? "") +
 														(isAbsolutePath
 															? ""
-															: getPath(schema.value, field.id))
-														}.${child.key}`,
-													render: (_item: any, index: number) =>
-														RenderField(
-															{
-																...child,
-																...(field.disabledItems?.includes(index)
-																	? {
-																		inputProps: {
-																			disabled: true,
-																		},
-																	}
-																	: {}),
-																labelProps: {
-																	style: {
-																		marginTop: "24px",
-																	},
-																	showLabel: false,
-																},
-																isArray: true,
-																isTable: true,
-															},
-															`${(path ?? "") +
-															(isAbsolutePath
-																? ""
-																: getPath(schema.value, field.id))
-															}.${index}.${child.key}`,
-															true,
-														),
-												})),
-												field.disableActions === true
-													? {}
-													: {
-														title: t("actions"),
-														fixed: "right",
-														align: "center",
-														width: 100,
-														key: "actions",
-														render(_row, index) {
-															return h(
-																NPopover,
-																{},
-																{
-																	trigger: () =>
-																		h(
-																			NButton,
-																			{
-																				disabled:
-																					field.disabledItems?.includes(
-																						index,
-																					),
-																				strong: true,
-																				secondary: true,
-																				circle: true,
-																				type: "error",
-																				onClick: () =>
-																					deleteProperty(
-																						modelValue.value,
-																						`${(path ?? "") +
-																						(isAbsolutePath
-																							? ""
-																							: getPath(
-																								schema.value,
-																								field.id,
-																							))
-																						}.${index}`,
-																					),
-																			},
-																			{
-																				icon: () =>
-																					h(NIcon, () => h(IconTrash)),
-																			},
-																		),
-																	default: () => t("delete"),
-																},
-															);
-														},
+															: getPath(schema.value, field.id)),
+													[],
+												),
+												scrollX: (field.children as Schema).reduce(
+													(accumulator: number, child: any) => {
+														return (
+															accumulator +
+															(t(child.key) && child.key.length > 10
+																? child.key.length * 15
+																: 200)
+														);
 													},
-											],
-											data: getProperty(
-												modelValue.value,
-												(path ?? "") +
-												(isAbsolutePath
-													? ""
-													: getPath(schema.value, field.id)),
-												[],
-											),
-											scrollX: (field.children as Schema).reduce(
-												(accumulator: number, child: any) => {
-													return (
-														accumulator +
-														(t(child.key) && child.key.length > 10
-															? child.key.length * 15
-															: 200)
-													);
-												},
-												100,
-											),
-										}),
-								},
-							);
+													100,
+												),
+											}),
+									},
+								);
 					case "table":
 						return h(LazyRenderFieldTable, {
 							modelValue,
@@ -620,11 +632,13 @@ export default defineNuxtComponent({
 							field,
 						});
 					case "upload":
-						return h(LazyRenderFieldUpload, {
-							modelValue,
-							path: fieldPath,
-							field,
-						});
+						return h(ClientOnly, () =>
+							h(LazyRenderFieldUpload, {
+								modelValue,
+								path: fieldPath,
+								field,
+							}),
+						);
 					case "color":
 						return h(LazyRenderFieldColor, {
 							modelValue,
@@ -698,7 +712,7 @@ export default defineNuxtComponent({
 							getProperty(
 								modelValue.value,
 								(path ?? "") +
-								(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+									(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 							),
 							field.type,
 						);

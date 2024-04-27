@@ -3,7 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "nuxt build",
-		"dev": "NODE_ENV=development nuxt dev",
+		"dev": "nuxt dev",
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare"
@@ -12,7 +12,8 @@
 		"@biomejs/biome": "1.6.4"
 	},
 	"dependencies": {
-		"@tabler/icons-vue": "^3.2.0",
+		"@css-render/vue3-ssr": "^0.15.12",
+		"@tabler/icons-vue": "^2.47.0",
 		"inibase": "1.0.0-rc.53",
 		"inidot": "1.0.0-rc.2",
 		"inison": "1.0.0-rc.2",

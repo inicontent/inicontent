@@ -1,17 +1,30 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
+	if (import.meta.client) return;
+
 	const nuxtApp = useNuxtApp(),
 		user = useState<User>("user"),
 		database = useState<Database>("database"),
-		fromPath = useCookie("from");
+		fromPath = useCookie("from"),
+		event = nuxtApp.ssrContext?.event;
 
-	if (!["auth", "database-auth"].includes(from.name?.toString() ?? ""))
-		fromPath.value = from.fullPath;
+	const ip =
+			event?.node.req.headers["x-real-ip"] ||
+			event?.node.req.headers["x-forwarded-for"] ||
+			event?.node.req.socket?.remoteAddress,
+		userAgent = event?.node.req.headers["user-agent"];
+
 	if (!user.value)
 		user.value = (
 			await $fetch<apiResponse>(
 				`${useRuntimeConfig().public.apiBase}${
 					to.params.database ?? "inicontent"
 				}/auth/current`,
+				{
+					headers: {
+						"x-forwarded-for": ip,
+						"user-agent": userAgent,
+					},
+				},
 			)
 		).result;
 
@@ -21,24 +34,31 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 				`${useRuntimeConfig().public.apiBase}inicontent/database/${
 					to.params.database ?? "inicontent"
 				}`,
+				{
+					headers: {
+						"x-forwarded-for": ip,
+						"user-agent": userAgent,
+					},
+				},
 			)
 		).result;
 
-	if (user.value) {
-		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
-			return nuxtApp.runWithContext(() =>
-				navigateTo(
-					fromPath.value && fromPath.value !== "/auth"
-						? fromPath.value
-						: to.params.database
-							? `/${to.params.database}/admin`
-							: "/admin",
-				),
-			);
-		}
-	} else if (!["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
-		return nuxtApp.runWithContext(() =>
-			navigateTo(to.params.database ? `/${to.params.database}/auth` : "/auth"),
-		);
-	}
+	// if (user.value) {
+	// 	if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
+	// 		return nuxtApp.runWithContext(() =>
+	// 			navigateTo(
+	// 				!fromPath.value?.endsWith("/auth")
+	// 					? fromPath.value
+	// 					: to.params.database
+	// 						? `/${to.params.database}/admin`
+	// 						: "/admin",
+	// 			),
+	// 		);
+	// 	}
+	// } else if (!["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
+	// 	fromPath.value = from.fullPath;
+	// 	return nuxtApp.runWithContext(() =>
+	// 		navigateTo(to.params.database ? `/${to.params.database}/auth` : "/auth"),
+	// 	);
+	// }
 });

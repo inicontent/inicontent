@@ -581,7 +581,7 @@ export default defineNuxtComponent({
 											() => secondValue,
 										),
 									default: () =>
-										ComparisonOperatorOptions.find(
+										ComparisonOperatorOptions().find(
 											({ value }) => value === secondValue,
 										)?.label,
 								},
@@ -815,10 +815,10 @@ export default defineNuxtComponent({
 											formatValue(firstValue, "type", "string"),
 											["number", "date"],
 										)
-											? ComparisonOperatorOptions.filter(
+											? ComparisonOperatorOptions().filter(
 													({ value }) => !["*", "!*"].includes(value),
 												)
-											: ComparisonOperatorOptions.filter(
+											: ComparisonOperatorOptions().filter(
 													({ value }) =>
 														![
 															">",

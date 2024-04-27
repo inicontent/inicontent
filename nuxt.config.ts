@@ -1,5 +1,21 @@
 export default defineNuxtConfig({
-	ssr: false,
+	ssr: true,
+	build: {
+		transpile:
+			process.env.NODE_ENV === "production"
+				? [
+						"naive-ui",
+						"vueuc",
+						"@css-render/vue3-ssr",
+						"@juggle/resize-observer",
+					]
+				: ["@juggle/resize-observer"],
+	},
+	vite: {
+		optimizeDeps: {
+			include: process.env.NODE_ENV === "development" ? ["naive-ui"] : [],
+		},
+	},
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
@@ -18,10 +34,7 @@ export default defineNuxtConfig({
 	css: ["~/assets/main.css"],
 	runtimeConfig: {
 		public: {
-			apiBase:
-				process.env.NODE_ENV === "development"
-					? "http://localhost:3433/"
-					: "https://test-api.inicontent.com/", // "INIa" in binary
+			apiBase: "https://test-api.inicontent.com/", // "INIa" in binary
 		},
 	},
 });

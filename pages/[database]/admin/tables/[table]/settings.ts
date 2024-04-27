@@ -661,222 +661,218 @@ export default defineNuxtComponent({
 		});
 
 		return () =>
-			h(
-				NGrid,
-				{ xGap: 12, cols: 12, itemResponsive: true, responsive: "screen" },
-				() => [
-					h(NGi, { span: "12 s:10" }, () =>
-						h(
-							NCard,
-							{
-								title: t("tableSettings"),
-								hoverable: true,
-							},
-							{
-								"header-extra": () =>
-									h(NSpace, () => [
-										h(
-											NTooltip,
-											{},
-											{
-												trigger: () =>
-													h(
-														NPopconfirm,
-														{
-															showIcon: false,
-															onPositiveClick: deleteTable,
-														},
-														{
-															activator: () =>
-																h(
-																	NButton,
-																	{
-																		type: "error",
-																		tertiary: true,
-																		round: true,
-																		loading: Loading.value.deleteTable,
-																	},
-																	{
-																		icon: () => h(NIcon, () => h(IconTrash)),
-																	},
-																),
-															default: () =>
-																t("theFollowingActionIsIrreversible"),
-														},
-													),
-												default: () => t("deleteTable"),
-											},
-										),
-										h(
-											NButton,
-											{
-												round: true,
-												loading: Loading.value.updateTable,
-												onClick: updateTable,
-											},
-											{
-												default: () => t("save"),
-												icon: () => h(NIcon, () => h(IconDeviceFloppy)),
-											},
-										),
-									]),
-								default: () =>
-									h(NSpace, { vertical: true }, () => [
-										h(
-											NCard,
-											{
-												title: t("generalSettings"),
-												id: "generalSettings",
-												hoverable: true,
-											},
-											() => [
+			h(NGrid, { xGap: 12, cols: 12, layoutShiftDisabled: true }, () => [
+				h(NGi, { span: device.value.width >= 700 ? 10 : 12 }, () =>
+					h(
+						NCard,
+						{
+							title: t("tableSettings"),
+							hoverable: true,
+						},
+						{
+							"header-extra": () =>
+								h(NSpace, () => [
+									h(
+										NTooltip,
+										{},
+										{
+											trigger: () =>
 												h(
-													NForm,
+													NPopconfirm,
 													{
-														ref: tableRef,
-														model: tableCopy.value,
+														showIcon: false,
+														onPositiveClick: deleteTable,
 													},
-													() => [
-														h(LazyRenderFields, {
-															modelValue: tableCopy.value,
-															schema: [
+													{
+														activator: () =>
+															h(
+																NButton,
 																{
-																	id: 1,
-																	key: "slug",
-																	type: "string",
-																	required: true,
+																	type: "error",
+																	tertiary: true,
+																	round: true,
+																	loading: Loading.value.deleteTable,
 																},
-															],
-														}),
-														h(
-															NFormItem,
-															{
-																required: true,
-																label: t("label"),
-																path: "label",
-															},
-															() =>
-																h(NMention, {
-																	value: tableCopy.value.label,
-																	onUpdateValue: (value) =>
-																		(tableCopy.value.label = value),
-																	options: generateMentionOptions(
-																		database.value.tables?.find(
-																			({ slug }) => slug === route.params.table,
-																		)?.schema ?? [],
-																	),
-																}),
-														),
-													],
+																{
+																	icon: () => h(NIcon, () => h(IconTrash)),
+																},
+															),
+														default: () =>
+															t("theFollowingActionIsIrreversible"),
+													},
 												),
-											],
-										),
-										h(
-											NCard,
-											{
-												title: t("schemaSettings"),
-												id: "schemaSettings",
-												hoverable: true,
-											},
-											{
-												"header-extra": () =>
-													h(NSpace, () => [
-														!tableCopy.value.schema ||
-														tableCopy.value.schema.length < 2
-															? null
-															: h(
-																	NTooltip,
-																	{},
-																	{
-																		default: () => t("changeOrder"),
-																		trigger: () =>
-																			h(
-																				NButton,
-																				{
-																					round: true,
-																					type: showDraggable.value
-																						? "primary"
-																						: "default",
-																					onClick: () =>
-																						(showDraggable.value =
-																							!showDraggable.value),
-																				},
-																				() => h(NIcon, () => h(IconArrowsSort)),
-																			),
-																	},
-																),
-														h(
-															NDropdown,
+											default: () => t("deleteTable"),
+										},
+									),
+									h(
+										NButton,
+										{
+											round: true,
+											loading: Loading.value.updateTable,
+											onClick: updateTable,
+										},
+										{
+											default: () => t("save"),
+											icon: () => h(NIcon, () => h(IconDeviceFloppy)),
+										},
+									),
+								]),
+							default: () =>
+								h(NSpace, { vertical: true }, () => [
+									h(
+										NCard,
+										{
+											title: t("generalSettings"),
+											id: "generalSettings",
+											hoverable: true,
+										},
+										() => [
+											h(
+												NForm,
+												{
+													ref: tableRef,
+													model: tableCopy.value,
+												},
+												() => [
+													h(LazyRenderFields, {
+														modelValue: tableCopy.value,
+														schema: [
 															{
-																options: FieldsList(),
-																style: {
-																	maxHeight: "200px",
-																},
-																scrollable: true,
-																onSelect: (type) =>
-																	tableCopy.value.schema.push({
-																		id: `temp-${randomID()}`,
-																		key: null,
-																		required: false,
-																		...handleSelectedType(type),
-																	}),
+																id: 1,
+																key: "slug",
+																type: "string",
+																required: true,
 															},
-															() =>
-																h(
-																	NButton,
-																	{ round: true },
-																	{
-																		icon: () => h(NIcon, () => h(IconPlus)),
-																	},
+														],
+													}),
+													h(
+														NFormItem,
+														{
+															required: true,
+															label: t("label"),
+															path: "label",
+														},
+														() =>
+															h(NMention, {
+																value: tableCopy.value.label,
+																onUpdateValue: (value) =>
+																	(tableCopy.value.label = value),
+																options: generateMentionOptions(
+																	database.value.tables?.find(
+																		({ slug }) => slug === route.params.table,
+																	)?.schema ?? [],
 																),
-														),
-													]),
-												default: () =>
+															}),
+													),
+												],
+											),
+										],
+									),
+									h(
+										NCard,
+										{
+											title: t("schemaSettings"),
+											id: "schemaSettings",
+											hoverable: true,
+										},
+										{
+											"header-extra": () =>
+												h(NSpace, () => [
 													!tableCopy.value.schema ||
-													tableCopy.value.schema.length === 0
-														? h(NEmpty)
-														: [
-																showDraggable.value
-																	? null
-																	: h("style", ".handle {display:none}"),
-																h(
-																	NForm,
-																	{
-																		size: "small",
-																	},
-																	() =>
-																		RenderSchemaElement(tableCopy.value.schema),
-																),
-															],
-											},
-										),
-									]),
-							},
-						),
+													tableCopy.value.schema.length < 2
+														? null
+														: h(
+																NTooltip,
+																{},
+																{
+																	default: () => t("changeOrder"),
+																	trigger: () =>
+																		h(
+																			NButton,
+																			{
+																				round: true,
+																				type: showDraggable.value
+																					? "primary"
+																					: "default",
+																				onClick: () =>
+																					(showDraggable.value =
+																						!showDraggable.value),
+																			},
+																			() => h(NIcon, () => h(IconArrowsSort)),
+																		),
+																},
+															),
+													h(
+														NDropdown,
+														{
+															options: FieldsList(),
+															style: {
+																maxHeight: "200px",
+															},
+															scrollable: true,
+															onSelect: (type) =>
+																tableCopy.value.schema.push({
+																	id: `temp-${randomID()}`,
+																	key: null,
+																	required: false,
+																	...handleSelectedType(type),
+																}),
+														},
+														() =>
+															h(
+																NButton,
+																{ round: true },
+																{
+																	icon: () => h(NIcon, () => h(IconPlus)),
+																},
+															),
+													),
+												]),
+											default: () =>
+												!tableCopy.value.schema ||
+												tableCopy.value.schema.length === 0
+													? h(NEmpty)
+													: [
+															showDraggable.value
+																? null
+																: h("style", ".handle {display:none}"),
+															h(
+																NForm,
+																{
+																	size: "small",
+																},
+																() =>
+																	RenderSchemaElement(tableCopy.value.schema),
+															),
+														],
+										},
+									),
+								]),
+						},
 					),
-					h(NGi, { span: "0 s:2" }, () => [
-						h(
-							NAnchor,
-							{
-								affix: true,
-								listenTo: "#container",
-								top: 88,
-								style: "z-index: 1",
-								bound: 90,
-							},
-							() => [
-								h(NAnchorLink, {
-									title: t("generalSettings"),
-									href: "#generalSettings",
-								}),
-								h(NAnchorLink, {
-									title: t("schemaSettings"),
-									href: "#schemaSettings",
-								}),
-							],
-						),
-					]),
-				],
-			);
+				),
+				h(NGi, { span: device.value.width >= 700 ? 2 : 0 }, () => [
+					h(
+						NAnchor,
+						{
+							affix: true,
+							listenTo: "#container",
+							top: 88,
+							style: "z-index: 1",
+							bound: 90,
+						},
+						() => [
+							h(NAnchorLink, {
+								title: t("generalSettings"),
+								href: "#generalSettings",
+							}),
+							h(NAnchorLink, {
+								title: t("schemaSettings"),
+								href: "#schemaSettings",
+							}),
+						],
+					),
+				]),
+			]);
 	},
 });
