@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"@tabler/icons-vue": "^2.47.0",
-		"inibase": "1.0.0-rc.53",
+		"inibase": "1.0.0-rc.54",
 		"inidot": "1.0.0-rc.2",
 		"inison": "1.0.0-rc.2",
 		"naive-ui": "^2.38.1",
