@@ -12,8 +12,8 @@ importers:
         specifier: ^2.47.0
         version: 2.47.0(vue@3.4.21)
       inibase:
-        specifier: 1.0.0-rc.53
-        version: 1.0.0-rc.53
+        specifier: 1.0.0-rc.54
+        version: 1.0.0-rc.54
       inidot:
         specifier: 1.0.0-rc.2
         version: 1.0.0-rc.2
@@ -32,6 +32,9 @@ importers:
       vue:
         specifier: ^3.4.21
         version: 3.4.21
+      vue-bundle-renderer:
+        specifier: ^2.0.0
+        version: 2.0.0
       vue-router:
         specifier: ^4.3.0
         version: 4.3.0(vue@3.4.21)
@@ -2171,8 +2174,8 @@ packages:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  inibase@1.0.0-rc.53:
-    resolution: {integrity: sha512-CdDDwBS2S5i5B3TKJefPsWL3V2jfzOV1qYQOA24Gq3wKPI+6OGePZbURHTTOVsPrsyJWBMcFmX4onUibr58wzQ==}
+  inibase@1.0.0-rc.54:
+    resolution: {integrity: sha512-+ZreSmZP3lXLwhhZoccBBKlMtRCSoOLqZez/3c/fdpN4UecHlX9JIztiRJxu4rN2jaW9TS5lPD0ZgUk2dwQxfQ==}
     engines: {node: '>=16'}
 
   inidot@1.0.0-rc.2:
@@ -6422,7 +6425,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  inibase@1.0.0-rc.53:
+  inibase@1.0.0-rc.54:
     dependencies:
       inison: 1.0.0-rc.2
 
