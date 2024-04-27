@@ -37,7 +37,7 @@ export default defineNuxtComponent({
 
 		const database = useState<Database>("database"),
 			message = useMessage(),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			{ data: databases } = await useFetch<apiResponse<Database[]>>(
 				`${useRuntimeConfig().public.apiBase}inicontent/database`,
 			),
@@ -105,7 +105,7 @@ export default defineNuxtComponent({
 								show: ShowDatabaseModal.value,
 								"on-update:show": (v: boolean) => (ShowDatabaseModal.value = v),
 								style: {
-									width: device.value.width > 600 ? "600px" : "100%",
+									width: !isMobile ? "600px" : "100%",
 								},
 								preset: "card",
 								title:

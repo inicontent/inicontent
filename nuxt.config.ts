@@ -12,6 +12,7 @@ export default defineNuxtConfig({
 				: ["@juggle/resize-observer"],
 	},
 	sourcemap: false,
+	modules: ["@nuxtjs/device"],
 	vite: {
 		optimizeDeps: {
 			include: process.env.NODE_ENV === "development" ? ["naive-ui"] : [],

@@ -85,7 +85,7 @@ export default defineNuxtComponent({
 			router = useRouter(),
 			message = useMessage(),
 			showDraggable = ref(false),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
 			tableRef = ref<FormInst | null>(null),
@@ -485,8 +485,8 @@ export default defineNuxtComponent({
 																h(
 																	NButton,
 																	{
-																		round: device.value.width > 700,
-																		circle: device.value.width < 700,
+																		round: !isMobile,
+																		circle: isMobile,
 																		strong: true,
 																		secondary: true,
 																		size: "small",
@@ -500,9 +500,7 @@ export default defineNuxtComponent({
 																	{
 																		icon: () => h(NIcon, () => h(IconAsterisk)),
 																		default: () =>
-																			device.value.width < 700
-																				? null
-																				: t("required"),
+																			isMobile ? null : t("required"),
 																	},
 																),
 															]),
@@ -536,7 +534,7 @@ export default defineNuxtComponent({
 																		element.subType ?? element.type,
 																	).icon,
 																	default: () =>
-																		device.value.width < 700
+																		isMobile
 																			? null
 																			: getField(
 																					element.subType ?? element.type,
@@ -662,7 +660,7 @@ export default defineNuxtComponent({
 
 		return () =>
 			h(NGrid, { xGap: 12, cols: 12, layoutShiftDisabled: true }, () => [
-				h(NGi, { span: device.value.width >= 700 ? 10 : 12 }, () =>
+				h(NGi, { span: !isMobile ? 10 : 12 }, () =>
 					h(
 						NCard,
 						{
@@ -851,7 +849,7 @@ export default defineNuxtComponent({
 						},
 					),
 				),
-				h(NGi, { span: device.value.width >= 700 ? 2 : 0 }, () => [
+				h(NGi, { span: !isMobile ? 2 : 0 }, () => [
 					h(
 						NAnchor,
 						{

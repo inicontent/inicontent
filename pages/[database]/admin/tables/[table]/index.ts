@@ -103,7 +103,7 @@ export default defineNuxtComponent({
 		};
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			searchInput = useState<string | undefined>(
 				"searchInput",
 				() => route.query.search as string | undefined,
@@ -323,7 +323,7 @@ export default defineNuxtComponent({
 											href: `/${route.params.database}/admin/tables/${field.key}/${col.id}/edit`,
 											onClick: (e) => {
 												e.preventDefault();
-												if (device.value.width >= 700)
+												if (!isMobile)
 													Drawer.value = {
 														...Drawer.value,
 														id: col.id,
@@ -432,7 +432,7 @@ export default defineNuxtComponent({
 										}/${([].concat(value)[0] as any).id}/edit`,
 										onClick: (e) => {
 											e.preventDefault();
-											if (device.value.width >= 700)
+											if (!isMobile)
 												Drawer.value = {
 													...Drawer.value,
 													id: ([].concat(value)[0] as any).id,
@@ -954,7 +954,7 @@ export default defineNuxtComponent({
 					})),
 					{
 						title: t("actions"),
-						fixed: device.value.width > 400 ? "right" : false,
+						fixed: !isMobile ? "right" : false,
 						align: "center",
 						width: 150,
 						key: "actions",
@@ -997,7 +997,7 @@ export default defineNuxtComponent({
 													href: `/${route.params.database}/admin/tables/${route.params.table}/${row.id}/edit`,
 													onClick: (e) => {
 														e.preventDefault();
-														if (device.value.width >= 700)
+														if (!isMobile)
 															Drawer.value = {
 																...Drawer.value,
 																id: row.id,
@@ -1327,7 +1327,7 @@ export default defineNuxtComponent({
 		});
 
 		return () => [
-			device.value.width >= 700 ? h(LazyTableDrawer) : null,
+			!isMobile ? h(LazyTableDrawer) : null,
 			database.value
 				? h(
 						NCard,
@@ -1418,7 +1418,7 @@ export default defineNuxtComponent({
 													)?.schema),
 											style: {
 												maxHeight: "240px",
-												width: device.value.width < 800 ? "350px" : "500px",
+												width: isMobile ? "350px" : "500px",
 											},
 											placement: "bottom-end",
 											trigger: "click",
@@ -1587,7 +1587,7 @@ export default defineNuxtComponent({
 														onClick: (e) => {
 															e.preventDefault();
 
-															if (device.value.width >= 700)
+															if (!isMobile)
 																Drawer.value = {
 																	...Drawer.value,
 																	table: route.params.table as string,

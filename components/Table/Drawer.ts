@@ -37,7 +37,7 @@ export default defineNuxtComponent({
 			message = useMessage(),
 			database = useState<Database>("database"),
 			DrawerFormRef = useState(() => null),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			Drawer = useState<{
 				show: boolean;
 				id: null | string;
@@ -137,8 +137,7 @@ export default defineNuxtComponent({
 				{
 					show: Drawer.value.show,
 					onUpdateShow: (v: boolean) => (Drawer.value.show = v),
-					width:
-						device.value.width < 700 ? window.screen.width : drawerWidth.value,
+					width: isMobile ? "100%" : drawerWidth.value,
 					onUpdateWidth: (w: any) => (drawerWidth.value = w),
 					resizable: true,
 					placement: Language.value === "ar" ? "left" : "right",
@@ -186,11 +185,10 @@ export default defineNuxtComponent({
 										style: {
 											width: "100%",
 										},
-										justify:
-											device.value.width >= 700 ? "space-between" : "end",
+										justify: !isMobile ? "space-between" : "end",
 									},
 									() => [
-										device.value.width >= 700
+										!isMobile
 											? h(
 													NButton,
 													{

@@ -26,10 +26,10 @@ export default defineNuxtComponent({
 		onBeforeMount(() => clearNuxtState("path"));
 
 		const database = useState<Database>("database"),
+			{ isMobile } = useDevice(),
 			Loading = useState<Record<string, boolean>>("Loading", () => ({})),
 			route = useRoute(),
 			router = useRouter(),
-			device = useState<Device>("device"),
 			pagination = reactive({
 				page: route.query.page ? Number(route.query.page) : 1,
 				pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
@@ -135,7 +135,7 @@ export default defineNuxtComponent({
 							),
 							pagination.itemCount
 								? h(NPagination, {
-										simple: device.value.width < 600,
+										simple: isMobile,
 										pageSizes: [15, 30, 60, 100, 500],
 										prefix: ({ itemCount }: any) => itemCount,
 										onUpdatePage: async (currentPage: number) => {

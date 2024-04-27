@@ -24,7 +24,7 @@ export default defineComponent({
 		});
 
 		const route = useRoute(),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			user = useState<User>("user"),
 			isMenuOpen = useState("isMenuOpen", () => false),
 			database = useState<Database>("database"),
@@ -139,7 +139,7 @@ export default defineComponent({
 									bordered: true,
 									showTrigger: "bar",
 									collapseMode: "width",
-									collapsedWidth: device.value.width < 700 ? 0 : 64,
+									collapsedWidth: isMobile ? 0 : 64,
 									width: 240,
 									nativeScrollbar: false,
 								},
@@ -147,7 +147,7 @@ export default defineComponent({
 									h(NMenu, {
 										collapsed: !isMenuOpen.value,
 										collapsedIconSize: 22,
-										collapsedWidth: device.value.width < 700 ? 0 : 64,
+										collapsedWidth: isMobile ? 0 : 64,
 										onMouseover: () => (isMenuOpen.value = true),
 										onMouseleave: () => (isMenuOpen.value = false),
 										options: (database.value.tables
@@ -222,12 +222,11 @@ export default defineComponent({
 								{
 									position: "absolute",
 									contentStyle: {
-										padding:
-											device.value.width < 700
-												? "24px"
-												: Language.value === "ar"
-													? "24px 88px 24px 24px"
-													: "24px 24px 24px 88px",
+										padding: isMobile
+											? "24px"
+											: Language.value === "ar"
+												? "24px 88px 24px 24px"
+												: "24px 24px 24px 88px",
 									},
 									nativeScrollbar: false,
 									id: "page_content",

@@ -9,7 +9,8 @@
 		"postinstall": "nuxt prepare"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.6.4"
+		"@biomejs/biome": "1.6.4",
+		"@nuxtjs/device": "^3.1.1"
 	},
 	"dependencies": {
 		"@css-render/vue3-ssr": "^0.15.12",

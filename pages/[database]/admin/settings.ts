@@ -54,7 +54,7 @@ export default defineNuxtComponent({
 		Loading.value.deleteDatabase = false;
 
 		const route = useRoute(),
-			device = useState<Device>("device"),
+			{ isMobile } = useDevice(),
 			router = useRouter(),
 			database = useState<Database>("database"),
 			message = useMessage(),
@@ -130,7 +130,7 @@ export default defineNuxtComponent({
 					layoutShiftDisabled: true,
 				},
 				() => [
-					h(NGi, { span: device.value.width >= 700 ? 10 : 12 }, () =>
+					h(NGi, { span: !isMobile ? 10 : 12 }, () =>
 						h(
 							NCard,
 							{
@@ -271,7 +271,7 @@ export default defineNuxtComponent({
 							},
 						),
 					),
-					h(NGi, { span: device.value.width >= 700 ? 2 : 0 }, () => [
+					h(NGi, { span: !isMobile ? 2 : 0 }, () => [
 						h(
 							NAnchor,
 							{

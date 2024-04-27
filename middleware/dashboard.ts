@@ -4,14 +4,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 	const nuxtApp = useNuxtApp(),
 		user = useState<User>("user"),
 		database = useState<Database>("database"),
-		fromPath = useCookie("from"),
-		event = nuxtApp.ssrContext?.event;
-
-	const ip =
-			event?.node.req.headers["x-real-ip"] ||
-			event?.node.req.headers["x-forwarded-for"] ||
-			event?.node.req.socket?.remoteAddress,
-		userAgent = event?.node.req.headers["user-agent"];
+		client = useState<Record<string, any>>("client", () => ({
+			ip: null,
+			userAgent: null,
+		})),
+		fromPath = useCookie("from");
 
 	if (!user.value)
 		user.value = (
@@ -19,12 +16,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 				`${useRuntimeConfig().public.apiBase}${
 					to.params.database ?? "inicontent"
 				}/auth/current`,
-				{
-					headers: {
-						"x-forwarded-for": ip,
-						"user-agent": userAgent,
-					},
-				},
+				client.value.ip && client.value.userAgent
+					? {
+							headers: {
+								"x-forwarded-for": client.value.ip,
+								"user-agent": client.value.userAgent,
+							},
+						}
+					: {},
 			)
 		).result;
 
@@ -34,12 +33,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 				`${useRuntimeConfig().public.apiBase}inicontent/database/${
 					to.params.database ?? "inicontent"
 				}`,
-				{
-					headers: {
-						"x-forwarded-for": ip,
-						"user-agent": userAgent,
-					},
-				},
+				client.value.ip && client.value.userAgent
+					? {
+							headers: {
+								"x-forwarded-for": client.value.ip,
+								"user-agent": client.value.userAgent,
+							},
+						}
+					: {},
 			)
 		).result;
 

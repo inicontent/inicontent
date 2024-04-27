@@ -52,9 +52,6 @@ export default defineNuxtComponent({
 		});
 
 		const route = useRoute(),
-			device = useState<Device>("device", () => ({
-				width: 0,
-			})),
 			user = useState<User | null>("user"),
 			Theme = useGlobalCookie<string>("Theme"),
 			database = useState<Database>("database", () => ({
@@ -62,14 +59,6 @@ export default defineNuxtComponent({
 				icon: "/favicon.ico",
 			})),
 			ThemeConfig = useState<ThemeConfig>("ThemeConfig");
-
-		onMounted(() => {
-			device.value = { width: window.innerWidth };
-			window.addEventListener(
-				"resize",
-				() => (device.value = { width: window.innerWidth }),
-			);
-		});
 
 		return () =>
 			h(

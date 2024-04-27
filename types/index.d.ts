@@ -107,9 +107,6 @@ declare global {
 		primaryColorSuppl: string;
 		revert?: boolean;
 	};
-	type Device = {
-		width: number;
-	};
 }
 declare module "nuxt/schema" {
 	interface PublicRuntimeConfig {
@@ -127,5 +124,4 @@ export type {
 	Asset,
 	apiResponse,
 	ThemeConfig,
-	Device,
 };
