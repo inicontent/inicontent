@@ -1,6 +1,6 @@
 import { isArrayOfObjects } from "inibase/utils";
 
-function GenerateSearchInOptions(
+function generateSearchInOptions(
 	schema: Schema,
 	{ key, type, children }: Field,
 	path?: string,
@@ -18,7 +18,7 @@ function GenerateSearchInOptions(
 						: !["table", "array", "object"].includes(type),
 				)
 				.map((field) =>
-					GenerateSearchInOptions(schema, field, `${(path ?? "") + key}.`),
+					generateSearchInOptions(schema, field, `${(path ?? "") + key}.`),
 				),
 		};
 	if (type === "table")
@@ -31,7 +31,7 @@ function GenerateSearchInOptions(
 				useState<Database>("database")
 					.value?.tables?.find(({ slug }) => slug === key)
 					?.schema?.map((field, _index, schema) =>
-						GenerateSearchInOptions(schema, field, `${(path ?? "") + key}.`),
+						generateSearchInOptions(schema, field, `${(path ?? "") + key}.`),
 					) ?? [],
 		};
 
@@ -42,4 +42,4 @@ function GenerateSearchInOptions(
 	};
 }
 
-export default GenerateSearchInOptions;
+export default generateSearchInOptions;

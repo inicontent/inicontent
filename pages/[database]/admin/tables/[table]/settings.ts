@@ -389,7 +389,7 @@ export default defineNuxtComponent({
 												? database.value.tables
 														?.find(({ slug }) => slug === field.key)
 														?.schema?.map((_item, _index: number, schema) =>
-															GenerateSearchInOptions(schema, _item),
+															generateSearchInOptions(schema, _item),
 														)
 														.flat(Number.POSITIVE_INFINITY) ?? []
 												: [],
@@ -451,7 +451,7 @@ export default defineNuxtComponent({
 																h(
 																	NDropdown,
 																	{
-																		options: FieldsList(),
+																		options: fieldsList(),
 																		style: {
 																			maxHeight: "200px",
 																		},
@@ -507,7 +507,7 @@ export default defineNuxtComponent({
 													h(
 														NDropdown,
 														{
-															options: FieldsList(),
+															options: fieldsList(),
 															style: {
 																maxHeight: "200px",
 															},
@@ -803,7 +803,7 @@ export default defineNuxtComponent({
 													h(
 														NDropdown,
 														{
-															options: FieldsList(),
+															options: fieldsList(),
 															style: {
 																maxHeight: "200px",
 															},

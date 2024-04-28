@@ -12,8 +12,14 @@ import {
 	NDrawer,
 	NDrawerContent,
 	NRadio,
+	NInputGroup,
 } from "naive-ui";
-import { IconPlus, IconUpload, IconLink, IconBooks } from "@tabler/icons-vue";
+import {
+	IconUpload,
+	IconLink,
+	IconBooks,
+	IconArrowRight,
+} from "@tabler/icons-vue";
 import { getProperty, setProperty, deleteProperty, hasProperty } from "inidot";
 import { LazyAssetCard } from "#components";
 
@@ -40,19 +46,33 @@ export default defineNuxtComponent({
 			field = props.field,
 			path = props.path,
 			database = useState<Database>("database"),
+			assetURL = ref<string>(),
 			CurrentField: any = ref(null),
 			showAssetsModal = ref(false),
+			generateAcceptedFileType = (types: string[]): string => {
+				const RETURN: string[] = [];
+				for (const type of types) {
+					switch (type) {
+						case "image":
+							RETURN.push("image/*");
+							break;
+						case "video":
+							RETURN.push("video/*");
+							break;
+						case "audio":
+							RETURN.push("audio/*");
+							break;
+						case "document":
+							RETURN.push(".doc, .docx, .pdf, .txt, .rtf, .odt");
+							break;
+						case "archive":
+							RETURN.push(".zip, .rar, .7z, .tar, .gz");
+							break;
+					}
+				}
+				return RETURN.join(",");
+			},
 			uploadButtons = [
-				h(
-					NButton,
-					{
-						circle: true,
-						strong: true,
-						secondary: true,
-						size: "tiny",
-					},
-					{ icon: () => h(NIcon, () => h(IconLink)) },
-				),
 				h(
 					NPopover,
 					{
@@ -77,24 +97,69 @@ export default defineNuxtComponent({
 								},
 							),
 						default: () =>
-							h(
-								NInput,
-								{
-									inputProps: { type: "url" },
-									onUpdateValue(url) {
-										CurrentField.value = {
-											path: path,
-											...field,
-										};
-										handleSelectAssets(url);
+							h(NInputGroup, () => [
+								h(
+									NInput,
+									{
+										inputProps: { type: "url" },
+										value: assetURL.value,
+										onUpdateValue(url) {
+											assetURL.value = url;
+										},
+										onKeydown: ({ key }) => {
+											if (key === "Enter") {
+												CurrentField.value = {
+													path: path,
+													...field,
+												};
+												handleSelectAssets(assetURL.value);
+												assetURL.value = undefined;
+											}
+										},
+
+										placeholder: "Link",
+										clearable: true,
 									},
-									placeholder: "Link",
-									clearable: true,
-								},
-								{
-									suffix: () => h(NIcon, () => h(IconLink)),
-								},
-							),
+									{
+										suffix: () => h(NIcon, () => h(IconLink)),
+									},
+								),
+								// TODO: add import asset from url
+								h(
+									NTooltip,
+									{},
+									{
+										trigger: () =>
+											h(NButton, { disabled: true }, () =>
+												h(NIcon, () => h(IconUpload)),
+											),
+										default: () => t("importAsset"),
+									},
+								),
+								h(
+									NTooltip,
+									{},
+									{
+										trigger: () =>
+											h(
+												NButton,
+												{
+													disabled: !assetURL.value,
+													onClick() {
+														CurrentField.value = {
+															path: path,
+															...field,
+														};
+														handleSelectAssets(assetURL.value);
+														assetURL.value = undefined;
+													},
+												},
+												() => h(NIcon, () => h(IconArrowRight)),
+											),
+										default: () => t("insertAsset"),
+									},
+								),
+							]),
 					},
 				),
 				h(
@@ -109,7 +174,10 @@ export default defineNuxtComponent({
 									strong: true,
 									secondary: true,
 									size: "tiny",
-									onClick() {
+									onClick(e) {
+										e.preventDefault();
+										e.stopPropagation();
+
 										CurrentField.value = {
 											path,
 											...field,
@@ -162,7 +230,6 @@ export default defineNuxtComponent({
 						setProperty(modelValue.value, `${CurrentField.value.path}`, [url]);
 				}
 			};
-
 		return () => [
 			h(
 				NFormItem,
@@ -201,7 +268,7 @@ export default defineNuxtComponent({
 							NUpload,
 							{
 								directoryDnd: true,
-								onUpdateFileList: (files) =>
+								onUpdateFileList: (files) => {
 									files.every((file) => !file)
 										? deleteProperty(modelValue.value, path)
 										: setProperty(
@@ -210,11 +277,16 @@ export default defineNuxtComponent({
 												!field.isArray
 													? files
 															.filter((file) => file)
-															.map((file) => file.url)[0]
+															.map((file) =>
+																file.status === "finished" ? file.url : file,
+															)[0]
 													: files
 															.filter((file) => file)
-															.map((file) => file.url),
-											),
+															.map((file) =>
+																file.status === "finished" ? file.url : file,
+															),
+											);
+								},
 								max: !field.isArray ? 1 : undefined,
 								multiple: !!field.isArray,
 								accept: field.accept
@@ -223,47 +295,45 @@ export default defineNuxtComponent({
 								action: `${useRuntimeConfig().public.apiBase}${
 									database.value.slug ?? "inicontent"
 								}/asset`,
-								fileList: hasProperty(modelValue.value, path)
-									? ([]
-											.concat(getProperty(modelValue.value, path, []))
-											.filter((src) => src)
-											.map((src: string | object) =>
-												typeof src === "object"
-													? src
-													: {
-															id: src
-																.split("/")
-																.pop()
-																?.split("#")[0]
-																?.split("?")[0],
-															name: src
-																.split("/")
-																.pop()
-																?.split("#")[0]
-																?.split("?")[0],
-															status: "finished",
-															url: src,
-															thumbnailUrl:
-																src.includes("inicontent") &&
-																[
-																	"png",
-																	"jpg",
-																	"jpeg",
-																	"ico",
-																	"webp",
-																	"svg",
-																	"gif",
-																].includes(src?.split(".")?.pop() ?? "")
-																	? `${src}?fit=94`
-																	: null,
-														},
-											) as any)
-									: undefined,
+								responseType: "json",
+								fileList: []
+									.concat(getProperty(modelValue.value, path, []))
+									.filter((src) => src)
+									.map((src: string | object) =>
+										typeof src === "object"
+											? src
+											: {
+													id: src
+														.split("/")
+														.pop()
+														?.split("#")[0]
+														?.split("?")[0],
+													name: src
+														.split("/")
+														.pop()
+														?.split("#")[0]
+														?.split("?")[0],
+													status: "finished",
+													url: src,
+													thumbnailUrl:
+														src.includes("inicontent") &&
+														[
+															"png",
+															"jpg",
+															"jpeg",
+															"ico",
+															"webp",
+															"svg",
+															"gif",
+														].includes(src?.split(".")?.pop() ?? "")
+															? `${src}?fit=94`
+															: null,
+												},
+									) as any,
 								onFinish: ({ file, event }: any) => {
 									if (event?.target?.response) {
-										const response = JSON.parse(event.target.response).result;
-										file.url = response.publicURL;
-										file.name = response.name;
+										file.url = event.target.response.result.publicURL;
+										file.name = event.target.response.result.name;
 										return file;
 									}
 									return file;

@@ -27,14 +27,14 @@ import { detectFieldType } from "inibase/utils";
 import Inison from "inison";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 
-type FieldsListType = {
+type fieldsListType = {
 	label: string;
 	key: string;
 	icon: any;
-	children?: FieldsListType[];
+	children?: fieldsListType[];
 };
 
-export default function FieldsList(): SelectMixedOption[] {
+export default function fieldsList(): SelectMixedOption[] {
 	useLanguage({
 		ar: {
 			fields: {
@@ -212,7 +212,7 @@ const defaultUnfoundField = {
 };
 
 export function flatFieldsList() {
-	return FieldsList().flatMap(({ label, key, icon, children }) => [
+	return fieldsList().flatMap(({ label, key, icon, children }) => [
 		{ label, key, icon },
 		...((children as any) ?? []),
 	]);

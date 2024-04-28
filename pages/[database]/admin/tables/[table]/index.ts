@@ -1198,7 +1198,7 @@ export default defineNuxtComponent({
 																				)
 																				?.schema?.map(
 																					(_item, _index: number, schema) =>
-																						GenerateSearchInOptions(
+																						generateSearchInOptions(
 																							schema,
 																							_item,
 																						),
@@ -1220,7 +1220,7 @@ export default defineNuxtComponent({
 																				"number",
 																				"date",
 																			])
-																				? ComparisonOperatorOptions().filter(
+																				? comparisonOperatorOptions().filter(
 																						({ value }) =>
 																							[
 																								"=",
@@ -1231,7 +1231,7 @@ export default defineNuxtComponent({
 																								"<=",
 																							].includes(value),
 																					)
-																				: ComparisonOperatorOptions().filter(
+																				: comparisonOperatorOptions().filter(
 																						({ value }) =>
 																							![">", ">=", "<", "<="].includes(
 																								value,
