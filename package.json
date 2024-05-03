@@ -9,8 +9,11 @@
 		"postinstall": "nuxt prepare"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.6.4",
-		"@nuxtjs/device": "^3.1.1"
+		"@nuxtjs/device": "^3.1.1",
+		"nuxt": "^3.11.2",
+		"vue": "^3.4.21",
+		"vue-bundle-renderer": "^2.0.0",
+		"vue-router": "^4.3.0"
 	},
 	"dependencies": {
 		"@tabler/icons-vue": "^2.47.0",
@@ -19,10 +22,6 @@
 		"inison": "1.0.0-rc.2",
 		"naive-ui": "^2.38.1",
 		"node-vibrant": "3.1.6",
-		"nuxt": "^3.11.2",
-		"vue": "^3.4.21",
-		"vue-bundle-renderer": "^2.0.0",
-		"vue-router": "^4.3.0",
 		"vuedraggable": "4.1.0"
 	}
 }

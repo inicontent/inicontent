@@ -1,9 +1,7 @@
 <div id="loaderDIV">
     <svg width="283.953125" height="60.5859375" viewBox="0 0 283.953125 62.5859375" xmlns="http://www.w3.org/2000/svg"
         style="vertical-align: text-top;">
-        <g id="loaderSVG" stroke-linecap="round" stroke="#000" fill="transparent" style="fill:transparent; fill-opacity:0;
-          stroke:#333333;
-          stroke-width:2px;">
+        <g id="loaderSVG" stroke-linecap="round" stroke="#000" fill="transparent">
             <path d="M10.87 60L5.89 60L5.89 17.17L10.87 17.17L10.87 60Z"
                 style="stroke-dasharray: 95, 97;stroke-dashoffset: 96;animation: 1000ms linear 0ms infinite alternate forwards running STAdraw;">
             </path>
@@ -46,24 +44,6 @@
         </g>
     </svg>
 </div>
-<script>
-    function getCookie(cname) {
-        var name = cname + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i].trim();
-            if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
-        }
-        return "";
-    }
-    window.onload = function () {
-        const currentTheme = getCookie('Theme')
-        if (currentTheme === "dark") {
-            document.getElementById('loaderDIV').style.backgroundColor = "#18181c";
-            document.getElementById('loaderSVG').style.stroke = "#fff";
-        }
-    }
-</script>
 <style>
     #loaderDIV {
         display: flex;
@@ -79,6 +59,13 @@
         overflow: hidden;
     }
 
+    #loaderSVG {
+        fill: transparent;
+        fill-opacity: 0;
+        stroke: #333333;
+        stroke-width: 2px;
+    }
+
     #loaderSVG path {
         animation: 1000ms linear 0ms infinite normal forwards running STAdraw
     }
@@ -87,6 +74,16 @@
         to {
             stroke-dashoffset: 0;
             fill-opacity: 1;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        #loaderDIV {
+            background-color: #18181c;
+        }
+
+        #loaderSVG {
+            stroke: #fff;
         }
     }
 </style>
