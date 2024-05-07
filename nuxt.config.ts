@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
-	modules: ["@nuxtjs/device"],
+	modules: ["@nuxtjs/device", "nuxtjs-naive-ui"],
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 	css: ["~/assets/main.css"],
 	runtimeConfig: {
 		public: {
-			apiBase: "https://test-api.inicontent.com/", // "INIa" in binary
+			apiBase: "http://localhost:3433/", // "INIa" in binary
 		},
 	},
 });

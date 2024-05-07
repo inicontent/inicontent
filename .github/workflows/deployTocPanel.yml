@@ -1,53 +1,24 @@
-name: 🚀 Deploy API to cPanel
+name: 🚀 Deploy
 on:
   push:
     branches:
       - main
 jobs:
-  FTP-Deploy-Action:
+  Deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v4
+      - name: Deploy
+        uses: appleboy/ssh-action@master
         with:
-          fetch-depth: 2
-
-      - name: Use Node.js 21
-        uses: actions/setup-node@v4
-        with:
-          node-version: 21
-
-      - uses: pnpm/action-setup@v3
-        name: Install pnpm
-        with:
-          version: 8
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build app
-        run: pnpm build
-
-      - name: 📂 Sync folders and files to the server
-        uses: SamKirkland/FTP-Deploy-Action@4.3.3
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./.output/
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd ${{ secrets.SSH_PATH }}
+            git pull --quiet
+            npm install --silent
+            npm run build --silent
+            pm2 restart ${{ secrets.SSH_APP_NAME }} --silent

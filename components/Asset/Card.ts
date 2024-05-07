@@ -32,6 +32,7 @@ export default defineNuxtComponent({
 			router = useRouter(),
 			pagination = reactive({
 				page: route.query.page ? Number(route.query.page) : 1,
+				pageCount: 0,
 				pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
 				showSizePicker: true,
 				itemCount: 0,
@@ -70,7 +71,7 @@ export default defineNuxtComponent({
 						Loading.value.AssetData = false;
 
 						if (res.options.total === 0) pagination.showSizePicker = false;
-						// pagination.pageCount = res.options.total_pages;
+						pagination.pageCount = res.options.total_pages;
 						pagination.itemCount = res.options.total;
 						return res.result;
 					},
@@ -124,17 +125,17 @@ export default defineNuxtComponent({
 								{
 									modelValue: assets.value,
 									"onUpdate:modelValue": (v: Asset[]) => (assets.value = v),
-									isAssetRoute:
+									isAssetRoute: !!(
 										route.params.folder || route.params.folder === ""
-											? true
-											: false,
+									),
 									targetID: props.targetID ?? "assets_card",
 								},
 								slots.default ? slots.default : undefined,
 							),
-							pagination.itemCount
+							pagination.itemCount && pagination.pageCount > 1
 								? h(NPagination, {
-										simple: isMobile,
+										style: { marginTop: "25px" },
+										simple: !!isMobile,
 										pageSizes: [15, 30, 60, 100, 500],
 										prefix: ({ itemCount }: any) => itemCount,
 										onUpdatePage: async (currentPage: number) => {

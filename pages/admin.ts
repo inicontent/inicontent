@@ -9,6 +9,7 @@ import {
 	NCollapse,
 	NCollapseItem,
 	type FormInst,
+	NEmpty,
 } from "naive-ui";
 import {
 	IconPlus,
@@ -41,7 +42,9 @@ export default defineNuxtComponent({
 			{ data: databases } = await useFetch<apiResponse<Database[]>>(
 				`${useRuntimeConfig().public.apiBase}inicontent/database`,
 			),
-			defaultOpenedDatabase = ref(databases.value?.result[0]?.slug ?? null),
+			defaultOpenedDatabase = ref(
+				databases.value?.result?.length ? databases.value.result[0].slug : null,
+			),
 			ShowDatabaseModal = ref(false),
 			DatabaseRef = ref<FormInst | null>(null),
 			DatabaseModal = ref<Database>(),
@@ -252,7 +255,7 @@ export default defineNuxtComponent({
 											),
 										),
 								)
-							: null,
+							: h(NEmpty),
 					],
 				},
 			);

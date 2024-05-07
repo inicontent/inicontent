@@ -26,6 +26,7 @@ export default defineComponent({
 		const route = useRoute(),
 			{ isMobile } = useDevice(),
 			user = useState<User>("user"),
+			table = useState<Table>("table"),
 			isMenuOpen = useState("isMenuOpen", () => false),
 			database = useState<Database>("database"),
 			renderSingleItem = ({ slug, allowedMethods }: Table) => ({
@@ -192,25 +193,21 @@ export default defineComponent({
 														.map(renderSingleItem) ?? []),
 												]
 											: []) as any,
-										defaultExpandedKeys: (route.params.table ||
-										route.path.split("/").filter(Boolean)?.length
-											? [
-													route.params.table ??
-														route.path.split("/").filter(Boolean).at(-1),
-												]
-											: []) as any,
+										expandedKeys: table.value?.slug
+											? [table.value?.slug]
+											: undefined,
 										value: (() => {
 											const lastPathInRoute = route.path
 												.split("/")
 												.filter(Boolean)
 												.at(-1);
-											if (route.params.table) {
+											if (table.value?.slug) {
 												if (
 													lastPathInRoute &&
-													lastPathInRoute !== route.params.table
+													lastPathInRoute !== table.value.slug
 												)
-													return `${route.params.table}-${lastPathInRoute}` as string;
-												return route.params.table as string;
+													return `${table.value.slug}-${lastPathInRoute}`;
+												return table.value.slug;
 											}
 											return lastPathInRoute;
 										})(),
