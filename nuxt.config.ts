@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 	css: ["~/assets/main.css"],
 	runtimeConfig: {
 		public: {
-			apiBase: "http://localhost:3433/", // "INIa" in binary
+			apiBase: "https://test-api.inicontent.com/",
 		},
 	},
 });
