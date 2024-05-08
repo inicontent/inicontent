@@ -125,9 +125,9 @@ export default defineNuxtComponent({
 							user.value = data.result;
 							database.value = (
 								await $fetch<any>(
-									`${useRuntimeConfig().public.apiBase}${
+									`${useRuntimeConfig().public.apiBase}inicontent/database/${
 										database.value.slug
-									}/database/${database.value.slug}`,
+									}`,
 								)
 							).result;
 							navigateTo(
