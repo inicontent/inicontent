@@ -59,14 +59,7 @@ export default defineNuxtComponent({
 			database = useState<Database>("database"),
 			message = useMessage(),
 			databaseRef = ref<FormInst | null>(null),
-			databaseCopy = ref(
-				JSON.parse(
-					JSON.stringify({
-						...database.value,
-						roles: database.value.roles?.map(({ name }) => name),
-					}),
-				),
-			),
+			databaseCopy = ref(JSON.parse(JSON.stringify(database.value))),
 			updateDatabase = async () => {
 				databaseRef.value?.validate(async (errors) => {
 					if (!errors) {
@@ -238,10 +231,23 @@ export default defineNuxtComponent({
 																	id: 5,
 																	key: "roles",
 																	type: "array",
-																	subType: "tags",
-																	children: "string",
+																	children: [
+																		{
+																			id: 6,
+																			key: "id",
+																			type: "id",
+																			inputProps: {
+																				disabled: true,
+																			},
+																		},
+																		{
+																			id: 7,
+																			key: "name",
+																			type: "string",
+																		},
+																	],
+																	onCreate: { id: `temp-${randomID()}` },
 																	disabledItems: [0, 1, 2],
-																	defaultValue: ["admin", "user", "guest"],
 																	required: false,
 																},
 															],

@@ -471,7 +471,7 @@ export default defineNuxtComponent({
 																		h(
 																			NButton,
 																			{
-																				disabled: element.key ? false : true,
+																				disabled: !element.key,
 																				circle: true,
 																				size: "small",
 																			},

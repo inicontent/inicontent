@@ -62,6 +62,8 @@ export default defineNuxtComponent({
 								body: bodyContent,
 							},
 						);
+						Loading.value.Database = false;
+
 						if (!data.result) return message.error(data.message);
 
 						if (databases.value) {
@@ -70,11 +72,8 @@ export default defineNuxtComponent({
 							else databases.value.result = [data.result];
 							defaultOpenedDatabase.value = data.result.slug;
 						}
-						Loading.value.Database = false;
 						ShowDatabaseModal.value = false;
 						message.success(data.message);
-
-						Loading.value.Database = false;
 					} else message.error("The inputs are Invalid");
 				});
 			};

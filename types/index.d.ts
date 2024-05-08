@@ -10,7 +10,8 @@ type CMS_FieldType =
 	| "color"
 	| "select"
 	| "role";
-
+type onCreateCallback = (index: number) => onCreateType;
+type onCreateType = string | number | boolean | null | Record<any, any>;
 declare global {
 	type Field = {
 		id?: string | number;
@@ -31,7 +32,7 @@ declare global {
 		values?: (string | number)[];
 		labelProps?: any;
 		inputProps?: any;
-		onCreate?: any;
+		onCreate?: onCreateType | onCreateType[] | onCreateCallback;
 		disabledItems?: number[];
 		isTable?: boolean;
 		disableActions?: boolean;
