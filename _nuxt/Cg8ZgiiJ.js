@@ -1,0 +1,1 @@
+import{E as s}from"./bOr_GTnX.js";function h(o,t,n=!1,c,f){if(!t)return"";for(const e of o){const i=f?`${f}.${e.key}`:e.key;if(e.id===t)return i;if(e.type==="array"&&e.children&&s(e.children)){let r="";if(r=h(e.children,t,n,void 0,i+(n?".*":".")),r)return r}else if(e.children&&s(e.children)){const r=h(e.children,t,n,void 0,i);if(r)return r}}return""}export{h as g};

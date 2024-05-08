@@ -1,0 +1,1 @@
+function o(n){n||(n=0);const h=1024;if(Math.abs(n)<h)return`${n} B`;const B=["kB","MB","GB","TB","PB","EB","ZB","YB"];let t=-1;const i=10**2;do n/=h,++t;while(Math.round(Math.abs(n)*i)/i>=h&&t<B.length-1);return`${n.toFixed(2)} ${B[t]}`}export{o as h};
