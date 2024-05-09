@@ -1,1 +1,0 @@
-import{aD as c,a7 as d,cM as r,dm as u,dn as i}from"./bOr_GTnX.js";function f(n){const{mergedLocaleRef:o,mergedDateLocaleRef:a}=c(r,null)||{},t=d(()=>{var e,l;return(l=(e=o==null?void 0:o.value)===null||e===void 0?void 0:e[n])!==null&&l!==void 0?l:u[n]});return{dateLocaleRef:d(()=>{var e;return(e=a==null?void 0:a.value)!==null&&e!==void 0?e:i}),localeRef:t}}export{f as u};
