@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 	css: ["~/assets/main.css"],
 	runtimeConfig: {
 		public: {
-			apiBase: "https://test-api.inicontent.com/",
+			apiBase: "https://test.api.inicontent.com/",
 		},
 	},
 });
