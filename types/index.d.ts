@@ -37,7 +37,6 @@ declare global {
 		isTable?: boolean;
 		disableActions?: boolean;
 		defaultValue?: any;
-		children?: string | string[] | Schema;
 	};
 	type Schema = Field[];
 	type FlowType = (
@@ -99,7 +98,7 @@ declare global {
 		createdAt?: number;
 		updatedAt?: number;
 		publicURL?: string;
-		user?: any;
+		createdBy?: Record<string,string|number|boolean|null>;
 	};
 	type ThemeConfig = {
 		primaryColor: string;

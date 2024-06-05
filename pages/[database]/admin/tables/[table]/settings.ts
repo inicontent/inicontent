@@ -305,7 +305,9 @@ export default defineNuxtComponent({
 											},
 										],
 										value: field.accept,
-										onUpdateValue: (v) => (field.accept = v),
+										onUpdateValue: (v) => {
+											field.accept = v;
+										},
 									}),
 							),
 						];
@@ -319,7 +321,9 @@ export default defineNuxtComponent({
 								() =>
 									h(NSelect, {
 										value: field.values,
-										onUpdateValue: (v) => (field.values = [...new Set(v)]),
+										onUpdateValue: (v) => {
+											field.values = [...new Set(v)];
+										},
 										filterable: true,
 										multiple: true,
 										tag: true,
@@ -338,7 +342,9 @@ export default defineNuxtComponent({
 								() =>
 									h(NSelect, {
 										value: field.children,
-										onUpdateValue: (v) => (field.children = v),
+										onUpdateValue: (v) => {
+											field.children = v;
+										},
 										filterable: true,
 										multiple: true,
 										renderLabel: (option: any) =>
@@ -384,7 +390,9 @@ export default defineNuxtComponent({
 											checkStrategy: "child",
 											cascade: false,
 											value: field.searchIn,
-											onUpdateValue: (v) => (field.searchIn = v),
+											onUpdateValue: (v) => {
+												field.searchIn = v;
+											},
 											options: field.key
 												? database.value.tables
 														?.find(({ slug }) => slug === field.key)
@@ -456,8 +464,8 @@ export default defineNuxtComponent({
 																			maxHeight: "200px",
 																		},
 																		scrollable: true,
-																		onSelect: (type) =>
-																			(schema[index].children = [
+																		onSelect: (type) => {
+																			schema[index].children = [
 																				...(schema[index].children ?? []),
 																				{
 																					id: `temp-${randomID()}`,
@@ -465,7 +473,8 @@ export default defineNuxtComponent({
 																					required: false,
 																					...handleSelectedType(type),
 																				},
-																			]),
+																			];
+																		},
 																	},
 																	() =>
 																		h(
@@ -493,9 +502,10 @@ export default defineNuxtComponent({
 																		type: schema[index].required
 																			? "error"
 																			: "tertiary",
-																		onClick: () =>
-																			(schema[index].required =
-																				!schema[index].required),
+																		onClick: () => {
+																			schema[index].required =
+																				!schema[index].required;
+																		},
 																	},
 																	{
 																		icon: () => h(NIcon, () => h(IconAsterisk)),
@@ -513,11 +523,12 @@ export default defineNuxtComponent({
 															},
 															trigger: "click",
 															scrollable: true,
-															onSelect: (type) =>
-																(schema[index] = changeFieldType(
+															onSelect: (type) => {
+																schema[index] = changeFieldType(
 																	schema[index],
 																	type,
-																)),
+																);
+															},
 														},
 														() =>
 															h(
@@ -569,8 +580,9 @@ export default defineNuxtComponent({
 																		h(NSelect, {
 																			filterable: true,
 																			value: schema[index].table,
-																			onUpdateValue: (v) =>
-																				(schema[index].table = v),
+																			onUpdateValue: (v) => {
+																				schema[index].table = v;
+																			},
 																			options: database.value.tables
 																				?.filter(
 																					({ slug }) =>
@@ -605,8 +617,9 @@ export default defineNuxtComponent({
 																	default: () =>
 																		h(NInput, {
 																			value: schema[index].key,
-																			onUpdateValue: (v) =>
-																				(schema[index].key = v),
+																			onUpdateValue: (v) => {
+																				schema[index].key = v;
+																			},
 																		}),
 																},
 															),
@@ -628,6 +641,7 @@ export default defineNuxtComponent({
 			): MentionOption[] => {
 				let RETURN: MentionOption[] = [];
 				for (const field of schema) {
+					if (field.id?.toString().startsWith("temp-")) continue;
 					if (
 						(Array.isArray(field.type) && field.subType !== "tags") ||
 						(field.type === "array" &&
@@ -753,8 +767,9 @@ export default defineNuxtComponent({
 														() =>
 															h(NMention, {
 																value: tableCopy.value.label,
-																onUpdateValue: (value) =>
-																	(tableCopy.value.label = value),
+																onUpdateValue: (value) => {
+																	tableCopy.value.label = value;
+																},
 																options: generateMentionOptions(
 																	database.value.tables?.find(
 																		({ slug }) => slug === route.params.table,
@@ -792,9 +807,10 @@ export default defineNuxtComponent({
 																				type: showDraggable.value
 																					? "primary"
 																					: "default",
-																				onClick: () =>
-																					(showDraggable.value =
-																						!showDraggable.value),
+																				onClick: () => {
+																					showDraggable.value =
+																						!showDraggable.value;
+																				},
 																			},
 																			() => h(NIcon, () => h(IconArrowsSort)),
 																		),

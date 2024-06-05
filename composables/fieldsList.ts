@@ -126,6 +126,11 @@ export default function fieldsList(): SelectMixedOption[] {
 			children: [
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
+					label: t("fields.number"),
+					key: "number",
+					icon: () => h(NIcon, () => h(IconNumber)),
+				},
+				{
 					label: t("fields.slider"),
 					key: "slider",
 					icon: () => h(NIcon, () => h(IconTimelineEvent)),
