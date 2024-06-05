@@ -1,0 +1,1 @@
+import{g as a}from"./BtRqfh9V.js";import{D as d,B as f}from"./DzT9_g3s.js";function c(e,t,r){if(!e||!t)return`#${(r==null?void 0:r.id)??"--"}`;const n=/@(\w+)/g;return e.replace(n,(p,g)=>{const o=d(g,t);return o?f(r,a(t,o.id)):""})}export{c as r};
