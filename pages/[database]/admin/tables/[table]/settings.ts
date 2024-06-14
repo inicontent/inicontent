@@ -173,7 +173,7 @@ export default defineNuxtComponent({
 						const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
 						Loading.value.updateTable = true;
 
-						const data = await $fetch<apiResponse>(
+						const data = await $fetch<apiResponse<Table>>(
 							`${useRuntimeConfig().public.apiBase}inicontent/database/${
 								database.value.slug
 							}/${route.params.table}`,
@@ -185,14 +185,32 @@ export default defineNuxtComponent({
 						const tableIndex = database.value.tables?.findIndex(
 							({ slug }) => slug === route.params.table,
 						);
-						if (tableIndex && database.value.tables && data?.result) {
+						if (
+							tableIndex !== undefined &&
+							tableIndex !== -1 &&
+							database.value.tables &&
+							data?.result
+						) {
 							database.value.tables[tableIndex] = data.result;
+							if (data.result.schema)
+								data.result.schema = data.result.schema.filter(
+									({ key }) =>
+										![
+											"id",
+											"createdAt",
+											"createdBy",
+											"updatedAt",
+											"user",
+										].includes(key),
+								);
+							tableCopy.value = data.result;
+
 							if (route.params.table !== data.result.slug)
 								router.replace({
 									params: { table: data.result.slug },
 								});
-							message.success(data?.message ?? "Success");
-						} else message.error(data?.message ?? "Error");
+							message.success(data?.message ?? t("success"));
+						} else message.error(data?.message ?? t("error"));
 						Loading.value.updateTable = false;
 					} else message.error("The inputs are Invalid");
 				});
@@ -211,19 +229,19 @@ export default defineNuxtComponent({
 					const tableIndex = database.value.tables?.findIndex(
 						({ slug }) => slug === route.params.table,
 					);
-					if (tableIndex)
+					if (tableIndex !== undefined && tableIndex !== -1)
 						database.value.tables = database.value.tables?.toSpliced(
 							tableIndex,
 							1,
 						);
 					Loading.value.deleteTable = false;
-					message.success(data?.message ?? "Success");
+					message.success(data?.message ?? t("success"));
 					setTimeout(
 						async () =>
 							await navigateTo(`/${database.value.slug}/admin/tables`),
 						800,
 					);
-				} else message.error(data?.message ?? "Error");
+				} else message.error(data?.message ?? t("error"));
 				Loading.value.deleteTable = false;
 			},
 			GenerateLabelOptions = (
@@ -376,6 +394,32 @@ export default defineNuxtComponent({
 							h(
 								NFormItem,
 								{
+									label: t("tableName"),
+								},
+								{
+									default: () =>
+										h(NSelect, {
+											filterable: true,
+											value: field.table,
+											onUpdateValue: (v) => {
+												field.table = v;
+											},
+											options: database.value.tables
+												?.filter(
+													({ slug }) =>
+														slug !== route.params.table ||
+														route.params.table === "user",
+												)
+												.map(({ slug, id }) => ({
+													label: t(slug),
+													value: slug,
+												})),
+										}),
+								},
+							),
+							h(
+								NFormItem,
+								{
 									disabled: !field.key,
 									label: t("searchIn"),
 								},
@@ -413,6 +457,9 @@ export default defineNuxtComponent({
 				h(
 					NCollapse,
 					{
+						style: {
+							marginTop: "15px",
+						},
 						accordion: true,
 						triggerAreas: ["main", "arrow"],
 					},
@@ -567,69 +614,35 @@ export default defineNuxtComponent({
 														},
 													),
 												]),
-											default: () =>
-												element.type === "table"
-													? [
-															h(
-																NFormItem,
-																{
-																	label: "Table Name",
+											default: () => [
+												h(
+													NFormItem,
+													{
+														label: t("fieldName"),
+													},
+													{
+														feedback: () =>
+															`#${getPath(
+																tableCopy.value.schema,
+																element.id,
+																true,
+															)}`,
+														default: () =>
+															h(NInput, {
+																value: schema[index].key,
+																onUpdateValue: (v) => {
+																	schema[index].key = v;
 																},
-																{
-																	default: () =>
-																		h(NSelect, {
-																			filterable: true,
-																			value: schema[index].table,
-																			onUpdateValue: (v) => {
-																				schema[index].table = v;
-																			},
-																			options: database.value.tables
-																				?.filter(
-																					({ slug }) =>
-																						slug !== route.params.table ||
-																						route.params.table === "user",
-																				)
-																				.map(({ slug, id }) => ({
-																					label: t(slug),
-																					value: slug,
-																				})),
-																		}),
-																},
-															),
-															...CustomFields(schema[index]),
-														]
-													: [
-															h(
-																NFormItem,
-																{
-																	label: t("fieldName"),
-																	style: {
-																		marginBottom: "30px",
-																	},
-																},
-																{
-																	feedback: () =>
-																		`#${getPath(
-																			tableCopy.value.schema,
-																			element.id,
-																			true,
-																		)}`,
-																	default: () =>
-																		h(NInput, {
-																			value: schema[index].key,
-																			onUpdateValue: (v) => {
-																				schema[index].key = v;
-																			},
-																		}),
-																},
-															),
-															...CustomFields(schema[index]),
-															element.children &&
-															["array", "object"].includes(element.type) &&
-															isArrayOfObjects(element.children)
-																? RenderSchemaElement(element.children)
-																: null,
-														],
+															}),
+													},
+												),
+												...CustomFields(schema[index]),
+												element.children &&
+												["array", "object"].includes(element.type) &&
+												isArrayOfObjects(element.children)
+													? RenderSchemaElement(element.children)
+													: null,
+											],
 										},
 									),
 							},

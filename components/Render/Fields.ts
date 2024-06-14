@@ -160,6 +160,7 @@ export default defineNuxtComponent({
 								h(
 									NCollapseItem,
 									{
+										displayDirective: "show",
 										title: t(field.key),
 										name:
 											(path ?? "") +

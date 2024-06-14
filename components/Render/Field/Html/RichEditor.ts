@@ -107,7 +107,9 @@ export default defineNuxtComponent({
 				NDrawer,
 				{
 					show: showAssetsModal.value,
-					"on-update:show": (v: boolean) => (showAssetsModal.value = v),
+					"on-update:show": (v: boolean) => {
+						showAssetsModal.value = v;
+					},
 					defaultHeight: "50%",
 					placement: "bottom",
 					resizable: true,
@@ -132,15 +134,15 @@ export default defineNuxtComponent({
 								(asset: Asset) =>
 									asset.type !== "folder"
 										? h(NRadio, {
-											onUpdateChecked() {
-												document.execCommand(
-													"insertimage",
-													undefined,
-													asset.publicURL,
-												);
-												showAssetsModal.value = false;
-											},
-										})
+												onUpdateChecked() {
+													document.execCommand(
+														"insertimage",
+														undefined,
+														asset.publicURL,
+													);
+													showAssetsModal.value = false;
+												},
+											})
 										: null,
 							),
 					),
@@ -273,9 +275,9 @@ export default defineNuxtComponent({
 													disabled: !isFocused.value,
 													type:
 														currentSelection.value &&
-															currentSelection.value.commonAncestorContainer.parentElement.tagName
-																.toLowerCase()
-																.charAt(0) === "h"
+														currentSelection.value.commonAncestorContainer.parentElement.tagName
+															.toLowerCase()
+															.charAt(0) === "h"
 															? "primary"
 															: "default",
 												},
@@ -409,19 +411,19 @@ export default defineNuxtComponent({
 											},
 											value: currentSelection.value
 												? (
-													{
-														"xxx-large": 7,
-														"xx-large": 6,
-														"x-large": 5,
-														large: 4,
-														medium: 3,
-														small: 2,
-														"x-small": 1,
-													} as any
-												)[
-												currentSelection.value.commonAncestorContainer
-													.parentElement.style.fontSize
-												]
+														{
+															"xxx-large": 7,
+															"xx-large": 6,
+															"x-large": 5,
+															large: 4,
+															medium: 3,
+															small: 2,
+															"x-small": 1,
+														} as any
+													)[
+														currentSelection.value.commonAncestorContainer
+															.parentElement.style.fontSize
+													]
 												: null,
 											options: [
 												{
@@ -509,28 +511,30 @@ export default defineNuxtComponent({
 								() => [
 									user.value
 										? h(
-											NButton,
-											{
-												disabled: !isFocused.value,
-												type:
-													currentSelection.value &&
+												NButton,
+												{
+													disabled: !isFocused.value,
+													type:
+														currentSelection.value &&
 														currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
-														"img"
-														? "primary"
-														: "default",
-												onmousedown: () => (showAssetsModal.value = true),
-											},
-											{ icon: () => h(NIcon, () => h(IconUpload)) },
-										)
+															"img"
+															? "primary"
+															: "default",
+													onmousedown: () => {
+														showAssetsModal.value = true;
+													},
+												},
+												{ icon: () => h(NIcon, () => h(IconUpload)) },
+											)
 										: null,
 									h(
 										NPopover,
 										{
 											disabled: !isFocused.value,
-											"on-update:show": (show: boolean) =>
-												show
-													? (currentSelection.value = saveSelection())
-													: restoreSelection(currentSelection.value),
+											"on-update:show": (show: boolean) => {
+												if (show) currentSelection.value = saveSelection();
+												else restoreSelection(currentSelection.value);
+											},
 										},
 										{
 											trigger: () =>
@@ -540,7 +544,7 @@ export default defineNuxtComponent({
 														disabled: !isFocused.value,
 														type:
 															currentSelection.value &&
-																currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
+															currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
 																"a"
 																? "primary"
 																: "default",
@@ -557,8 +561,9 @@ export default defineNuxtComponent({
 														},
 														size: "small",
 														value: aHref.value,
-														"on-update:value": (url: string) =>
-															(aHref.value = url),
+														"on-update:value": (url: string) => {
+															aHref.value = url;
+														},
 													}),
 													h(
 														NButton,
@@ -672,8 +677,8 @@ export default defineNuxtComponent({
 													style:
 														Language.value === "ar"
 															? {
-																transform: "scaleX(-1)",
-															}
+																	transform: "scaleX(-1)",
+																}
 															: null,
 												},
 												() => h(IconArrowBackUp),
@@ -694,8 +699,8 @@ export default defineNuxtComponent({
 													style:
 														Language.value === "ar"
 															? {
-																transform: "scaleX(-1)",
-															}
+																	transform: "scaleX(-1)",
+																}
 															: null,
 												},
 												() => h(IconArrowForwardUp),
@@ -721,17 +726,22 @@ export default defineNuxtComponent({
 								},
 								id: id,
 								innerHTML: modelValue.value,
-								onFocusin: () => (isFocused.value = true),
-								onFocusout: () => (isFocused.value = false),
+								onFocusin: () => {
+									isFocused.value = true;
+								},
+								onFocusout: () => {
+									isFocused.value = false;
+								},
 								onKeydown: (e: KeyboardEvent) => {
 									if (!(e.key === "Enter" && (e.ctrlKey || e.metaKey))) return;
 									e.preventDefault();
 									document.execCommand("insertParagraph", false, "");
 								},
-								onInput: (event: InputEvent) =>
-								(modelValue.value = (
-									event?.target as HTMLElement | undefined
-								)?.innerHTML),
+								onInput: (event: InputEvent) => {
+									modelValue.value = (
+										event?.target as HTMLElement | undefined
+									)?.innerHTML;
+								},
 								contenteditable: true,
 							}),
 					),

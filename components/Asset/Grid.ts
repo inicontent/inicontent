@@ -58,8 +58,8 @@ export default defineNuxtComponent({
 
 					if (database.value.size)
 						database.value.size -= singleAsset?.size ?? 0;
-					message.success(data?.message ?? "Success");
-				} else message.error(data?.message ?? "Error");
+					message.success(data?.message ?? t("success"));
+				} else message.error(data?.message ?? t("error"));
 				Loading.value[`deleteAsset${name}`] = false;
 			};
 

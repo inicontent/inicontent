@@ -9,8 +9,10 @@ export const useLanguage = (messages: Record<string, any>) => {
 };
 
 function formatUnfoundTranslation(input: string, language: string): string {
+	input = decodeURI(input);
 	if (input.includes(".")) input = input.split(".").pop() ?? "";
-	if (language !== "en") return input;
+	if (language !== "en" || input.toUpperCase() === input) return input;
+	if (input.length === 2) return input.toUpperCase();
 
 	const lowercaseWords = [
 		"is",

@@ -222,7 +222,7 @@ export default defineNuxtComponent({
 						(item) => item.id && item.id !== id,
 					);
 				pagination.value.itemCount--;
-				message.success(data?.message ?? "Error");
+				message.success(data?.message ?? t("error"));
 				Loading.value.TableData = false;
 			},
 			RenderSchema = (value: any, field: any): any => {
@@ -1189,7 +1189,9 @@ export default defineNuxtComponent({
 																		tag: true,
 																		filterable: true,
 																		value: item[0],
-																		onUpdateValue: (v, option) => (item[0] = v),
+																		onUpdateValue: (v, option) => {
+																			item[0] = v;
+																		},
 																		options:
 																			database.value.tables
 																				?.find(
@@ -1213,7 +1215,9 @@ export default defineNuxtComponent({
 																		filterable: true,
 																		defaultValue: "=",
 																		value: item[1],
-																		onUpdateValue: (v) => (item[1] = v),
+																		onUpdateValue: (v) => {
+																			item[1] = v;
+																		},
 																		options:
 																			field &&
 																			checkFieldType(field.type, [
@@ -1247,13 +1251,17 @@ export default defineNuxtComponent({
 																				if (!item[2]) item[2] = Date.now();
 																				return h(NDatePicker, {
 																					value: Number(item[2]),
-																					onConfirm: (v) => (item[2] = v),
+																					onConfirm: (v) => {
+																						item[2] = v;
+																					},
 																					type: "datetime",
 																				});
 																			default:
 																				return h(NInput, {
 																					value: item[2],
-																					onUpdateValue: (v) => (item[2] = v),
+																					onUpdateValue: (v) => {
+																						item[2] = v;
+																					},
 																					style: {
 																						width: "33.33%",
 																					},
@@ -1630,8 +1638,9 @@ export default defineNuxtComponent({
 									pagination: pagination.value,
 									rowKey: (row) => row.id,
 									checkedRowKeys: checkedRowKeys.value,
-									"on-update:checked-row-keys": (keys: never[]) =>
-										(checkedRowKeys.value = keys),
+									"on-update:checked-row-keys": (keys: never[]) => {
+										checkedRowKeys.value = keys;
+									},
 									"on-update:sorter": (sorter: any) => console.log(sorter),
 								});
 							},

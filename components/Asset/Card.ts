@@ -99,8 +99,14 @@ export default defineNuxtComponent({
 						route.params.folder || route.params.folder === ""
 							? t("assets")
 							: h(NBreadcrumb, () => [
-									h(NBreadcrumbItem, { onClick: () => (path.value = "") }, () =>
-										t("assets"),
+									h(
+										NBreadcrumbItem,
+										{
+											onClick: () => {
+												path.value = "";
+											},
+										},
+										() => t("assets"),
 									),
 									...(path.value
 										?.split("/")
@@ -109,10 +115,11 @@ export default defineNuxtComponent({
 											h(
 												NBreadcrumbItem,
 												{
-													onClick: () =>
-														(path.value = `/${originalArray
+													onClick: () => {
+														path.value = `/${originalArray
 															.slice(0, index + 1)
-															.join("/")}`),
+															.join("/")}`;
+													},
 												},
 												() => singlePath,
 											),
@@ -124,7 +131,9 @@ export default defineNuxtComponent({
 								LazyAssetGrid,
 								{
 									modelValue: assets.value,
-									"onUpdate:modelValue": (v: Asset[]) => (assets.value = v),
+									"onUpdate:modelValue": (v: Asset[]) => {
+										assets.value = v;
+									},
 									isAssetRoute: !!(
 										route.params.folder || route.params.folder === ""
 									),
@@ -254,12 +263,12 @@ export default defineNuxtComponent({
 											assets.value = assets.value.filter(
 												(asset) => asset.name !== file.name,
 											);
-										message.success(data?.message ?? "Success");
+										message.success(data?.message ?? t("success"));
 										if (database.value.size)
 											database.value.size -= singleAsset?.size ?? 0;
 										return true;
 									}
-									message.error(data?.message ?? "Error");
+									message.error(data?.message ?? t("error"));
 									return false;
 								},
 							},

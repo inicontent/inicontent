@@ -1,24 +1,24 @@
 import { LazyAssetCard } from "#components";
 
 export default defineNuxtComponent({
-  async setup() {
-    definePageMeta({
-      middleware: ["dashboard", "table"],
-      layout: "table",
-    });
+	async setup() {
+		definePageMeta({
+			middleware: ["dashboard", "table"],
+			layout: "table",
+		});
 
-    const route = useRoute(),
-      database = useState<Database>("database");
+		const route = useRoute(),
+			database = useState<Database>("database");
 
-    useHead({
-      title: `${database.value.slug} | ${t("assets")}${
-        route.params.folder
-          ? ` | /${[].concat(route.params.folder as any).join("/")}`
-          : ""
-      }`,
-      link: [{ rel: "icon", href: database.value?.icon ?? "" }],
-    });
+		useHead({
+			title: `${database.value.slug} | ${t("assets")}${
+				route.params.folder
+					? ` | /${[].concat(route.params.folder as any).join("/")}`
+					: ""
+			}`,
+			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+		});
 
-    return () => h(LazyAssetCard);
-  },
+		return () => h(LazyAssetCard);
+	},
 });

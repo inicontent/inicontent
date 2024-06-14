@@ -122,9 +122,10 @@ export default defineNuxtComponent({
 																		},
 																	},
 																	{
-																		default: () => database.value.slug,
+																		default: () => t(database.value.slug),
 																		avatar: () =>
 																			h(NAvatar, {
+																				fallbackSrc: "/favicon.ico",
 																				style: {
 																					backgroundColor: "transparent",
 																				},
@@ -142,9 +143,10 @@ export default defineNuxtComponent({
 																		bordered: false,
 																	},
 																	{
-																		default: () => database.value.slug,
+																		default: () => t(database.value.slug),
 																		avatar: () =>
 																			h(NAvatar, {
+																				fallbackSrc: "/favicon.ico",
 																				src:
 																					database.value.icon ?? "/favicon.ico",
 																			}),
@@ -385,10 +387,12 @@ export default defineNuxtComponent({
 																			{
 																				size: "small",
 																				round: true,
-																				onClick: () =>
-																					Theme.value === "dark"
-																						? (Theme.value = "light")
-																						: (Theme.value = "dark"),
+																				onClick: () => {
+																					Theme.value =
+																						Theme.value === "dark"
+																							? "light"
+																							: "dark";
+																				},
 																			},
 																			{
 																				icon: () =>
@@ -416,7 +420,9 @@ export default defineNuxtComponent({
 																			key: "en",
 																		},
 																	],
-																	onSelect: (v) => (Language.value = v),
+																	onSelect: (v) => {
+																		Language.value = v;
+																	},
 																},
 																() =>
 																	h(

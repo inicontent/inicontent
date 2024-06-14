@@ -67,7 +67,7 @@ export default defineNuxtComponent({
 						database.value.tables?.push(data.result);
 						message.success(data.message);
 						Table.value = null;
-					} else message.error(data.message ?? "Error");
+					} else message.error(data.message ?? t("error"));
 					Loading.value.Table = false;
 				} else message.error("The inputs are Invalid");
 			};
