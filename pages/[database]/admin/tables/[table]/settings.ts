@@ -23,6 +23,8 @@ import {
 	NMention,
 	type FormInst,
 	type MentionOption,
+	NInputNumber,
+	NSwitch,
 } from "naive-ui";
 import {
 	IconDeviceFloppy,
@@ -349,6 +351,53 @@ export default defineNuxtComponent({
 										show: false,
 									}),
 							),
+							h(
+								NFormItem,
+								{
+									labelPlacement: "left",
+									label: t("allowCustomValues"),
+								},
+								() =>
+									h(NSwitch, {
+										value: field.custom,
+										onUpdateValue: (v) => {
+											field.custom = v;
+										},
+									}),
+							),
+							field.type === "array"
+								? h(
+										NFormItem,
+										{
+											label: t("minimumItems"),
+										},
+										() =>
+											h(NInputNumber, {
+												value: field.min,
+												onUpdateValue: (v) => {
+													if (v) field.min = v;
+													else delete field.min;
+												},
+											}),
+									)
+								: null,
+						];
+					case "object":
+						return [
+							h(
+								NFormItem,
+								{
+									labelPlacement: "left",
+									label: t("expandByDefault"),
+								},
+								() =>
+									h(NSwitch, {
+										value: field.expand,
+										onUpdateValue: (v) => {
+											field.expand = v;
+										},
+									}),
+							),
 						];
 					case "tags":
 						return [
@@ -439,7 +488,7 @@ export default defineNuxtComponent({
 											},
 											options: field.key
 												? database.value.tables
-														?.find(({ slug }) => slug === field.key)
+														?.find(({ slug }) => slug === field.table)
 														?.schema?.map((_item, _index: number, schema) =>
 															generateSearchInOptions(schema, _item),
 														)
@@ -448,6 +497,22 @@ export default defineNuxtComponent({
 										}),
 								},
 							),
+							field.type === "array"
+								? h(
+										NFormItem,
+										{
+											label: t("minimumItems"),
+										},
+										() =>
+											h(NInputNumber, {
+												value: field.min,
+												onUpdateValue: (v) => {
+													if (v) field.min = v;
+													else delete field.min;
+												},
+											}),
+									)
+								: null,
 						];
 					default:
 						return [];

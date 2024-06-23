@@ -47,6 +47,7 @@ export default defineNuxtComponent({
 						value: getProperty(modelValue.value, path),
 						onUpdateValue: (value) =>
 							setProperty(modelValue.value, path, value),
+						maxTagCount: "responsive",
 						options:
 							database.value.roles?.map(({ name, id }) => ({
 								label: t(name),

@@ -27,11 +27,14 @@ function formatUnfoundTranslation(input: string, language: string): string {
 	];
 
 	// Split by capital letters and underscores
-	const words = input.split(/(?=[A-Z_])/);
+	const words = input.split(/_(?![A-Z]+)|(?<=[a-z])(?=[A-Z])/);
 
 	// Process each word
 	const formattedWords = words.map((word, index) => {
 		if (word.charAt(0) === "_") word = word.slice(1);
+
+		if (word.toUpperCase() === word) return word.trim();
+
 		// Capitalize the first character
 		if (index === 0 || !lowercaseWords.includes(word.toLowerCase())) {
 			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();

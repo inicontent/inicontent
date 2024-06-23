@@ -37,6 +37,22 @@ declare global {
 		isTable?: boolean;
 		disableActions?: boolean;
 		defaultValue?: any;
+		custom?: boolean;
+		min?: number;
+		max?: number;
+		date?:
+			| "date"
+			| "datetime"
+			| "daterange"
+			| "datetimerange"
+			| "month"
+			| "monthrange"
+			| "year"
+			| "yearrange"
+			| "quarter"
+			| "quarterrange"
+			| "week";
+		expand?: boolean;
 	};
 	type Schema = Field[];
 	type FlowType = (
@@ -98,7 +114,7 @@ declare global {
 		createdAt?: number;
 		updatedAt?: number;
 		publicURL?: string;
-		createdBy?: Record<string,string|number|boolean|null>;
+		createdBy?: Record<string, string | number | boolean | null>;
 	};
 	type ThemeConfig = {
 		primaryColor: string;

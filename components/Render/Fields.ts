@@ -196,7 +196,7 @@ export default defineNuxtComponent({
 							return RenderField(
 								{
 									...field,
-									type: "tags",
+									type: field.children === "table" ? "table" : "tags",
 									isArray: true,
 								} as Field,
 								path,

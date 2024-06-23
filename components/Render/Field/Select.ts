@@ -34,7 +34,7 @@ export default defineNuxtComponent({
 						type: field.isArray ? "array" : "any",
 						required: field.required,
 						trigger: "change",
-						message: "Please select an option",
+						min: field.isArray ? field.min : undefined,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function
@@ -53,6 +53,9 @@ export default defineNuxtComponent({
 							value: value,
 							label: t(value),
 						})),
+						tag: !!field.custom,
+						maxTagCount: "responsive",
+						consistentMenuWidth: false,
 						filterable: true,
 						multiple: !!field.isArray,
 						...(field.inputProps

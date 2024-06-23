@@ -1,5 +1,5 @@
 import { NFormItem, NInputNumber } from "naive-ui";
-import { getProperty, setProperty } from "inidot";
+import { getProperty, hasProperty, setProperty } from "inidot";
 
 export default defineNuxtComponent({
 	props: {
@@ -49,7 +49,9 @@ export default defineNuxtComponent({
 					h(
 						NInputNumber,
 						{
-							value: getProperty(modelValue.value, path),
+							value: hasProperty(modelValue.value, path)
+								? Number(getProperty(modelValue.value, path))
+								: getProperty(modelValue.value, path),
 							onUpdateValue: (value) =>
 								setProperty(modelValue.value, path, value),
 							placeholder: t(field.key),

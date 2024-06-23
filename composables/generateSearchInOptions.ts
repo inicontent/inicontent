@@ -2,7 +2,7 @@ import { isArrayOfObjects } from "inibase/utils";
 
 function generateSearchInOptions(
 	schema: Schema,
-	{ key, type, children }: Field,
+	{ key, type, children, table }: Field,
 	path?: string,
 ): any {
 	if ((type === "object" || type === "array") && isArrayOfObjects(children))
@@ -29,7 +29,7 @@ function generateSearchInOptions(
 			value: (path ?? "") + key,
 			children:
 				useState<Database>("database")
-					.value?.tables?.find(({ slug }) => slug === key)
+					.value?.tables?.find(({ slug }) => slug === table)
 					?.schema?.map((field, _index, schema) =>
 						generateSearchInOptions(schema, field, `${(path ?? "") + key}.`),
 					) ?? [],

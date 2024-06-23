@@ -2,7 +2,7 @@ import {
 	NIcon,
 	NIconWrapper,
 	NButton,
-	NSpace,
+	NFlex,
 	NText,
 	NA,
 	NImage,
@@ -150,7 +150,7 @@ export default defineNuxtComponent({
 										h(NText, { strong: true }, () => `${t(field.key)}: `),
 									),
 								default: () =>
-									h(NSpace, () =>
+									h(NFlex, () =>
 										[]
 											.concat(
 												getProperty(
@@ -183,94 +183,98 @@ export default defineNuxtComponent({
 										h(NText, { strong: true }, () => `${t(field.key)}: `),
 									),
 								default: () =>
-									[]
-										.concat(
-											getProperty(
-												single.value,
-												(path ?? "") +
-													(isAbsolutePath
-														? ""
-														: getPath(props.schema, field.id)),
-											),
-										)
-										.map((item: any) =>
-											h(
-												NButton,
-												{
-													tag: "a",
-													href: `/${route.params.database}/admin/tables/${field.table}/${item.id}`,
-													onClick(e) {
-														e.preventDefault();
-														navigateTo(
-															`/${route.params.database}/admin/tables/${field.table}/${item.id}`,
-														);
-													},
-													size: "small",
-													round: true,
-												},
-												field.image
-													? {
-															icon: () =>
-																h(NIcon, () =>
-																	h(NAvatar, {
-																		style: {
-																			width: "18px",
-																			height: "18px",
-																		},
-																		round: true,
-																		src: []
-																			.concat(
-																				getProperty(item, field.image) ?? [],
-																			)
-																			.map((link: string) =>
-																				link?.includes("inicontent") &&
-																				[
-																					"png",
-																					"jpg",
-																					"jpeg",
-																					"ico",
-																					"webp",
-																					"svg",
-																					"gif",
-																				].includes(link.split(".").pop() ?? "")
-																					? `${link}?fit=18`
-																					: link,
-																			)[0],
-																	}),
-																),
-															default: () =>
-																renderLabel(
-																	database.value.tables?.find(
-																		({ slug }) => slug === field.table,
-																	)?.label,
-																	database.value.tables?.find(
-																		({ slug }) => slug === field.table,
-																	)?.schema,
-																	item,
-																),
-														}
-													: {
-															icon: () =>
-																h(NIcon, () =>
-																	h(
-																		"span",
-																		{},
-																		field.key.charAt(0).toUpperCase(),
-																	),
-																),
-															default: () =>
-																renderLabel(
-																	database.value.tables?.find(
-																		({ slug }) => slug === field.table,
-																	)?.label,
-																	database.value.tables?.find(
-																		({ slug }) => slug === field.table,
-																	)?.schema,
-																	item,
-																),
+									h(NFlex, () =>
+										[]
+											.concat(
+												getProperty(
+													single.value,
+													(path ?? "") +
+														(isAbsolutePath
+															? ""
+															: getPath(props.schema, field.id)),
+												),
+											)
+											.map((item: any) =>
+												h(
+													NButton,
+													{
+														tag: "a",
+														href: `/${route.params.database}/admin/tables/${field.table}/${item.id}`,
+														onClick(e) {
+															e.preventDefault();
+															navigateTo(
+																`/${route.params.database}/admin/tables/${field.table}/${item.id}`,
+															);
 														},
+														size: "small",
+														round: true,
+													},
+													field.image
+														? {
+																icon: () =>
+																	h(NIcon, () =>
+																		h(NAvatar, {
+																			style: {
+																				width: "18px",
+																				height: "18px",
+																			},
+																			round: true,
+																			src: []
+																				.concat(
+																					getProperty(item, field.image) ?? [],
+																				)
+																				.map((link: string) =>
+																					link?.includes("inicontent") &&
+																					[
+																						"png",
+																						"jpg",
+																						"jpeg",
+																						"ico",
+																						"webp",
+																						"svg",
+																						"gif",
+																					].includes(
+																						link.split(".").pop() ?? "",
+																					)
+																						? `${link}?fit=18`
+																						: link,
+																				)[0],
+																		}),
+																	),
+																default: () =>
+																	renderLabel(
+																		database.value.tables?.find(
+																			({ slug }) => slug === field.table,
+																		)?.label,
+																		database.value.tables?.find(
+																			({ slug }) => slug === field.table,
+																		)?.schema,
+																		item,
+																	),
+															}
+														: {
+																icon: () =>
+																	h(NIcon, () =>
+																		h(
+																			"span",
+																			{},
+																			field.key.charAt(0).toUpperCase(),
+																		),
+																	),
+																default: () =>
+																	renderLabel(
+																		database.value.tables?.find(
+																			({ slug }) => slug === field.table,
+																		)?.label,
+																		database.value.tables?.find(
+																			({ slug }) => slug === field.table,
+																		)?.schema,
+																		item,
+																	),
+															},
+												),
 											),
-										),
+									),
 							},
 						);
 					case "upload":
@@ -320,7 +324,7 @@ export default defineNuxtComponent({
 														: h(NIcon, () => h(IconFileText)),
 												)
 										: h(NImageGroup, () =>
-												h(NSpace, { align: "center" }, () =>
+												h(NFlex, { align: "center" }, () =>
 													[]
 														.concat(
 															getProperty(
@@ -516,7 +520,7 @@ export default defineNuxtComponent({
 										h(NText, { strong: true }, () => `${t(field.key)}: `),
 									),
 								default: () =>
-									h(NSpace, { vertical: true }, () =>
+									h(NFlex, { vertical: true, size: 0 }, () =>
 										field.children.map((child: any) => RenderData(child)),
 									),
 							},

@@ -107,7 +107,7 @@ export default defineNuxtComponent({
 									? getProperty(modelValue.value, path).filter(
 											(v: any) => !field.defaultValue.includes(v),
 										)
-									: getProperty(modelValue.value, path),
+									: getProperty(modelValue.value, path) ?? undefined,
 								onUpdateValue: (value: any) =>
 									setProperty(
 										modelValue.value,

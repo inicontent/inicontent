@@ -1,4 +1,4 @@
-import { NDatePicker, NFormItem, NInput } from "naive-ui";
+import { NDatePicker, NFormItem } from "naive-ui";
 import { getProperty, hasProperty, setProperty } from "inidot";
 
 export default defineNuxtComponent({
@@ -35,7 +35,6 @@ export default defineNuxtComponent({
 						type: "number",
 						required: field.required,
 						trigger: ["blur", "change"],
-						message: "Please select a valid date",
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function
@@ -45,11 +44,11 @@ export default defineNuxtComponent({
 				},
 				() =>
 					h(NDatePicker, {
-						value: getProperty(modelValue.value, path)
-							? Number(getProperty(modelValue.value, path))
-							: null,
-						onConfirm: (e: number) => setProperty(modelValue.value, path, e),
-						type: "datetime",
+						value: getProperty(modelValue.value, path),
+						"on-update:value": (value: number) =>
+							setProperty(modelValue.value, path, value),
+						actions: ["now"],
+						type: field.date || "date",
 						...(field.inputProps
 							? field.inputProps instanceof Function
 								? field.inputProps(getProperty(modelValue.value, path)) ?? {}
