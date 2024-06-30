@@ -1,26 +1,28 @@
 import {
-	NCard,
-	NIcon,
-	NButton,
-	NSpace,
-	NEllipsis,
-	NPopover,
-	NPopconfirm,
-	NForm,
-	useMessage,
-	type FormInst,
-} from "naive-ui";
-import {
 	IconDeviceFloppy,
+	IconEye,
 	IconSend,
 	IconTrash,
-	IconEye,
 } from "@tabler/icons-vue";
+import {
+	type FormInst,
+	NButton,
+	NCard,
+	NEllipsis,
+	NForm,
+	NIcon,
+	NPopconfirm,
+	NPopover,
+	NSpace,
+	useMessage,
+} from "naive-ui";
 
 import { LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
+		clearNuxtState("itemLabel");
+
 		definePageMeta({
 			middleware: ["dashboard", "table"],
 			layout: "table",
@@ -52,13 +54,11 @@ export default defineNuxtComponent({
 
 		const route = useRoute(),
 			database = useState<Database>("database"),
-			table = database.value.tables?.find(
-				(item) => item.slug === route.params.table,
-			),
+			table = useState<Table>("table"),
 			message = useMessage(),
 			{ data: single } = await useFetch<Item>(
-				`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-					route.params.table
+				`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+					table.value.slug
 				}/${route.params.id}`,
 				{
 					transform: (res: any) => {
@@ -67,7 +67,7 @@ export default defineNuxtComponent({
 							setTimeout(
 								() =>
 									navigateTo(
-										`/${route.params.database}/admin/tables/${route.params.table}/new`,
+										`/${database.value.slug}/admin/tables/${table.value.slug}/new`,
 									),
 								1000,
 							);
@@ -77,14 +77,14 @@ export default defineNuxtComponent({
 				},
 			),
 			formRef = ref<FormInst | null>(null),
-			UPDATE = async (publish = false) => {
+			UPDATE = async () => {
 				formRef.value?.validate(async (errors) => {
 					if (!errors) {
 						const bodyContent = JSON.parse(JSON.stringify(single.value));
 						Loading.value.UPDATE = true;
 						const data = await $fetch<apiResponse<Item>>(
-							`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-								route.params.table
+							`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+								table.value.slug
 							}/${route.params.id}`,
 							{
 								method: "PUT",
@@ -102,8 +102,8 @@ export default defineNuxtComponent({
 			DELETE = async () => {
 				Loading.value.DELETE = true;
 				const data = await $fetch<apiResponse<Item>>(
-					`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-						route.params.table
+					`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+						table.value.slug
 					}/${route.params.id}`,
 					{
 						method: "DELETE",
@@ -113,18 +113,20 @@ export default defineNuxtComponent({
 					message.success(data.message);
 					Loading.value.DELETE = false;
 					return navigateTo(
-						`/${route.params.database}/admin/tables/${route.params.table}`,
+						`/${database.value.slug}/admin/tables/${table.value.slug}`,
 					);
 				}
 				message.error(data.message);
 				Loading.value.DELETE = false;
 			},
-			label = renderLabel(table?.label, table?.schema, single.value);
+			itemLabel = useState("itemLabel", () =>
+				renderLabel(table.value.label, table.value.schema, single.value),
+			);
 
 		useHead({
-			title: `${database.value.slug} | ${t(route.params.table as string)} ${t(
+			title: `${database.value.slug} | ${t(table.value.slug as string)} ${t(
 				"table",
-			)} : ${label}`,
+			)} : ${itemLabel.value}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 		});
 		return () =>
@@ -135,9 +137,12 @@ export default defineNuxtComponent({
 				},
 				{
 					header: () =>
-						h(NEllipsis, () => `${t(route.params.table as string)} : ${label}`),
+						h(
+							NEllipsis,
+							() => `${t(table.value.slug as string)} : ${itemLabel.value}`,
+						),
 					"header-extra": () =>
-						table?.schema?.filter(
+						table.value.schema?.filter(
 							({ key }) =>
 								!["id", "createdAt", "createdBy", "updatedAt"].includes(key),
 						).length
@@ -151,11 +156,11 @@ export default defineNuxtComponent({
 													NButton,
 													{
 														tag: "a",
-														href: `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`,
+														href: `/${database.value.slug}/admin/tables/${table.value.slug}/${route.params.id}`,
 														onClick: (e) => {
 															e.preventDefault();
 															navigateTo(
-																`/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}`,
+																`/${database.value.slug}/admin/tables/${table.value.slug}/${route.params.id}`,
 															);
 														},
 														circle: true,
@@ -267,7 +272,7 @@ export default defineNuxtComponent({
 							() =>
 								h(LazyRenderFields, {
 									modelValue: single.value,
-									schema: table?.schema?.filter(
+									schema: table.value.schema?.filter(
 										({ key }) =>
 											!["id", "createdAt", "createdBy", "updatedAt"].includes(
 												key,

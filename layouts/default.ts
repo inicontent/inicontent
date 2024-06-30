@@ -1,32 +1,33 @@
 import {
-	NMessageProvider,
-	NLayout,
-	NScrollbar,
-	NLayoutHeader,
-	NPageHeader,
-	NTag,
+	IconLanguage,
+	IconLogout,
+	IconMoon,
+	IconPencil,
+	IconSettings,
+	IconSun,
+	IconUser,
+} from "@tabler/icons-vue";
+import { isValidID } from "inibase/utils";
+import {
 	NAvatar,
 	NBreadcrumb,
 	NBreadcrumbItem,
-	NSpace,
-	NDropdown,
 	NButton,
-	NLayoutContent,
-	NText,
-	NIcon,
-	NPopover,
-	NTooltip,
 	NButtonGroup,
+	NDropdown,
+	NIcon,
+	NLayout,
+	NLayoutContent,
+	NLayoutHeader,
+	NMessageProvider,
+	NPageHeader,
+	NPopover,
+	NScrollbar,
+	NSpace,
+	NTag,
+	NText,
+	NTooltip,
 } from "naive-ui";
-import {
-	IconMoon,
-	IconSun,
-	IconSettings,
-	IconUser,
-	IconPencil,
-	IconLogout,
-	IconLanguage,
-} from "@tabler/icons-vue";
 
 export default defineNuxtComponent({
 	setup: (_, { slots }) => {
@@ -208,12 +209,18 @@ export default defineNuxtComponent({
 																						);
 																					},
 																				},
-																				() =>
-																					t(
+																				() => {
+																					if (
+																						isValidID(childRoute) &&
+																						useState("itemLabel").value
+																					)
+																						return useState("itemLabel").value;
+																					return t(
 																						childRoute === "admin"
 																							? "routeAdmin"
 																							: childRoute,
-																					),
+																					);
+																				},
 																			),
 																		),
 																)
@@ -288,6 +295,11 @@ export default defineNuxtComponent({
 																						key: "edit",
 																						icon: () =>
 																							h(NIcon, () => h(IconPencil)),
+																						show: database.value.tables
+																							?.find(
+																								({ slug }) => slug === "user",
+																							)
+																							?.allowedMethods?.includes("u"),
 																					},
 																					{
 																						label: t("logout"),
@@ -301,7 +313,7 @@ export default defineNuxtComponent({
 																						case "edit":
 																							navigateTo(
 																								`/${
-																									route.params.database
+																									database.value.slug
 																								}/admin/tables/user/${
 																									(user.value as User).id
 																								}/edit`,
@@ -313,15 +325,15 @@ export default defineNuxtComponent({
 																									useRuntimeConfig().public
 																										.apiBase
 																								}${
-																									route.params.database ??
+																									database.value.slug ??
 																									"inicontent"
 																								}/auth/signout`,
 																								{},
 																							);
 																							user.value = null;
 																							await navigateTo(
-																								route.params.database
-																									? `/${route.params.database}/auth`
+																								database.value.slug
+																									? `/${database.value.slug}/auth`
 																									: "/auth",
 																							);
 																							break;
@@ -354,11 +366,11 @@ export default defineNuxtComponent({
 																									size: "small",
 																									round: true,
 																									tag: "a",
-																									href: `/${route.params.database}/admin/settings`,
+																									href: `/${database.value.slug}/admin/settings`,
 																									onClick: (e) => {
 																										e.preventDefault();
 																										navigateTo(
-																											`/${route.params.database}/admin/settings`,
+																											`/${database.value.slug}/admin/settings`,
 																										);
 																									},
 																								},

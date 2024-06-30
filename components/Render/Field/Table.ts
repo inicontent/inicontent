@@ -1,23 +1,22 @@
-import {
-	NFormItem,
-	NIcon,
-	NButton,
-	NSpace,
-	NSelect,
-	NAvatar,
-	NTag,
-	NDrawer,
-	NDrawerContent,
-	NForm,
-	type FormInst,
-	type SelectOption,
-	useMessage,
-	NFlex,
-} from "naive-ui";
 import { IconDeviceFloppy, IconPencil, IconPlus } from "@tabler/icons-vue";
 import { deepMerge, isArrayOfObjects, isObject } from "inibase/utils";
-import { getProperty, setProperty, hasProperty } from "inidot";
+import { getProperty, hasProperty, setProperty } from "inidot";
 import Inison from "inison";
+import {
+	type FormInst,
+	NAvatar,
+	NButton,
+	NDrawer,
+	NDrawerContent,
+	NFlex,
+	NForm,
+	NFormItem,
+	NIcon,
+	NSelect,
+	NTag,
+	type SelectOption,
+	useMessage,
+} from "naive-ui";
 import { LazyRenderFields } from "#components";
 
 export default defineNuxtComponent({
@@ -268,24 +267,34 @@ export default defineNuxtComponent({
 								)
 				: undefined;
 
-		if (hasProperty(modelValue.value, path))
-			options.value =
-				(
-					await $fetch<apiResponse>(
-						`${useRuntimeConfig().public.apiBase}${
-							useRuntimeConfig().public.databaseName ?? "inicontent"
-						}/${field.table}`,
-						{
-							params: {
-								where: Inison.stringify({
-									id: `[]${[]
-										.concat(getProperty(modelValue.value, path))
-										.join(",")}`,
-								}),
+		if (hasProperty(modelValue.value, path)) {
+			if (
+				(Array.isArray(getProperty(modelValue.value, path)) &&
+					getProperty(modelValue.value, path).every(isObject)) ||
+				isObject(getProperty(modelValue.value, path))
+			)
+				options.value = []
+					.concat(getProperty(modelValue.value, path))
+					.map(singleOption);
+			else
+				options.value =
+					(
+						await $fetch<apiResponse>(
+							`${useRuntimeConfig().public.apiBase}${
+								useRuntimeConfig().public.databaseName ?? "inicontent"
+							}/${field.table}`,
+							{
+								params: {
+									where: Inison.stringify({
+										id: `[]${[]
+											.concat(getProperty(modelValue.value, path))
+											.join(",")}`,
+									}),
+								},
 							},
-						},
-					)
-				).result?.map(singleOption) ?? [];
+						)
+					).result?.map(singleOption) ?? [];
+		}
 
 		return () => [
 			h(

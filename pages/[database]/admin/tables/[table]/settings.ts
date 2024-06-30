@@ -1,45 +1,45 @@
 import {
-	NIcon,
-	NSpace,
-	NButton,
-	NDropdown,
-	useMessage,
-	NGi,
-	NCard,
-	NGrid,
-	NAnchor,
-	NAnchorLink,
-	NForm,
-	NFormItem,
-	NCollapse,
-	NCollapseItem,
-	NInput,
-	NSelect,
-	NTooltip,
-	NPopconfirm,
-	NEmpty,
-	NFlex,
-	NCascader,
-	NMention,
-	type FormInst,
-	type MentionOption,
-	NInputNumber,
-	NSwitch,
-} from "naive-ui";
-import {
-	IconDeviceFloppy,
-	IconPlus,
-	IconTrash,
-	IconMenu2,
-	IconAsterisk,
 	IconArrowsSort,
-	IconPhoto,
-	IconVideo,
-	IconMusic,
+	IconAsterisk,
+	IconDeviceFloppy,
 	IconFileDescription,
 	IconFileZip,
+	IconMenu2,
+	IconMusic,
+	IconPhoto,
+	IconPlus,
+	IconTrash,
+	IconVideo,
 } from "@tabler/icons-vue";
 import { isArrayOfObjects } from "inibase/utils";
+import {
+	type FormInst,
+	type MentionOption,
+	NAnchor,
+	NAnchorLink,
+	NButton,
+	NCard,
+	NCascader,
+	NCollapse,
+	NCollapseItem,
+	NDropdown,
+	NEmpty,
+	NFlex,
+	NForm,
+	NFormItem,
+	NGi,
+	NGrid,
+	NIcon,
+	NInput,
+	NInputNumber,
+	NMention,
+	NPopconfirm,
+	NSelect,
+	NSpace,
+	NSwitch,
+	NTooltip,
+	useMessage,
+} from "naive-ui";
 import draggable from "vuedraggable";
 import { LazyRenderFields } from "#components";
 
@@ -97,14 +97,7 @@ export default defineNuxtComponent({
 						...table.value,
 						schema:
 							table.value.schema?.filter(
-								({ key }) =>
-									![
-										"id",
-										"createdAt",
-										"createdBy",
-										"updatedAt",
-										"user",
-									].includes(key),
+								({ key }) => !["id", "createdAt", "updatedAt"].includes(key),
 							) ?? [],
 					}),
 				),
@@ -196,14 +189,7 @@ export default defineNuxtComponent({
 							database.value.tables[tableIndex] = data.result;
 							if (data.result.schema)
 								data.result.schema = data.result.schema.filter(
-									({ key }) =>
-										![
-											"id",
-											"createdAt",
-											"createdBy",
-											"updatedAt",
-											"user",
-										].includes(key),
+									({ key }) => !["id", "createdAt", "updatedAt"].includes(key),
 								);
 							tableCopy.value = data.result;
 

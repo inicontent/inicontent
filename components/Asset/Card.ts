@@ -26,6 +26,7 @@ export default defineNuxtComponent({
 		onBeforeMount(() => clearNuxtState("path"));
 
 		const database = useState<Database>("database"),
+			table = useState<Table>("table"),
 			{ isMobile } = useDevice(),
 			Loading = useState<Record<string, boolean>>("Loading", () => ({})),
 			route = useRoute(),
@@ -184,140 +185,144 @@ export default defineNuxtComponent({
 								: null,
 						]),
 					"header-extra": () =>
-						h(
-							NUpload,
-							{
-								multiple: true,
-								abstract: true,
-								action: `${useRuntimeConfig().public.apiBase}${
-									database.value.slug
-								}/asset${
-									path.value ??
-									(route.params.folder
-										? `/${[].concat(route.params.folder as any).join("/")}`
-										: "")
-								}`,
-								onUpdateFileList: async (fileList) => {
-									if (fileList.length) {
-										if (UploadProgress.value < 100) {
-											UploadProgress.value =
-												fileList
-													.filter((file) => file.status !== "finished")
-													.reduce(
-														(sum, file) => sum + (file.percentage ?? 0),
-														0,
-													) /
-												fileList.filter((file) => file.status !== "finished")
-													.length;
-											if (UploadProgress.value === 0) UploadProgress.value = 1;
-										} else {
-											if (
-												fileList.every((file) => file.status === "finished")
-											) {
-												await new Promise<void>((resolve) =>
-													setTimeout(resolve, 2000),
-												);
-												UploadProgress.value = 10000;
-												await new Promise<void>((resolve) =>
-													setTimeout(resolve, 5000),
-												);
-												UploadProgress.value = 0;
-											} else UploadProgress.value = 1000;
-										}
-									}
-								},
-								onFinish: ({ file, event }: any) => {
-									if (event?.target?.response) {
-										const response: apiResponse<Asset> = JSON.parse(
-											event.target.response,
-										);
-										file.url = response.result.publicURL;
-										file.name = response.result.name;
-										if (assets.value) assets.value?.push(response.result);
-										else assets.value = [response.result];
-										if (!database.value.size) database.value.size = 0;
-										database.value.size += response.result.size ?? 0;
-										return file;
-									}
-									return file;
-								},
-								onRemove: async ({ file }) => {
-									const data = await $fetch<apiResponse>(
-											`${useRuntimeConfig().public.apiBase}${
-												database.value.slug
-											}/asset${
-												path.value ??
-												(route.params.folder
-													? `/${[]
-															.concat(route.params.folder as any)
-															.join("/")}`
-													: "")
-											}/${file.name}`,
-											{ method: "DELETE" },
-										),
-										singleAsset = assets.value?.find(
-											(asset) => asset.name === file.name,
-										);
-									if (data.result) {
-										if (assets.value)
-											assets.value = assets.value.filter(
-												(asset) => asset.name !== file.name,
-											);
-										message.success(data?.message ?? t("success"));
-										if (database.value.size)
-											database.value.size -= singleAsset?.size ?? 0;
-										return true;
-									}
-									message.error(data?.message ?? t("error"));
-									return false;
-								},
-							},
-							() =>
-								h(
-									NPopover,
+						table.value.allowedMethods?.includes("c")
+							? h(
+									NUpload,
 									{
-										trigger: "manual",
-										placement: "bottom-end",
-										show: UploadProgress.value > 0,
-									},
-									{
-										trigger: () =>
-											h(NUploadTrigger, { abstract: false }, () =>
-												h(
-													NButton,
-													{
-														round: true,
-													},
-													{
-														icon: () => {
-															if (UploadProgress.value > 0) {
-																switch (UploadProgress.value) {
-																	case 10000:
-																		return h(NIcon, () => h(IconCheck));
-																	case 1000:
-																		return h(NSpin, { size: 16 });
-																	default:
-																		return h(NProgress, {
-																			type: "circle",
-																			showIndicator: false,
-																			status:
-																				UploadProgress.value === 100
-																					? "success"
-																					: "warning",
-																			percentage: UploadProgress.value,
-																			strokeWidth: 20,
-																		});
-																}
-															}
-															return h(NIcon, () => h(IconPlus));
-														},
-													},
+										multiple: true,
+										abstract: true,
+										action: `${useRuntimeConfig().public.apiBase}${
+											database.value.slug
+										}/asset${
+											path.value ??
+											(route.params.folder
+												? `/${[].concat(route.params.folder as any).join("/")}`
+												: "")
+										}`,
+										onUpdateFileList: async (fileList) => {
+											if (fileList.length) {
+												if (UploadProgress.value < 100) {
+													UploadProgress.value =
+														fileList
+															.filter((file) => file.status !== "finished")
+															.reduce(
+																(sum, file) => sum + (file.percentage ?? 0),
+																0,
+															) /
+														fileList.filter(
+															(file) => file.status !== "finished",
+														).length;
+													if (UploadProgress.value === 0)
+														UploadProgress.value = 1;
+												} else {
+													if (
+														fileList.every((file) => file.status === "finished")
+													) {
+														await new Promise<void>((resolve) =>
+															setTimeout(resolve, 2000),
+														);
+														UploadProgress.value = 10000;
+														await new Promise<void>((resolve) =>
+															setTimeout(resolve, 5000),
+														);
+														UploadProgress.value = 0;
+													} else UploadProgress.value = 1000;
+												}
+											}
+										},
+										onFinish: ({ file, event }: any) => {
+											if (event?.target?.response) {
+												const response: apiResponse<Asset> = JSON.parse(
+													event.target.response,
+												);
+												file.url = response.result.publicURL;
+												file.name = response.result.name;
+												if (assets.value) assets.value?.push(response.result);
+												else assets.value = [response.result];
+												if (!database.value.size) database.value.size = 0;
+												database.value.size += response.result.size ?? 0;
+												return file;
+											}
+											return file;
+										},
+										onRemove: async ({ file }) => {
+											const data = await $fetch<apiResponse>(
+													`${useRuntimeConfig().public.apiBase}${
+														database.value.slug
+													}/asset${
+														path.value ??
+														(route.params.folder
+															? `/${[]
+																	.concat(route.params.folder as any)
+																	.join("/")}`
+															: "")
+													}/${file.name}`,
+													{ method: "DELETE" },
 												),
-											),
-										default: () => h(NUploadFileList),
+												singleAsset = assets.value?.find(
+													(asset) => asset.name === file.name,
+												);
+											if (data.result) {
+												if (assets.value)
+													assets.value = assets.value.filter(
+														(asset) => asset.name !== file.name,
+													);
+												message.success(data?.message ?? t("success"));
+												if (database.value.size)
+													database.value.size -= singleAsset?.size ?? 0;
+												return true;
+											}
+											message.error(data?.message ?? t("error"));
+											return false;
+										},
 									},
-								),
-						),
+									() =>
+										h(
+											NPopover,
+											{
+												trigger: "manual",
+												placement: "bottom-end",
+												show: UploadProgress.value > 0,
+											},
+											{
+												trigger: () =>
+													h(NUploadTrigger, { abstract: false }, () =>
+														h(
+															NButton,
+															{
+																round: true,
+															},
+															{
+																icon: () => {
+																	if (UploadProgress.value > 0) {
+																		switch (UploadProgress.value) {
+																			case 10000:
+																				return h(NIcon, () => h(IconCheck));
+																			case 1000:
+																				return h(NSpin, { size: 16 });
+																			default:
+																				return h(NProgress, {
+																					type: "circle",
+																					showIndicator: false,
+																					status:
+																						UploadProgress.value === 100
+																							? "success"
+																							: "warning",
+																					percentage: UploadProgress.value,
+																					strokeWidth: 20,
+																				});
+																		}
+																	}
+																	return h(NIcon, () => h(IconPlus));
+																},
+															},
+														),
+													),
+												default: () => h(NUploadFileList),
+											},
+										),
+								)
+							: null,
 				},
 			);
 	},

@@ -1,24 +1,24 @@
+import { IconTrash } from "@tabler/icons-vue";
 import {
-	NGrid,
-	NGi,
-	NImage,
-	NIcon,
-	NSkeleton,
 	NA,
+	NButton,
 	NDrawer,
 	NDrawerContent,
+	NEmpty,
+	NFlex,
+	NGi,
+	NGrid,
+	NIcon,
+	NImage,
+	NPopconfirm,
+	NSkeleton,
 	NSpace,
 	NText,
 	NTime,
 	NTooltip,
-	NEmpty,
-	NButton,
-	NPopconfirm,
 	useMessage,
-	NFlex,
 } from "naive-ui";
 import { LazyAssetIcon } from "#components";
-import { IconTrash } from "@tabler/icons-vue";
 
 export default defineNuxtComponent({
 	props: {
@@ -37,6 +37,7 @@ export default defineNuxtComponent({
 			route = useRoute(),
 			message = useMessage(),
 			database = useState<Database>("database"),
+			table = useState<Table>("table"),
 			CurrentAsset = useState<Asset & { show?: boolean }>("asset", () => ({})),
 			Language = useGlobalCookie("Language"),
 			deleteAsset = async (name: string) => {
@@ -255,44 +256,53 @@ export default defineNuxtComponent({
 																			slots.default
 																				? slots.default(asset)
 																				: null,
-																			h(
-																				NPopconfirm,
-																				{
-																					zIndex: 999999,
-																					showIcon: false,
-																					onPositiveClick: () =>
-																						deleteAsset(asset.name as string),
-																				},
-																				{
-																					activator: () =>
-																						h(
-																							NButton,
-																							{
-																								type: "error",
-																								text: true,
-																								loading:
-																									Loading.value[
-																										`deleteAsset${asset.name}`
-																									],
-																								style: {
-																									...(Hover.value[
-																										asset.name as string
-																									]
-																										? {}
-																										: { visibility: "hidden" }),
-																								},
-																							},
-																							{
-																								icon: () =>
-																									h(NIcon, () => h(IconTrash)),
-																							},
-																						),
-																					default: () =>
-																						t(
-																							"theFollowingActionIsIrreversible",
-																						),
-																				},
-																			),
+																			table.value.allowedMethods?.includes("d")
+																				? h(
+																						NPopconfirm,
+																						{
+																							zIndex: 999999,
+																							showIcon: false,
+																							onPositiveClick: () =>
+																								deleteAsset(
+																									asset.name as string,
+																								),
+																						},
+																						{
+																							activator: () =>
+																								h(
+																									NButton,
+																									{
+																										type: "error",
+																										text: true,
+																										loading:
+																											Loading.value[
+																												`deleteAsset${asset.name}`
+																											],
+																										style: {
+																											...(Hover.value[
+																												asset.name as string
+																											]
+																												? {}
+																												: {
+																														visibility:
+																															"hidden",
+																													}),
+																										},
+																									},
+																									{
+																										icon: () =>
+																											h(NIcon, () =>
+																												h(IconTrash),
+																											),
+																									},
+																								),
+																							default: () =>
+																								t(
+																									"theFollowingActionIsIrreversible",
+																								),
+																						},
+																					)
+																				: null,
 																		],
 																	),
 																	asset.type !== "folder" &&

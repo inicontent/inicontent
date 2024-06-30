@@ -1,5 +1,5 @@
-import { NFormItem, NInput } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NFormItem, NInput } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -23,7 +23,8 @@ export default defineNuxtComponent({
 		const modelValue = toRef(props, "modelValue"),
 			field = props.field,
 			path = props.path,
-			alreadyRun = useState("alreadyRun", () => false);
+			alreadyRun = ref(false);
+
 		if (
 			!alreadyRun.value &&
 			getProperty(modelValue.value, path) !== undefined &&

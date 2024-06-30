@@ -45,9 +45,9 @@ export default defineNuxtComponent({
 				() =>
 					h(NDatePicker, {
 						value: getProperty(modelValue.value, path),
-						"on-update:value": (value: number) =>
+						onConfirm: (value: number) =>
 							setProperty(modelValue.value, path, value),
-						actions: ["now"],
+						actions: ["confirm"],
 						type: field.date || "date",
 						...(field.inputProps
 							? field.inputProps instanceof Function

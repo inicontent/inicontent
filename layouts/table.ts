@@ -1,14 +1,14 @@
-import { NLayout, NLayoutSider, NMenu, NLayoutContent, NIcon } from "naive-ui";
 import {
-	IconPlus,
 	IconEye,
+	IconFingerprint,
 	IconFolders,
 	IconLanguage,
-	IconUsers,
-	IconFingerprint,
-	IconWebhook,
+	IconPlus,
 	IconSettings,
+	IconUsers,
+	IconWebhook,
 } from "@tabler/icons-vue";
+import { NIcon, NLayout, NLayoutContent, NLayoutSider, NMenu } from "naive-ui";
 import { NuxtLayout, NuxtLink } from "#components";
 
 export default defineComponent({
@@ -29,33 +29,9 @@ export default defineComponent({
 			table = useState<Table>("table"),
 			isMenuOpen = useState("isMenuOpen", () => false),
 			database = useState<Database>("database"),
-			renderSingleItem = ({ slug, allowedMethods }: Table) => ({
-				label: () =>
-					h(
-						NuxtLink,
-						{
-							onClick: () => (isMenuOpen.value = false),
-							to: `/${route.params.database}/admin/tables/${slug}`,
-						},
-						{ default: () => t(slug) },
-					),
-				key: slug,
-				icon: () =>
-					h(NIcon, () => {
-						switch (slug) {
-							case "asset":
-								return h(IconFolders);
-							case "translation":
-								return h(IconLanguage);
-							case "user":
-								return h(IconUsers);
-							case "session":
-								return h(IconFingerprint);
-							default:
-								return t(slug).charAt(0).toUpperCase();
-						}
-					}),
-				children: [
+			defaultValue = ref(),
+			renderSingleItem = ({ slug, allowedMethods }: Table) => {
+				const itemChildren = [
 					...(slug !== "asset" && allowedMethods?.includes("c")
 						? [
 								{
@@ -63,7 +39,8 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												to: `/${route.params.database}/admin/tables/${slug}`,
+												onClick: () => (defaultValue.value = slug),
+												to: `/admin/tables/${slug}`,
 											},
 											{ default: () => t("showAll") },
 										),
@@ -75,7 +52,8 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												to: `/${route.params.database}/admin/tables/${slug}/new`,
+												onClick: () => (defaultValue.value = `${slug}-new`),
+												to: `/admin/tables/${slug}/new`,
 											},
 											{ default: () => t("newItem") },
 										),
@@ -93,7 +71,9 @@ export default defineComponent({
 													h(
 														NuxtLink,
 														{
-															to: `/${route.params.database}/admin/tables/${slug}/settings`,
+															onClick: () =>
+																(defaultValue.value = `${slug}-settings`),
+															to: `/admin/tables/${slug}/settings`,
 														},
 														{ default: () => t("settings") },
 													),
@@ -107,7 +87,8 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												to: `/${route.params.database}/admin/tables/${slug}/flows`,
+												onClick: () => (defaultValue.value = `${slug}-flows`),
+												to: `/admin/tables/${slug}/flows`,
 											},
 											{ default: () => t("flows") },
 										),
@@ -116,8 +97,44 @@ export default defineComponent({
 								},
 							]
 						: []),
-				],
-			});
+				];
+				return {
+					label: () =>
+						h(
+							NuxtLink,
+							{
+								onClick: () => (defaultValue.value = slug),
+								to: `/admin/tables/${slug}`,
+							},
+							{ default: () => t(slug) },
+						),
+					key: itemChildren.length ? `${slug}Group` : slug,
+					icon: () =>
+						h(NIcon, () => {
+							switch (slug) {
+								case "asset":
+									return h(IconFolders);
+								case "translation":
+									return h(IconLanguage);
+								case "user":
+									return h(IconUsers);
+								case "session":
+									return h(IconFingerprint);
+								default:
+									return t(slug).charAt(0).toUpperCase();
+							}
+						}),
+					children: itemChildren.length ? itemChildren : undefined,
+				};
+			};
+		const lastPathInRoute = decodeURIComponent(
+			route.path.split("/").filter(Boolean).at(-1) ?? "",
+		);
+		if (table.value?.slug) {
+			if (lastPathInRoute && lastPathInRoute !== table.value.slug)
+				defaultValue.value = `${table.value.slug}-${lastPathInRoute}`;
+			else defaultValue.value = table.value.slug;
+		} else defaultValue.value = decodeURI(lastPathInRoute?.toString() ?? "");
 
 		return () =>
 			h(
@@ -182,35 +199,16 @@ export default defineComponent({
 													...(database.value.tables
 														?.filter(
 															({ slug, allowedMethods }) =>
-																[
-																	"user",
-																	"session",
-																	"asset",
-																	"translation",
-																].includes(slug) &&
+																["user", "session", "asset"].includes(slug) &&
 																allowedMethods?.includes("r"),
 														)
 														.map(renderSingleItem) ?? []),
 												]
 											: []) as any,
 										expandedKeys: table.value?.slug
-											? [table.value?.slug]
-											: undefined,
-										value: (() => {
-											const lastPathInRoute = route.path
-												.split("/")
-												.filter(Boolean)
-												.at(-1);
-											if (table.value?.slug) {
-												if (
-													lastPathInRoute &&
-													lastPathInRoute !== table.value.slug
-												)
-													return `${table.value.slug}-${lastPathInRoute}`;
-												return table.value.slug;
-											}
-											return lastPathInRoute;
-										})(),
+											? [`${table.value.slug}Group`]
+											: [],
+										value: defaultValue.value ?? undefined,
 										accordion: true,
 									}),
 							),

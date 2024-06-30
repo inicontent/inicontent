@@ -1,50 +1,43 @@
 import {
-	NDataTable,
-	NCard,
-	NA,
-	NIcon,
-	NIconWrapper,
-	NTag,
-	NTime,
-	NSpace,
-	NText,
-	NPopover,
-	NImageGroup,
-	NImage,
+	IconEye,
+	IconMinus,
+	IconPencil,
+	IconPlus,
+	IconSearch,
+	IconSwitchHorizontal,
+	IconTableExport,
+	IconTableImport,
+	IconTools,
+	IconTrash,
+	IconX,
+} from "@tabler/icons-vue";
+import { FormatObjectCriteriaValue } from "inibase/utils";
+import { getField as getFieldFromSchema } from "inibase/utils";
+import { deleteProperty, getProperty, setProperty } from "inidot";
+import Inison from "inison";
+import {
 	NButton,
-	NEllipsis,
-	NPopconfirm,
-	useMessage,
+	NButtonGroup,
+	NCard,
 	NCollapse,
 	NCollapseItem,
-	NAvatar,
-	NInputGroup,
-	NSelect,
+	NDataTable,
 	NDropdown,
-	NProgress,
-	NButtonGroup,
 	NFlex,
+	NIcon,
+	NInputGroup,
+	NPopconfirm,
+	NPopover,
+	NProgress,
+	NSelect,
+	NSpace,
+	useMessage,
 } from "naive-ui";
 import {
-	IconCheck,
-	IconX,
-	IconPencil,
-	IconTrash,
-	IconSearch,
-	IconPlus,
-	IconTools,
-	IconMinus,
-	IconFileUpload,
-	IconTableImport,
-	IconTableExport,
-	IconEye,
-	IconSwitchHorizontal,
-} from "@tabler/icons-vue";
-import { LazyTableDrawer, LazyRenderFields } from "#components";
-import { isArrayOfObjects, FormatObjectCriteriaValue } from "inibase/utils";
-import { getProperty, setProperty, deleteProperty } from "inidot";
-import { getField as getFieldFromSchema } from "inibase/utils";
-import Inison from "inison";
+	LazyRenderColumn,
+	LazyRenderFields,
+	LazyTableDrawer,
+} from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -59,7 +52,8 @@ export default defineNuxtComponent({
 
 		const route = useRoute(),
 			router = useRouter(),
-			database = useState<Database>("database");
+			database = useState<Database>("database"),
+			table = useState<Table>("table");
 
 		useLanguage({
 			ar: {
@@ -86,9 +80,9 @@ export default defineNuxtComponent({
 			en: {},
 		});
 
-		const generateSearchArray = (searchInput: any) => {
+		const generateSearchArray = (querySearch: any) => {
 				const RETURN: any = {};
-				for (const [condition, items] of Object.entries(searchInput)) {
+				for (const [condition, items] of Object.entries(querySearch)) {
 					if (!RETURN[condition]) RETURN[condition] = [];
 					for (const [key, value] of Object.entries(items)) {
 						if (["and", "or"].includes(key))
@@ -117,7 +111,7 @@ export default defineNuxtComponent({
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
 			{ isMobile } = useDevice(),
-			searchInput = ref<string | undefined>(
+			querySearch = ref<string | undefined>(
 				route.query.search as string | undefined,
 			),
 			searchArray = ref<{
@@ -159,9 +153,15 @@ export default defineNuxtComponent({
 				onChange: async (currentPage: number) => {
 					pagination.value.page = currentPage;
 					let { page, ...Query }: any = route.query;
-					if (currentPage !== 1) Query = { ...Query, page: currentPage };
+					Query = {
+						...Query,
+						page: currentPage !== 1 ? currentPage : undefined,
+					};
 					router.push({ query: Query });
-					return refreshTableData();
+					queryOptions.value = Inison.stringify({
+						...Inison.unstringify(queryOptions.value),
+						page: pagination.value.page,
+					});
 				},
 				onUpdatePageSize: async (pageSize: number) => {
 					const OLD_pageSize = JSON.parse(
@@ -178,38 +178,39 @@ export default defineNuxtComponent({
 						Query = {
 							...Query,
 							perPage: pageSize,
-							page: pagination.value.page,
+							page:
+								pagination.value.page === 1 ? undefined : pagination.value.page,
 						};
 					}
 					router.push({ query: Query });
-					return refreshTableData();
+					queryOptions.value = Inison.stringify({
+						...Inison.unstringify(queryOptions.value),
+						perPage: pageSize,
+						page:
+							pagination.value.page === 1 ? undefined : pagination.value.page,
+					});
 				},
 			}),
+			queryOptions = ref(
+				Inison.stringify({
+					page: pagination.value.page,
+					perPage: pagination.value.pageSize,
+					columns: [],
+				}),
+			),
 			{ data: TableData, refresh: refreshTableData } = await useLazyFetch<
 				apiResponse<Item[]>
 			>(
-				`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-					route.params.table
+				`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+					table.value.slug
 				}`,
 				{
-					key: Inison.stringify({
-						database: route.params.database,
-						table: route.params.table,
-						page: pagination.value.page,
-						perPage: pagination.value.pageSize,
-						columns: [],
-						where: searchInput.value,
-					}),
 					onRequest: () => {
 						Loading.value.TableData = true;
 					},
 					query: {
-						options: Inison.stringify({
-							page: pagination.value.page,
-							perPage: pagination.value.pageSize,
-							columns: [],
-						}),
-						where: searchInput,
+						options: queryOptions,
+						where: querySearch,
 					},
 					transform: (res) => {
 						Loading.value.TableData = false;
@@ -229,8 +230,8 @@ export default defineNuxtComponent({
 			DELETE = async (id: string) => {
 				Loading.value.TableData = true;
 				const data = await $fetch<apiResponse>(
-					`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-						route.params.table
+					`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+						table.value.slug
 					}/${id}`,
 					{
 						method: "DELETE",
@@ -244,601 +245,39 @@ export default defineNuxtComponent({
 				message.success(data?.message ?? t("error"));
 				Loading.value.TableData = false;
 			},
-			RenderSchema = (value: any, field: any): any => {
-				if (value === null || value === undefined)
-					switch (field.subType ?? field.type) {
-						case "boolean":
-							return h(
-								NIconWrapper,
-								{
-									color: "red",
-									borderRadius: 50,
-									size: 18,
-								},
-								() =>
-									h(
-										NIcon,
-										{
-											size: 16,
-										},
-										() => h(IconX),
-									),
-							);
-						case "array":
-							return h(
-								NButton,
-								{
-									circle: true,
-								},
-								{
-									default: () =>
-										h(NText, { depth: 3 }, { default: () => "[--]" }),
-								},
-							);
-						case "object":
-							return h(
-								NButton,
-								{
-									circle: true,
-								},
-								{
-									default: () =>
-										h(NText, { depth: 3 }, { default: () => "{--}" }),
-								},
-							);
-						default:
-							return h(NText, { depth: 3 }, () => "--");
-					}
-
-				if (
-					field.subType &&
-					((Array.isArray(field.type) && field.type.includes("array")) ||
-						(typeof field.type === "string" && field.type === "array"))
-				)
-					field.isArray = true;
-
-				let deletectedFieldType = field.subType ?? field.type;
-				if (Array.isArray(deletectedFieldType))
-					deletectedFieldType = getField(
-						field.subType ?? field.type,
-						value,
-					).key;
-				switch (deletectedFieldType) {
-					case "id":
-						return h(
-							NPopover,
-							{},
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											size: "small",
-											onClick: async () => {
-												await copyToClipboard(value);
-												message.success(t("textCopied"));
-											},
-											secondary: true,
-											round: true,
-										},
-										() =>
-											h(
-												NEllipsis,
-												{ tooltip: false, style: "max-width:50px" },
-												() => value,
-											),
-									),
-								default: () => t("clickToCopy"),
-							},
-						);
-					case "table":
-						return [].concat(value).map((col: Item & { id: string }) =>
-							h(
-								NButton,
-								{
-									tag: "a",
-									href: `/admin/tables/${field.table}/${col.id}/edit`,
-									onClick: (e) => {
-										e.preventDefault();
-										if (!isMobile)
-											Drawer.value = {
-												...Drawer.value,
-												id: col.id,
-												table: field.table,
-												data: {},
-												show: true,
-											};
-										else
-											navigateTo(`/admin/tables/${field.table}/${col.id}/edit`);
-									},
-									loading: Loading.value[`Drawer_${field.table}_${col.id}`],
-									size: "small",
-									round: true,
-								},
-								{
-									icon: () =>
-										h(
-											NIcon,
-											field.image
-												? () => {
-														const img = []
-															.concat(
-																getProperty(value, field.image, []) as any,
-															)
-															.map((link: string) =>
-																link?.includes("inicontent") &&
-																[
-																	"png",
-																	"jpg",
-																	"jpeg",
-																	"ico",
-																	"webp",
-																	"svg",
-																	"gif",
-																].includes(link.split(".").pop() ?? "")
-																	? `${link}?fit=18`
-																	: link,
-															)[0];
-														return img
-															? h(NAvatar, {
-																	style: {
-																		width: "18px",
-																		height: "18px",
-																	},
-																	round: true,
-																	src: img,
-																})
-															: h(
-																	"span",
-																	{},
-																	field.table.charAt(0).toUpperCase(),
-																);
-													}
-												: () =>
-														h("span", {}, field.table.charAt(0).toUpperCase()),
-										),
-									default: () =>
-										h(
-											NEllipsis,
-											{
-												tooltip: true,
-												style: {
-													maxWidth: `${
-														field.key && t(field.key).length > 10
-															? t(field.key).length * 12
-															: 120
-													}px`,
-												},
-											},
-											() =>
-												renderLabel(
-													database.value.tables?.find(
-														({ slug }) => slug === field.table,
-													)?.label,
-													database.value.tables?.find(
-														({ slug }) => slug === field.table,
-													)?.schema,
-													col,
-												),
-										),
-								},
-							),
-						);
-					case "email":
-						return h(
-							NA,
-							{ href: `mailto:${value}`, target: "_blank" },
-							{
-								default: () =>
-									h(
-										NEllipsis,
-										{
-											tooltip: true,
-											style: {
-												maxWidth: `${
-													field.key && t(field.key).length > 10
-														? t(field.key).length * 12
-														: 120
-												}px`,
-											},
-										},
-										() =>
-											h(
-												NA,
-												{ href: `mailto:${value}`, target: "_blank" },
-												() => value,
-											),
-									),
-							},
-						);
-					case "password":
-						return h(
-							NEllipsis,
-							{
-								tooltip: false,
-								style: {
-									maxWidth: `${
-										field.key && t(field.key).length > 10
-											? t(field.key).length * 12
-											: 120
-									}px`,
-								},
-							},
-							() => Array.from(Array(value.length), () => "•"),
-						);
-					case "boolean":
-						return h(
-							NIconWrapper,
-							{
-								color: value === true ? "green" : "red",
-								borderRadius: 50,
-								size: 18,
-							},
-							() =>
-								h(
-									NIcon,
-									{
-										size: 16,
-									},
-									() => h(value === true ? IconCheck : IconX),
-								),
-						);
-					case "url":
-						return h(
-							NA,
-							{ href: value, target: "_blank" },
-							{
-								default: () =>
-									h(
-										NEllipsis,
-										{
-											tooltip: true,
-											style: {
-												maxWidth: `${
-													field.key && t(field.key).length > 10
-														? t(field.key).length * 12
-														: 120
-												}px`,
-											},
-										},
-										() => h(NA, { href: value, target: "_blank" }, () => value),
-									),
-							},
-						);
-					case "color":
-						return h(
-							NTag,
-							{
-								round: true,
-								style: {
-									backgroundColor: value,
-								},
-							},
-							() =>
-								h(
-									NText,
-									{ style: { mixBlendMode: "difference" } },
-									() => value,
-								),
-						);
-					case "select":
-					case "tags":
-						return h(NSpace, () =>
-							[].concat(value).map((_value) =>
-								h(
-									NTag,
-									{
-										round: true,
-										bordered: false,
-									},
-									() =>
-										h(
-											NEllipsis,
-											{
-												tooltip: false,
-												style: {
-													maxWidth: `${
-														field.key && t(field.key).length > 10
-															? t(field.key).length * 12
-															: 120
-													}px`,
-												},
-											},
-											() => _value,
-										),
-								),
-							),
-						);
-					case "html":
-						return h(
-							NPopover,
-							{
-								style: {
-									maxHeight: "240px",
-									maxWidth: "300px",
-								},
-								trigger: "click",
-								scrollable: true,
-							},
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											circle: true,
-										},
-										{
-											default: () =>
-												h(NText, { depth: 3 }, { default: () => "..." }),
-										},
-									),
-								default: () => h("div", { innerHTML: value }),
-							},
-						);
-					case "date":
-						return h(
-							NPopover,
-							{},
-							{
-								trigger: () =>
-									h(NTime, {
-										time: Number(value),
-										type: "relative",
-									}),
-								default: () =>
-									h(NTime, {
-										time: Number(value),
-									}),
-							},
-						);
-					case "upload":
-						return [].concat(value).length === 1
-							? [].concat(value).map((link: string) =>
-									["png", "jpg", "jpeg", "ico", "webp", "svg", "gif"].includes(
-										link.split(".").pop() ?? "",
-									)
-										? h(NImage, {
-												src: link?.includes("inicontent")
-													? `${link}?fit=32`
-													: link,
-												previewSrc: link,
-												width: 32,
-											})
-										: h(NIcon, () => h(IconFileUpload)),
-								)
-							: h(NImageGroup, () =>
-									h(NSpace, { align: "center" }, () =>
-										[].concat(value).length > 3
-											? [
-													...[]
-														.concat(value)
-														.slice(0, 3)
-														.map((link: string) =>
-															[
-																"png",
-																"jpg",
-																"jpeg",
-																"ico",
-																"webp",
-																"svg",
-																"gif",
-															].includes(link.split(".").pop() ?? "")
-																? h(NImage, {
-																		src: link?.includes("inicontent")
-																			? `${link}?fit=32`
-																			: link,
-																		previewSrc: link,
-																		width: 32,
-																	})
-																: h(NIcon, () => h(IconFileUpload)),
-														),
-													`+${[].concat(value).length - 3}`,
-												]
-											: [].concat(value).map((link: string) =>
-													[
-														"png",
-														"jpg",
-														"jpeg",
-														"ico",
-														"webp",
-														"svg",
-														"gif",
-													].includes(link.split(".").pop() ?? "")
-														? h(NImage, {
-																src: link?.includes("inicontent")
-																	? `${link}?fit=32`
-																	: link,
-																previewSrc: link,
-																width: 32,
-															})
-														: h(NIcon, () => h(IconFileUpload)),
-												),
-									),
-								);
-					case "role":
-						return h(
-							NTag,
-							{ round: true, bordered: false },
-							{
-								default: () =>
-									h(
-										NEllipsis,
-										{
-											tooltip: false,
-											style: {
-												maxWidth: `${
-													field.key && t(field.key).length > 10
-														? t(field.key).length * 12
-														: 120
-												}px`,
-											},
-										},
-										() =>
-											t(
-												database.value.roles?.find(({ id }) => id === value)
-													?.name,
-											),
-									),
-								icon: () =>
-									h(
-										"span",
-										{ style: { padding: "0 5px" } },
-										database.value.roles
-											?.find(({ id }) => id === value)
-											?.name.charAt(0)
-											.toUpperCase(),
-									),
-							},
-						);
-					case "string":
-						if (field.subType)
-							return RenderSchema(value, { ...field, type: field.subType });
-						return RenderSchema(value, { ...field, type: "text" });
-					case "array":
-						if (!field.children) throw new Error("no children");
-						if (field.subType)
-							return RenderSchema(value, {
-								...field,
-								type: field.subType,
-								isArray: true,
-							});
-						if (!isArrayOfObjects(field.children))
-							return RenderSchema(value, {
-								...field,
-								type: field.children === "table" ? "table" : "tags",
-								isArray: true,
-							});
-
-						return h(
-							NPopover,
-							{
-								trigger: "click",
-								scrollable: true,
-								style: {
-									maxHeight: "240px",
-								},
-							},
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											circle: true,
-										},
-										{ default: () => "[...]" },
-									),
-								default: () =>
-									h(
-										NCollapse,
-										{ accordion: true, arrowPlacement: "right" },
-										() =>
-											[].concat(value).map((_item, index) =>
-												h(
-													NCollapseItem,
-													{
-														title: `${field.key} ${index + 1}`,
-													},
-													() =>
-														h(NSpace, { vertical: true }, () =>
-															field.children.map((child: any) =>
-																h(
-																	NSpace,
-																	{
-																		align: "center",
-																	},
-																	() => [
-																		h("strong", `${t(child.key)}:`),
-																		RenderSchema(
-																			getProperty(_item, child.key),
-																			child,
-																		),
-																	],
-																),
-															),
-														),
-												),
-											),
-									),
-							},
-						);
-					case "object":
-						return h(
-							NPopover,
-							{
-								trigger: "click",
-							},
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											circle: true,
-										},
-										{ default: () => "{...}" },
-									),
-								default: () =>
-									h(NSpace, { vertical: true }, () =>
-										field.children.map((child: { key: any; slug: any }) =>
-											h(NSpace, { align: "center", inline: true }, () => [
-												h("strong", `${child.key}:`),
-												RenderSchema(getProperty(value, child.key), child),
-											]),
-										),
-									),
-							},
-						);
-					default:
-						return value
-							? h(
-									NEllipsis,
-									{
-										tooltip: false,
-										style: {
-											maxWidth: `${
-												field.key && t(field.key).length > 10
-													? t(field.key).length * 12
-													: 120
-											}px`,
-										},
-									},
-									() => value,
-								)
-							: h(NText, { depth: 3 }, () => "--");
-				}
-			},
 			GenerateColumns = () =>
 				[
-					{
-						type: "selection",
-						fixed: "left",
-						options: [
-							{
-								label: t("delete"),
-								key: "delete",
-								disabled: checkedRowKeys.value.length === 0,
-								icon: () => h(NIcon, () => h(IconTrash)),
-								onSelect: async () => {
-									Loading.value.TableData = true;
-									await $fetch<apiResponse>(
-										`${useRuntimeConfig().public.apiBase}${
-											route.params.database
-										}/${route.params.table}`,
+					...(table.value.allowedMethods !== "r"
+						? [
+								{
+									type: "selection",
+									fixed: "left",
+									options: [
 										{
-											method: "DELETE",
-											body: checkedRowKeys.value,
-										} as any,
-									);
-									message.success("Deleted Successfully");
-									await refreshTableData();
+											label: t("delete"),
+											key: "delete",
+											disabled: checkedRowKeys.value.length === 0,
+											icon: () => h(NIcon, () => h(IconTrash)),
+											onSelect: async () => {
+												Loading.value.TableData = true;
+												await $fetch<apiResponse>(
+													`${useRuntimeConfig().public.apiBase}${
+														database.value.slug
+													}/${table.value.slug}`,
+													{
+														method: "DELETE",
+														body: checkedRowKeys.value,
+													} as any,
+												);
+												message.success("Deleted Successfully");
+												await refreshTableData();
+											},
+										},
+									],
 								},
-							},
-						],
-					},
-					...(
-						database.value.tables?.find(
-							({ slug }) => slug === route.params.table,
-						)?.schema ?? []
-					).map((field) => ({
+							]
+						: []),
+					...(table.value.schema ?? []).map((field) => ({
 						title: () =>
 							h(NFlex, { align: "center", justify: "start" }, () => [
 								getField(
@@ -852,7 +291,7 @@ export default defineNuxtComponent({
 						width: t(field.key).length > 10 ? t(field.key).length * 13 : 130,
 						key: field.key,
 						render: (row: { [x: string]: any }) =>
-							RenderSchema(row[field.key], field),
+							h(LazyRenderColumn, { value: row[field.key], field }),
 					})),
 					{
 						title: t("actions"),
@@ -862,95 +301,101 @@ export default defineNuxtComponent({
 						key: "actions",
 						render(row: { id: any }) {
 							return h(NButtonGroup, () => [
-								h(
-									NPopover,
-									{},
-									{
-										trigger: () =>
-											h(
-												NButton,
-												{
-													tag: "a",
-													href: `/${route.params.database}/admin/tables/${route.params.table}/${row.id}`,
-													onClick: (e) => {
-														e.preventDefault();
-														navigateTo(
-															`/${route.params.database}/admin/tables/${route.params.table}/${row.id}`,
-														);
-													},
-													secondary: true,
-													circle: true,
-													type: "primary",
-												},
-												{ icon: () => h(NIcon, () => h(IconEye)) },
-											),
-										default: () => t("viewTheItem"),
-									},
-								),
-								h(
-									NPopover,
-									{},
-									{
-										trigger: () =>
-											h(
-												NButton,
-												{
-													tag: "a",
-													href: `/${route.params.database}/admin/tables/${route.params.table}/${row.id}/edit`,
-													onClick: (e) => {
-														e.preventDefault();
-														if (!isMobile)
-															Drawer.value = {
-																...Drawer.value,
-																id: row.id,
-																table: route.params.table as string,
-																data: JSON.parse(JSON.stringify(row)),
-																show: true,
-															};
-														else
-															navigateTo(
-																`/${route.params.database}/admin/tables/${route.params.table}/${row.id}/edit`,
-															);
-													},
-													secondary: true,
-													circle: true,
-													type: "info",
-												},
-												{ icon: () => h(NIcon, () => h(IconPencil)) },
-											),
-										default: () => t("edit"),
-									},
-								),
-								h(
-									NPopconfirm,
-									{
-										onPositiveClick: () => DELETE(row.id),
-									},
-									{
-										trigger: () =>
-											h(
-												NPopover,
-												{},
-												{
-													trigger: () =>
-														h(
-															NButton,
-															{
-																strong: true,
-																secondary: true,
-																circle: true,
-																type: "error",
+								table.value.allowedMethods?.includes("r")
+									? h(
+											NPopover,
+											{},
+											{
+												trigger: () =>
+													h(
+														NButton,
+														{
+															tag: "a",
+															href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
+															onClick: (e) => {
+																e.preventDefault();
+																navigateTo(
+																	`/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
+																);
 															},
-															{
-																icon: () => h(NIcon, () => h(IconTrash)),
+															secondary: true,
+															circle: true,
+															type: "primary",
+														},
+														{ icon: () => h(NIcon, () => h(IconEye)) },
+													),
+												default: () => t("viewTheItem"),
+											},
+										)
+									: null,
+								table.value.allowedMethods?.includes("u")
+									? h(
+											NPopover,
+											{},
+											{
+												trigger: () =>
+													h(
+														NButton,
+														{
+															tag: "a",
+															href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+															onClick: (e) => {
+																e.preventDefault();
+																if (!isMobile)
+																	Drawer.value = {
+																		...Drawer.value,
+																		id: row.id,
+																		table: table.value.slug as string,
+																		data: JSON.parse(JSON.stringify(row)),
+																		show: true,
+																	};
+																else
+																	navigateTo(
+																		`/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																	);
 															},
-														),
-													default: () => t("delete"),
-												},
-											),
-										default: () => t("theFollowingActionIsIrreversible"),
-									},
-								),
+															secondary: true,
+															circle: true,
+															type: "info",
+														},
+														{ icon: () => h(NIcon, () => h(IconPencil)) },
+													),
+												default: () => t("edit"),
+											},
+										)
+									: null,
+								table.value.allowedMethods?.includes("d")
+									? h(
+											NPopconfirm,
+											{
+												onPositiveClick: () => DELETE(row.id),
+											},
+											{
+												trigger: () =>
+													h(
+														NPopover,
+														{},
+														{
+															trigger: () =>
+																h(
+																	NButton,
+																	{
+																		strong: true,
+																		secondary: true,
+																		circle: true,
+																		type: "error",
+																	},
+																	{
+																		icon: () => h(NIcon, () => h(IconTrash)),
+																	},
+																),
+															default: () => t("delete"),
+														},
+													),
+												default: () => t("theFollowingActionIsIrreversible"),
+											},
+										)
+									: null,
 							]);
 						},
 					},
@@ -960,19 +405,22 @@ export default defineNuxtComponent({
 					NCollapse,
 					{
 						triggerAreas: ["main", "arrow"],
+						accordion: true,
+						defaultExpandedNames: "0",
 					},
 					() =>
 						Object.entries(
 							path ? getProperty(searchArray.value, path) : searchArray.value,
-						).map(([condition, items]: any) =>
+						).map(([condition, items]: any, index) =>
 							h(
 								NCollapseItem,
 								{
 									title: t(`${condition}Group`),
+									name: index.toString(),
 								},
 								{
 									"header-extra": () =>
-										h(NSpace, {}, () => [
+										h(NFlex, {}, () => [
 											h(
 												NDropdown,
 												{
@@ -1020,30 +468,42 @@ export default defineNuxtComponent({
 													),
 											),
 											h(
-												NButton,
+												NPopover,
+												{},
 												{
-													onClick: () => {
-														setProperty(
-															searchArray.value,
-															`${path ? `${path}.` : ""}${
-																condition === "and" ? "or" : "and"
-															}`,
-															getProperty(
-																searchArray.value,
-																`${path ? `${path}.` : ""}${condition}`,
-																[[null, "=", null]],
-															),
-														);
-														deleteProperty(
-															searchArray.value,
-															`${path ? `${path}.` : ""}${condition}`,
-														);
-													},
-													circle: true,
-													size: "small",
-												},
-												{
-													icon: () => h(NIcon, () => h(IconSwitchHorizontal)),
+													trigger: () =>
+														h(
+															NButton,
+															{
+																onClick: () => {
+																	setProperty(
+																		searchArray.value,
+																		`${path ? `${path}.` : ""}${
+																			condition === "and" ? "or" : "and"
+																		}`,
+																		getProperty(
+																			searchArray.value,
+																			`${path ? `${path}.` : ""}${condition}`,
+																			[[null, "=", null]],
+																		),
+																	);
+																	deleteProperty(
+																		searchArray.value,
+																		`${path ? `${path}.` : ""}${condition}`,
+																	);
+																},
+																circle: true,
+																size: "small",
+															},
+															{
+																icon: () =>
+																	h(NIcon, () => h(IconSwitchHorizontal)),
+															},
+														),
+													default: () =>
+														t(
+															`convertTo_"${condition === "and" ? "or" : "and"}"_group`,
+														),
 												},
 											),
 											h(
@@ -1067,7 +527,7 @@ export default defineNuxtComponent({
 										]),
 									default: () =>
 										h(
-											NSpace,
+											NFlex,
 											{
 												itemStyle: {
 													width: "100%",
@@ -1081,9 +541,7 @@ export default defineNuxtComponent({
 																if (item[0])
 																	field = getFieldFromSchema(
 																		item[0],
-																		database.value.tables?.find(
-																			({ slug }) => slug === route.params.table,
-																		)?.schema as any,
+																		table.value.schema as any,
 																	);
 
 																return [
@@ -1096,14 +554,10 @@ export default defineNuxtComponent({
 																			item[0] = v;
 																		},
 																		options:
-																			database.value.tables
-																				?.find(
-																					({ slug }) =>
-																						slug === route.params.table,
-																				)
-																				?.schema?.map((_item, _, schema) =>
+																			table.value.schema
+																				?.map((_item) =>
 																					generateSearchInOptions(
-																						schema,
+																						table.value.schema as Schema,
 																						_item,
 																					),
 																				)
@@ -1121,8 +575,9 @@ export default defineNuxtComponent({
 																					filterable: true,
 																					defaultValue: "=",
 																					value: item[1],
-																					onUpdateValue: (v: string) =>
-																						(item[1] = v),
+																					onUpdateValue: (v: string) => {
+																						item[1] = v;
+																					},
 																					options:
 																						comparisonOperatorOptions().filter(
 																							({ value }) => {
@@ -1192,6 +647,23 @@ export default defineNuxtComponent({
 																								},
 																								showFeedback: false,
 																							},
+																							inputProps: {
+																								onKeydown: ({
+																									key,
+																								}: KeyboardEvent) => {
+																									if (key === "Enter") {
+																										querySearch.value =
+																											searchArray.value
+																												? generateSearchInput(
+																														searchArray.value,
+																													)
+																												: undefined;
+																										pagination.value.onChange(
+																											1,
+																										);
+																									}
+																								},
+																							},
 																						},
 																					] as any,
 																				}),
@@ -1227,8 +699,8 @@ export default defineNuxtComponent({
 						),
 				);
 
-		watch(searchInput, (v) => {
-			const { search, ...Query }: any = route.query;
+		watch(querySearch, (v) => {
+			const { search, page, ...Query }: any = route.query;
 			return v
 				? router.push({
 						query: {
@@ -1243,8 +715,7 @@ export default defineNuxtComponent({
 
 		useHead({
 			title: `${database.value.slug} | ${t(
-				database.value.tables?.find(({ slug }) => slug === route.params.table)
-					?.slug ?? "",
+				table.value.slug ?? "",
 			)} ${t("Table")}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 		});
@@ -1255,12 +726,7 @@ export default defineNuxtComponent({
 				? h(
 						NCard,
 						{
-							title:
-								t(
-									database.value.tables?.find(
-										({ slug }) => slug === route.params.table,
-									)?.slug,
-								) ?? "--",
+							title: t(table.value.slug) ?? "--",
 							style: {
 								background: "none",
 							},
@@ -1295,7 +761,7 @@ export default defineNuxtComponent({
 										//         ].map((_, index) => index);
 										//         for await (const index of newItems) {
 										//           const { data }:any = await useFetch<apiResponse>(
-										//             `${useRuntimeConfig().public.apiBase}${route.params.database}/${route.params.table}`,
+										//             `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug}`,
 										//             {
 										//               method: "POST",
 										//               body: items.splice(0, chunkSize),
@@ -1332,13 +798,7 @@ export default defineNuxtComponent({
 									h(
 										NPopover,
 										{
-											disabled:
-												!searchInput.value &&
-												(!TableData.value?.result ||
-													!database.value.tables ||
-													!database.value.tables.find(
-														({ slug }) => slug === route.params.table,
-													)?.schema),
+											disabled: !TableData.value?.result || !table.value.schema,
 											style: {
 												maxHeight: "240px",
 												width: isMobile ? "350px" : "500px",
@@ -1357,14 +817,10 @@ export default defineNuxtComponent({
 															h(
 																NButton,
 																{
+																	round: true,
 																	disabled:
-																		!searchInput.value &&
-																		(!TableData.value?.result ||
-																			!database.value.tables ||
-																			!database.value.tables.find(
-																				({ slug }) =>
-																					slug === route.params.table,
-																			)?.schema),
+																		!TableData.value?.result ||
+																		!table.value.schema,
 																},
 																{
 																	icon: () => h(NIcon, () => h(IconSearch)),
@@ -1379,13 +835,13 @@ export default defineNuxtComponent({
 														h(
 															NButton,
 															{
-																disabled: !!searchInput.value,
+																disabled: !!querySearch.value,
 																loading: Loading.value.TableData,
 																onClick: () => {
 																	searchArray.value = {
 																		and: [[null, "=", null]],
 																	};
-																	searchInput.value = undefined;
+																	querySearch.value = undefined;
 																	refreshTableData();
 																},
 															},
@@ -1399,12 +855,10 @@ export default defineNuxtComponent({
 															{
 																loading: Loading.value.TableData,
 																onClick: async () => {
-																	searchInput.value =
-																		searchArray.value &&
-																		Object.values(searchArray.value).length > 0
-																			? generateSearchInput(searchArray.value)
-																			: undefined;
-																	refreshTableData();
+																	querySearch.value = searchArray.value
+																		? generateSearchInput(searchArray.value)
+																		: undefined;
+																	pagination.value.onChange(1);
 																},
 															},
 															{
@@ -1465,7 +919,10 @@ export default defineNuxtComponent({
 													trigger: () =>
 														h(
 															NButton,
-															{ disabled: UploadProgress.value !== null },
+															{
+																round: true,
+																disabled: UploadProgress.value !== null,
+															},
 															{
 																icon: () =>
 																	UploadProgress.value !== null
@@ -1486,56 +943,48 @@ export default defineNuxtComponent({
 												},
 											),
 									),
-									h(
-										NPopover,
-										{},
-										{
-											trigger: () =>
-												h(
-													NButton,
-													{
-														disabled:
-															!database.value.tables ||
-															!database.value.tables.find(
-																({ slug }) => slug === route.params.table,
-															)?.schema,
-														tag: "a",
-														href:
-															!database.value.tables ||
-															!database.value.tables.find(
-																({ slug }) => slug === route.params.table,
-															)?.schema
-																? null
-																: `/${route.params.database}/admin/tables/${route.params.table}/new`,
-														onClick: (e) => {
-															e.preventDefault();
+									table.value.allowedMethods?.includes("c")
+										? h(
+												NPopover,
+												{},
+												{
+													trigger: () =>
+														h(
+															NButton,
+															{
+																round: true,
+																disabled: !table.value.schema,
+																tag: "a",
+																href: !table.value.schema
+																	? null
+																	: `/${database.value.slug}/admin/tables/${table.value.slug}/new`,
+																onClick: (e) => {
+																	e.preventDefault();
 
-															if (!isMobile)
-																Drawer.value = {
-																	...Drawer.value,
-																	table: route.params.table as string,
-																	id: null,
-																	data: {},
-																	show: true,
-																};
-															else
-																navigateTo(
-																	!database.value.tables ||
-																		!database.value.tables.find(
-																			({ slug }) => slug === route.params.table,
-																		)?.schema
-																		? null
-																		: `/${route.params.database}/admin/tables/${route.params.table}/new`,
-																);
-														},
-													},
-													{
-														icon: () => h(NIcon, () => h(IconPlus)),
-													},
-												),
-											default: () => t("newItem"),
-										},
-									),
+																	if (!isMobile)
+																		Drawer.value = {
+																			...Drawer.value,
+																			table: table.value.slug as string,
+																			id: null,
+																			data: {},
+																			show: true,
+																		};
+																	else
+																		navigateTo(
+																			!table.value.schema
+																				? null
+																				: `/${database.value.slug}/admin/tables/${table.value.slug}/new`,
+																		);
+																},
+															},
+															{
+																icon: () => h(NIcon, () => h(IconPlus)),
+															},
+														),
+													default: () => t("newItem"),
+												},
+											)
+										: null,
 								]),
 							],
 							default: () => {

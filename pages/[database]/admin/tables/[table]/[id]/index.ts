@@ -1,16 +1,18 @@
+import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
 import {
-	NCard,
-	NIcon,
 	NButton,
-	NSpace,
+	NCard,
 	NEllipsis,
+	NIcon,
 	NPopover,
+	NSpace,
 	useMessage,
 } from "naive-ui";
-import { IconPrinter, IconPencil, IconSettings } from "@tabler/icons-vue";
 import { LazyRenderDatas } from "#components";
 export default defineNuxtComponent({
 	async setup() {
+		clearNuxtState("itemLabel");
+
 		definePageMeta({
 			middleware: ["dashboard", "table"],
 			layout: "table",
@@ -29,13 +31,11 @@ export default defineNuxtComponent({
 
 		const route = useRoute(),
 			database = useState<Database>("database"),
-			table = database.value.tables?.find(
-				({ slug }) => slug === route.params.table,
-			),
+			table = useState<Table>("table"),
 			message = useMessage(),
 			{ data: single } = await useFetch<Item>(
-				`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-					route.params.table
+				`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
+					table.value.slug
 				}/${route.params.id}`,
 				{
 					transform: (res: any) => {
@@ -44,7 +44,7 @@ export default defineNuxtComponent({
 							setTimeout(
 								() =>
 									navigateTo(
-										`/${route.params.database}/admin/tables/${route.params.table}`,
+										`/${database.value.slug}/admin/tables/${table.value.slug}`,
 									),
 								1000,
 							);
@@ -53,11 +53,14 @@ export default defineNuxtComponent({
 					},
 				},
 			),
-			label = renderLabel(table?.label, table?.schema, single.value);
+			itemLabel = useState("itemLabel", () =>
+				renderLabel(table.value.label, table.value.schema, single.value),
+			);
+
 		useHead({
 			title: `${t(database.value.slug)} | ${t(
-				route.params.table as string,
-			)} ${t("table")} : ${label}`,
+				table.value.slug,
+			)} ${t("table")} : ${itemLabel.value}`,
 			link: [{ rel: "icon", href: database.value.icon ?? "" }],
 		});
 
@@ -69,7 +72,7 @@ export default defineNuxtComponent({
 				},
 				{
 					header: () =>
-						h(NEllipsis, () => `${t(route.params.table as string)} : ${label}`),
+						h(NEllipsis, () => `${t(table.value.slug)} : ${itemLabel.value}`),
 					"header-extra": () =>
 						h(NSpace, {}, () => [
 							h(
@@ -100,11 +103,11 @@ export default defineNuxtComponent({
 											NButton,
 											{
 												tag: "a",
-												href: `/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}/edit`,
+												href: `/${database.value.slug}/admin/tables/${table.value.slug}/${route.params.id}/edit`,
 												onClick: (e) => {
 													e.preventDefault();
 													navigateTo(
-														`/${route.params.database}/admin/tables/${route.params.table}/${route.params.id}/edit`,
+														`/${database.value.slug}/admin/tables/${table.value.slug}/${route.params.id}/edit`,
 													);
 												},
 												circle: true,
@@ -158,7 +161,7 @@ export default defineNuxtComponent({
 					default: () =>
 						h(LazyRenderDatas, {
 							modelValue: single.value as Item,
-							schema: table?.schema,
+							schema: table.value.schema,
 						}),
 				},
 			);
