@@ -1,0 +1,1 @@
+import{c8 as n,i}from"./iB-vctTS.js";function o(s,{key:r,type:e,children:t},l){return(e==="object"||e==="array")&&n(t)?{label:i(r),value:(l??"")+r,children:t.filter(({type:a})=>Array.isArray(a)?a.some(c=>!["table","array","object"].includes(c)):!["table","array","object"].includes(a)).map(a=>o(s,a,`${(l??"")+r}.`))}:{label:i(r),value:(l??"")+r,ty:e}}export{o as g};
