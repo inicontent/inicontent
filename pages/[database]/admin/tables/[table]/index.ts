@@ -143,6 +143,7 @@ export default defineNuxtComponent({
 			TableDataRef = useState(() => null),
 			checkedRowKeys = useState(() => []),
 			pagination = ref({
+				simple: isMobile,
 				page: route.query.page ? Number(route.query.page) : 1,
 				pageCount: 1,
 				showSizePicker: true,
