@@ -1,5 +1,5 @@
 import { IconDeviceFloppy, IconPencil, IconPlus } from "@tabler/icons-vue";
-import { deepMerge, isArrayOfObjects, isObject } from "inibase/utils";
+import { isArrayOfObjects, isObject } from "inibase/utils";
 import { getProperty, hasProperty, setProperty } from "inidot";
 import Inison from "inison";
 import {
@@ -302,7 +302,7 @@ export default defineNuxtComponent({
 				{
 					path,
 					rule: {
-						type: !field.isArray ? "object" : "array",
+						type: !field.isArray ? "string" : "array",
 						required: field.required,
 						trigger: "change",
 						min: field.isArray ? field.min : undefined,
