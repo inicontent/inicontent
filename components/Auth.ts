@@ -1,15 +1,15 @@
 import {
+	type FormInst,
+	NButton,
 	NCard,
 	NForm,
+	NScrollbar,
 	NTabPane,
 	NTabs,
-	NButton,
-	NScrollbar,
-	useMessage,
-	type FormInst,
 	type TabsInst,
+	useMessage,
 } from "naive-ui";
-import { LazyRenderFields } from "#components";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -161,7 +161,9 @@ export default defineNuxtComponent({
 						{
 							ref: tabsInstRef,
 							value: tabsValue.value,
-							onUpdateValue: (v: string) => (tabsValue.value = v),
+							onUpdateValue: (v: string) => {
+								tabsValue.value = v;
+							},
 							size: "large",
 							justifyContent: "center",
 							trigger: "hover",
@@ -183,7 +185,7 @@ export default defineNuxtComponent({
 											onSubmit: SigninSubmit,
 										},
 										() => [
-											h(LazyRenderFields, {
+											h(LazyRenderField, {
 												modelValue: SigninForm.value,
 												schema: SigninColumns,
 											}),
@@ -219,7 +221,7 @@ export default defineNuxtComponent({
 										},
 										() => [
 											h(NScrollbar, { style: { maxHeight: "320px" } }, () =>
-												h(LazyRenderFields, {
+												h(LazyRenderField, {
 													modelValue: SignupForm.value,
 													schema: SignupColumns,
 												}),

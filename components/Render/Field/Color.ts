@@ -1,5 +1,5 @@
-import { NColorPicker, NFormItem } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NColorPicker, NFormItem } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -33,7 +33,7 @@ export default defineNuxtComponent({
 					rule: {
 						required: field.required,
 						trigger: "change",
-						message: "This field is required",
+						message: `${t(field.key)} ${t("isRequired")}`,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

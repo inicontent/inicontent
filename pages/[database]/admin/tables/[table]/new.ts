@@ -1,16 +1,16 @@
-import {
-	NCard,
-	NIcon,
-	NButton,
-	NSpace,
-	NEllipsis,
-	NPopover,
-	NForm,
-	useMessage,
-	type FormInst,
-} from "naive-ui";
 import { IconSend } from "@tabler/icons-vue";
-import { LazyRenderFields } from "#components";
+import {
+	type FormInst,
+	NButton,
+	NCard,
+	NEllipsis,
+	NForm,
+	NIcon,
+	NPopover,
+	NSpace,
+	useMessage,
+} from "naive-ui";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -160,7 +160,7 @@ export default defineNuxtComponent({
 								ref: formRef,
 							},
 							() =>
-								h(LazyRenderFields, {
+								h(LazyRenderField, {
 									modelValue: single.value,
 									schema: schema,
 								}),

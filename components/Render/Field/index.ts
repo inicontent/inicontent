@@ -1,38 +1,38 @@
+import { IconChevronRight, IconPlus, IconTrash } from "@tabler/icons-vue";
+import { isArrayOfObjects } from "inibase/utils";
+import { deleteProperty, getProperty, hasProperty, setProperty } from "inidot";
 // TO-DO:
 // Add fields: Mention, Range, Slider
 import {
-	NIcon,
 	NButton,
+	NCard,
 	NCollapse,
 	NCollapseItem,
+	NDataTable,
+	NIcon,
 	NPopover,
 	NText,
-	NCard,
-	NDataTable,
 } from "naive-ui";
-import { IconPlus, IconTrash, IconChevronRight } from "@tabler/icons-vue";
-import { isArrayOfObjects } from "inibase/utils";
 import {
-	LazyRenderFieldTable,
-	LazyRenderFieldHtml,
-	LazyRenderFieldRole,
-	LazyRenderFieldText,
-	LazyRenderFieldPassword,
-	LazyRenderFieldNumber,
-	LazyRenderFieldDate,
-	LazyRenderFieldEmail,
-	LazyRenderFieldUrl,
-	LazyRenderFieldColor,
-	LazyRenderFieldUpload,
-	LazyRenderFieldRadio,
-	LazyRenderFieldTextarea,
-	LazyRenderFieldId,
-	LazyRenderFieldSelect,
 	LazyRenderFieldBoolean,
 	LazyRenderFieldCheckbox,
+	LazyRenderFieldColor,
+	LazyRenderFieldDate,
+	LazyRenderFieldEmail,
+	LazyRenderFieldHtml,
+	LazyRenderFieldId,
+	LazyRenderFieldNumber,
+	LazyRenderFieldPassword,
+	LazyRenderFieldRadio,
+	LazyRenderFieldRole,
+	LazyRenderFieldSelect,
+	LazyRenderFieldTable,
 	LazyRenderFieldTags,
+	LazyRenderFieldText,
+	LazyRenderFieldTextarea,
+	LazyRenderFieldUpload,
+	LazyRenderFieldUrl,
 } from "#components";
-import { getProperty, setProperty, deleteProperty, hasProperty } from "inidot";
 
 export default defineNuxtComponent({
 	props: {
@@ -45,7 +45,8 @@ export default defineNuxtComponent({
 			default: {},
 		},
 	},
-	setup: (props) => {
+	emits: ["update:modelValue"],
+	setup: (props, { emit }) => {
 		useLanguage({
 			ar: {
 				delete: "حذف",
@@ -78,6 +79,24 @@ export default defineNuxtComponent({
 						(path ?? "") +
 							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 						field.defaultValue,
+					);
+
+				if (
+					!hasProperty(
+						modelValue.value,
+						(path ?? "") +
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+					) ||
+					getProperty(
+						modelValue.value,
+						(path ?? "") +
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+					) === null
+				)
+					deleteProperty(
+						modelValue.value,
+						(path ?? "") +
+							(isAbsolutePath ? "" : getPath(schema.value, field.id)),
 					);
 
 				if (
@@ -148,6 +167,12 @@ export default defineNuxtComponent({
 						return h(
 							NCollapse,
 							{
+								expandedNames: field.expand
+									? [
+											(path ?? "") +
+												(isAbsolutePath ? "" : getPath(schema.value, field.id)),
+										]
+									: undefined,
 								displayDirective: "show",
 								style: {
 									margin: "0 0 20px",
@@ -174,8 +199,8 @@ export default defineNuxtComponent({
 													padding: "0 0 0 10px",
 												},
 											},
-											(field.children as Schema).map((child: any) =>
-												RenderField(child, path, isAbsolutePath),
+											(field.children as Schema).map((child) =>
+												RenderField(child),
 											),
 										),
 								),
@@ -717,7 +742,11 @@ export default defineNuxtComponent({
 						return null;
 				}
 			};
-
+		watch(
+			() => modelValue.value,
+			(v) => emit("update:modelValue", v),
+			{ deep: true },
+		);
 		return () => schema.value.map((item) => RenderField(item));
 	},
 });

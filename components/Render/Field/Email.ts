@@ -1,6 +1,6 @@
-import { NAutoComplete, NFormItem, NInput } from "naive-ui";
-import { getProperty, setProperty } from "inidot";
 import { isEmail } from "inibase/utils";
+import { getProperty, setProperty } from "inidot";
+import { NAutoComplete, NFormItem, NInput } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -38,10 +38,10 @@ export default defineNuxtComponent({
 						validator(_rule, value) {
 							if (!value)
 								return field.required
-									? new Error("This field is required")
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
 									: true;
 							if (!isEmail(value))
-								return new Error("Please type a valid email");
+								return new Error(`${t(field.key)} ${t("isNotValid")}`);
 						},
 					},
 					...(field.labelProps

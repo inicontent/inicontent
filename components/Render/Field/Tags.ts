@@ -1,3 +1,7 @@
+import { IconPlus } from "@tabler/icons-vue";
+import type { FieldType } from "inibase";
+import { validateFieldType } from "inibase/utils";
+import { getProperty, setProperty } from "inidot";
 import {
 	NButton,
 	NDynamicTags,
@@ -6,10 +10,6 @@ import {
 	NSpace,
 	NTag,
 } from "naive-ui";
-import { getProperty, setProperty } from "inidot";
-import { IconPlus } from "@tabler/icons-vue";
-import type { FieldType } from "inibase";
-import { validateFieldType } from "inibase/utils";
 
 export default defineNuxtComponent({
 	props: {
@@ -52,7 +52,7 @@ export default defineNuxtComponent({
 						validator(_rule, values) {
 							if (!Array.isArray(values) || values.length === 0)
 								return field.required && !field.defaultValue
-									? new Error("This field is required")
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
 									: true;
 
 							for (const value of values)
@@ -63,9 +63,9 @@ export default defineNuxtComponent({
 									)
 								)
 									return new Error(
-										`Please type a valid ${
+										`${t(field.key)} ${t("isNotValid")}, ${t("expected")} ${
 											Array.isArray(field.children)
-												? field.children.join("| ")
+												? field.children.join(", ")
 												: field.children
 										}`,
 									);

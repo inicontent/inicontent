@@ -1,5 +1,5 @@
-import { NFormItem, NRadio, NRadioGroup, NSpace } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NFormItem, NRadio, NRadioGroup, NSpace } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -33,7 +33,7 @@ export default defineNuxtComponent({
 					rule: {
 						required: field.required,
 						trigger: "change",
-						message: "Please select an option",
+						message: `${t(field.key)} ${t("isRequired")}`,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

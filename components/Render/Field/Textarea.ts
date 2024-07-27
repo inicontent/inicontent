@@ -1,5 +1,5 @@
-import { NFormItem, NInput } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NFormItem, NInput } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -33,10 +33,7 @@ export default defineNuxtComponent({
 					rule: {
 						required: field.required,
 						trigger: ["blur", "input"],
-						validator: (_rule, value) =>
-							field.required && !value
-								? new Error("This field is required")
-								: true,
+						message: `${t(field.key)} ${t("isRequired")}`,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

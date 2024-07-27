@@ -1,5 +1,6 @@
-import { NFormItem, NInputNumber } from "naive-ui";
+import { isNumber } from "inibase/utils";
 import { getProperty, hasProperty, setProperty } from "inidot";
+import { NFormItem, NInputNumber } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -34,10 +35,14 @@ export default defineNuxtComponent({
 						type: "number",
 						required: field.required,
 						trigger: ["blur", "change"],
-						validator: (_rule, value) =>
-							field.required && value === null
-								? new Error("Please type a valid number")
-								: true,
+						validator(_rule, value) {
+							if (!value)
+								return field.required
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
+									: true;
+							if (!isNumber(value))
+								return new Error(`${t(field.key)} ${t("isNotValid")}`);
+						},
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

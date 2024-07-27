@@ -1,6 +1,6 @@
-import { NFormItem, NInput } from "naive-ui";
-import { getProperty, setProperty } from "inidot";
 import { isURL } from "inibase/utils";
+import { getProperty, setProperty } from "inidot";
+import { NFormItem, NInput } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -36,9 +36,10 @@ export default defineNuxtComponent({
 						validator(_rule, value) {
 							if (!value)
 								return field.required
-									? new Error("This field is required")
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
 									: true;
-							if (!isURL(value)) return new Error("Please type a valid link");
+							if (!isURL(value))
+								return new Error(`${t(field.key)} ${t("isNotValid")}`);
 						},
 						trigger: "change",
 					},

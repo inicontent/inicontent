@@ -1,23 +1,23 @@
 import {
-	useMessage,
-	NCard,
-	NModal,
-	NSpace,
+	IconArrowRight,
+	IconDeviceFloppy,
+	IconPlus,
+	IconSettings,
+} from "@tabler/icons-vue";
+import {
+	type FormInst,
 	NButton,
-	NIcon,
-	NForm,
+	NCard,
 	NCollapse,
 	NCollapseItem,
-	type FormInst,
 	NEmpty,
+	NForm,
+	NIcon,
+	NModal,
+	NSpace,
+	useMessage,
 } from "naive-ui";
-import {
-	IconPlus,
-	IconDeviceFloppy,
-	IconSettings,
-	IconArrowRight,
-} from "@tabler/icons-vue";
-import { LazyTableGrid, LazyRenderFields } from "#components";
+import { LazyRenderField, LazyTableGrid } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -29,6 +29,15 @@ export default defineNuxtComponent({
 			ar: {
 				newItem: "عنصر جديد",
 				tableSettings: "إعدادات الجدول",
+				databases: "قواعد البيانات",
+				createDatabase: "إنشاء قاعدة بيانات جديدة",
+				slug: "الإسم",
+				allowedMethods: "الأوامر المسموح بها",
+				allowedDomains: "النِطاقات المسموح بها",
+				languages: "اللغات",
+				roles: "الأدوار",
+				guest: "زائر",
+				icon: "أيقونة",
 			},
 			en: {},
 		});
@@ -105,16 +114,14 @@ export default defineNuxtComponent({
 							NModal,
 							{
 								show: ShowDatabaseModal.value,
-								"on-update:show": (v: boolean) => (ShowDatabaseModal.value = v),
+								"on-update:show": (v: boolean) => {
+									ShowDatabaseModal.value = v;
+								},
 								style: {
 									width: !isMobile ? "600px" : "100%",
 								},
 								preset: "card",
-								title:
-									DatabaseModal.value &&
-									Object.hasOwn(DatabaseModal.value, "id")
-										? t("update_database")
-										: t("create_database"),
+								title: t("createDatabase"),
 								bordered: false,
 								segmented: {
 									footer: "soft",
@@ -129,7 +136,7 @@ export default defineNuxtComponent({
 											model: DatabaseModal.value,
 										},
 										() =>
-											h(LazyRenderFields, {
+											h(LazyRenderField, {
 												modelValue: DatabaseModal.value,
 												schema: [
 													{
@@ -199,8 +206,9 @@ export default defineNuxtComponent({
 									NCollapse,
 									{
 										defaultExpandedNames: defaultOpenedDatabase.value,
-										onUpdateExpandedNames: (v) =>
-											(defaultOpenedDatabase.value = v ? v[0] : null),
+										onUpdateExpandedNames: (v) => {
+											defaultOpenedDatabase.value = v;
+										},
 										triggerAreas: ["main", "arrow"],
 										accordion: true,
 									},

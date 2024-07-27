@@ -41,7 +41,7 @@ import {
 	useMessage,
 } from "naive-ui";
 import draggable from "vuedraggable";
-import { LazyRenderFields } from "#components";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -91,17 +91,7 @@ export default defineNuxtComponent({
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
 			tableRef = ref<FormInst | null>(null),
-			tableCopy = ref(
-				JSON.parse(
-					JSON.stringify({
-						...table.value,
-						schema:
-							table.value.schema?.filter(
-								({ key }) => !["id", "createdAt", "updatedAt"].includes(key),
-							) ?? [],
-					}),
-				),
-			),
+			tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
 			handleSelectedType = (type: string) => {
 				switch (type) {
 					case "textarea":
@@ -165,7 +155,16 @@ export default defineNuxtComponent({
 			updateTable = async () => {
 				tableRef.value?.validate(async (errors) => {
 					if (!errors) {
-						const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
+						const bodyContent = JSON.parse(
+							JSON.stringify(
+								(({ schema, slug, id, label }) => ({
+									schema,
+									slug,
+									id,
+									label,
+								}))(tableCopy.value),
+							),
+						);
 						Loading.value.updateTable = true;
 
 						const data = await $fetch<apiResponse<Table>>(
@@ -187,10 +186,6 @@ export default defineNuxtComponent({
 							data?.result
 						) {
 							database.value.tables[tableIndex] = data.result;
-							if (data.result.schema)
-								data.result.schema = data.result.schema.filter(
-									({ key }) => !["id", "createdAt", "updatedAt"].includes(key),
-								);
 							tableCopy.value = data.result;
 
 							if (route.params.table !== data.result.slug)
@@ -476,7 +471,7 @@ export default defineNuxtComponent({
 												? database.value.tables
 														?.find(({ slug }) => slug === field.table)
 														?.schema?.map((_item, _index: number, schema) =>
-															generateSearchInOptions(schema, _item),
+															generateSearchInOptions(schema),
 														)
 														.flat(Number.POSITIVE_INFINITY) ?? []
 												: [],
@@ -810,7 +805,7 @@ export default defineNuxtComponent({
 													model: tableCopy.value,
 												},
 												() => [
-													h(LazyRenderFields, {
+													h(LazyRenderField, {
 														modelValue: tableCopy.value,
 														schema: [
 															{

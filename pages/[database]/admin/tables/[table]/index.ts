@@ -35,7 +35,7 @@ import {
 } from "naive-ui";
 import {
 	LazyRenderColumn,
-	LazyRenderFields,
+	LazyRenderField,
 	LazyTableDrawer,
 } from "#components";
 
@@ -76,38 +76,11 @@ export default defineNuxtComponent({
 				search: "بحث",
 				reset: "إفراغ",
 				tools: "الأدوات",
+				andGroup: "مجموعة و",
+				orGroup: "مجموعة أو",
 			},
 			en: {},
 		});
-
-		const generateSearchArray = (querySearch: any) => {
-				const RETURN: any = {};
-				for (const [condition, items] of Object.entries(querySearch)) {
-					if (!RETURN[condition]) RETURN[condition] = [];
-					for (const [key, value] of Object.entries(items)) {
-						if (["and", "or"].includes(key))
-							RETURN[condition].push({ [key]: generateSearchArray(value) });
-						else
-							RETURN[condition].push([
-								key,
-								...FormatObjectCriteriaValue(value),
-							]);
-					}
-				}
-				return RETURN;
-			},
-			generateSearchInput = (searchArray: any) => {
-				const RETURN: any = {};
-				for (const [condition, items] of Object.entries(searchArray)) {
-					for (const item of items) {
-						if (!RETURN[condition]) RETURN[condition] = {};
-						if (Array.isArray(item))
-							RETURN[condition][item[0]] = `${item[1]}${item[2]}`;
-						else RETURN[condition] = generateSearchInput(item);
-					}
-				}
-				return RETURN;
-			};
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
 			{ isMobile } = useDevice(),
@@ -554,15 +527,9 @@ export default defineNuxtComponent({
 																		onUpdateValue: (v) => {
 																			item[0] = v;
 																		},
-																		options:
-																			table.value.schema
-																				?.map((_item) =>
-																					generateSearchInOptions(
-																						table.value.schema as Schema,
-																						_item,
-																					),
-																				)
-																				.flat(Number.POSITIVE_INFINITY) ?? [],
+																		options: generateSearchInOptions(
+																			table.value.schema,
+																		),
 																		style: field
 																			? {
 																					width: "33.33%",
@@ -626,7 +593,7 @@ export default defineNuxtComponent({
 																						width: "33.33%",
 																					},
 																				}),
-																				h(LazyRenderFields, {
+																				h(LazyRenderField, {
 																					modelValue: ref({
 																						[field.key]: item[2] ?? undefined,
 																					}),
@@ -799,7 +766,13 @@ export default defineNuxtComponent({
 									h(
 										NPopover,
 										{
-											disabled: !TableData.value?.result || !table.value.schema,
+											disabled:
+												!querySearch.value &&
+												(!TableData.value?.result ||
+													!database.value.tables ||
+													!database.value.tables.find(
+														({ slug }) => slug === table.value.slug,
+													)?.schema),
 											style: {
 												maxHeight: "240px",
 												width: isMobile ? "350px" : "500px",
@@ -820,8 +793,12 @@ export default defineNuxtComponent({
 																{
 																	round: true,
 																	disabled:
-																		!TableData.value?.result ||
-																		!table.value.schema,
+																		!querySearch.value &&
+																		(!TableData.value?.result ||
+																			!database.value.tables ||
+																			!database.value.tables.find(
+																				({ slug }) => slug === table.value.slug,
+																			)?.schema),
 																},
 																{
 																	icon: () => h(NIcon, () => h(IconSearch)),
@@ -836,14 +813,18 @@ export default defineNuxtComponent({
 														h(
 															NButton,
 															{
-																disabled: !!querySearch.value,
+																disabled:
+																	searchArray.value.and?.length === 1 &&
+																	searchArray.value.and[0][0] === null,
 																loading: Loading.value.TableData,
 																onClick: () => {
 																	searchArray.value = {
 																		and: [[null, "=", null]],
 																	};
-																	querySearch.value = undefined;
-																	refreshTableData();
+																	if (querySearch.value) {
+																		querySearch.value = undefined;
+																		refreshTableData();
+																	}
 																},
 															},
 															{

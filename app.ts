@@ -1,30 +1,30 @@
 import {
 	NConfigProvider,
+	arDZ,
 	darkTheme,
-	unstableCollapseRtl,
-	unstableDrawerRtl,
-	unstableInputNumberRtl,
-	unstableCheckboxRtl,
-	unstableRadioRtl,
-	unstableTagRtl,
-	unstableTableRtl,
-	unstableSpaceRtl,
-	unstableInputRtl,
+	dateArDZ,
+	dateEnUS,
+	enUS,
 	unstableAvatarGroupRtl,
 	unstableButtonGroupRtl,
 	unstableButtonRtl,
 	unstableCardRtl,
-	unstableScrollbarRtl,
+	unstableCheckboxRtl,
+	unstableCollapseRtl,
+	unstableDrawerRtl,
+	unstableInputNumberRtl,
+	unstableInputRtl,
+	unstableListRtl,
 	unstableMessageRtl,
 	unstablePageHeaderRtl,
-	unstableListRtl,
-	enUS,
-	dateEnUS,
-	arDZ,
-	dateArDZ,
+	unstableRadioRtl,
+	unstableScrollbarRtl,
+	unstableSpaceRtl,
+	unstableTableRtl,
+	unstableTagRtl,
 } from "naive-ui";
 import Vibrant from "node-vibrant";
-import { NuxtLayout, NuxtPage, NuxtLoadingIndicator } from "#components";
+import { NuxtLayout, NuxtLoadingIndicator, NuxtPage } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -50,7 +50,7 @@ export default defineNuxtComponent({
 			Language = useGlobalCookie<string>("Language"),
 			Theme = useGlobalCookie<string>("Theme"),
 			database = useState<Database>("database", () => ({
-				name: "Inicontent",
+				slug: "inicontent",
 				icon: "/favicon.ico",
 			})),
 			ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
@@ -94,13 +94,14 @@ export default defineNuxtComponent({
 					const mutedColor =
 						Palette[Theme.value === "light" ? "DarkMuted" : "LightMuted"];
 					if (vibrantColor && mutedColor && Palette.Vibrant)
-						ThemeConfig.value = {
-							primaryColor: vibrantColor.hex,
-							primaryColorHover: `${vibrantColor.hex}CC`,
-							primaryColorPressed: `${vibrantColor.hex}80`,
-							primaryColorSuppl: mutedColor.hex,
-							revert: Palette.Vibrant.bodyTextColor === "#fff",
-						};
+						ThemeConfig.value.revert = Palette.Vibrant.bodyTextColor === "#fff";
+					// ThemeConfig.value = {
+					// 	primaryColor: vibrantColor.hex,
+					// 	primaryColorHover: `${vibrantColor.hex}CC`,
+					// 	primaryColorPressed: `${vibrantColor.hex}80`,
+					// 	primaryColorSuppl: mutedColor.hex,
+					// 	revert: Palette.Vibrant.bodyTextColor === "#fff",
+					// };
 				}
 			} catch (error) {
 				console.error(database.value.icon);

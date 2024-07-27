@@ -1,5 +1,5 @@
-import { NDatePicker, NFormItem } from "naive-ui";
 import { getProperty, hasProperty, setProperty } from "inidot";
+import { NDatePicker, NFormItem } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -17,14 +17,11 @@ export default defineNuxtComponent({
 		},
 	},
 	setup(props) {
-		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-		Loading.value.Drawer = false;
-
 		const modelValue = toRef(props, "modelValue"),
 			field = props.field,
 			path = props.path;
-		if (!hasProperty(modelValue.value, path) && field.required)
-			setProperty(modelValue.value, path, Date.now());
+		// if (!hasProperty(modelValue.value, path) && field.required)
+		// 	setProperty(modelValue.value, path, Date.now());
 		return () =>
 			h(
 				NFormItem,
@@ -35,6 +32,7 @@ export default defineNuxtComponent({
 						type: "number",
 						required: field.required,
 						trigger: ["blur", "change"],
+						message: `${t(field.key)} ${t("isRequired")}`,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function
@@ -45,9 +43,13 @@ export default defineNuxtComponent({
 				() =>
 					h(NDatePicker, {
 						value: getProperty(modelValue.value, path),
+						actions: null,
 						onConfirm: (value: number) =>
 							setProperty(modelValue.value, path, value),
-						actions: ["confirm"],
+						"on-update:value": (value: number) =>
+							setProperty(modelValue.value, path, value),
+						monthFormat: field.date && field.date === "month" ? "MMM" : "MM",
+						format: "dd-MM-yyyy",
 						type: field.date || "date",
 						...(field.inputProps
 							? field.inputProps instanceof Function

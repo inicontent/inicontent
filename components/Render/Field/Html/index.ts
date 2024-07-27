@@ -1,5 +1,5 @@
-import { NFormItem } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NFormItem } from "naive-ui";
 import { LazyRenderFieldHtmlRichEditor } from "#components";
 
 export default defineNuxtComponent({
@@ -34,7 +34,7 @@ export default defineNuxtComponent({
 					rule: {
 						required: field.required,
 						trigger: ["blur", "input"],
-						message: "Please write something",
+						message: `${t(field.key)} ${t("isRequired")}`,
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

@@ -1,31 +1,31 @@
 import {
-	NCard,
-	NSpace,
-	NButton,
-	NIcon,
-	NGrid,
-	NGi,
-	NIconWrapper,
-	NH4,
-	NPopover,
-	useMessage,
-	NDropdown,
-	NInput,
-	NInputGroup,
-} from "naive-ui";
-import {
-	IconSettings,
-	IconPlus,
+	IconArrowRight,
+	IconChevronRight,
+	IconDots,
+	IconFingerprint,
 	IconFolders,
 	IconLanguage,
-	IconUsers,
-	IconFingerprint,
-	IconDots,
-	IconArrowRight,
 	IconLetterCase,
-	IconChevronRight,
+	IconPlus,
+	IconSettings,
+	IconUsers,
 	IconWebhook,
 } from "@tabler/icons-vue";
+import {
+	NButton,
+	NCard,
+	NDropdown,
+	NGi,
+	NGrid,
+	NH4,
+	NIcon,
+	NIconWrapper,
+	NInput,
+	NInputGroup,
+	NPopover,
+	NSpace,
+	useMessage,
+} from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -40,6 +40,7 @@ export default defineNuxtComponent({
 				newTable: "جدول جديد",
 				newItem: "عنصر جديد",
 				tableSettings: "إعدادات الجدول",
+				tableFlows: "تدفقات الجدول",
 			},
 			en: {},
 		});
@@ -171,9 +172,12 @@ export default defineNuxtComponent({
 													NButton,
 													{
 														circle: true,
-														onmouseover: () => (Hover.value[table.slug] = true),
-														onmouseleave: () =>
-															(Hover.value[table.slug] = false),
+														onmouseover: () => {
+															Hover.value[table.slug] = true;
+														},
+														onmouseleave: () => {
+															Hover.value[table.slug] = false;
+														},
 													},
 													{
 														icon: () =>
@@ -231,7 +235,9 @@ export default defineNuxtComponent({
 												h(
 													NInput,
 													{
-														onUpdateValue: (value) => (Table.value = value),
+														onUpdateValue: (value) => {
+															Table.value = value;
+														},
 														onKeydown: ({ key }) =>
 															key === "Enter" ? createTable() : null,
 														placeholder: t("tableSlug"),

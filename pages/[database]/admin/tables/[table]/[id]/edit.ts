@@ -17,7 +17,7 @@ import {
 	useMessage,
 } from "naive-ui";
 
-import { LazyRenderFields } from "#components";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -270,7 +270,7 @@ export default defineNuxtComponent({
 								ref: formRef as any,
 							},
 							() =>
-								h(LazyRenderFields, {
+								h(LazyRenderField, {
 									modelValue: single.value,
 									schema: table.value.schema?.filter(
 										({ key }) =>

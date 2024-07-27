@@ -1,26 +1,27 @@
+import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
 import {
-	useMessage,
-	NCard,
-	NSpace,
-	NButton,
-	NIcon,
-	NGrid,
-	NGi,
-	NForm,
+	type FormInst,
 	NAnchor,
 	NAnchorLink,
-	type FormInst,
-	NTooltip,
-	NPopconfirm,
+	NButton,
+	NCard,
 	NEmpty,
+	NForm,
+	NGi,
+	NGrid,
+	NIcon,
+	NPopconfirm,
+	NSpace,
+	NTooltip,
+	useMessage,
 } from "naive-ui";
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
-import { LazyRenderFields } from "#components";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
 		definePageMeta({
 			middleware: "dashboard",
+			layout: "table",
 		});
 
 		onMounted(() => {
@@ -195,7 +196,7 @@ export default defineNuxtComponent({
 														model: databaseCopy.value,
 													},
 													() =>
-														h(LazyRenderFields, {
+														h(LazyRenderField, {
 															modelValue: databaseCopy.value,
 															schema: [
 																{
@@ -213,13 +214,27 @@ export default defineNuxtComponent({
 																},
 																{
 																	id: 3,
+																	key: "primaryColor",
+																	type: "string",
+																	subType: "color",
+																	required: true,
+																},
+																{
+																	id: 4,
+																	key: "primaryDarkColor",
+																	type: "string",
+																	subType: "color",
+																	required: true,
+																},
+																{
+																	id: 5,
 																	key: "allowedDomains",
 																	type: "array",
 																	children: "url",
 																	required: false,
 																},
 																{
-																	id: 4,
+																	id: 6,
 																	key: "languages",
 																	type: "array",
 																	subType: "select",
@@ -228,12 +243,12 @@ export default defineNuxtComponent({
 																	required: false,
 																},
 																{
-																	id: 5,
+																	id: 7,
 																	key: "roles",
 																	type: "array",
 																	children: [
 																		{
-																			id: 6,
+																			id: 8,
 																			key: "id",
 																			type: "id",
 																			inputProps: {
@@ -241,7 +256,7 @@ export default defineNuxtComponent({
 																			},
 																		},
 																		{
-																			id: 7,
+																			id: 9,
 																			key: "name",
 																			type: "string",
 																		},

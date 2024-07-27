@@ -17,7 +17,7 @@ import {
 	type SelectOption,
 	useMessage,
 } from "naive-ui";
-import { LazyRenderFields } from "#components";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	props: {
@@ -306,6 +306,14 @@ export default defineNuxtComponent({
 						required: field.required,
 						trigger: "change",
 						min: field.isArray ? field.min : undefined,
+						validator(_rule, value) {
+							if (!value || (Array.isArray(value) && value.length === 0))
+								return field.required
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
+									: true;
+							if (Array.isArray(value) && field.min && value.length < field.min)
+								return new Error(`${t(field.key)} ${t("isNotValid")}`);
+						},
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function
@@ -489,7 +497,7 @@ export default defineNuxtComponent({
 										model: Drawer.value.data as any,
 									},
 									() =>
-										h(LazyRenderFields, {
+										h(LazyRenderField, {
 											modelValue: Drawer.value.data,
 											schema:
 												database.value.tables?.find(

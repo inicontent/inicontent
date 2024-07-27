@@ -1,5 +1,5 @@
-import { NFormItem, NSelect } from "naive-ui";
 import { getProperty, setProperty } from "inidot";
+import { NFormItem, NSelect } from "naive-ui";
 
 export default defineNuxtComponent({
 	props: {
@@ -35,6 +35,14 @@ export default defineNuxtComponent({
 						required: field.required,
 						trigger: "change",
 						min: field.isArray ? field.min : undefined,
+						validator(_rule, value) {
+							if (!value || (Array.isArray(value) && value.length === 0))
+								return field.required
+									? new Error(`${t(field.key)} ${t("isRequired")}`)
+									: true;
+							if (Array.isArray(value) && field.min && value.length < field.min)
+								return new Error(`${t(field.key)} ${t("isNotValid")}`);
+						},
 					},
 					...(field.labelProps
 						? field.labelProps instanceof Function

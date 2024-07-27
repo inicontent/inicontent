@@ -1,20 +1,20 @@
-import { LazyRenderFields } from "#components";
 import {
-	IconExternalLink,
-	IconChevronRight,
 	IconChevronLeft,
+	IconChevronRight,
 	IconDeviceFloppy,
+	IconExternalLink,
 } from "@tabler/icons-vue";
 import {
-	useMessage,
+	NButton,
 	NDrawer,
 	NDrawerContent,
-	NText,
+	NForm,
 	NIcon,
 	NSpace,
-	NButton,
-	NForm,
+	NText,
+	useMessage,
 } from "naive-ui";
+import { LazyRenderField } from "#components";
 
 export default defineNuxtComponent({
 	setup() {
@@ -238,7 +238,7 @@ export default defineNuxtComponent({
 										model: Drawer.value.data,
 									},
 									() =>
-										h(LazyRenderFields, {
+										h(LazyRenderField, {
 											modelValue: Drawer.value.data,
 											schema:
 												database.value.tables

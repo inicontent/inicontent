@@ -39,8 +39,10 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												onClick: () => (defaultValue.value = slug),
-												to: `/admin/tables/${slug}`,
+												onClick: () => {
+													defaultValue.value = slug;
+												},
+												to: `/${database.value.slug}/admin/tables/${slug}`,
 											},
 											{ default: () => t("showAll") },
 										),
@@ -52,8 +54,10 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												onClick: () => (defaultValue.value = `${slug}-new`),
-												to: `/admin/tables/${slug}/new`,
+												onClick: () => {
+													defaultValue.value = `${slug}-new`;
+												},
+												to: `/${database.value.slug}/admin/tables/${slug}/new`,
 											},
 											{ default: () => t("newItem") },
 										),
@@ -71,9 +75,10 @@ export default defineComponent({
 													h(
 														NuxtLink,
 														{
-															onClick: () =>
-																(defaultValue.value = `${slug}-settings`),
-															to: `/admin/tables/${slug}/settings`,
+															onClick: () => {
+																defaultValue.value = `${slug}-settings`;
+															},
+															to: `/${database.value.slug}/admin/tables/${slug}/settings`,
 														},
 														{ default: () => t("settings") },
 													),
@@ -87,8 +92,10 @@ export default defineComponent({
 										h(
 											NuxtLink,
 											{
-												onClick: () => (defaultValue.value = `${slug}-flows`),
-												to: `/admin/tables/${slug}/flows`,
+												onClick: () => {
+													defaultValue.value = `${slug}-flows`;
+												},
+												to: `/${database.value.slug}/admin/tables/${slug}/flows`,
 											},
 											{ default: () => t("flows") },
 										),
@@ -103,8 +110,10 @@ export default defineComponent({
 						h(
 							NuxtLink,
 							{
-								onClick: () => (defaultValue.value = slug),
-								to: `/admin/tables/${slug}`,
+								onClick: () => {
+									defaultValue.value = slug;
+								},
+								to: `/${database.value.slug}/admin/tables/${slug}`,
 							},
 							{ default: () => t(slug) },
 						),
@@ -137,116 +146,119 @@ export default defineComponent({
 		} else defaultValue.value = decodeURI(lastPathInRoute?.toString() ?? "");
 
 		return () =>
-			h(
-				"div",
-				h(NuxtLayout, { name: "default" }, () =>
-					h(
-						NLayout,
-						{
-							position: "absolute",
-							hasSider: true,
-						},
-						() => [
-							h(
-								NLayoutSider,
-								{
-									collapsed: !isMenuOpen.value,
-									onUpdateCollapsed: (collapsed) =>
-										(isMenuOpen.value = !collapsed),
-									style: "z-index: 999",
-									bordered: true,
-									showTrigger: "bar",
-									collapseMode: "width",
-									collapsedWidth: isMobile ? 0 : 64,
-									width: 240,
-									nativeScrollbar: false,
+			h(NuxtLayout, { name: "default" }, () =>
+				h(
+					NLayout,
+					{
+						position: "absolute",
+						hasSider: true,
+					},
+					() => [
+						h(
+							NLayoutSider,
+							{
+								collapsed: !isMenuOpen.value,
+								onUpdateCollapsed: (collapsed) => {
+									isMenuOpen.value = !collapsed;
 								},
-								() =>
-									h(NMenu, {
-										collapsed: !isMenuOpen.value,
-										collapsedIconSize: 22,
-										collapsedWidth: isMobile ? 0 : 64,
-										onMouseover: () => (isMenuOpen.value = true),
-										onMouseleave: () => (isMenuOpen.value = false),
-										options: (database.value.tables
-											? [
-													...(database.value.tables
-														?.filter(
-															({ slug, allowedMethods }) =>
-																![
-																	"user",
-																	"session",
-																	"asset",
-																	"translation",
-																].includes(slug) &&
-																allowedMethods?.includes("r"),
-														)
-														.map(renderSingleItem) ?? []),
-													database.value.tables?.filter(
+								style: "z-index: 999",
+								bordered: true,
+								showTrigger: "bar",
+								collapseMode: "width",
+								collapsedWidth: isMobile ? 0 : 64,
+								width: 240,
+								nativeScrollbar: false,
+							},
+							() =>
+								h(NMenu, {
+									collapsed: !isMenuOpen.value,
+									collapsedIconSize: 22,
+									collapsedWidth: isMobile ? 0 : 64,
+									onMouseover: () => {
+										isMenuOpen.value = true;
+									},
+									onMouseleave: () => {
+										isMenuOpen.value = false;
+									},
+									options: (database.value.tables
+										? [
+												...(database.value.tables
+													?.filter(
 														({ slug, allowedMethods }) =>
-															[
+															![
 																"user",
 																"session",
 																"asset",
 																"translation",
 															].includes(slug) && allowedMethods?.includes("r"),
-													).length
-														? {
-																key: "divider-1",
-																type: "divider",
-															}
-														: null,
-													...(database.value.tables
-														?.filter(
-															({ slug, allowedMethods }) =>
-																["user", "session", "asset"].includes(slug) &&
-																allowedMethods?.includes("r"),
-														)
-														.map(renderSingleItem) ?? []),
-												]
-											: []) as any,
-										expandedKeys: table.value?.slug
-											? [`${table.value.slug}Group`]
-											: [],
-										value: defaultValue.value ?? undefined,
-										accordion: true,
-									}),
-							),
-							h(
-								NLayoutContent,
-								{
-									position: "absolute",
-									contentStyle: {
-										padding: isMobile
-											? "24px"
-											: Language.value === "ar"
-												? "24px 88px 24px 24px"
-												: "24px 24px 24px 88px",
-									},
-									nativeScrollbar: false,
-									id: "page_content",
+													)
+													.map(renderSingleItem) ?? []),
+												database.value.tables?.filter(
+													({ slug, allowedMethods }) =>
+														[
+															"user",
+															"session",
+															"asset",
+															"translation",
+														].includes(slug) && allowedMethods?.includes("r"),
+												).length
+													? {
+															key: "divider-1",
+															type: "divider",
+														}
+													: null,
+												...(database.value.tables
+													?.filter(
+														({ slug, allowedMethods }) =>
+															["user", "session", "asset"].includes(slug) &&
+															allowedMethods?.includes("r"),
+													)
+													.map(renderSingleItem) ?? []),
+											]
+										: []) as any,
+									expandedKeys: table.value?.slug
+										? [`${table.value.slug}Group`]
+										: [],
+									value: defaultValue.value ?? undefined,
+									accordion: true,
+								}),
+						),
+						h(
+							NLayoutContent,
+							{
+								position: "absolute",
+								contentStyle: {
+									padding: isMobile
+										? "24px"
+										: Language.value === "ar"
+											? "24px 88px 24px 24px"
+											: "24px 24px 24px 88px",
 								},
-								() => [
-									isMenuOpen.value
-										? h("div", {
-												onClick: () => (isMenuOpen.value = false),
-												style: {
-													width: "100%",
-													height: "100%",
-													right: "0px",
-													top: "0px",
-													backgroundColor: "#0000006e",
-													position: "absolute",
-													zIndex: 99,
-													cursor: "pointer",
-												},
-											})
-										: null,
-									slots.default ? slots.default() : null,
-								],
-							),
-						],
-					),
+								nativeScrollbar: false,
+								id: "page_content",
+							},
+							() => [
+								isMenuOpen.value
+									? h("div", {
+											onClick: () => {
+												isMenuOpen.value = false;
+											},
+											style: {
+												width: "100%",
+												height: "100%",
+												right: "0px",
+												top: "0px",
+												backgroundColor: "#0000006e",
+												position: "absolute",
+												zIndex: 99,
+												cursor: "pointer",
+											},
+										})
+									: null,
+								slots.default ? slots.default() : null,
+							],
+						),
+					],
 				),
 			);
 	},

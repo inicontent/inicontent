@@ -1,26 +1,26 @@
 import {
-	NFormItem,
-	NInput,
-	NUpload,
-	NIcon,
+	IconArrowRight,
+	IconBooks,
+	IconLink,
+	IconUpload,
+} from "@tabler/icons-vue";
+import { deleteProperty, getProperty, hasProperty, setProperty } from "inidot";
+import {
 	NButton,
-	NSpace,
-	NPopover,
-	NUploadDragger,
-	NText,
-	NTooltip,
 	NDrawer,
 	NDrawerContent,
-	NRadio,
+	NFormItem,
+	NIcon,
+	NInput,
 	NInputGroup,
+	NPopover,
+	NRadio,
+	NSpace,
+	NText,
+	NTooltip,
+	NUpload,
+	NUploadDragger,
 } from "naive-ui";
-import {
-	IconUpload,
-	IconLink,
-	IconBooks,
-	IconArrowRight,
-} from "@tabler/icons-vue";
-import { getProperty, setProperty, deleteProperty, hasProperty } from "inidot";
 import { LazyAssetCard } from "#components";
 
 export default defineNuxtComponent({
@@ -235,18 +235,12 @@ export default defineNuxtComponent({
 				NFormItem,
 				{
 					path,
-					rule: !field.isArray
-						? {
-								required: field.required,
-								trigger: "change",
-								message: "This field is required",
-							}
-						: {
-								type: "array",
-								required: field.required,
-								trigger: "change",
-								message: "This field is required",
-							},
+					rule: {
+						type: field.isArray ? "array" : undefined,
+						required: field.required,
+						trigger: "change",
+						message: `${t(field.key)} ${t("isRequired")}`,
+					},
 					...(field.labelProps
 						? field.labelProps instanceof Function
 							? field.labelProps(getProperty(modelValue.value, path)) ?? {}
@@ -346,22 +340,9 @@ export default defineNuxtComponent({
 							},
 							() =>
 								!field.isTable
-									? h(NUploadDragger, () => [
-											h(
-												"div",
-												{
-													style: {
-														marginBottom: "12px",
-													},
-												},
-												h(NIcon, { size: 48, depth: 3 }, () => h(IconUpload)),
-											),
-											h(
-												NText,
-												{ style: { "font-size": "16px" } },
-												() => "Click or drag a file to this area to upload",
-											),
-										])
+									? h(NUploadDragger, () =>
+											h(NIcon, { size: 48, depth: 3 }, () => h(IconUpload)),
+										)
 									: h(
 											NSpace,
 											{
@@ -378,7 +359,9 @@ export default defineNuxtComponent({
 				NDrawer,
 				{
 					show: showAssetsModal.value,
-					"on-update:show": (v: boolean) => (showAssetsModal.value = v),
+					"on-update:show": (v: boolean) => {
+						showAssetsModal.value = v;
+					},
 					defaultHeight: "50%",
 					placement: "bottom",
 					resizable: true,

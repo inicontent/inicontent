@@ -44,7 +44,7 @@ export default defineNuxtComponent({
 						trigger: ["blur", "input"],
 						validator: (_rule, value) =>
 							field.required && !alreadyRun.value && !value
-								? new Error("This field is required")
+								? new Error(`${t(field.key)} ${t("isRequired")}`)
 								: true,
 					},
 					...(field.labelProps

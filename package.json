@@ -18,10 +18,10 @@
 	},
 	"dependencies": {
 		"@tabler/icons-vue": "2.47.0",
-		"inibase": "1.0.0-rc.73",
+		"inibase": "1.0.0-rc.77",
 		"inidot": "1.0.0-rc.2",
-		"inison": "1.0.0-rc.2",
-		"naive-ui": "2.38.1",
+		"inison": "1.0.0-rc.4",
+		"naive-ui": "2.39.0",
 		"node-vibrant": "3.1.6",
 		"vuedraggable": "4.1.0"
 	},
