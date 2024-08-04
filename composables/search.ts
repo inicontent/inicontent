@@ -32,9 +32,9 @@ export const generateSearchInOptions = (schema?: Schema) =>
 		?.map((_item) => generateSearchInOption(schema, _item))
 		.flat(Number.POSITIVE_INFINITY) ?? [];
 
-export const generateSearchArray = (querySearch: any) => {
+export const generateSearchArray = (searchQuery: any) => {
 	const RETURN: any = {};
-	for (const [condition, items] of Object.entries(querySearch)) {
+	for (const [condition, items] of Object.entries(searchQuery)) {
 		if (!RETURN[condition]) RETURN[condition] = [];
 		for (const [key, value] of Object.entries(items)) {
 			if (["and", "or"].includes(key))

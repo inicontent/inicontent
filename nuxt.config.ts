@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 		port: 3434, // "INIc" in binary
 	},
 	devtools: {
-		enabled: true,
+		enabled: false,
 	},
 	vite: {
 		server: {
@@ -20,9 +20,6 @@ export default defineNuxtConfig({
 				clientPort: 3434,
 			},
 		},
-	},
-	routeRules: {
-		"/": { redirect: "/auth" },
 	},
 	css: ["~/assets/main.css"],
 	runtimeConfig: {
