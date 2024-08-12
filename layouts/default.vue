@@ -197,7 +197,7 @@ import {
     NTooltip,
 } from "naive-ui";
 
-const Language = useGlobalCookie<string>("Language");
+const Language = useCookie<string>("Language", { sameSite: true });
 useLanguage({
     ar: {
         settings: "الإعدادات",
@@ -223,7 +223,7 @@ useLanguage({
 
 const route = useRoute(),
     user = useState<User | null>("user"),
-    Theme = useGlobalCookie<string>("Theme"),
+    Theme = useCookie<string>("Theme", { sameSite: true }),
     database = useState<Database>("database", () => ({
         slug: "inicontent",
         icon: "/favicon.ico",

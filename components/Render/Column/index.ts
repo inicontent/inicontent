@@ -13,10 +13,11 @@ import {
 	NCollapse,
 	NCollapseItem,
 	NEllipsis,
-	NSpace,
 	useMessage,
+	NFlex,
+	NScrollbar,
 } from "naive-ui";
-import { IconCheck, IconFileUpload, IconX } from "@tabler/icons-vue";
+import { IconCheck, IconFileUpload, IconX, IconCopy } from "@tabler/icons-vue";
 import { getProperty } from "inidot";
 import { isArrayOfObjects } from "inibase/utils";
 
@@ -51,7 +52,11 @@ export default defineNuxtComponent({
 			})),
 			database = useState<Database>("database"),
 			renderColumn = (_value: any, _field: Field): any => {
-				if (_value === null || _value === undefined)
+				if (
+					_value === null ||
+					_value === undefined ||
+					(Array.isArray(_value) && _value.length === 0)
+				)
 					switch (_field.subType ?? _field.type) {
 						case "boolean":
 							return h(
@@ -112,131 +117,145 @@ export default defineNuxtComponent({
 				switch (deletectedFieldType) {
 					case "id":
 						return h(
-							NPopover,
-							{},
+							NTag,
 							{
-								trigger: () =>
+								bordered: false,
+								round: true,
+							},
+							() =>
+								h(NFlex, () => [
 									h(
-										NButton,
+										NEllipsis,
+										{ tooltip: false, style: "max-width:50px" },
+										() => _value,
+									),
+									h(
+										NIcon,
 										{
-											size: "small",
+											style: "cursor: pointer",
 											onClick: async () => {
 												await copyToClipboard(_value);
 												message.success(t("textCopied"));
 											},
-											secondary: true,
-											round: true,
 										},
-										() =>
-											h(
-												NEllipsis,
-												{ tooltip: false, style: "max-width:50px" },
-												() => _value,
-											),
+										() => h(IconCopy),
 									),
-								default: () => t("clickToCopy"),
-							},
+								]),
 						);
 					case "table":
-						return [].concat(_value).map((col: Item & { id: string }) =>
-							h(
-								NButton,
-								{
-									tag: "a",
-									href: `/admin/tables/${_field.table}/${col.id}/edit`,
-									onClick: (e) => {
-										e.preventDefault();
-										if (!isMobile)
-											Drawer.value = {
-												...Drawer.value,
-												id: col.id,
-												table: _field.table as string,
-												data: {},
-												show: true,
-											};
-										else
-											navigateTo(
-												`/admin/tables/${_field.table}/${col.id}/edit`,
-											);
+						return h(
+							NScrollbar,
+							{
+								xScrollable: true,
+							},
+							() =>
+								h(
+									NFlex,
+									{
+										wrap: false,
+										style: {
+											maxWidth: `${
+												_field.key && t(_field.key).length > 10
+													? t(_field.key).length * 12
+													: 120
+											}px`,
+										},
 									},
-									loading: Loading.value[`Drawer_${_field.table}_${col.id}`],
-									size: "small",
-									round: true,
-								},
-								{
-									icon: () =>
-										h(
-											NIcon,
-											_field.image
-												? () => {
-														const img = []
-															.concat(
-																getProperty(_value, _field.image as string, []),
-															)
-															.map((link: string) =>
-																link?.includes("inicontent") &&
-																[
-																	"png",
-																	"jpg",
-																	"jpeg",
-																	"ico",
-																	"webp",
-																	"svg",
-																	"gif",
-																].includes(link.split(".").pop() ?? "")
-																	? `${link}?fit=18`
-																	: link,
-															)[0];
-														return img
-															? h(NAvatar, {
-																	style: {
-																		width: "18px",
-																		height: "18px",
-																	},
-																	round: true,
-																	src: img,
-																})
-															: h(
-																	"span",
-																	{},
-																	(_field.table as string)
-																		.charAt(0)
-																		.toUpperCase(),
-																);
-													}
-												: () =>
-														h(
-															"span",
-															{},
-															(_field.table as string).charAt(0).toUpperCase(),
-														),
-										),
-									default: () =>
-										h(
-											NEllipsis,
-											{
-												tooltip: true,
-												style: {
-													maxWidth: `${
-														_field.key && t(_field.key).length > 10
-															? t(_field.key).length * 12
-															: 120
-													}px`,
+									() =>
+										[].concat(_value).map((col: Item & { id: string }) =>
+											h(
+												NButton,
+												{
+													tag: "a",
+													href: `/admin/tables/${_field.table}/${col.id}/edit`,
+													onClick: (e) => {
+														e.preventDefault();
+														if (!isMobile)
+															Drawer.value = {
+																...Drawer.value,
+																id: col.id,
+																table: _field.table as string,
+																data: {},
+																show: true,
+															};
+														else
+															navigateTo(
+																`/admin/tables/${_field.table}/${col.id}/edit`,
+															);
+													},
+													loading:
+														Loading.value[`Drawer_${_field.table}_${col.id}`],
+													size: "small",
+													round: true,
 												},
-											},
-											() =>
-												renderLabel(
-													database.value.tables?.find(
-														({ slug }) => slug === _field.table,
-													)?.label,
-													database.value.tables?.find(
-														({ slug }) => slug === _field.table,
-													)?.schema,
-													col,
-												),
+												{
+													icon: () =>
+														h(
+															NIcon,
+															_field.image
+																? () => {
+																		const img = []
+																			.concat(
+																				getProperty(
+																					_value,
+																					_field.image as string,
+																					[],
+																				),
+																			)
+																			.map((link: string) =>
+																				link?.includes("inicontent") &&
+																				[
+																					"png",
+																					"jpg",
+																					"jpeg",
+																					"ico",
+																					"webp",
+																					"svg",
+																					"gif",
+																				].includes(link.split(".").pop() ?? "")
+																					? `${link}?fit=18`
+																					: link,
+																			)[0];
+																		return img
+																			? h(NAvatar, {
+																					style: {
+																						width: "18px",
+																						height: "18px",
+																					},
+																					round: true,
+																					src: img,
+																				})
+																			: h(
+																					"span",
+																					{},
+																					(_field.table as string)
+																						.charAt(0)
+																						.toUpperCase(),
+																				);
+																	}
+																: () =>
+																		h(
+																			"span",
+																			{},
+																			(_field.table as string)
+																				.charAt(0)
+																				.toUpperCase(),
+																		),
+														),
+													default: () =>
+														renderLabel(
+															database.value.tables?.find(
+																({ slug }) => slug === _field.table,
+															)?.label,
+															database.value.tables?.find(
+																({ slug }) => slug === _field.table,
+															)?.schema,
+															col,
+														),
+												},
+											),
 										),
-								},
-							),
+								),
 						);
 					case "email":
 						return h(
@@ -338,31 +357,36 @@ export default defineNuxtComponent({
 						);
 					case "select":
 					case "tags":
-						return h(NSpace, () =>
-							[].concat(_value).map((_v) =>
+						return h(
+							NScrollbar,
+							{
+								xScrollable: true,
+							},
+							() =>
 								h(
-									NTag,
+									NFlex,
 									{
-										round: true,
-										bordered: false,
+										wrap: false,
+										style: {
+											maxWidth: `${
+												_field.key && t(_field.key).length > 10
+													? t(_field.key).length * 12
+													: 120
+											}px`,
+										},
 									},
 									() =>
-										h(
-											NEllipsis,
-											{
-												tooltip: false,
-												style: {
-													maxWidth: `${
-														_field.key && t(_field.key).length > 10
-															? t(_field.key).length * 12
-															: 120
-													}px`,
+										[].concat(_value).map((_v) =>
+											h(
+												NTag,
+												{
+													round: true,
+													bordered: false,
 												},
-											},
-											() => _v,
+												() => _v,
+											),
 										),
 								),
-							),
 						);
 					case "html":
 						return h(
@@ -423,7 +447,7 @@ export default defineNuxtComponent({
 										: h(NIcon, () => h(IconFileUpload)),
 								)
 							: h(NImageGroup, () =>
-									h(NSpace, { align: "center" }, () =>
+									h(NFlex, { align: "center" }, () =>
 										[].concat(_value).length > 3
 											? [
 													...[]
@@ -555,10 +579,10 @@ export default defineNuxtComponent({
 														title: `${_field.key} ${index + 1}`,
 													},
 													() =>
-														h(NSpace, { vertical: true }, () =>
+														h(NFlex, { vertical: true }, () =>
 															(_field.children as Schema).map((child) =>
 																h(
-																	NSpace,
+																	NFlex,
 																	{
 																		align: "center",
 																	},
@@ -593,9 +617,9 @@ export default defineNuxtComponent({
 										{ default: () => "{...}" },
 									),
 								default: () =>
-									h(NSpace, { vertical: true }, () =>
+									h(NFlex, { vertical: true }, () =>
 										(_field.children as Schema).map((child) =>
-											h(NSpace, { align: "center", inline: true }, () => [
+											h(NFlex, { align: "center", inline: true }, () => [
 												h("strong", `${child.key}:`),
 												renderColumn(getProperty(_value, child.key), child),
 											]),

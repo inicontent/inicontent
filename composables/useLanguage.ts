@@ -62,7 +62,7 @@ function formatUnfoundTranslation(input: string, language: string): string {
 export const t = (key: string | null | undefined): string => {
 	if (!key) return "";
 	const Messages = useState<Record<string, any>>("LanguageMessages");
-	const Language = useGlobalCookie<string>("Language");
+	const Language = useCookie<string>("Language");
 	if (!hasProperty(Messages.value ?? {}, `${Language.value}.${key}`)) {
 		const UnfoundMessages = useState<Record<string, any>>(
 			"UnfoundLanguageMessages",
@@ -77,7 +77,7 @@ export const t = (key: string | null | undefined): string => {
 };
 
 export const fetchTranslation = async () => {
-	const Language = useGlobalCookie<string>("Language"),
+	const Language = useCookie<string>("Language"),
 		route = useRoute(),
 		Messages = useState<Record<string, any>>("LanguageMessages"),
 		UnfoundMessages = useState<Record<string, any>>("UnfoundLanguageMessages");

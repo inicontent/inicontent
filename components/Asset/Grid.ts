@@ -33,13 +33,13 @@ export default defineNuxtComponent({
 		const modelValue = toRef(props, "modelValue"),
 			path = useState("path"),
 			ThemeConfig = useState<ThemeConfig>("ThemeConfig"),
-			Theme = useGlobalCookie("Theme"),
+			Theme = useCookie("Theme"),
 			route = useRoute(),
 			message = useMessage(),
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
 			CurrentAsset = useState<Asset & { show?: boolean }>("asset", () => ({})),
-			Language = useGlobalCookie("Language"),
+			Language = useCookie("Language"),
 			deleteAsset = async (name: string) => {
 				Loading.value[`deleteAsset${name}`] = true;
 				const data = await $fetch<apiResponse>(
@@ -81,8 +81,9 @@ export default defineNuxtComponent({
 				NDrawer,
 				{
 					show: CurrentAsset.value.show === true,
-					"on-update:show": (v: boolean) =>
-						v === false ? (CurrentAsset.value.show = false) : null,
+					"on-update:show": (v: boolean) => {
+						if (!v) CurrentAsset.value.show = false;
+					},
 					placement: Language.value === "ar" ? "left" : "right",
 				},
 				() =>
@@ -232,10 +233,12 @@ export default defineNuxtComponent({
 															h(
 																NFlex,
 																{
-																	onmouseover: () =>
-																		(Hover.value[asset.name as string] = true),
-																	onmouseleave: () =>
-																		(Hover.value[asset.name as string] = false),
+																	onmouseover: () => {
+																		Hover.value[asset.name as string] = true;
+																	},
+																	onmouseleave: () => {
+																		Hover.value[asset.name as string] = false;
+																	},
 																	style: {
 																		position: "relative",
 																	},
@@ -320,11 +323,12 @@ export default defineNuxtComponent({
 																	)
 																		? h(NImage, {
 																				class: "asset",
-																				onClick: () =>
-																					(CurrentAsset.value = {
+																				onClick: () => {
+																					CurrentAsset.value = {
 																						...asset,
 																						show: true,
-																					}),
+																					};
+																				},
 																				previewDisabled: true,
 																				intersectionObserverOptions: {
 																					root: `#${
@@ -344,19 +348,22 @@ export default defineNuxtComponent({
 																				NIcon,
 																				{
 																					class: "asset",
-																					onClick: () =>
-																						asset.type === "folder"
-																							? props.isAssetRoute
-																								? navigateTo(
-																										`${route.path}/${asset.name}`,
-																									)
-																								: (path.value = `${
-																										path.value ?? ""
-																									}/${asset.name}`)
-																							: (CurrentAsset.value = {
-																									...asset,
-																									show: true,
-																								}),
+																					onClick: () => {
+																						if (asset.type === "folder") {
+																							if (props.isAssetRoute)
+																								navigateTo(
+																									`${route.path}/${asset.name}`,
+																								);
+																							else
+																								path.value = `${
+																									path.value ?? ""
+																								}/${asset.name}`;
+																						} else
+																							CurrentAsset.value = {
+																								...asset,
+																								show: true,
+																							};
+																					},
 																				},
 																				() =>
 																					h(LazyAssetIcon, {

@@ -57,8 +57,8 @@ const rtlStyles: any = [
     unstableInputRtl,
     unstableAvatarGroupRtl,
 ],
-    Language = useGlobalCookie<string>("Language"),
-    Theme = useGlobalCookie<string>("Theme"),
+    Language = useCookie<string>("Language", { sameSite: true }),
+    Theme = useCookie<string>("Theme", { sameSite: true }),
     database = useState<Database>("database", () => ({
         slug: "inicontent",
         icon: "/favicon.ico",

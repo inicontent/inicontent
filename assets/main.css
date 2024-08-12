@@ -180,3 +180,7 @@ a {
 .n-tabs .n-tabs-nav {
   position: relative;
 }
+
+.n-data-table .n-data-table-th .n-data-table-sorter {
+  margin-right: 4px;
+}

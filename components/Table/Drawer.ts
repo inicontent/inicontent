@@ -26,8 +26,8 @@ export default defineNuxtComponent({
 			};
 		});
 
-		const Language = useGlobalCookie("Language"),
-			drawerWidth = useGlobalCookie<number>("drawerWidth");
+		const Language = useCookie("Language", { sameSite: true }),
+			drawerWidth = useCookie<number>("drawerWidth", { sameSite: true });
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		Loading.value.DrawerContent = false;
@@ -136,9 +136,13 @@ export default defineNuxtComponent({
 				NDrawer,
 				{
 					show: Drawer.value.show,
-					onUpdateShow: (v: boolean) => (Drawer.value.show = v),
+					onUpdateShow: (v: boolean) => {
+						Drawer.value.show = v;
+					},
 					width: isMobile ? "100%" : drawerWidth.value,
-					onUpdateWidth: (w: any) => (drawerWidth.value = w),
+					onUpdateWidth: (w: any) => {
+						drawerWidth.value = w;
+					},
 					resizable: true,
 					placement: Language.value === "ar" ? "left" : "right",
 				},
@@ -195,11 +199,12 @@ export default defineNuxtComponent({
 														round: true,
 														secondary: true,
 														type: "info",
-														onClick: () =>
-															(drawerWidth.value =
+														onClick: () => {
+															drawerWidth.value =
 																drawerWidth.value >= window.screen.width / 2
 																	? 251
-																	: window.screen.width - 2),
+																	: window.screen.width - 2;
+														},
 													},
 													{
 														icon: () =>
