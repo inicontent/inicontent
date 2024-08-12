@@ -88,7 +88,7 @@ In this prject we are using [Nuxt 3](https://github.com/nuxt/nuxt), [Naive UI](h
     ├───📄 humanFileSize.ts
     ├───📄 randomID.ts
     ├───📄 renderLabel.ts # Render item label based on table label template (display item id by default)
-    ├───📄 useGlobalCookie.ts # Used to make cookies reactive (current_lang, current_theme[dark|light])
+    ├───📄 useCookie.ts # Used to make cookies reactive (current_lang, current_theme[dark|light])
     └───📄 useLanguage.ts # Used for managing multi-lang and display text based on current selected lang (+ fetch from "translation" table the non predefined translations)
 ```
 

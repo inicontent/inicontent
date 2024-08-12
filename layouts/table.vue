@@ -49,7 +49,7 @@ import {
 import { NIcon, NLayout, NLayoutContent, NLayoutSider, NMenu } from "naive-ui";
 import { NuxtLink } from "#components";
 
-const Language = useGlobalCookie<string>("Language");
+const Language = useCookie<string>("Language");
 
 useLanguage({
     ar: {

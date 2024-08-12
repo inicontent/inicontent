@@ -11,7 +11,7 @@ import { NuxtLayout, NuxtLink } from "#components";
 
 export default defineComponent({
 	setup: (props, { slots }) => {
-		const Language = useGlobalCookie("Language");
+		const Language = useCookie("Language");
 
 		useLanguage({
 			ar: {

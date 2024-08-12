@@ -82,7 +82,7 @@ export default defineNuxtComponent({
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		Loading.value.updateTable = false;
 		Loading.value.deleteTable = false;
-		const Language = useGlobalCookie("Language");
+		const Language = useCookie("Language");
 		const route = useRoute(),
 			router = useRouter(),
 			message = useMessage(),

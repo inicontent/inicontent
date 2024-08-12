@@ -70,7 +70,7 @@ export default defineNuxtComponent({
 		},
 	},
 	setup: (props, { emit }) => {
-		const Language = useGlobalCookie("Language");
+		const Language = useCookie("Language");
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		Loading.value.Upload = false;
