@@ -1,5 +1,5 @@
 <template>
-    <LazyTableDrawer v-if="isMobile" />
+    <LazyTableDrawer v-if="!isMobile" />
     <NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
         content-style="padding: 0" :bordered="false">
         <template #header-extra>
@@ -106,8 +106,8 @@
                 </NTooltip>
             </NButtonGroup>
         </template>
-        <NDataTable :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns="tableColumns"
-            :data="data?.result ?? []" :loading="Loading.data" :pagination="{
+        <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
+            :columns="tableColumns" :data="data?.result ?? []" :loading="Loading.data" :pagination="{
                 simple: isMobile,
                 showSizePicker: data?.options && (!data.options.perPage || (
                     data.options.total as number >= data.options.perPage)),
@@ -145,9 +145,7 @@ import {
     NTooltip,
     useMessage,
 } from "naive-ui";
-import {
-    LazyRenderColumn,
-} from "#components";
+import { LazyRenderColumn } from "#components";
 
 onBeforeMount(() => {
     clearNuxtState(["Drawer", "searchArray", "searchQuery"]);
@@ -192,17 +190,16 @@ useLanguage({
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
     { isMobile } = useDevice(),
-    searchQuery = useState<string | undefined>("searchQuery", () =>
-        route.query.search as string | undefined,
+    searchQuery = useState<string | undefined>(
+        "searchQuery",
+        () => route.query.search as string | undefined,
     ),
     searchArray = useState<{
         and?: [string | null, string, any][];
         or?: [string | null, string, any][];
     }>("searchArray", () =>
         route.query.search
-            ? generateSearchArray(
-                Inison.unstringify(route.query.search as string),
-            )
+            ? generateSearchArray(Inison.unstringify(route.query.search as string))
             : { and: [[null, "=", null]] },
     );
 
@@ -247,9 +244,7 @@ function onUpdatePage(currentPage: number) {
     });
 }
 function onUpdatePageSize(pageSize: number) {
-    const OLD_pageSize = JSON.parse(
-        JSON.stringify(pagination.value.pageSize),
-    );
+    const OLD_pageSize = JSON.parse(JSON.stringify(pagination.value.pageSize));
     pagination.value.pageSize = pageSize;
     let { perPage, page, ...Query }: any = route.query;
     if (pageSize !== 15) {
@@ -261,22 +256,18 @@ function onUpdatePageSize(pageSize: number) {
         Query = {
             ...Query,
             perPage: pageSize,
-            page:
-                pagination.value.page === 1 ? undefined : pagination.value.page,
+            page: pagination.value.page === 1 ? undefined : pagination.value.page,
         };
     }
     router.push({ query: Query });
     queryOptions.value = Inison.stringify({
         ...Inison.unstringify(queryOptions.value),
         perPage: pageSize,
-        page:
-            pagination.value.page === 1 ? undefined : pagination.value.page,
+        page: pagination.value.page === 1 ? undefined : pagination.value.page,
     });
 }
 
-const { data, refresh } = await useLazyFetch<
-    apiResponse<Item[]>
->(
+const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
     `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
     }`,
     {
@@ -310,10 +301,10 @@ const DELETE = async (id: string) => {
         data.value.result = data.value.result.filter(
             (item) => item.id && item.id !== id,
         );
-    pagination.value.itemCount--
+    pagination.value.itemCount--;
     message.success(deleteResponse?.message ?? t("error"));
     Loading.value.data = false;
-}
+};
 
 const toolsDropdownOptions = [
     {
@@ -338,42 +329,56 @@ const toolsDropdownOptions = [
             },
         ],
     },
-]
+];
 
-const sortObject = ref<Record<string, "asc" | "desc">>({})
+const sortObject = ref<Record<string, "asc" | "desc">>({});
 
-function handleSorterChange({ columnKey }: { columnKey: string }) {
-    sortObject.value[columnKey] = sortObject.value[columnKey] === "desc" ? "desc" : "asc"
-    console.log(sortObject.value[columnKey])
+function handleSorterChange({ columnKey, order }: { columnKey: string; order: string }) {
+    if (!order)
+        delete sortObject.value[columnKey];
+    else {
+        sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc"
+    }
+    queryOptions.value = Object.keys(sortObject.value).length
+        ? Inison.stringify({
+            ...Inison.unstringify(queryOptions.value),
+            sort: sortObject.value,
+        })
+        : Inison.stringify((({ sort, ...rest }) => rest)(Inison.unstringify(
+            queryOptions.value
+        )));
 }
 
-const tableColumns: any = [
+const tableColumns: any = computed(() => [
     ...(table.value.allowedMethods !== "r"
         ? [
             {
                 type: "selection",
                 fixed: "left",
-                options: [
-                    {
-                        label: t("delete"),
-                        key: "delete",
-                        disabled: checkedRowKeys.value.length === 0,
-                        icon: () => h(NIcon, () => h(IconTrash)),
-                        onSelect: async () => {
-                            Loading.value.data = true;
-                            await $fetch<apiResponse>(
-                                `${useRuntimeConfig().public.apiBase}${database.value.slug
-                                }/${table.value.slug}`,
-                                {
-                                    method: "DELETE",
-                                    body: checkedRowKeys.value,
-                                } as any,
-                            );
-                            message.success("Deleted Successfully");
-                            await refresh();
-                        },
-                    },
-                ],
+                options:
+                    checkedRowKeys.value.length > 0
+                        ? [
+                            {
+                                label: t("delete"),
+                                key: "delete",
+                                disabled: checkedRowKeys.value.length === 0,
+                                icon: () => h(NIcon, () => h(IconTrash)),
+                                onSelect: async () => {
+                                    Loading.value.data = true;
+                                    await $fetch<apiResponse>(
+                                        `${useRuntimeConfig().public.apiBase}${database.value.slug
+                                        }/${table.value.slug}`,
+                                        {
+                                            method: "DELETE",
+                                            body: checkedRowKeys.value,
+                                        } as any,
+                                    );
+                                    message.success("Deleted Successfully");
+                                    await refresh();
+                                },
+                            },
+                        ]
+                        : undefined,
             },
         ]
         : []),
@@ -388,10 +393,12 @@ const tableColumns: any = [
                 ).icon(),
                 t(field.key),
             ]),
-        width: t(field.key).length > 10 ? t(field.key).length * 13 : 130,
+        width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
         key: field.key,
         sorter: true,
-        sortOrder: Object.hasOwn(sortObject.value, field.key) ? (sortObject.value[field.key] === "asc" ? "ascend" : "descend") : false,
+        sortOrder: sortObject.value[field.key]
+            ? `${sortObject.value[field.key]}end`
+            : false,
         render: (row: { [x: string]: any }) =>
             h(LazyRenderColumn, { value: row[field.key], field }),
     })),
@@ -402,108 +409,112 @@ const tableColumns: any = [
         width: 150,
         key: "actions",
         render(row: { id: any }) {
-            return h(NButtonGroup, () => [
-                table.value.allowedMethods?.includes("r")
-                    ? h(
-                        NPopover,
-                        {},
-                        {
-                            trigger: () =>
-                                h(
-                                    NButton,
-                                    {
-                                        tag: "a",
-                                        href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                        onClick: (e) => {
-                                            e.preventDefault();
-                                            navigateTo(
-                                                `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                            );
-                                        },
-                                        secondary: true,
-                                        circle: true,
-                                        type: "primary",
-                                    },
-                                    { icon: () => h(NIcon, () => h(IconEye)) },
-                                ),
-                            default: () => t("viewTheItem"),
-                        },
-                    )
-                    : null,
-                table.value.allowedMethods?.includes("u")
-                    ? h(
-                        NPopover,
-                        {},
-                        {
-                            trigger: () =>
-                                h(
-                                    NButton,
-                                    {
-                                        tag: "a",
-                                        href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
-                                        onClick: (e) => {
-                                            e.preventDefault();
-                                            if (!isMobile)
-                                                Drawer.value = {
-                                                    ...Drawer.value,
-                                                    id: row.id,
-                                                    table: table.value.slug as string,
-                                                    data: JSON.parse(JSON.stringify(row)),
-                                                    show: true,
-                                                };
-                                            else
+            return h(NButtonGroup, () =>
+                [
+                    table.value.allowedMethods?.includes("r")
+                        ? h(
+                            NPopover,
+                            {},
+                            {
+                                trigger: () =>
+                                    h(
+                                        NButton,
+                                        {
+                                            tag: "a",
+                                            href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
+                                            onClick: (e) => {
+                                                e.preventDefault();
                                                 navigateTo(
-                                                    `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                                    `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
                                                 );
+                                            },
+                                            secondary: true,
+                                            circle: true,
+                                            type: "primary",
                                         },
-                                        secondary: true,
-                                        circle: true,
-                                        type: "info",
-                                    },
-                                    { icon: () => h(NIcon, () => h(IconPencil)) },
-                                ),
-                            default: () => t("edit"),
-                        },
-                    )
-                    : null,
-                table.value.allowedMethods?.includes("d")
-                    ? h(
-                        NPopconfirm,
-                        {
-                            onPositiveClick: () => DELETE(row.id),
-                        },
-                        {
-                            trigger: () =>
-                                h(
-                                    NPopover,
-                                    {},
-                                    {
-                                        trigger: () =>
-                                            h(
-                                                NButton,
-                                                {
-                                                    strong: true,
-                                                    secondary: true,
-                                                    circle: true,
-                                                    type: "error",
-                                                },
-                                                {
-                                                    icon: () => h(NIcon, () => h(IconTrash)),
-                                                },
-                                            ),
-                                        default: () => t("delete"),
-                                    },
-                                ),
-                            default: () => t("theFollowingActionIsIrreversible"),
-                        },
-                    )
-                    : null,
-            ]);
+                                        { icon: () => h(NIcon, () => h(IconEye)) },
+                                    ),
+                                default: () => t("viewTheItem"),
+                            },
+                        )
+                        : null,
+                    table.value.allowedMethods?.includes("u")
+                        ? h(
+                            NPopover,
+                            {},
+                            {
+                                trigger: () =>
+                                    h(
+                                        NButton,
+                                        {
+                                            tag: "a",
+                                            href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                            onClick: (e) => {
+                                                e.preventDefault();
+                                                if (!isMobile)
+                                                    Drawer.value = {
+                                                        ...Drawer.value,
+                                                        id: row.id,
+                                                        table: table.value.slug as string,
+                                                        data: JSON.parse(JSON.stringify(row)),
+                                                        show: true,
+                                                    };
+                                                else
+                                                    navigateTo(
+                                                        `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                                    );
+                                            },
+                                            secondary: true,
+                                            circle: true,
+                                            type: "info",
+                                        },
+                                        { icon: () => h(NIcon, () => h(IconPencil)) },
+                                    ),
+                                default: () => t("edit"),
+                            },
+                        )
+                        : null,
+                    table.value.allowedMethods?.includes("d")
+                        ? h(
+                            NPopconfirm,
+                            {
+                                onPositiveClick: () => DELETE(row.id),
+                            },
+                            {
+                                trigger: () =>
+                                    h(
+                                        NPopover,
+                                        {},
+                                        {
+                                            trigger: () =>
+                                                h(
+                                                    NButton,
+                                                    {
+                                                        strong: true,
+                                                        secondary: true,
+                                                        circle: true,
+                                                        type: "error",
+                                                    },
+                                                    {
+                                                        icon: () => h(NIcon, () => h(IconTrash)),
+                                                    },
+                                                ),
+                                            default: () => t("delete"),
+                                        },
+                                    ),
+                                default: () => t("theFollowingActionIsIrreversible"),
+                            },
+                        )
+                        : null,
+                ].filter((i) => i !== null),
+            );
         },
     },
-].filter((i) => i !== null)
-
-const tableWidth = tableColumns.reduce((accumulator: number, value: any) => (accumulator + (value.width ?? 0)), 40)
+]);
+const tableWidth = tableColumns.value.reduce(
+    (accumulator: number, value: any) => accumulator + (value.width ?? 0),
+    40,
+);
 
 watch(searchQuery, (v) => {
     const { search, page, ...Query }: any = route.query;
@@ -520,10 +531,7 @@ watch(searchQuery, (v) => {
 });
 
 useHead({
-    title: `${database.value.slug} | ${t(
-        table.value.slug ?? "",
-    )} ${t("Table")}`,
+    title: `${database.value.slug} | ${t(table.value.slug ?? "")} ${t("Table")}`,
     link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 });
-
 </script>
