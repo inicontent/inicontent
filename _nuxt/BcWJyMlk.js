@@ -1,1 +1,0 @@
-import{c2 as s}from"./DB4_Y2V2.js";function c(h,t,n=!1,o,f){if(!t)return"";for(const e of h){const i=f?`${f}.${e.key}`:e.key;if(e.id===t)return i;if(e.type==="array"&&e.children&&s(e.children)){let r="";if(r=c(e.children,t,n,void 0,i+(n?".*":".")),r)return r}else if(e.children&&s(e.children)){const r=c(e.children,t,n,void 0,i);if(r)return r}}return""}export{c as g};
