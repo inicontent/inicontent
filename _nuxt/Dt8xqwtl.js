@@ -1,0 +1,1 @@
+import{c as a}from"./CzIR7LU3.js";var g=a("language","IconLanguage",[["path",{d:"M4 5h7",key:"svg-0"}],["path",{d:"M9 3v2c0 4.418 -2.239 8 -5 8",key:"svg-1"}],["path",{d:"M5 9c0 2.144 2.952 3.908 6.7 4",key:"svg-2"}],["path",{d:"M12 20l4 -9l4 9",key:"svg-3"}],["path",{d:"M19.1 18h-6.2",key:"svg-4"}]]);export{g as I};
