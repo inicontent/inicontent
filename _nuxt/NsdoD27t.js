@@ -1,0 +1,1 @@
+import{f as t,g as n,h as s,c as o,n as _,o as c}from"./xEahERNa.js";const d=t({__name:"index",async setup(r){let e,a;return n("database"),[e,a]=s(()=>_("admin/tables")),await e,a(),(i,m)=>(c(),o("div"))}});export{d as default};
