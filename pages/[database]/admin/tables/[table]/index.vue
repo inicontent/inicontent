@@ -413,8 +413,8 @@ const tableColumns: any = computed(() => [
                 [
                     table.value.allowedMethods?.includes("r")
                         ? h(
-                            NPopover,
-                            {},
+                            NTooltip,
+                            { delay: 500 },
                             {
                                 trigger: () =>
                                     h(
@@ -440,8 +440,8 @@ const tableColumns: any = computed(() => [
                         : null,
                     table.value.allowedMethods?.includes("u")
                         ? h(
-                            NPopover,
-                            {},
+                            NTooltip,
+                            { delay: 500 },
                             {
                                 trigger: () =>
                                     h(
@@ -483,8 +483,8 @@ const tableColumns: any = computed(() => [
                             {
                                 trigger: () =>
                                     h(
-                                        NPopover,
-                                        {},
+                                        NTooltip,
+                                        { delay: 500 },
                                         {
                                             trigger: () =>
                                                 h(
