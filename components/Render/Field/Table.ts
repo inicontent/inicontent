@@ -17,7 +17,7 @@ import {
 	type SelectOption,
 	useMessage,
 } from "naive-ui";
-import { LazyRenderField } from "#components";
+import { LazyRenderFieldS } from "#components";
 
 export default defineNuxtComponent({
 	props: {
@@ -497,7 +497,7 @@ export default defineNuxtComponent({
 										model: Drawer.value.data as any,
 									},
 									() =>
-										h(LazyRenderField, {
+										h(LazyRenderFieldS, {
 											modelValue: Drawer.value.data,
 											schema:
 												database.value.tables?.find(

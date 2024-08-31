@@ -114,8 +114,7 @@
                 pageSizes: [15, 30, 60, 100, 500],
                 prefix: ({ itemCount }) => itemCount, ...pagination
             }" :row-key="(row) => row.id" :checked-row-keys="checkedRowKeys"
-            @update-checked-row-keys="(keys) => checkedRowKeys = keys" @update:page="onUpdatePage"
-            @update:page-size="onUpdatePageSize" @update:sorter="handleSorterChange" />
+            @update-checked-row-keys="(keys) => checkedRowKeys = keys" @update:sorter="handleSorterChange" />
     </NCard>
 </template>
 
@@ -147,7 +146,7 @@ import {
 } from "naive-ui";
 import { LazyRenderColumn } from "#components";
 
-onBeforeMount(() => {
+onBeforeRouteLeave(() => {
     clearNuxtState(["Drawer", "searchArray", "searchQuery"]);
 });
 
@@ -222,6 +221,36 @@ const message = useMessage(),
         pageCount: 1,
         pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
         itemCount: 0,
+        onUpdatePage(currentPage: number) {
+            pagination.value.page = currentPage;
+            let { page, ...Query }: any = route.query;
+            Query = {
+                ...Query,
+                page: currentPage !== 1 ? currentPage : undefined,
+            };
+            router.push({ query: Query });
+            queryOptions.value = Inison.stringify({
+                ...Inison.unstringify(queryOptions.value),
+                page: pagination.value.page,
+            });
+        },
+        onUpdatePageSize(pageSize: number) {
+            const OLD_pageSize = JSON.parse(JSON.stringify(pagination.value.pageSize));
+            pagination.value.pageSize = pageSize;
+            let { perPage, page, ...Query }: any = route.query;
+            if (pageSize !== 15) {
+                pagination.value.page = Math.round(
+                    OLD_pageSize < pageSize
+                        ? page / (pageSize / OLD_pageSize)
+                        : page * (pageSize / OLD_pageSize),
+                );
+                Query = {
+                    ...Query,
+                    perPage: pageSize,
+                    page: pagination.value.page === 1 ? undefined : pagination.value.page,
+                };
+            }
+        }
     })),
     queryOptions = ref(
         Inison.stringify({
@@ -230,42 +259,6 @@ const message = useMessage(),
             columns: [],
         }),
     );
-function onUpdatePage(currentPage: number) {
-    pagination.value.page = currentPage;
-    let { page, ...Query }: any = route.query;
-    Query = {
-        ...Query,
-        page: currentPage !== 1 ? currentPage : undefined,
-    };
-    router.push({ query: Query });
-    queryOptions.value = Inison.stringify({
-        ...Inison.unstringify(queryOptions.value),
-        page: pagination.value.page,
-    });
-}
-function onUpdatePageSize(pageSize: number) {
-    const OLD_pageSize = JSON.parse(JSON.stringify(pagination.value.pageSize));
-    pagination.value.pageSize = pageSize;
-    let { perPage, page, ...Query }: any = route.query;
-    if (pageSize !== 15) {
-        pagination.value.page = Math.round(
-            OLD_pageSize < pageSize
-                ? page / (pageSize / OLD_pageSize)
-                : page * (pageSize / OLD_pageSize),
-        );
-        Query = {
-            ...Query,
-            perPage: pageSize,
-            page: pagination.value.page === 1 ? undefined : pagination.value.page,
-        };
-    }
-    router.push({ query: Query });
-    queryOptions.value = Inison.stringify({
-        ...Inison.unstringify(queryOptions.value),
-        perPage: pageSize,
-        page: pagination.value.page === 1 ? undefined : pagination.value.page,
-    });
-}
 
 const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
     `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
@@ -531,7 +524,7 @@ watch(searchQuery, (v) => {
 });
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug ?? "")} ${t("Table")}`,
+    title: `${database.value.slug} | ${t(table.value.slug)}`,
     link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 });
 </script>

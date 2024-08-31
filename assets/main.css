@@ -38,12 +38,7 @@ a {
 
 .rtl .n-pagination .n-pagination-item.n-pagination-item--button .n-base-icon,
 .rtl .n-layout-sider .n-layout-toggle-bar,
-.rtl
-  .n-collapse
-  .n-collapse-item
-  .n-collapse-item__header
-  .n-collapse-item-arrow
-  .n-icon,
+.rtl .n-collapse .n-collapse-item .n-collapse-item__header .n-collapse-item-arrow .n-icon,
 .rtl .n-switch,
 .rtl .tabler-icon-arrow-right,
 .rtl .tabler-icon-chevron-right {
@@ -92,27 +87,20 @@ a {
     color: #000 !important;
     fill: #000;
   }
+
   .n-card-header {
     display: none !important;
   }
+
   #__nuxt,
   #__nuxt .n-config-provider,
   #__nuxt .n-config-provider .n-layout,
-  #__nuxt
-    .n-config-provider
-    .n-layout
-    .n-layout-scroll-container
-    > div:nth-child(2),
-  #__nuxt
-    .n-config-provider
-    .n-layout
-    .n-layout-scroll-container
-    > div:nth-child(2)
-    #PRINT_CONTENT
-    * {
+  #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2),
+  #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2) #PRINT_CONTENT * {
     top: 0 !important;
     visibility: visible !important;
   }
+
   #PRINT_CONTENT {
     position: absolute !important;
     top: 0 !important;
@@ -160,7 +148,7 @@ a {
   width: 100%;
 }
 
-.masonry > * {
+.masonry>* {
   break-inside: avoid;
   margin-bottom: 1rem;
   position: relative;
@@ -171,6 +159,7 @@ a {
     columns: 2;
   }
 }
+
 @media only screen and (min-width: 1201px) {
   .masonry {
     columns: 3;
@@ -183,4 +172,9 @@ a {
 
 .n-data-table .n-data-table-th .n-data-table-sorter {
   margin-right: 4px;
+}
+
+.n-upload-file-list .n-upload-file.n-upload-file--image-type .n-upload-file-info .n-upload-file-info__thumbnail img {
+  overflow: hidden;
+  height: 44px;
 }

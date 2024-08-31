@@ -5,11 +5,8 @@
                 isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
                 :collapsed-width="isMobile ? 0 : 64" width="240" :native-scrollbar="false">
                 <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="isMobile ? 0 : 64"
-                    @mouseover="() =>
-                        isMenuOpen = true" @mouseleave="() =>
-                            isMenuOpen = false" :options="menuOptions" :expanded-keys="table?.slug
-                                ? [`${table?.slug}Group`]
-                                : []" :value="defaultValue ?? undefined" accordion />
+                    @mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
+                    :value="defaultValue ?? undefined" accordion />
             </NLayoutSider>
             <NLayoutContent id="page_content" position="absolute" :content-style="{
                 padding: isMobile

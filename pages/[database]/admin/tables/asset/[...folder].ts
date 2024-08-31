@@ -13,7 +13,7 @@ export default defineNuxtComponent({
 		useHead({
 			title: `${database.value.slug} | ${t("assets")}${
 				route.params.folder
-					? ` | /${[].concat(route.params.folder as any).join("/")}`
+					? ` > /${[].concat(route.params.folder as any).join("/")}`
 					: ""
 			}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],

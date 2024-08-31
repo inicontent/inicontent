@@ -1,74 +1,3 @@
-<script lang="ts" setup>
-import { getField as getFieldFromSchema } from "inibase/utils";
-import { deleteProperty, getProperty, setProperty } from "inidot";
-import {
-    NButton,
-    NTooltip,
-    NCollapse,
-    NCollapseItem,
-    NDropdown,
-    NFlex,
-    NIcon,
-    NInputGroup,
-    NSelect,
-} from "naive-ui";
-
-defineProps(["path"])
-
-const searchArray = useState<{
-    and?: [string | null, string, any][];
-    or?: [string | null, string, any][];
-}>("searchArray");
-const searchQuery = useState<string>("searchQuery")
-const pagination = useState<any>("pagination")
-const table = useState<Table>("table")
-
-function searchSelectOptions(field: any): any {
-    comparisonOperatorOptions().filter(
-        ({ value }) => {
-            if (
-                checkFieldType(field.type, [
-                    "number",
-                    "date",
-                ])
-            )
-                return [
-                    "=",
-                    "!=",
-                    ">",
-                    ">=",
-                    "<",
-                    "<=",
-                ].includes(value);
-            if (
-                checkFieldType(
-                    field.type,
-                    "array",
-                ) ||
-                checkFieldType(
-                    field.type,
-                    "table",
-                )
-            )
-                return ![
-                    ">",
-                    ">=",
-                    "<",
-                    "<=",
-                ].includes(value);
-            return ![
-                ">",
-                ">=",
-                "<",
-                "<=",
-                "[]",
-                "![]",
-            ].includes(value);
-        },
-    )
-}
-</script>
-
 <template>
     <NCollapse :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
         <NCollapseItem v-for="([condition, items], index) in Object.entries(
@@ -160,14 +89,15 @@ function searchSelectOptions(field: any): any {
                         <NSelect :consistent-menu-width="false" tag filterable :value="item[0]"
                             @update:value="(v) => item[0] = v" :options="generateSearchInOptions(
                                 table.schema,
-                            )" :style="item[3] ? 'width:100%' : ''" />
+                            )" :style="`width:${item[3] ? 33.33 : 100}%`" />
                         <template v-if="item[3]">
                             <NSelect :consistent-menu-width="false" tag filterable :value="item[1]"
                                 @update:value="(v) => item[1] = v" :options="searchSelectOptions(item[3])"
                                 style="width:33.33%" />
                             <LazyRenderField :model-value="ref({
                                 [item[3].key]: item[2] ?? undefined,
-                            })" :on-update:model-value="(v: any) => {
+                            })" @update:modelValue="(v: any) => {
+                                console.log(v)
                                 item[2] = Array.isArray(
                                     v[item[3].key],
                                 )
@@ -193,7 +123,7 @@ function searchSelectOptions(field: any): any {
                                                             searchArray,
                                                         )
                                                         : undefined;
-                                                pagination.onChange(
+                                                pagination.onUpdatePage(
                                                     1,
                                                 );
                                             }
@@ -221,3 +151,80 @@ function searchSelectOptions(field: any): any {
         </NCollapseItem>
     </NCollapse>
 </template>
+
+<script lang="ts" setup>
+import {
+    IconPlus,
+    IconTrash,
+    IconSwitchHorizontal,
+    IconMinus
+} from "@tabler/icons-vue";
+import { getField as getFieldFromSchema } from "inibase/utils";
+import { deleteProperty, getProperty, setProperty } from "inidot";
+import {
+    NButton,
+    NTooltip,
+    NCollapse,
+    NCollapseItem,
+    NDropdown,
+    NFlex,
+    NIcon,
+    NInputGroup,
+    NSelect,
+} from "naive-ui";
+
+defineProps(["path"])
+
+const searchArray = useState<{
+    and?: [string | null, string, any][];
+    or?: [string | null, string, any][];
+}>("searchArray");
+const searchQuery = useState<string>("searchQuery")
+const pagination = useState<any>("pagination")
+const table = useState<Table>("table")
+
+function searchSelectOptions(field: any): any {
+    return comparisonOperatorOptions().filter(
+        ({ value }) => {
+            if (
+                checkFieldType(field.type, [
+                    "number",
+                    "date",
+                ])
+            )
+                return [
+                    "=",
+                    "!=",
+                    ">",
+                    ">=",
+                    "<",
+                    "<=",
+                ].includes(value);
+            if (
+                checkFieldType(
+                    field.type,
+                    "array",
+                ) ||
+                checkFieldType(
+                    field.type,
+                    "table",
+                )
+            )
+                return ![
+                    ">",
+                    ">=",
+                    "<",
+                    "<=",
+                ].includes(value);
+            return ![
+                ">",
+                ">=",
+                "<",
+                "<=",
+                "[]",
+                "![]",
+            ].includes(value);
+        },
+    )
+}
+</script>

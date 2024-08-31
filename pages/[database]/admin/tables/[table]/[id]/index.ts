@@ -60,7 +60,7 @@ export default defineNuxtComponent({
 		useHead({
 			title: `${t(database.value.slug)} | ${t(
 				table.value.slug,
-			)} ${t("table")} : ${itemLabel.value}`,
+			)} > ${itemLabel.value}`,
 			link: [{ rel: "icon", href: database.value.icon ?? "" }],
 		});
 

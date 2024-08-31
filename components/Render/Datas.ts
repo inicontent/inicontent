@@ -48,7 +48,12 @@ export default defineNuxtComponent({
 						single.value,
 						(path ?? "") +
 							(isAbsolutePath ? "" : getPath(props.schema, field.id)),
-					)
+					) ||
+					getProperty(
+						single.value,
+						(path ?? "") +
+							(isAbsolutePath ? "" : getPath(props.schema, field.id)),
+					) === null
 				) {
 					if (field.key === "updatedAt") return;
 					switch (field.subType ?? field.type) {
@@ -138,7 +143,26 @@ export default defineNuxtComponent({
 							);
 					}
 				}
-				switch (field.subType ?? field.type) {
+
+				if (
+					(Array.isArray(field.type) && field.type.includes("array")) ||
+					(typeof field.type === "string" && field.type === "array")
+				)
+					field.type = field.children;
+
+				let deletectedFieldType = field.subType ?? field.type;
+
+				if (Array.isArray(deletectedFieldType))
+					deletectedFieldType = getField(
+						field.subType ?? field.type,
+						getProperty(
+							single.value,
+							(path ?? "") +
+								(isAbsolutePath ? "" : getPath(props.schema, field.id)),
+						),
+					).key;
+
+				switch (deletectedFieldType) {
 					case "select":
 					case "tags":
 						return h(
@@ -165,6 +189,7 @@ export default defineNuxtComponent({
 												h(
 													NTag,
 													{
+														round: true,
 														bordered: false,
 													},
 													() => item,

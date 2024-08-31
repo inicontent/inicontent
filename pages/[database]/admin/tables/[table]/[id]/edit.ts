@@ -1,9 +1,4 @@
-import {
-	IconDeviceFloppy,
-	IconEye,
-	IconSend,
-	IconTrash,
-} from "@tabler/icons-vue";
+import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 import {
 	type FormInst,
 	NButton,
@@ -17,7 +12,7 @@ import {
 	useMessage,
 } from "naive-ui";
 
-import { LazyRenderField } from "#components";
+import { LazyRenderFieldS } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -124,9 +119,7 @@ export default defineNuxtComponent({
 			);
 
 		useHead({
-			title: `${database.value.slug} | ${t(table.value.slug as string)} ${t(
-				"table",
-			)} : ${itemLabel.value}`,
+			title: `${database.value.slug} | ${t(table.value.slug)} > ${itemLabel.value}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 		});
 		return () =>
@@ -270,7 +263,7 @@ export default defineNuxtComponent({
 								ref: formRef as any,
 							},
 							() =>
-								h(LazyRenderField, {
+								h(LazyRenderFieldS, {
 									modelValue: single.value,
 									schema: table.value.schema?.filter(
 										({ key }) =>

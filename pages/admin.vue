@@ -128,7 +128,6 @@ import {
     NFlex,
     useMessage,
 } from "naive-ui";
-import { LazyRenderField, LazyTableGrid } from "#components";
 
 definePageMeta({
     middleware: "dashboard",
@@ -196,7 +195,7 @@ const database = useState<Database>("database"),
     };
 
 useHead({
-    title: `${database.value.slug} | Dashboard`,
+    title: `${database.value.slug} | ${t('dashboard')}`,
     link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 });
 

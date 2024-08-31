@@ -10,7 +10,7 @@ import {
 	NSpace,
 	useMessage,
 } from "naive-ui";
-import { LazyRenderField } from "#components";
+import { LazyRenderFieldS } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -32,10 +32,7 @@ export default defineNuxtComponent({
 				new: "جديد",
 				publish: "نشر",
 			},
-			en: {
-				new: "New",
-				publish: "Publish",
-			},
+			en: {},
 		});
 
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -43,12 +40,11 @@ export default defineNuxtComponent({
 
 		const route = useRoute(),
 			database = useState<Database>("database"),
-			schema = database.value.tables
-				?.find(({ slug }) => slug === route.params.table)
-				?.schema?.filter(
-					(field) =>
-						!["id", "createdAt", "createdBy", "updatedAt"].includes(field.key),
-				),
+			table = useState<Table>("table"),
+			schema = table.value.schema?.filter(
+				(field) =>
+					!["id", "createdAt", "createdBy", "updatedAt"].includes(field.key),
+			),
 			message = useMessage(),
 			single = ref({}),
 			formRef = ref<FormInst | null>(null),
@@ -81,21 +77,14 @@ export default defineNuxtComponent({
 			};
 
 		useHead({
-			title: `${database.value.slug} | ${t("new")} ${t(
-				database.value.tables?.find(({ slug }) => slug === route.params.table)
-					?.slug ?? "--",
-			)}`,
+			title: `${database.value.slug} | ${t(table.value.slug)} > ${t("new")}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 		});
 		return () =>
 			h(
 				NCard,
 				{
-					title: `${t("new")} ${t(
-						database.value.tables?.find(
-							({ slug }) => slug === route.params.table,
-						)?.slug ?? "--",
-					)}`,
+					title: `${t("new")} ${t(table.value.slug)}`,
 					style: "height: fit-content",
 				},
 				{
@@ -160,7 +149,7 @@ export default defineNuxtComponent({
 								ref: formRef,
 							},
 							() =>
-								h(LazyRenderField, {
+								h(LazyRenderFieldS, {
 									modelValue: single.value,
 									schema: schema,
 								}),

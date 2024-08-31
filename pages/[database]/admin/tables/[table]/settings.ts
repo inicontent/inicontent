@@ -41,7 +41,7 @@ import {
 	useMessage,
 } from "naive-ui";
 import draggable from "vuedraggable";
-import { LazyRenderField } from "#components";
+import { LazyRenderFieldS } from "#components";
 
 export default defineNuxtComponent({
 	async setup() {
@@ -724,10 +724,7 @@ export default defineNuxtComponent({
 			};
 
 		useHead({
-			title: `${database.value.slug} | ${t(
-				database.value.tables?.find(({ slug }) => slug === route.params.table)
-					?.slug ?? "--",
-			)} ${t("settings")}`,
+			title: `${database.value.slug} | ${t(table.value.slug)} > ${t("settings")}`,
 			link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 		});
 
@@ -805,7 +802,7 @@ export default defineNuxtComponent({
 													model: tableCopy.value,
 												},
 												() => [
-													h(LazyRenderField, {
+													h(LazyRenderFieldS, {
 														modelValue: tableCopy.value,
 														schema: [
 															{

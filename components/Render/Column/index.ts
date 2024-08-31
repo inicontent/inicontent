@@ -417,7 +417,7 @@ export default defineNuxtComponent({
 					case "date":
 						return h(
 							NPopover,
-							{},
+							{ delay: 500 },
 							{
 								trigger: () =>
 									h(NTime, {
