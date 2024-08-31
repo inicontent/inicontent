@@ -1,0 +1,1 @@
+import{f as n,g as o,h as c,c as _,n as r,o as i}from"./b4y72k5A.js";const m=n({__name:"index",async setup(p){let a,t;const s=o("database");return[a,t]=c(()=>{var e;return r(`${(e=s.value)==null?void 0:e.slug}/auth`)}),await a,t(),(e,u)=>(i(),_("div"))}});export{m as default};
