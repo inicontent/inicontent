@@ -126,7 +126,6 @@ import {
     NIcon,
     NModal,
     NFlex,
-    useMessage,
 } from "naive-ui";
 
 definePageMeta({
@@ -154,7 +153,6 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.Database = false;
 
 const database = useState<Database>("database"),
-    message = useMessage(),
     { isMobile } = useDevice(),
     { data: databases } = await useFetch<apiResponse<Database[]>>(
         `${useRuntimeConfig().public.apiBase}inicontent/database`,
@@ -180,7 +178,7 @@ const database = useState<Database>("database"),
                 );
                 Loading.value.Database = false;
 
-                if (!data.result) return message.error(data.message);
+                if (!data.result) return window.$message.error(data.message);
 
                 if (databases.value) {
                     if (databases.value.result)
@@ -189,8 +187,8 @@ const database = useState<Database>("database"),
                     defaultOpenedDatabase.value = data.result.slug;
                 }
                 showDatabaseModal.value = false;
-                message.success(data.message);
-            } else message.error("The inputs are Invalid");
+                window.$message.success(data.message);
+            } else window.$message.error(t('theInputsAreInvalid'));
         });
     };
 

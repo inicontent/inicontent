@@ -8,7 +8,6 @@ import {
 	NIcon,
 	NPopover,
 	NSpace,
-	useMessage,
 } from "naive-ui";
 import { LazyRenderFieldS } from "#components";
 
@@ -45,7 +44,6 @@ export default defineNuxtComponent({
 				(field) =>
 					!["id", "createdAt", "createdBy", "updatedAt"].includes(field.key),
 			),
-			message = useMessage(),
 			single = ref({}),
 			formRef = ref<FormInst | null>(null),
 			CREATE = async () => {
@@ -65,14 +63,14 @@ export default defineNuxtComponent({
 						Loading.value.CREATE = false;
 
 						if (!data.result || !data.result.id)
-							return message.error(data.message);
+							return window.$message.error(data.message);
 
-						message.success(data.message);
+						window.$message.success(data.message);
 						return navigateTo(
 							`/${route.params.database}/admin/tables/${route.params.table}/${data.result.id}/edit`,
 						);
 					}
-					message.error("The inputs are Invalid");
+					window.$message.error(t("theInputsAreInvalid"));
 				});
 			};
 

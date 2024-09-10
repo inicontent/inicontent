@@ -16,7 +16,6 @@ import {
 	NText,
 	NTime,
 	NTooltip,
-	useMessage,
 } from "naive-ui";
 import { LazyAssetIcon } from "#components";
 
@@ -35,7 +34,6 @@ export default defineNuxtComponent({
 			ThemeConfig = useState<ThemeConfig>("ThemeConfig"),
 			Theme = useCookie("Theme"),
 			route = useRoute(),
-			message = useMessage(),
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
 			CurrentAsset = useState<Asset & { show?: boolean }>("asset", () => ({})),
@@ -59,8 +57,8 @@ export default defineNuxtComponent({
 
 					if (database.value.size)
 						database.value.size -= singleAsset?.size ?? 0;
-					message.success(data?.message ?? t("success"));
-				} else message.error(data?.message ?? t("error"));
+					window.$message.success(data?.message ?? t("success"));
+				} else window.$message.error(data?.message ?? t("error"));
 				Loading.value[`deleteAsset${name}`] = false;
 			};
 

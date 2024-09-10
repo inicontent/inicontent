@@ -3,7 +3,7 @@
         <n-tabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
             <n-tab-pane name="signin" :tab="t('signin')">
                 <n-form ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
-                    <LazyRenderFieldS :model-value="SigninForm" :schema="SigninColumns" />
+                    <LazyRenderFieldS v-model="SigninForm" :schema="SigninColumns" />
                     <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
                         {{ t("signin") }}
                     </n-button>
@@ -11,7 +11,7 @@
             </n-tab-pane>
             <n-tab-pane name="signup" :tab="t('signup')">
                 <n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
-                    <LazyRenderFieldS :model-value="SignupForm" :schema="SignupColumns" />
+                    <LazyRenderFieldS v-model="SignupForm" :schema="SignupColumns" />
                     <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
                         {{ t("signup") }}
                     </n-button>
@@ -30,7 +30,6 @@ import {
     NTabPane,
     NTabs,
     type TabsInst,
-    useMessage,
 } from "naive-ui";
 
 useLanguage({
@@ -45,7 +44,6 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 const SigninFormRef = ref<FormInst | null>(null),
     route = useRoute(),
-    message = useMessage(),
     tabsInstRef = ref<TabsInst | null>(null),
     tabsValue = ref((route.query.tab as string) ?? "signin"), // Default tab
     database = useState<Database>("database"),
@@ -113,13 +111,13 @@ const SignupSubmit = async (e: Event) => {
                     },
                 );
                 if (data.result) {
-                    message.success(data.message);
+                    window.$message.success(data.message);
                     tabsValue.value = "signin";
                     tabsInstRef.value?.syncBarPosition();
-                } else message.error(data.message);
+                } else window.$message.error(data.message);
                 Loading.value.Signup = false;
             }
-        } else message.error("The inputs are Invalid");
+        } else window.$message.error(t('theInputsAreInvalid'));
     });
 };
 const SigninSubmit = async (e: Event) => {
@@ -138,7 +136,7 @@ const SigninSubmit = async (e: Event) => {
                     },
                 );
                 if (data.result?.id) {
-                    message.success(data.message);
+                    window.$message.success(data.message);
                     user.value = data.result;
                     database.value = (
                         await $fetch<any>(
@@ -151,10 +149,10 @@ const SigninSubmit = async (e: Event) => {
                             ? "/admin"
                             : `/${database.value.slug}/admin`,
                     );
-                } else message.error(data.message);
+                } else window.$message.error(data.message);
                 Loading.value.Signin = false;
             }
-        } else message.error("The inputs are Invalid");
+        } else window.$message.error(t('theInputsAreInvalid'));
     });
 };
 useHead({

@@ -1,5 +1,5 @@
 import type { FieldType, pageInfo, ComparisonOperator } from "inibase";
-
+import type { useMessage } from "naive-ui";
 type CMS_FieldType =
 	| "text"
 	| "upload"
@@ -13,6 +13,9 @@ type CMS_FieldType =
 type onCreateCallback = (index: number) => onCreateType;
 type onCreateType = string | number | boolean | null | Record<any, any>;
 declare global {
+	interface Window {
+		$message: useMessage;
+	}
 	type Field = {
 		id?: string | number;
 		key: string;

@@ -38,10 +38,10 @@ import {
     IconFingerprint,
     IconFolders,
     IconLanguage,
+    IconPencil,
     IconPlus,
-    IconSettings,
+    IconTrash,
     IconUsers,
-    IconWebhook,
 } from "@tabler/icons-vue";
 import { NIcon, NLayout, NLayoutContent, NLayoutSider, NMenu } from "naive-ui";
 import { NuxtLink } from "#components";
@@ -58,7 +58,6 @@ useLanguage({
 
 const route = useRoute(),
     { isMobile } = useDevice(),
-    user = useState<User>("user"),
     table = useState<Table>("table"),
     isMenuOpen = useState("isMenuOpen", () => false),
     database = useState<Database>("database"),
@@ -75,80 +74,75 @@ if (table.value?.slug) {
 
 const renderSingleItem = ({ slug, allowedMethods }: Table) => {
     const itemChildren = [
-        ...(slug !== "asset" && allowedMethods?.includes("c")
-            ? [
-                {
-                    label: () =>
-                        h(
-                            NuxtLink,
-                            {
-                                onClick: () => {
-                                    defaultValue.value = slug;
-                                },
-                                to: `/${database.value.slug}/admin/tables/${slug}`,
-                            },
-                            { default: () => t("showAll") },
-                        ),
-                    key: slug,
-                    icon: () => h(NIcon, () => h(IconEye)),
-                },
-                {
-                    label: () =>
-                        h(
-                            NuxtLink,
-                            {
-                                onClick: () => {
-                                    defaultValue.value = `${slug}-new`;
-                                },
-                                to: `/${database.value.slug}/admin/tables/${slug}/new`,
-                            },
-                            { default: () => t("newItem") },
-                        ),
-                    key: `${slug}-new`,
-                    icon: () => h(NIcon, () => h(IconPlus)),
-                },
-            ]
-            : []),
-        ...(user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55"
-            ? [
-                ...(slug !== "asset"
-                    ? [
+        allowedMethods?.includes("r")
+            ? {
+                label: () =>
+                    h(
+                        NuxtLink,
                         {
-                            label: () =>
-                                h(
-                                    NuxtLink,
-                                    {
-                                        onClick: () => {
-                                            defaultValue.value = `${slug}-settings`;
-                                        },
-                                        to: `/${database.value.slug}/admin/tables/${slug}/settings`,
-                                    },
-                                    { default: () => t("settings") },
-                                ),
-                            key: `${slug}-settings`,
-                            icon: () => h(NIcon, () => h(IconSettings)),
-                        },
-                    ]
-                    : []),
-                {
-                    label: () =>
-                        h(
-                            NuxtLink,
-                            {
-                                onClick: () => {
-                                    defaultValue.value = `${slug}-flows`;
-                                },
-                                to: `/${database.value.slug}/admin/tables/${slug}/flows`,
+                            onClick: () => {
+                                defaultValue.value = `${slug}-get`;
                             },
-                            { default: () => t("flows") },
-                        ),
-                    key: `${slug}-flows`,
-                    icon: () => h(NIcon, () => h(IconWebhook)),
-                },
-            ]
-            : []),
-    ];
-    return {
+                            to: `/${database.value.slug}/api/tables/${slug}/get`,
+                        },
+                        { default: () => t("GET") },
+                    ),
+                key: `${slug}-get`,
+                icon: () => h(NIcon, () => h(IconEye)),
+            } : null,
+        allowedMethods?.includes("c")
+            ? {
+                label: () =>
+                    h(
+                        NuxtLink,
+                        {
+                            onClick: () => {
+                                defaultValue.value = `${slug}-post`;
+                            },
+                            to: `/${database.value.slug}/api/tables/${slug}/post`,
+                        },
+                        { default: () => t("POST") },
+                    ),
+                key: `${slug}-post`,
+                icon: () => h(NIcon, () => h(IconPlus)),
+            }
+            : null,
+        allowedMethods?.includes("u")
+            ? {
+                label: () =>
+                    h(
+                        NuxtLink,
+                        {
+                            onClick: () => {
+                                defaultValue.value = `${slug}-put`;
+                            },
+                            to: `/${database.value.slug}/api/tables/${slug}/put`,
+                        },
+                        { default: () => t("PUT") },
+                    ),
+                key: `${slug}-put`,
+                icon: () => h(NIcon, () => h(IconPencil)),
+            }
+            : null,
+        allowedMethods?.includes("d")
+            ? {
+                label: () =>
+                    h(
+                        NuxtLink,
+                        {
+                            onClick: () => {
+                                defaultValue.value = `${slug}-delete`;
+                            },
+                            to: `/${database.value.slug}/api/tables/${slug}/delete`,
+                        },
+                        { default: () => t("DELETE") },
+                    ),
+                key: `${slug}-delete`,
+                icon: () => h(NIcon, () => h(IconTrash)),
+            }
+            : null,
+    ].filter((item) => item);
+    return itemChildren.length ? {
         label: () =>
             h(
                 NuxtLink,
@@ -156,11 +150,11 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                     onClick: () => {
                         defaultValue.value = slug;
                     },
-                    to: `/${database.value.slug}/admin/tables/${slug}`,
+                    to: `/${database.value.slug}/api/tables/${slug}`,
                 },
                 { default: () => t(slug) },
             ),
-        key: itemChildren.length ? `${slug}Group` : slug,
+        key: slug,
         icon: () =>
             h(NIcon, () => {
                 switch (slug) {
@@ -176,22 +170,20 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                         return t(slug).charAt(0).toUpperCase();
                 }
             }),
-        children: itemChildren.length ? itemChildren : undefined,
-    };
+        children: itemChildren
+    } : undefined;
 };
 const menuOptions: any = database.value.tables
     ? [
         ...(database.value.tables
             ?.filter(
-                ({ slug, allowedMethods }) =>
-                    !["user", "session", "asset", "translation"].includes(slug) &&
-                    allowedMethods?.includes("r"),
+                ({ slug }) =>
+                    !["user", "session", "asset", "translation"].includes(slug)
             )
             .map(renderSingleItem) ?? []),
         database.value.tables?.filter(
-            ({ slug, allowedMethods }) =>
-                ["user", "session", "asset", "translation"].includes(slug) &&
-                allowedMethods?.includes("r"),
+            ({ slug }) =>
+                ["user", "session", "asset", "translation"].includes(slug)
         ).length
             ? {
                 key: "divider-1",
@@ -200,9 +192,8 @@ const menuOptions: any = database.value.tables
             : null,
         ...(database.value.tables
             ?.filter(
-                ({ slug, allowedMethods }) =>
-                    ["user", "session", "asset"].includes(slug) &&
-                    allowedMethods?.includes("r"),
+                ({ slug }) =>
+                    ["user", "session", "asset", "translation"].includes(slug)
             )
             .map(renderSingleItem) ?? []),
     ]

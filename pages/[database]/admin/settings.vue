@@ -34,7 +34,7 @@
                 <n-flex vertical>
                     <n-card id="general" :title="t('general')" hoverable>
                         <n-form ref="databaseRef" :model="databaseCopy">
-                            <LazyRenderField :model-value="databaseCopy" :schema="databaseSchema" />
+                            <LazyRenderFieldS v-model="databaseCopy" :schema="databaseSchema" />
                         </n-form>
                     </n-card>
                     <n-card id="translation" :title="t('translation')" hoverable>
@@ -72,7 +72,6 @@ import {
     NPopconfirm,
     NFlex,
     NTooltip,
-    useMessage,
 } from "naive-ui";
 
 definePageMeta({
@@ -110,7 +109,6 @@ const route = useRoute(),
     { isMobile } = useDevice(),
     router = useRouter(),
     database = useState<Database>("database"),
-    message = useMessage(),
     databaseRef = ref<FormInst | null>(null),
     databaseCopy = ref(JSON.parse(JSON.stringify(database.value))),
     updateDatabase = async () => {
@@ -133,10 +131,10 @@ const route = useRoute(),
                             params: { database: database.value.slug },
                         });
                     Loading.value.updateDatabase = false;
-                    message.success(data.message);
-                } else message.error(data.message);
+                    window.$message.success(data.message);
+                } else window.$message.error(data.message);
                 Loading.value.updateDatabase = false;
-            } else message.error("The inputs are Invalid");
+            } else window.$message.error(t('theInputsAreInvalid'));
         });
     },
     deleteDatabase = async () => {
@@ -151,12 +149,12 @@ const route = useRoute(),
         if (data.result) {
             database.value = {};
             Loading.value.deleteDatabase = false;
-            message.success(data.message);
+            window.$message.success(data.message);
             setTimeout(async () => {
                 clearNuxtState("database");
                 await navigateTo("/admin");
             }, 800);
-        } else message.error(data.message);
+        } else window.$message.error(data.message);
         Loading.value.deleteDatabase = false;
     };
 

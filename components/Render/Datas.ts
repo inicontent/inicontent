@@ -150,10 +150,10 @@ export default defineNuxtComponent({
 				)
 					field.type = field.children;
 
-				let deletectedFieldType = field.subType ?? field.type;
+				let detectedFieldType = field.subType ?? field.type;
 
-				if (Array.isArray(deletectedFieldType))
-					deletectedFieldType = getField(
+				if (Array.isArray(detectedFieldType))
+					detectedFieldType = getField(
 						field.subType ?? field.type,
 						getProperty(
 							single.value,
@@ -162,7 +162,7 @@ export default defineNuxtComponent({
 						),
 					).key;
 
-				switch (deletectedFieldType) {
+				switch (detectedFieldType) {
 					case "select":
 					case "tags":
 						return h(
