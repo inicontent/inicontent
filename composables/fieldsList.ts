@@ -22,6 +22,7 @@ import {
 	IconQuestionMark,
 	IconTimelineEvent,
 	IconParentheses,
+	IconMessage,
 } from "@tabler/icons-vue";
 import { detectFieldType } from "inibase/utils";
 import Inison from "inison";
@@ -56,6 +57,7 @@ export default function fieldsList(): SelectMixedOption[] {
 				object: "كائن",
 				table: "جدول",
 				role: "دور",
+				mention: "نصوص جاهزة",
 				id: "معرف",
 			},
 		},
@@ -111,6 +113,11 @@ export default function fieldsList(): SelectMixedOption[] {
 					label: t("fields.role"),
 					key: "role",
 					icon: () => h(NIcon, () => h(IconShieldLock)),
+				},
+				{
+					label: t("fields.mention"),
+					key: "mention",
+					icon: () => h(NIcon, () => h(IconMessage)),
 				},
 			],
 		},

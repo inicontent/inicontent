@@ -1,44 +1,45 @@
 <template>
-    <LazyRenderFieldText v-if="deletectedFieldType === 'string' || deletectedFieldType === 'text'" v-model="modelValue"
+    <LazyRenderFieldText v-if="detectedFieldType === 'string' || detectedFieldType === 'text'" v-model="modelValue"
         :path="finalPath" :field="field" />
-    <LazyRenderFieldRole v-else-if="deletectedFieldType === 'role'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldRole v-else-if="detectedFieldType === 'role'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldId v-else-if="deletectedFieldType === 'id'" v-model="modelValue" :path="finalPath" :field="field" />
-    <LazyRenderFieldTextarea v-else-if="deletectedFieldType === 'textarea'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldId v-else-if="detectedFieldType === 'id'" v-model="modelValue" :path="finalPath" :field="field" />
+    <LazyRenderFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldRadio v-else-if="deletectedFieldType === 'radio'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldTable v-else-if="deletectedFieldType === 'table'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldTable v-else-if="detectedFieldType === 'table'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldUpload v-else-if="deletectedFieldType === 'upload'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldUpload v-else-if="detectedFieldType === 'upload'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldColor v-else-if="deletectedFieldType === 'color'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldUrl v-else-if="deletectedFieldType === 'url'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :path="finalPath" :field="field" />
+    <LazyRenderFieldEmail v-else-if="detectedFieldType === 'email'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldEmail v-else-if="deletectedFieldType === 'email'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldHtml v-else-if="detectedFieldType === 'html'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldHtml v-else-if="deletectedFieldType === 'html'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldNumber v-else-if="detectedFieldType === 'number'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldNumber v-else-if="deletectedFieldType === 'number'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldPassword v-else-if="detectedFieldType === 'password'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldPassword v-else-if="deletectedFieldType === 'password'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldBoolean v-else-if="deletectedFieldType === 'boolean'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldDate v-else-if="deletectedFieldType === 'date'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldSelect v-else-if="detectedFieldType === 'select'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldSelect v-else-if="deletectedFieldType === 'select'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldCheckbox v-else-if="deletectedFieldType === 'checkbox'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldTags v-else-if="deletectedFieldType === 'tags'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldObject v-else-if="deletectedFieldType === 'object'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <LazyRenderFieldArray v-else-if="deletectedFieldType === 'array'" v-model="modelValue" :path="finalPath"
+    <LazyRenderFieldArray v-else-if="detectedFieldType === 'array'" v-model="modelValue" :path="finalPath"
         :field="field" />
-    <NEmpty v-else :description="`${t('fieldTypeNotExisting')}: '${String(deletectedFieldType)}'`" />
+    <NEmpty v-else :description="`${t('fieldTypeNotExisting')}: '${String(detectedFieldType)}'`" />
 </template>
 
 <script lang="ts" setup>
@@ -80,12 +81,12 @@ if (
 )
     field.isArray = true;
 
-let deletectedFieldType = field.subType ?? field.type;
+let detectedFieldType = field.subType ?? field.type;
 if (
-    Array.isArray(deletectedFieldType) &&
+    Array.isArray(detectedFieldType) &&
     hasProperty(modelValue.value, finalPath)
 )
-    deletectedFieldType = getField(
+    detectedFieldType = getField(
         field.subType ?? field.type,
         getProperty(modelValue.value, finalPath),
     ).key;

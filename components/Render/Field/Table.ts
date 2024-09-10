@@ -15,7 +15,6 @@ import {
 	NSelect,
 	NTag,
 	type SelectOption,
-	useMessage,
 } from "naive-ui";
 import { LazyRenderFieldS } from "#components";
 
@@ -57,7 +56,6 @@ export default defineNuxtComponent({
 			database = useState<Database>("database"),
 			options = ref<SelectOption[]>(),
 			DrawerFormRef = ref<FormInst | null>(null),
-			message = useMessage(),
 			UpdateDrawer = async () => {
 				DrawerFormRef.value?.validate(async (errors) => {
 					if (!errors) {
@@ -71,16 +69,16 @@ export default defineNuxtComponent({
 								body: Drawer.value.data,
 							},
 						);
-						if (!data.result) return message.error(t("error"));
+						if (!data.result) return window.$message.error(t("error"));
 
 						if (data.result?.id) {
-							message.success(data.message);
+							window.$message.success(data.message);
 							Loading.value.Drawer = false;
 							Drawer.value.show = false;
 							Drawer.value.data = {};
-						} else message.error(data.message);
+						} else window.$message.error(data.message);
 						Loading.value.Drawer = false;
-					} else message.error("The inputs are Invalid");
+					} else window.$message.error(t("theInputsAreInvalid"));
 				});
 			},
 			CreateDrawer = async () => {
@@ -96,16 +94,16 @@ export default defineNuxtComponent({
 								body: Drawer.value.data,
 							},
 						);
-						if (!data.result) return message.error(t("error"));
+						if (!data.result) return window.$message.error(t("error"));
 
 						if (data.result?.id) {
-							message.success(data.message);
+							window.$message.success(data.message);
 							Loading.value.Drawer = false;
 							Drawer.value.show = false;
 							Drawer.value.data = {};
-						} else message.error(data.message);
+						} else window.$message.error(data.message);
 						Loading.value.Drawer = false;
-					} else message.error("The inputs are Invalid");
+					} else window.$message.error(t("theInputsAreInvalid"));
 				});
 			},
 			singleOption = (option: any) => ({

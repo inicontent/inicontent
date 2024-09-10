@@ -27,4 +27,5 @@ export default defineNuxtConfig({
 			apiBase: "https://test.api.inicontent.com/",
 		},
 	},
+	compatibilityDate: "2024-09-04",
 });

@@ -10,9 +10,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		!currentTableInPath ||
 		!database.value.tables?.find(({ slug }) => slug === currentTableInPath)
 	)
-		return nuxtApp.runWithContext(() =>
-			navigateTo(`/${to.params.database}/admin/tables`),
-		);
+		throw createError({
+			statusCode: 404,
+			statusMessage: "table",
+		});
 
 	table.value = database.value.tables.find(
 		({ slug }) => slug === currentTableInPath,

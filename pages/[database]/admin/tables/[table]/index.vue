@@ -142,7 +142,6 @@ import {
     NPopconfirm,
     NPopover,
     NTooltip,
-    useMessage,
 } from "naive-ui";
 import { LazyRenderColumn } from "#components";
 
@@ -202,18 +201,17 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
             : { and: [[null, "=", null]] },
     );
 
-const message = useMessage(),
-    Drawer = useState<{
-        show: boolean;
-        id: null | string;
-        table: null | string;
-        data: any;
-    }>("Drawer", () => ({
-        show: false,
-        id: null,
-        table: null,
-        data: {},
-    })),
+const Drawer = useState<{
+    show: boolean;
+    id: null | string;
+    table: null | string;
+    data: any;
+}>("Drawer", () => ({
+    show: false,
+    id: null,
+    table: null,
+    data: {},
+})),
     dataRef = ref(null),
     checkedRowKeys = ref<any>([]),
     pagination = useState("pagination", () => ({
@@ -295,7 +293,7 @@ const DELETE = async (id: string) => {
             (item) => item.id && item.id !== id,
         );
     pagination.value.itemCount--;
-    message.success(deleteResponse?.message ?? t("error"));
+    window.$message.success(deleteResponse?.message ?? t("error"));
     Loading.value.data = false;
 };
 
@@ -366,7 +364,7 @@ const tableColumns: any = computed(() => [
                                             body: checkedRowKeys.value,
                                         } as any,
                                     );
-                                    message.success("Deleted Successfully");
+                                    window.$message.success("Deleted Successfully");
                                     await refresh();
                                 },
                             },
@@ -389,6 +387,9 @@ const tableColumns: any = computed(() => [
         width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
         key: field.key,
         sorter: true,
+        ellipsis: {
+            tooltip: true
+        },
         sortOrder: sortObject.value[field.key]
             ? `${sortObject.value[field.key]}end`
             : false,

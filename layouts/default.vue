@@ -1,169 +1,158 @@
 <template>
-    <NMessageProvider keepAliveOnHover closable :containerStyle='{ top: "70px" }'>
-        <NLayout position="absolute">
-            <NScrollbar style="max-height: 65px" xScrollable trigger="none">
-                <NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
-                    <NPageHeader>
-                        <template #avatar>
-                            <NTag v-if="(route.name as string | undefined)?.startsWith(
-                                'database',
-                            )" @click="navigateTo(`/${database?.slug}`)" strong round :bordered="false" :style='{
-                                cursor: "pointer",
-                                fontWeight: 600,
-                                ...(ThemeConfig.revert &&
-                                    Theme === "dark"
-                                    ? {
-                                        color: "#000",
-                                        backgroundColor: "#fff",
-                                    }
-                                    : {}),
-                            }'>
-                                <template #avatar>
-                                    <NAvatar fallbackSrc="/favicon.ico" :style='{
-                                        backgroundColor: "transparent"
-                                    }' :src='database?.icon ?? "/favicon.ico"' />
-                                </template>
-                                {{ t(database?.slug) }}
-                            </NTag>
-                            <NTag v-else strong round :bordered="false">
-                                <template #avatar>
-                                    <NAvatar fallbackSrc="/favicon.ico" :src='database?.icon ?? "/favicon.ico"' />
-                                </template>
-                                {{ t(database?.slug) }}
-                            </NTag>
-                        </template>
-                        <template #title v-if='![
-                            "index",
-                            "auth",
-                            "dashboard",
-                            "database",
-                            "database-auth",
-                        ].includes(route.name as string)'>
-                            <NBreadcrumb>
-                                <NBreadcrumbItem v-for='(childRoute, index) in route.path
+    <NLayout position="absolute">
+        <NScrollbar style="max-height: 65px" xScrollable trigger="none">
+            <NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
+                <NPageHeader>
+                    <template #avatar>
+                        <NTag v-if="String($route.matched[0].name).startsWith(
+                            'database',
+                        )" @click="navigateTo(`/${database?.slug}`)" strong round :bordered="false" :style='{
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            ...(ThemeConfig.revert &&
+                                Theme === "dark"
+                                ? {
+                                    color: "#000",
+                                    backgroundColor: "#fff",
+                                }
+                                : {}),
+                        }'>
+                            <template #avatar>
+                                <NAvatar fallbackSrc="/favicon.ico" :style='{
+                                    backgroundColor: "transparent"
+                                }' :src='database?.icon ?? "/favicon.ico"' />
+                            </template>
+                            {{ t(database?.slug) }}
+                        </NTag>
+                        <NTag v-else strong round :bordered="false">
+                            <template #avatar>
+                                <NAvatar fallbackSrc="/favicon.ico" :src='database?.icon ?? "/favicon.ico"' />
+                            </template>
+                        </NTag>
+                    </template>
+                    <template #title v-if='![
+                        "index",
+                        "auth",
+                        "dashboard",
+                        "database",
+                        "database-auth",
+                    ].includes(String($route.matched[0].name))'>
+                        <NBreadcrumb>
+                            <NBreadcrumbItem v-for='(childRoute, index) of $route.path
+                                .split("/")
+                                .filter(Boolean)
+                                .filter(
+                                    (_path, index) =>
+                                        !String($route.matched[0].name)?.startsWith("database") || index !== 0,
+                                )' :href='$route.path
                                     .split("/")
-                                    .filter(Boolean)
-                                    .filter(
-                                        (_path, index) =>
-                                            !(
-                                                route.name as string | undefined
-                                            )?.startsWith("database") || index !== 0,
-                                    )' :href='route.path
-                                        .split("/")
-                                        .slice(
-                                            0,
-                                            index +
-                                            ((
-                                                route.name as string | undefined
-                                            )?.startsWith("database")
-                                                ? 3
-                                                : 2),
-                                        )
-                                        .join("/")' @click.stop.prevent='navigateTo(
-                                            route.path
-                                                .split("/")
-                                                .slice(
-                                                    0,
-                                                    index +
-                                                    ((
-                                                        route.name as
-                                                        | string
-                                                        | undefined
-                                                    )?.startsWith("database")
-                                                        ? 3
-                                                        : 2),
-                                                )
-                                                .join("/"),
-                                        )'>
-                                    {{ isValidID(childRoute) &&
-                                        useState("itemLabel").value ? useState("itemLabel").value : t(
-                                            childRoute === "admin"
-                                                ? "routeAdmin"
-                                                : childRoute,
-                                        ) }}
-                                </NBreadcrumbItem>
-                            </NBreadcrumb>
-                        </template>
-                        <template #extra>
-                            <NButtonGroup>
-                                <template v-if="user?.id">
-                                    <template v-if="user?.role ===
-                                        'd7b3d61a582e53ee29b5a1d02a436d55'">
-                                        <NTooltip :delay="500">
-                                            <template #trigger>
-                                                <NButton round size="small">{{ humanFileSize(
-                                                    database?.size,
-                                                ) }}</NButton>
-                                            </template>
-                                            {{ t("totalDatabaseSize") }}
-                                        </NTooltip>
-                                        <NTooltip :delay="500">
-                                            <template #trigger>
-                                                <NButton round size="small" tag="a"
-                                                    :href="`/${database?.slug}/admin/settings`" @click.stop.prevent="navigateTo(
-                                                        `/${database?.slug}/admin/settings`,
-                                                    )">
-                                                    <template #icon>
-                                                        <NIcon>
-                                                            <IconSettings />
-                                                        </NIcon>
-                                                    </template>
-                                                </NButton>
-                                            </template>
-                                            {{ t("databaseSettings") }}
-                                        </NTooltip>
-                                    </template>
-                                    <NDropdown :options='userDropdownOptions' @select='onSelectUserDropdown'>
-                                        <NButton round size="small"><template #icon>
-                                                <NIcon>
-                                                    <IconUser />
-                                                </NIcon>
-                                            </template></NButton>
-                                    </NDropdown>
+                                    .slice(
+                                        0,
+                                        index +
+                                        (String($route.matched[0].name)?.startsWith("database")
+                                            ? 3
+                                            : 2),
+                                    )
+                                    .join("/")' @click.stop.prevent='navigateTo(
+                                        $route.path
+                                            .split("/")
+                                            .slice(
+                                                0,
+                                                index +
+                                                (String($route.matched[0].name).startsWith("database")
+                                                    ? 3
+                                                    : 2),
+                                            )
+                                            .join("/"),
+                                    )'>
+                                {{ isValidID(childRoute) &&
+                                    useState("itemLabel").value ? useState("itemLabel").value : t(
+                                        childRoute === "admin"
+                                            ? "routeAdmin"
+                                            : childRoute,
+                                    ) }}
+                            </NBreadcrumbItem>
+                        </NBreadcrumb>
+                    </template>
+                    <template #extra>
+                        <NButtonGroup>
+                            <template v-if="user?.id">
+                                <template v-if="user?.role ===
+                                    'd7b3d61a582e53ee29b5a1d02a436d55'">
+                                    <NTooltip :delay="500">
+                                        <template #trigger>
+                                            <NButton round size="small">{{ humanFileSize(
+                                                database?.size,
+                                            ) }}</NButton>
+                                        </template>
+                                        {{ t("totalDatabaseSize") }}
+                                    </NTooltip>
+                                    <NTooltip :delay="500">
+                                        <template #trigger>
+                                            <NButton round size="small" tag="a"
+                                                :href="`/${database?.slug}/admin/settings`" @click.stop.prevent="navigateTo(
+                                                    `/${database?.slug}/admin/settings`,
+                                                )">
+                                                <template #icon>
+                                                    <NIcon>
+                                                        <IconSettings />
+                                                    </NIcon>
+                                                </template>
+                                            </NButton>
+                                        </template>
+                                        {{ t("databaseSettings") }}
+                                    </NTooltip>
                                 </template>
-                                <NTooltip :delay="500">
-                                    <template #trigger>
-                                        <NButton round size="small" @click="Theme =
-                                            Theme === 'dark'
-                                                ? 'light'
-                                                : 'dark'">
-                                            <template #icon>
-                                                <NIcon>
-                                                    <IconMoon v-if="Theme === 'light'" />
-                                                    <IconSun v-else />
-                                                </NIcon>
-                                            </template>
-                                        </NButton>
-                                    </template>
-                                    {{ t("toggleTheme") }}
-                                </NTooltip>
-                                <NDropdown :value="Language" :options="languagesDropdownOptions"
-                                    @select="(v) => Language = v">
+                                <NDropdown :options='userDropdownOptions' @select='onSelectUserDropdown'>
                                     <NButton round size="small"><template #icon>
                                             <NIcon>
-                                                <IconLanguage />
+                                                <IconUser />
                                             </NIcon>
                                         </template></NButton>
                                 </NDropdown>
-                            </NButtonGroup>
-                        </template>
-                    </NPageHeader>
-                </NLayoutHeader>
-            </NScrollbar>
-            <NLayoutContent id="container" position="absolute" :style="{
-                top: '64px',
-                height: 'calc(~\'100vh - 98px\')',
-            }" :nativeScrollbar="false" :contentStyle='{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: "24px",
-                height: "max-content",
-            }'>
-                <slot />
-            </NLayoutContent>
-        </NLayout>
-    </NMessageProvider>
+                            </template>
+                            <NTooltip :delay="500">
+                                <template #trigger>
+                                    <NButton round size="small" @click="Theme =
+                                        Theme === 'dark'
+                                            ? 'light'
+                                            : 'dark'">
+                                        <template #icon>
+                                            <NIcon>
+                                                <IconMoon v-if="Theme === 'light'" />
+                                                <IconSun v-else />
+                                            </NIcon>
+                                        </template>
+                                    </NButton>
+                                </template>
+                                {{ t("toggleTheme") }}
+                            </NTooltip>
+                            <NDropdown :value="Language" :options="languagesDropdownOptions"
+                                @select="(v) => Language = v">
+                                <NButton round size="small"><template #icon>
+                                        <NIcon>
+                                            <IconLanguage />
+                                        </NIcon>
+                                    </template></NButton>
+                            </NDropdown>
+                        </NButtonGroup>
+                    </template>
+                </NPageHeader>
+            </NLayoutHeader>
+        </NScrollbar>
+        <NLayoutContent id="container" position="absolute" :style="{
+            top: '64px',
+            height: 'calc(~\'100vh - 98px\')',
+        }" :nativeScrollbar="false" :contentStyle='{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "24px 0",
+            height: "max-content",
+        }'>
+            <slot></slot>
+        </NLayoutContent>
+    </NLayout>
 </template>
 
 <script setup lang="ts">
@@ -188,13 +177,13 @@ import {
     NLayout,
     NLayoutContent,
     NLayoutHeader,
-    NMessageProvider,
     NPageHeader,
     NScrollbar,
     NSpace,
     NTag,
     NText,
     NTooltip,
+    useMessage
 } from "naive-ui";
 
 const Language = useCookie<string>("Language", { sameSite: true });
@@ -220,9 +209,10 @@ useLanguage({
     },
     en: { routeAdmin: "Admin Panel" },
 });
-
-const route = useRoute(),
-    user = useState<User | null>("user"),
+onMounted(() => {
+    window.$message = useMessage()
+})
+const user = useState<User | null>("user"),
     Theme = useCookie<string>("Theme", { sameSite: true }),
     database = useState<Database>("database", () => ({
         slug: "inicontent",

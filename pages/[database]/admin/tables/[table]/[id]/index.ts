@@ -1,13 +1,5 @@
 import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
-import {
-	NButton,
-	NCard,
-	NEllipsis,
-	NIcon,
-	NPopover,
-	NSpace,
-	useMessage,
-} from "naive-ui";
+import { NButton, NCard, NEllipsis, NIcon, NPopover, NSpace } from "naive-ui";
 import { LazyRenderDatas } from "#components";
 export default defineNuxtComponent({
 	async setup() {
@@ -32,30 +24,24 @@ export default defineNuxtComponent({
 		const route = useRoute(),
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
-			message = useMessage(),
-			{ data: single } = await useFetch<Item>(
+			{ data: single } = await useFetch<apiResponse<Item>["result"]>(
 				`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
 					table.value.slug
 				}/${route.params.id}`,
 				{
-					transform: (res: any) => {
-						if (!res.result || !res.result.id) {
-							message.error("Item not found");
-							setTimeout(
-								() =>
-									navigateTo(
-										`/${database.value.slug}/admin/tables/${table.value.slug}`,
-									),
-								1000,
-							);
-						}
-						return res.result;
-					},
+					transform: (res) => res.result,
 				},
-			),
-			itemLabel = useState("itemLabel", () =>
-				renderLabel(table.value.label, table.value.schema, single.value),
 			);
+		if (!single.value || !single.value.id)
+			throw createError({
+				statusCode: 404,
+				statusMessage: "Page Not Found",
+				fatal: true,
+			});
+
+		const itemLabel = useState("itemLabel", () =>
+			renderLabel(table.value.label, table.value.schema, single.value),
+		);
 
 		useHead({
 			title: `${t(database.value.slug)} | ${t(

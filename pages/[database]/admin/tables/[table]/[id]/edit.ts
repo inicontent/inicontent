@@ -9,7 +9,6 @@ import {
 	NPopconfirm,
 	NPopover,
 	NSpace,
-	useMessage,
 } from "naive-ui";
 
 import { LazyRenderFieldS } from "#components";
@@ -50,7 +49,6 @@ export default defineNuxtComponent({
 		const route = useRoute(),
 			database = useState<Database>("database"),
 			table = useState<Table>("table"),
-			message = useMessage(),
 			{ data: single } = await useFetch<Item>(
 				`${useRuntimeConfig().public.apiBase}${database.value.slug}/${
 					table.value.slug
@@ -58,7 +56,7 @@ export default defineNuxtComponent({
 				{
 					transform: (res: any) => {
 						if (!res.result || !res.result.id) {
-							message.error("Item not found");
+							window.$message.error("Item not found");
 							setTimeout(
 								() =>
 									navigateTo(
@@ -88,10 +86,10 @@ export default defineNuxtComponent({
 						);
 						if (data.result?.id) {
 							single.value = data.result;
-							message.success(data.message);
-						} else message.error(data.message);
+							window.$message.success(data.message);
+						} else window.$message.error(data.message);
 						Loading.value.UPDATE = false;
-					} else message.error("The inputs are Invalid");
+					} else window.$message.error(t("theInputsAreInvalid"));
 				});
 			},
 			DELETE = async () => {
@@ -105,13 +103,13 @@ export default defineNuxtComponent({
 					},
 				);
 				if (data.result) {
-					message.success(data.message);
+					window.$message.success(data.message);
 					Loading.value.DELETE = false;
 					return navigateTo(
 						`/${database.value.slug}/admin/tables/${table.value.slug}`,
 					);
 				}
-				message.error(data.message);
+				window.$message.error(data.message);
 				Loading.value.DELETE = false;
 			},
 			itemLabel = useState("itemLabel", () =>

@@ -13,7 +13,6 @@ import {
 	NUpload,
 	NUploadFileList,
 	NUploadTrigger,
-	useMessage,
 } from "naive-ui";
 import { IconCheck, IconPlus } from "@tabler/icons-vue";
 import Inison from "inison";
@@ -38,7 +37,6 @@ export default defineNuxtComponent({
 				showSizePicker: true,
 				itemCount: 0,
 			}),
-			message = useMessage(),
 			path = useState<string | null>("path"),
 			{ data: assets, refresh: refreshAssets } = await useLazyAsyncData(
 				`asset${
@@ -72,8 +70,10 @@ export default defineNuxtComponent({
 						Loading.value.AssetData = false;
 
 						if (res.options.total === 0) pagination.showSizePicker = false;
-						pagination.pageCount = res.options.total_pages;
-						pagination.itemCount = res.options.total;
+						if (res.options.totalPages && res.options.total) {
+							pagination.pageCount = res.options.totalPages;
+							pagination.itemCount = res.options.total;
+						}
 						return res.result;
 					},
 				},
@@ -267,12 +267,12 @@ export default defineNuxtComponent({
 													assets.value = assets.value.filter(
 														(asset) => asset.name !== file.name,
 													);
-												message.success(data?.message ?? t("success"));
+												window.$message.success(data?.message ?? t("success"));
 												if (database.value.size)
 													database.value.size -= singleAsset?.size ?? 0;
 												return true;
 											}
-											message.error(data?.message ?? t("error"));
+											window.$message.error(data?.message ?? t("error"));
 											return false;
 										},
 									},

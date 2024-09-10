@@ -24,7 +24,6 @@ import {
 	NInputGroup,
 	NPopover,
 	NSpace,
-	useMessage,
 } from "naive-ui";
 
 export default defineNuxtComponent({
@@ -50,7 +49,6 @@ export default defineNuxtComponent({
 		const user = useState<User>("user"),
 			database = toRef(props, "modelValue"),
 			Hover = useState<Record<string | number, boolean>>("Loading", () => ({})),
-			message = useMessage(),
 			Table = ref<string | null>(null),
 			createTable = async () => {
 				if (Table.value) {
@@ -66,11 +64,11 @@ export default defineNuxtComponent({
 					);
 					if (data.result) {
 						database.value.tables?.push(data.result);
-						message.success(data.message);
+						window.$message.success(data.message);
 						Table.value = null;
-					} else message.error(data.message ?? t("error"));
+					} else window.$message.error(data.message ?? t("error"));
 					Loading.value.Table = false;
-				} else message.error("The inputs are Invalid");
+				} else window.$message.error(t("theInputsAreInvalid"));
 			};
 		Hover.value = {};
 		return () =>

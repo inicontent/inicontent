@@ -12,7 +12,6 @@ import {
 	NIcon,
 	NSpace,
 	NText,
-	useMessage,
 } from "naive-ui";
 import { LazyRenderFieldS } from "#components";
 
@@ -34,7 +33,6 @@ export default defineNuxtComponent({
 		Loading.value.Drawer = false;
 
 		const route = useRoute(),
-			message = useMessage(),
 			database = useState<Database>("database"),
 			DrawerFormRef = useState(() => null),
 			{ isMobile } = useDevice(),
@@ -76,10 +74,10 @@ export default defineNuxtComponent({
 								body: bodyContent.data,
 							},
 						);
-						if (!data) return message.error(t("error"));
+						if (!data) return window.$message.error(t("error"));
 
 						if (data.result?.id) {
-							message.success(data.message);
+							window.$message.success(data.message);
 							Loading.value.DrawerContent = false;
 							Drawer.value = {
 								...Drawer.value,
@@ -89,9 +87,9 @@ export default defineNuxtComponent({
 								show: false,
 							};
 							await refreshNuxtData();
-						} else message.error(data.message);
+						} else window.$message.error(data.message);
 						Loading.value.DrawerContent = false;
-					} else message.error("The inputs are Invalid");
+					} else window.$message.error(t("theInputsAreInvalid"));
 				});
 			},
 			CreateDrawer = async () => {
@@ -108,10 +106,10 @@ export default defineNuxtComponent({
 								body: bodyContent.data,
 							},
 						);
-						if (!data) return message.error(t("error"));
+						if (!data) return window.$message.error(t("error"));
 
 						if (data.result?.id) {
-							message.success(data.message);
+							window.$message.success(data.message);
 							Loading.value.DrawerContent = false;
 							Drawer.value = {
 								...Drawer.value,
@@ -121,9 +119,9 @@ export default defineNuxtComponent({
 								show: false,
 							};
 							await refreshNuxtData();
-						} else message.error(data.message);
+						} else window.$message.error(data.message);
 						Loading.value.DrawerContent = false;
-					} else message.error("The inputs are Invalid");
+					} else window.$message.error(t("theInputsAreInvalid"));
 				});
 			};
 
