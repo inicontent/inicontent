@@ -1,0 +1,1 @@
+import{i as t,D as a,E as r,F as o,U as i,V as n,H as s}from"./CFZop9RU.js";import{N as l}from"./C-vpBtgA.js";import"./Cs7iC1eV.js";const _=t({__name:"Email",props:{value:{type:String,required:!0}},setup(e){return(u,m)=>(a(),r(s(l),{href:`mailto:${e.value}`,target:"_blank"},{default:o(()=>[i(n(e.value),1)]),_:1},8,["href"]))}});export{_ as default};
