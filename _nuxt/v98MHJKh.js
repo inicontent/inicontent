@@ -1,0 +1,1 @@
+import{u as h}from"./GicmGKj6.js";function m(e){const{opacityDisabled:o,heightTiny:t,heightSmall:n,heightMedium:s,heightLarge:a,heightHuge:r,primaryColor:i,fontSize:g}=e;return{fontSize:g,textColor:i,sizeTiny:t,sizeSmall:n,sizeMedium:s,sizeLarge:a,sizeHuge:r,color:i,opacitySpinning:o}}const p={name:"Spin",common:h,self:m};export{p as a,m as s};

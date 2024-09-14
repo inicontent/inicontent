@@ -1,0 +1,1 @@
+import{i as t,C as s,K as n,L as o,M as _,D as r}from"./GicmGKj6.js";const d=t({__name:"index",async setup(c){let e,a;return s("database"),[e,a]=n(()=>_("admin/tables")),await e,a(),(i,m)=>(r(),o("div"))}});export{d as default};

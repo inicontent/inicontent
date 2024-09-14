@@ -1,1 +1,0 @@
-import{ax as t,u as r}from"./CFZop9RU.js";import{p as n}from"./RUeo6_7w.js";import{i as p}from"./DSBXb5Ob.js";function a(e){const{boxShadow2:o}=e;return{menuBoxShadow:o}}const c=t({name:"Popselect",common:r,peers:{Popover:n,InternalSelectMenu:p},self:a});export{c as p};

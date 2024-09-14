@@ -1,0 +1,1 @@
+import{i as n,D as t,L as r}from"./GicmGKj6.js";const o=["innerHTML"],c=n({__name:"Html",props:{value:{type:String,required:!0}},setup(e){return(a,i)=>(t(),r("div",{innerHTML:e.value},null,8,o))}});export{c as default};
