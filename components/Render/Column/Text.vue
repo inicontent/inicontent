@@ -5,7 +5,7 @@
 <script lang="ts" setup>
 defineProps({
     value: {
-        type: String,
+        type: [String, Number],
         required: true
     }
 })</script>

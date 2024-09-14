@@ -9,7 +9,7 @@ import { NFlex, NTag } from 'naive-ui';
 
 defineProps({
     value: {
-        type: Array as PropType<string[]>,
+        type: [Array, String] as PropType<string | string[]>,
         required: true
     }
 })

@@ -1,9 +1,5 @@
 <template>
-    <NFormItem :label="t(field.key)" :path="path" :rule="{
-        required: field.required,
-        trigger: ['blur', 'input'],
-        message: `${t(field.key)} ${t('isRequired')}`,
-    }" v-bind="(field.labelProps
+    <NFormItem :label="t(field.key)" :path="path" :rule="rule" v-bind="(field.labelProps
         ? typeof field.labelProps === 'function'
             ? field.labelProps(getProperty(modelValue, path)) ?? {}
             : field.labelProps
@@ -45,4 +41,9 @@ const modelValue = defineModel({
     default: {},
 })
 
+const rule = {
+    required: field.required,
+    trigger: ['blur', 'input'],
+    message: `${t(field.key)} ${t('isRequired')}`,
+}
 </script>

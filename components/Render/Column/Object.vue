@@ -1,7 +1,7 @@
 <template>
     <NPopover scrollable style="max-height: 240px;" trigger="click">
         <template #trigger>
-            <NButton circle>{...}</NButton>
+            <NButton circle>{{ `\{${Object.keys(value).length}\}` }}</NButton>
         </template>
         <NFlex vertical>
             <NFlex v-for="child in (field.children as Schema)" align="center" inline>
