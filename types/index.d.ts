@@ -111,12 +111,12 @@ declare global {
 		options: pageInfo;
 	};
 	type Asset = {
-		name?: string;
-		type?: string | null;
-		size?: number;
-		createdAt?: number;
+		name: string;
+		type: string;
+		size: number;
+		createdAt: number;
 		updatedAt?: number;
-		publicURL?: string;
+		publicURL: string;
 		createdBy?: Record<string, string | number | boolean | null>;
 	};
 	type ThemeConfig = {

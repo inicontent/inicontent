@@ -146,7 +146,7 @@ import {
 import { LazyRenderColumn } from "#components";
 
 onBeforeRouteLeave(() => {
-    clearNuxtState(["Drawer", "searchArray", "searchQuery"]);
+    clearNuxtState(["searchArray", "searchQuery"]);
 });
 
 definePageMeta({

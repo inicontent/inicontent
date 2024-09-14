@@ -25,10 +25,4 @@ defineProps({
         required: true
     }
 })
-
-function isImage(singleValue: string) {
-    return ["png", "jpg", "jpeg", "ico", "webp", "svg", "gif"].includes(
-        singleValue.split(".").pop() as string,
-    );
-}
 </script>
