@@ -118,8 +118,9 @@
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'select'">
                         <NFormItem :label="t('options')">
-                            <NSelect :value="schema[index].values"
-                                @update:value="(value: string[]) => schema[index].values = [...new Set(value)]"
+                            <NSelect
+                                :value="schema[index].options ? (schema[index].options.every(option => typeof option !== 'object') ? schema[index].options : schema[index].options.map(({ value }: any) => value)) : []"
+                                @update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
                                 filterable multiple tag :show-arrow="false" :show="false" />
                         </NFormItem>
                         <NFormItem :label="t('allowCustomValues')" label-placement="left">

@@ -75,12 +75,12 @@
         </NModal>
         <NCollapse v-if="databases?.result?.length" :expanded-names="defaultOpenedDatabase"
             :triggerAreas="['main', 'arrow']" accordion>
-            <NCollapseItem v-for="childDatabase in databases?.result" :title="t(childDatabase.slug)"
-                :name="childDatabase.slug">
+            <NCollapseItem v-for="(database, index) in databases?.result" :title="t(database.slug)"
+                :name="database.slug">
                 <template #header-extra>
                     <NButtonGroup>
-                        <NButton round tag="a" :href="`/${database?.slug}/admin/settings`" @click.stop.prevent="navigateTo(
-                            `/${database?.slug}/admin/settings`,
+                        <NButton round tag="a" :href="`/${database.slug}/admin/settings`" @click.stop.prevent="navigateTo(
+                            `/${database.slug}/admin/settings`,
                         )">
                             <template #icon>
                                 <NIcon>
@@ -88,8 +88,8 @@
                                 </NIcon>
                             </template>
                         </NButton>
-                        <NButton round tag="a" :href="`/${database?.slug}/admin`" @click.stop.prevent="navigateTo(
-                            `/${database?.slug}/admin`,
+                        <NButton round tag="a" :href="`/${database.slug}/admin`" @click.stop.prevent="navigateTo(
+                            `/${database.slug}/admin`,
                         )">
                             <template #icon>
                                 <NIcon>
@@ -100,7 +100,7 @@
 
                     </NButtonGroup>
                 </template>
-                <LazyTableGrid :modelValue="childDatabase" />
+                <LazyTableGrid v-model="databases.result[index]" />
             </NCollapseItem>
         </NCollapse>
         <NEmpty v-else />
@@ -188,7 +188,7 @@ const database = useState<Database>("database"),
                 }
                 showDatabaseModal.value = false;
                 window.$message.success(data.message);
-            } else window.$message.error(t('theInputsAreInvalid'));
+            } else window.$message.error(t('inputsAreInvalid'));
         });
     };
 

@@ -32,7 +32,7 @@ declare global {
 		isArray?: boolean;
 		searchIn?: string[];
 		image?: string;
-		values?: (string | number)[];
+		options?: ((string | number) | { label: string; value: string | number })[];
 		labelProps?: any;
 		inputProps?: any;
 		onCreate?: onCreateType | onCreateType[] | onCreateCallback;

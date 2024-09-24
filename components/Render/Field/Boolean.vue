@@ -1,26 +1,19 @@
 <template>
-    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
+    <NFormItem label-placement="left" :label="t(field.key)" :rule v-bind="(field.labelProps
         ? typeof field.labelProps === 'function'
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
+        <NSwitch v-model:value="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps
-            : {}">
-            <template #suffix>
-                <component :is="getField(
-                    field.subType ?? field.type,
-                    modelValue,
-                ).icon" />
-            </template>
-        </NMention>
+            : {}" />
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NMention, type FormItemRule } from "naive-ui";
+import { NFormItem, NSwitch, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps({
     field: {
@@ -30,7 +23,7 @@ const { field } = defineProps({
 })
 
 const modelValue = defineModel({
-    type: String
+    type: String,
 })
 
 const rule: FormItemRule = {
@@ -41,9 +34,4 @@ const rule: FormItemRule = {
             return new Error(`${t(field.key)} ${t('isRequired')}`)
     }
 }
-
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
-    value: value,
-    label: t(value),
-})) : field.options) : []
 </script>

@@ -4,7 +4,7 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
+        <NInputNumber v-model:value="modelValue" :placeholder="t(field.key)" :show-button="false" clearable v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps
@@ -15,12 +15,13 @@
                     modelValue,
                 ).icon" />
             </template>
-        </NMention>
+        </NInputNumber>
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NMention, type FormItemRule } from "naive-ui";
+import { isNumber } from "inibase/utils";
+import { NFormItem, NInputNumber, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps({
     field: {
@@ -30,20 +31,17 @@ const { field } = defineProps({
 })
 
 const modelValue = defineModel({
-    type: String
+    type: Number,
 })
 
 const rule: FormItemRule = {
     required: field.required,
     trigger: ['blur', 'input'],
     validator() {
-        if (!modelValue.value && field.required)
-            return new Error(`${t(field.key)} ${t('isRequired')}`)
+        if (!modelValue.value)
+            return field.required ? new Error(`${t(field.key)} ${t('isRequired')}`) : true
+        if (!isNumber(modelValue.value))
+            return new Error(`${t(field.key)} ${t("isNotValid")}`);
     }
 }
-
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
-    value: value,
-    label: t(value),
-})) : field.options) : []
 </script>

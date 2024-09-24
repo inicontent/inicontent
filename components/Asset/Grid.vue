@@ -22,7 +22,7 @@
                     </NFlex>
                     <NImage v-if="isImage(asset.publicURL)" class="asset" :src="`${asset.publicURL}?fit=100&q=1`"
                         preview-disabled :intersection-observer-options="{
-                            root: `#${targetID}`
+                            root: `#${targetId}`
                         }" lazy :preview-src="asset.publicURL" @click="() => handleOnClickAsset(asset)" />
                     <NIcon v-else class="asset" @click="() => handleOnClickAsset(asset)">
                         <LazyAssetIcon :type="asset.type" class="icon" />
@@ -33,6 +33,7 @@
             </NGridItem>
         </template>
     </NGrid>
+    <NEmpty v-else />
 </template>
 
 <script lang="ts" setup>
@@ -47,10 +48,11 @@ import {
     NSkeleton,
     NPerformantEllipsis,
     useDialog,
+    NEmpty,
 } from "naive-ui";
 
 const { path, isAssetRoute } = defineProps({
-    targetID: {
+    targetId: {
         type: String,
         default: "container"
     },
@@ -70,7 +72,7 @@ useLanguage({
 });
 
 const modelValue = defineModel({
-    type: Array as PropType<Asset[]>,
+    type: [Array, null] as PropType<Asset[] | null>,
 });
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
