@@ -1,0 +1,1 @@
+import{al as t,u as e}from"./DY8a-ZKd.js";import{b as i}from"./DcEXmJRg.js";import{p as s}from"./DK9OXW0e.js";const m={iconSize:"22px"};function p(o){const{fontSize:n,warningColor:r}=o;return Object.assign(Object.assign({},m),{fontSize:n,iconColor:r})}const g=t({name:"Popconfirm",common:e,peers:{Button:i,Popover:s},self:p});export{g as p,p as s};
