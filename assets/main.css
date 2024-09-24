@@ -64,67 +64,8 @@ a {
   text-align: right !important;
 }
 
-@media only print {
-  * {
-    max-height: unset !important;
-    overflow: visible !important;
-    visibility: hidden !important;
-    color: #000 !important;
-    fill: #000;
-  }
-
-  .n-card-header {
-    display: none !important;
-  }
-
-  #__nuxt,
-  #__nuxt .n-config-provider,
-  #__nuxt .n-config-provider .n-layout,
-  #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2),
-  #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2) #PRINT_CONTENT * {
-    top: 0 !important;
-    visibility: visible !important;
-  }
-
-  #PRINT_CONTENT {
-    position: absolute !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    right: 0 !important;
-    left: 0 !important;
-    z-index: 9999999 !important;
-  }
-}
-
 .n-breadcrumb .n-breadcrumb-item .n-breadcrumb-item__separator {
   margin: 0 2px !important;
-}
-
-.colorPicker {
-  display: flex;
-  flex-direction: column-reverse;
-  border-radius: 5px;
-  overflow: hidden;
-  border: 2px solid #fff;
-}
-
-.dark .colorPicker {
-  border-color: #000;
-}
-
-.colorPicker div {
-  display: flex;
-}
-
-.colorPicker div span {
-  width: 20px;
-  height: 20px;
-}
-
-.colorPicker div span:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 8px #00000011;
-  border-radius: 5px;
 }
 
 .masonry {

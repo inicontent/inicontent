@@ -59,8 +59,9 @@ function formatUnfoundTranslation(input: string, language: string): string {
 	return formattedWords.join(" ");
 }
 
-export const t = (key: string | null | undefined): string => {
+export const t = (key: string | number | null | undefined): string => {
 	if (!key) return "";
+	if (typeof key !== "string") return String(key);
 	const Messages = useState<Record<string, any>>("LanguageMessages");
 	const Language = useCookie<string>("Language");
 	if (!hasProperty(Messages.value ?? {}, `${Language.value}.${key}`)) {

@@ -4,23 +4,24 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
-            ? typeof field.inputProps === 'function'
-                ? field.inputProps(modelValue) ?? {}
-                : field.inputProps
-            : {}">
+        <NInput type="password" show-password-on="click" v-model:value="modelValue" :placeholder="t(field.key)"
+            clearable v-bind="field.inputProps
+                ? typeof field.inputProps === 'function'
+                    ? field.inputProps(modelValue) ?? {}
+                    : field.inputProps
+                : {}">
             <template #suffix>
                 <component :is="getField(
                     field.subType ?? field.type,
                     modelValue,
                 ).icon" />
             </template>
-        </NMention>
+        </NInput>
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NMention, type FormItemRule } from "naive-ui";
+import { NFormItem, NInput, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps({
     field: {
@@ -29,21 +30,27 @@ const { field } = defineProps({
     }
 })
 
+
 const modelValue = defineModel({
-    type: String
+    type: String,
 })
 
 const rule: FormItemRule = {
     required: field.required,
     trigger: ['blur', 'input'],
     validator() {
-        if (!modelValue.value && field.required)
+        if (!modelValue.value && field.required && !alreadyRun)
             return new Error(`${t(field.key)} ${t('isRequired')}`)
     }
 }
 
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
-    value: value,
-    label: t(value),
-})) : field.options) : []
+const alreadyRun = ref(false)
+if (
+    modelValue.value !== undefined &&
+    modelValue.value !== "" &&
+    modelValue.value !== null
+) {
+    alreadyRun.value = true;
+    modelValue.value = undefined;
+}
 </script>

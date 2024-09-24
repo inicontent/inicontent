@@ -214,13 +214,13 @@ const Drawer = useState<{
 })),
     dataRef = ref(null),
     checkedRowKeys = ref<any>([]),
-    pagination = useState("pagination", () => ({
+    pagination = reactive({
         page: route.query.page ? Number(route.query.page) : 1,
         pageCount: 1,
         pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
         itemCount: 0,
         onUpdatePage(currentPage: number) {
-            pagination.value.page = currentPage;
+            pagination.page = currentPage;
             let { page, ...Query }: any = route.query;
             Query = {
                 ...Query,
@@ -229,15 +229,15 @@ const Drawer = useState<{
             router.push({ query: Query });
             queryOptions.value = Inison.stringify({
                 ...Inison.unstringify(queryOptions.value),
-                page: pagination.value.page,
+                page: pagination.page,
             });
         },
         onUpdatePageSize(pageSize: number) {
-            const OLD_pageSize = JSON.parse(JSON.stringify(pagination.value.pageSize));
-            pagination.value.pageSize = pageSize;
+            const OLD_pageSize = JSON.parse(JSON.stringify(pagination.pageSize));
+            pagination.pageSize = pageSize;
             let { perPage, page, ...Query }: any = route.query;
             if (pageSize !== 15) {
-                pagination.value.page = Math.round(
+                pagination.page = Math.round(
                     OLD_pageSize < pageSize
                         ? page / (pageSize / OLD_pageSize)
                         : page * (pageSize / OLD_pageSize),
@@ -245,15 +245,15 @@ const Drawer = useState<{
                 Query = {
                     ...Query,
                     perPage: pageSize,
-                    page: pagination.value.page === 1 ? undefined : pagination.value.page,
+                    page: pagination.page === 1 ? undefined : pagination.page,
                 };
             }
         }
-    })),
+    }),
     queryOptions = ref(
         Inison.stringify({
-            page: pagination.value.page,
-            perPage: pagination.value.pageSize,
+            page: pagination.page,
+            perPage: pagination.pageSize,
             columns: [],
         }),
     );
@@ -269,11 +269,11 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
         onRequest() {
             Loading.value.data = true;
         },
-        onResponse({ response }) {
+        onResponse({ response: { _data: { options: { total, totalPages } } } }) {
             Loading.value.data = false;
-            if (response._data.options.total && response._data.options.totalPages) {
-                pagination.value.pageCount = response._data.options.totalPages;
-                pagination.value.itemCount = response._data.options.total;
+            if (total && totalPages) {
+                pagination.pageCount = totalPages;
+                pagination.itemCount = total;
             }
         },
     },
@@ -292,7 +292,7 @@ const DELETE = async (id: string) => {
         data.value.result = data.value.result.filter(
             (item) => item.id && item.id !== id,
         );
-    pagination.value.itemCount--;
+    pagination.itemCount--;
     window.$message.success(deleteResponse?.message ?? t("error"));
     Loading.value.data = false;
 };

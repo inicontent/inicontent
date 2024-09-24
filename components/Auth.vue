@@ -117,7 +117,7 @@ const SignupSubmit = async (e: Event) => {
                 } else window.$message.error(data.message);
                 Loading.value.Signup = false;
             }
-        } else window.$message.error(t('theInputsAreInvalid'));
+        } else window.$message.error(t('inputsAreInvalid'));
     });
 };
 const SigninSubmit = async (e: Event) => {
@@ -152,7 +152,7 @@ const SigninSubmit = async (e: Event) => {
                 } else window.$message.error(data.message);
                 Loading.value.Signin = false;
             }
-        } else window.$message.error(t('theInputsAreInvalid'));
+        } else window.$message.error(t('inputsAreInvalid'));
     });
 };
 useHead({

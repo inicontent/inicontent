@@ -89,7 +89,7 @@ export default defineNuxtComponent({
 							await refreshNuxtData();
 						} else window.$message.error(data.message);
 						Loading.value.DrawerContent = false;
-					} else window.$message.error(t("theInputsAreInvalid"));
+					} else window.$message.error(t("inputsAreInvalid"));
 				});
 			},
 			CreateDrawer = async () => {
@@ -121,7 +121,7 @@ export default defineNuxtComponent({
 							await refreshNuxtData();
 						} else window.$message.error(data.message);
 						Loading.value.DrawerContent = false;
-					} else window.$message.error(t("theInputsAreInvalid"));
+					} else window.$message.error(t("inputsAreInvalid"));
 				});
 			};
 

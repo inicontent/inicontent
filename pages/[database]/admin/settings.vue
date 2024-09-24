@@ -134,7 +134,7 @@ const route = useRoute(),
                     window.$message.success(data.message);
                 } else window.$message.error(data.message);
                 Loading.value.updateDatabase = false;
-            } else window.$message.error(t('theInputsAreInvalid'));
+            } else window.$message.error(t('inputsAreInvalid'));
         });
     },
     deleteDatabase = async () => {

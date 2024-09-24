@@ -4,23 +4,20 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
+        <NCheckboxGroup v-model:value="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps
             : {}">
-            <template #suffix>
-                <component :is="getField(
-                    field.subType ?? field.type,
-                    modelValue,
-                ).icon" />
-            </template>
-        </NMention>
+            <NFlex>
+                <NCheckbox v-for="value in field.options" :value="value" :label="t(value)" />
+            </NFlex>
+        </NCheckboxGroup>
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NMention, type FormItemRule } from "naive-ui";
+import { NFormItem, NCheckbox, NCheckboxGroup, NFlex, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps({
     field: {
@@ -30,20 +27,16 @@ const { field } = defineProps({
 })
 
 const modelValue = defineModel({
-    type: String
+    type: String,
 })
 
 const rule: FormItemRule = {
+    type: "array",
     required: field.required,
-    trigger: ['blur', 'input'],
+    trigger: "change",
     validator() {
         if (!modelValue.value && field.required)
             return new Error(`${t(field.key)} ${t('isRequired')}`)
     }
 }
-
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
-    value: value,
-    label: t(value),
-})) : field.options) : []
 </script>

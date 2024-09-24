@@ -1,8 +1,7 @@
 <template>
-    <NConfigProvider inlineThemeDisabled :dir="Language === 'ar' ? 'rtl' : 'ltr'"
-        :rtl="Language === 'ar' ? rtlStyles : undefined" :theme="Theme === 'dark' ? darkTheme : null"
-        :theme-overrides="{ common: ThemeConfig }" :locale="(Locales as any)[Language]"
-        :date-locale="(dateLocales as any)[Language]">
+    <NConfigProvider :dir="Language === 'ar' ? 'rtl' : 'ltr'" :rtl="Language === 'ar' ? rtlStyles : undefined"
+        :theme="Theme === 'dark' ? darkTheme : null" :theme-overrides="{ common: ThemeConfig }"
+        :locale="(Locales as any)[Language]" :date-locale="(dateLocales as any)[Language]">
         <NuxtLoadingIndicator :color="ThemeConfig.primaryColor" :height=2 />
         <LazyAppPreLayout>
             <NuxtLayout>
@@ -38,7 +37,7 @@ import {
     unstableTableRtl,
     unstableTagRtl,
 } from "naive-ui";
-import Vibrant from "node-vibrant";
+// import Vibrant from "node-vibrant";
 
 const rtlStyles: any = [
     unstableListRtl,
@@ -61,10 +60,10 @@ const rtlStyles: any = [
 ],
     Language = useCookie<string>("Language", { sameSite: true }),
     Theme = useCookie<string>("Theme", { sameSite: true }),
-    database = useState<Database>("database", () => ({
-        slug: "inicontent",
-        icon: "/favicon.ico",
-    })),
+    // database = useState<Database>("database", () => ({
+    //     slug: "inicontent",
+    //     icon: "/favicon.ico",
+    // })),
     ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
         primaryColor: "#FF9800",
         primaryColorHover: "#F7A42A",

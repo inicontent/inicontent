@@ -28,6 +28,7 @@
                             <template #avatar>
                                 <NAvatar fallbackSrc="/favicon.ico" :src='database?.icon ?? "/favicon.ico"' />
                             </template>
+                            {{ t(database?.slug) }}
                         </NTag>
                     </template>
                     <template #title v-if='![

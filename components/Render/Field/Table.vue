@@ -1,29 +1,18 @@
 <template>
-    <NFormItem :label="t(field.key)" :path="path" :rule="rule" v-bind="(field.labelProps
+    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
         ? typeof field.labelProps === 'function'
-            ? field.labelProps(getProperty(modelValue, path)) ?? {}
+            ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NSelect :value="hasProperty(modelValue, path)
-            ? field.isArray
-                ? isArrayOfObjects(getProperty(modelValue, path))
-                    ? getProperty(modelValue, path).map(
-                        ({ id }: Item) => id,
-                    )
-                    : getProperty(modelValue, path)
-                : isObject(getProperty(modelValue, path))
-                    ? getProperty(modelValue, path).id
-                    : getProperty(modelValue, path)
-            : null" @update:value="(value) => setProperty(modelValue, path, value)" :options="options" remote clearable
-            filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
-            :consistent-menu-width="false" max-tag-count="responsive" @focus="onFocus" @search="onSearch"
-            :render-label="renderSelectLabel" :render-tag="renderSelectTag" />
+        <NSelect :value="value" @update:value="(value) => modelValue = value" :options remote clearable filterable
+            :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray" :consistent-menu-width="false"
+            max-tag-count="responsive" @focus="onFocus" @search="onSearch" :render-label="renderSelectLabel"
+            :render-tag="renderSelectTag" />
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils";
-import { getProperty, hasProperty, setProperty } from "inidot";
 import Inison from "inison";
 import {
     NAvatar,
@@ -33,21 +22,27 @@ import {
     type SelectOption,
 } from "naive-ui";
 
-const { field, path } = defineProps({
+const { field } = defineProps({
     field: {
         type: Object as PropType<Field>,
         required: true,
-    },
-    path: {
-        type: String,
-        required: true,
-    },
+    }
 });
 
 const modelValue = defineModel({
     type: [Object, Array] as PropType<Item | Item[]>,
-    default: {},
 });
+const value: any = computed(() => modelValue.value
+    ? (field.isArray
+        ? isArrayOfObjects(modelValue.value)
+            ? modelValue.value.map(
+                ({ id }) => id,
+            )
+            : modelValue
+        : isObject(modelValue.value)
+            ? (modelValue.value as Item).id
+            : modelValue.value)
+    : null)
 
 const rule = {
     type: !field.isArray ? "string" : "array",
@@ -76,12 +71,7 @@ const singleOption = (option: any) => ({
         table?.schema,
         option,
     ),
-    value: option.id,
-    image: field.image
-        ? Array.isArray(getProperty(option, field.image))
-            ? getProperty(option, `${field.image}[0]`)
-            : getProperty(option, field.image)
-        : null,
+    value: option.id
 });
 async function loadOptions(searchValue?: string | number) {
     Loading.value[`options_${field.key}`] = true;
@@ -106,11 +96,11 @@ async function loadOptions(searchValue?: string | number) {
                     : undefined,
             )
         ).result?.map(singleOption) ?? [];
-    if (getProperty(modelValue.value, path))
+    if (modelValue.value)
         options.value = [
-            ...(options.value as any).slice(
+            ...(options.value ?? []).slice(
                 0,
-                field.isArray ? getProperty(modelValue.value, path).length : 1,
+                field.isArray ? modelValue.value.length : 1,
             ),
             ...data,
         ];
@@ -121,7 +111,7 @@ async function loadOptions(searchValue?: string | number) {
 async function onFocus() {
     if (options.value) {
         if (field.isArray) {
-            if (options.value.length !== getProperty(modelValue.value, path).length)
+            if (!modelValue.value || options.value.length !== modelValue.value.length)
                 return;
         } else if (options.value.length > 1) return;
     }
@@ -283,14 +273,14 @@ const renderSelectTag = field.image
             )
     : undefined;
 
-if (hasProperty(modelValue.value, path)) {
+if (modelValue.value) {
     if (
-        (Array.isArray(getProperty(modelValue.value, path)) &&
-            getProperty(modelValue.value, path).every(isObject)) ||
-        isObject(getProperty(modelValue.value, path))
+        (Array.isArray(modelValue.value) &&
+            modelValue.value.every(isObject)) ||
+        isObject(modelValue.value)
     )
-        options.value = []
-            .concat(getProperty(modelValue.value, path))
+        options.value = ([] as Item[])
+            .concat(modelValue.value)
             .map(singleOption);
     else
         options.value =
@@ -302,7 +292,7 @@ if (hasProperty(modelValue.value, path)) {
                         params: {
                             where: Inison.stringify({
                                 id: `[]${[]
-                                    .concat(getProperty(modelValue.value, path))
+                                    .concat(modelValue.value)
                                     .join(",")}`,
                             }),
                         },

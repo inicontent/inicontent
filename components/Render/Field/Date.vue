@@ -4,23 +4,18 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NInput v-model:value="modelValue" :placeholder="t(field.key)" clearable v-bind="field.inputProps
-            ? typeof field.inputProps === 'function'
-                ? field.inputProps(modelValue) ?? {}
-                : field.inputProps
-            : {}">
-            <template #suffix>
-                <component :is="getField(
-                    field.subType ?? field.type,
-                    modelValue,
-                ).icon" />
-            </template>
-        </NInput>
+        <NDatePicker :month-format="field.date && field.date === 'month' ? 'MMM' : 'MM'" format="dd-MM-yyyy"
+            :type="field.date ?? 'date'" :actions="null" v-model:value="modelValue" clearable
+            :placeholder="t(field.key)" v-bind="field.inputProps
+                ? typeof field.inputProps === 'function'
+                    ? field.inputProps(modelValue) ?? {}
+                    : field.inputProps
+                : {}" />
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NInput, type FormItemRule } from "naive-ui";
+import { NFormItem, NDatePicker, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps({
     field: {
@@ -30,12 +25,13 @@ const { field } = defineProps({
 })
 
 const modelValue = defineModel({
-    type: String,
+    type: Number,
 })
 
 const rule: FormItemRule = {
+    type: "number",
     required: field.required,
-    trigger: ['blur', 'input'],
+    trigger: ["blur", "change"],
     validator() {
         if (!modelValue.value && field.required)
             return new Error(`${t(field.key)} ${t('isRequired')}`)

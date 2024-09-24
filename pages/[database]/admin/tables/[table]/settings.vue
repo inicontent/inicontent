@@ -266,7 +266,7 @@ const route = useRoute(),
                 } else window.$message.error(data?.message ?? t("error"));
 
                 Loading.value.updateTable = false;
-            } else window.$message.error(t('theInputsAreInvalid'));
+            } else window.$message.error(t('inputsAreInvalid'));
         });
     },
     deleteTable = async () => {
