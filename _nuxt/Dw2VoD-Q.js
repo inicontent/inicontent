@@ -1,0 +1,1 @@
+import{i as t,D as a,E as r,F as o,U as n,V as s,H as i}from"./DtwXQcKw.js";import{N as u}from"./BrC8xmGI.js";import"./CkaVPeg6.js";const _=t({__name:"Url",props:{value:{type:String,required:!0}},setup(e){return(l,c)=>(a(),r(i(u),{href:e.value,target:"_blank"},{default:o(()=>[n(s(e.value),1)]),_:1},8,["href"]))}});export{_ as default};

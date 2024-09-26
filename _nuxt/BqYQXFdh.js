@@ -1,1 +1,0 @@
-import{i as n,C as o,K as _,L as c,M as r,D as i}from"./BHakqtML.js";const m=n({__name:"index",async setup(p){let a,t;const s=o("database");return[a,t]=_(()=>{var e;return r(`${(e=s.value)==null?void 0:e.slug}/auth`)}),await a,t(),(e,u)=>(i(),c("div"))}});export{m as default};
