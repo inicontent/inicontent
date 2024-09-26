@@ -3,7 +3,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		database = useState<Database>("database"),
 		fromPath = useCookie("from");
 
-	if (!user.value)
+	if (
+		!user.value ||
+		(database.value && database.value.slug !== to.params.database)
+	)
 		user.value = (
 			await $fetch<apiResponse<User>>(
 				`${useRuntimeConfig().public.apiBase}${
