@@ -1,0 +1,1 @@
+import{al as t,u as r}from"./BHakqtML.js";import{p as n}from"./B29Fcz9S.js";import{i as p}from"./BJtYtR_T.js";function a(e){const{boxShadow2:o}=e;return{menuBoxShadow:o}}const c=t({name:"Popselect",common:r,peers:{Popover:n,InternalSelectMenu:p},self:a});export{c as p};

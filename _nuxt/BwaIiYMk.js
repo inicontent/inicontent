@@ -1,1 +1,0 @@
-import{l as f,A as l,a6 as o}from"./DY8a-ZKd.js";function c(e){const t=f(e),u=l(t.value);return o(t,a=>{u.value=a}),typeof e=="function"?u:{__v_isRef:!0,get value(){return u.value},set value(a){e.set(a)}}}export{c as u};
