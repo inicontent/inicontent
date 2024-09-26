@@ -12,7 +12,7 @@
 		</template>
 
 		<NUpload directory-dnd :onUpdateFileList :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
-			:accept="field.accept ? generateAcceptedFileType(field.accept) : undefined"
+			:accept="generateAcceptedFileType(field.accept)"
 			:action="`${useRuntimeConfig().public.apiBase}${database.slug ?? 'inicontent'}/asset`" response-type="json"
 			:file-list :onFinish :onPreview :list-type="!field.isTable ? 'image' : 'image-card'">
 			<template v-if="!field.isTable">
@@ -100,10 +100,10 @@ const rule: FormItemRule = {
 };
 
 const database = useState<Database>("database");
-const assetURL = ref();
 const showAssetsModal = ref(false);
 
 const generateAcceptedFileType = (types: Field["accept"]) => {
+	if (!types) return undefined
 	const RETURN = [];
 	for (const type of types) {
 		switch (type) {
@@ -145,15 +145,16 @@ function onUpdateFileList(files: UploadFileInfo[]) {
 	if (files.every((file) => !file)) modelValue.value = undefined;
 	else
 		modelValue.value =
-			!field.isArray
+			(!field.isArray
 				? files
 					.filter((file) => file)
 					.map((file) => (file.status === "finished" ? file.url : file))[0]
 				: files
 					.filter((file) => file)
-					.map((file) => (file.status === "finished" ? file.url : file))
+					.map((file) => (file.status === "finished" ? file.url : file))) as string[]
 };
 
+const getFileNameFromUrl = (url: string) => url.split('/').pop()?.split('?')[0].split('#')[0] || '';
 const fileList = ([] as string[])
 	.concat(modelValue.value as string | string[])
 	.filter((src) => src)
@@ -161,15 +162,13 @@ const fileList = ([] as string[])
 		typeof src === "object"
 			? src
 			: {
-				id: src.split("/")[-1].split("#")[0].split("?")[0],
-				name: src.split("/")[-1].split("#")[0].split("?")[0],
+				id: getFileNameFromUrl(src),
+				name: getFileNameFromUrl(src),
 				status: "finished",
 				url: src,
 				thumbnailUrl:
 					src.includes("inicontent") &&
-						["png", "jpg", "jpeg", "ico", "webp", "svg", "gif"].includes(
-							src?.split(".").pop() ?? "",
-						)
+						isImage(getFileNameFromUrl(src))
 						? `${src}?fit=94`
 						: null,
 			},

@@ -6,7 +6,7 @@
                 :collapsed-width="isMobile ? 0 : 64" width="240" :native-scrollbar="false">
                 <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="isMobile ? 0 : 64"
                     @mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
-                    :value="defaultValue ?? undefined" accordion />
+                    :defaultValue :watch-props="['defaultValue']" accordion />
             </NLayoutSider>
             <NLayoutContent id="pageContent" position="absolute" :content-style="{
                 padding: isMobile
@@ -62,17 +62,18 @@ const route = useRoute(),
     table = useState<Table>("table"),
     isMenuOpen = useState("isMenuOpen", () => false),
     database = useState<Database>("database"),
-    defaultValue = ref();
-
-const lastPathInRoute = decodeURIComponent(
-    route.path.split("/").filter(Boolean).at(-1) ?? "",
-);
-if (table.value?.slug) {
-    if (lastPathInRoute && lastPathInRoute !== table.value.slug)
-        defaultValue.value = `${table.value.slug}-${lastPathInRoute}`;
-    else defaultValue.value = table.value.slug;
-} else defaultValue.value = decodeURI(lastPathInRoute?.toString() ?? "");
-
+    defaultValue = computed(() => {
+        const lastPathInRoute = decodeURIComponent(
+            route.path.split("/").filter(Boolean).at(-1) ?? "",
+        );
+        if (table.value?.slug) {
+            if (lastPathInRoute && lastPathInRoute !== table.value.slug)
+                return `${table.value.slug}-${lastPathInRoute}`;
+            return table.value.slug;
+        } return decodeURI(lastPathInRoute?.toString() ?? "");
+    });
+console.log(defaultValue.value)
+watch(defaultValue, (v) => console.log(`changed: ${v}`))
 const renderSingleItem = ({ slug, allowedMethods }: Table) => {
     const itemChildren = [
         ...(slug !== "asset" && allowedMethods?.includes("c")
@@ -82,9 +83,6 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                         h(
                             NuxtLink,
                             {
-                                onClick: () => {
-                                    defaultValue.value = slug;
-                                },
                                 to: `/${database.value.slug}/admin/tables/${slug}`,
                             },
                             { default: () => t("showAll") },
@@ -97,9 +95,6 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                         h(
                             NuxtLink,
                             {
-                                onClick: () => {
-                                    defaultValue.value = `${slug}-new`;
-                                },
                                 to: `/${database.value.slug}/admin/tables/${slug}/new`,
                             },
                             { default: () => t("newItem") },
@@ -118,9 +113,6 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                                 h(
                                     NuxtLink,
                                     {
-                                        onClick: () => {
-                                            defaultValue.value = `${slug}-settings`;
-                                        },
                                         to: `/${database.value.slug}/admin/tables/${slug}/settings`,
                                     },
                                     { default: () => t("settings") },
@@ -135,9 +127,6 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                         h(
                             NuxtLink,
                             {
-                                onClick: () => {
-                                    defaultValue.value = `${slug}-flows`;
-                                },
                                 to: `/${database.value.slug}/admin/tables/${slug}/flows`,
                             },
                             { default: () => t("flows") },
@@ -153,9 +142,6 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
             h(
                 NuxtLink,
                 {
-                    onClick: () => {
-                        defaultValue.value = slug;
-                    },
                     to: `/${database.value.slug}/admin/tables/${slug}`,
                 },
                 { default: () => t(slug) },

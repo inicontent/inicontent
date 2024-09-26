@@ -12,7 +12,7 @@
     <NCollapse v-else-if="field.isTable === false || field.children.filter(
         (f: any) => f.type === 'array' && isArrayOfObjects(f.children),
     ).length" display-directive="show" style="margin: 0 0 20px;" arrow-placement="right"
-        :trigger-areas="['main', 'arrow']" accordion>
+        :trigger-areas="['main', 'arrow']" :default-expanded-names="field.expand ? field.id : undefined" accordion>
         <template #arrow>
             <NIcon v-if="modelValue.length > 0">
                 <IconChevronRight />
@@ -31,7 +31,8 @@
             </template>
             <NCollapse display-directive="show" accordion>
                 <NCollapseItem v-for="(_item, index) of modelValue" display-directive="show"
-                    :title="`${t(field.key)} ${index}`" :name="`${field.id}.${index}`">
+                    :title="field.children[0].type === 'string' ? modelValue[index][field.children[0].key] : `${field.id}.${index}`"
+                    :name="`${field.id}.${index}`">
                     <template #header-extra>
                         <NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
                             index,
@@ -175,8 +176,7 @@ function getTableColumns(): DataTableColumns {
                         isArray: true,
                         isTable: true,
                     },
-                    modelValue,
-                    path: `${child.id}.${index}`,
+                    modelValue: modelValue.value[index],
                 }),
         })) as any,
         field.disableActions === true
