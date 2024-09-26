@@ -6,8 +6,7 @@
         : {})">
         <NSelect :value="value" @update:value="(value) => modelValue = value" :options remote clearable filterable
             :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray" :consistent-menu-width="false"
-            max-tag-count="responsive" @focus="onFocus" @search="onSearch" :render-label="renderSelectLabel"
-            :render-tag="renderSelectTag" />
+            max-tag-count="responsive" @focus="onFocus" @search="onSearch" />
     </NFormItem>
 </template>
 
@@ -15,10 +14,8 @@
 import { isArrayOfObjects, isObject } from "inibase/utils";
 import Inison from "inison";
 import {
-    NAvatar,
     NFormItem,
     NSelect,
-    NTag,
     type SelectOption,
 } from "naive-ui";
 
@@ -59,7 +56,6 @@ const rule = {
     },
 };
 
-const Language = useCookie("Language");
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
@@ -121,157 +117,6 @@ async function onFocus() {
 async function onSearch(query: string) {
     if (query.length > 1) await loadOptions(query);
 }
-const renderSelectLabel = field.image
-    ? (option: any) =>
-        h(
-            "div",
-            {
-                style: {
-                    padding: "5px",
-                    display: "flex",
-                    alignItems: "center",
-                },
-            },
-            [
-                h(NAvatar, {
-                    src: []
-                        .concat(option.image)
-                        .map((link: string) =>
-                            link.includes("inicontent") &&
-                                [
-                                    "png",
-                                    "jpg",
-                                    "jpeg",
-                                    "ico",
-                                    "webp",
-                                    "svg",
-                                    "gif",
-                                ].includes(link?.split(".")?.pop() ?? "")
-                                ? `${link}?fit=80`
-                                : link,
-                        )[0],
-                    round: true,
-                    size: "large",
-                    style:
-                        Language.value === "ar"
-                            ? {
-                                marginLeft: "12px",
-                            }
-                            : {
-                                marginRight: "12px",
-                            },
-                }),
-                option.label,
-            ],
-        )
-    : undefined
-const renderSelectTag = field.image
-    ? ({
-        option,
-        handleClose,
-    }: {
-        option: any;
-        handleClose: () => void;
-    }) =>
-        !field.isArray
-            ? h(
-                "div",
-                {
-                    style: {
-                        display: "flex",
-                        alignItems: "center",
-                    },
-                },
-                () => [
-                    h(NAvatar, {
-                        src: ([] as string[])
-                            .concat(option.image)
-                            .map((link) =>
-                                link.includes("inicontent") &&
-                                    [
-                                        "png",
-                                        "jpg",
-                                        "jpeg",
-                                        "ico",
-                                        "webp",
-                                        "svg",
-                                        "gif",
-                                    ].includes(link?.split(".")?.pop() ?? "")
-                                    ? `${link}?fit=24`
-                                    : link,
-                            )[0],
-                        round: true,
-                        size: 24,
-                        style:
-                            Language.value === "ar"
-                                ? {
-                                    marginLeft: "12px",
-                                }
-                                : {
-                                    marginRight: "12px",
-                                },
-                    }),
-                    option.label,
-                ],
-            )
-            : h(
-                NTag,
-                {
-                    style: {
-                        padding: "0 6px 0 4px",
-                    },
-                    round: true,
-                    closable: true,
-                    onClose: (e) => {
-                        e.stopPropagation();
-                        handleClose();
-                    },
-                },
-                {
-                    default: () =>
-                        h(
-                            "div",
-                            {
-                                style: {
-                                    display: "flex",
-                                    alignItems: "center",
-                                },
-                            },
-                            () => [
-                                h(NAvatar, {
-                                    src: []
-                                        .concat(option.image as any)
-                                        .map((link: string) =>
-                                            link.includes("inicontent") &&
-                                                [
-                                                    "png",
-                                                    "jpg",
-                                                    "jpeg",
-                                                    "ico",
-                                                    "webp",
-                                                    "svg",
-                                                    "gif",
-                                                ].includes(link?.split(".")?.pop() ?? "")
-                                                ? `${link}?fit=22`
-                                                : link,
-                                        )[0],
-                                    round: true,
-                                    size: 22,
-                                    style:
-                                        Language.value === "ar"
-                                            ? {
-                                                marginLeft: "4px",
-                                            }
-                                            : {
-                                                marginRight: "4px",
-                                            },
-                                }),
-                                option.label,
-                            ],
-                        ),
-                },
-            )
-    : undefined;
 
 if (modelValue.value) {
     if (

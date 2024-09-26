@@ -12,7 +12,7 @@
                 v-for="(asset) in modelValue.toSorted((a, b) => a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1)">
                 <NFlex vertical class="assetContainer">
                     <NFlex class="assetActions">
-                        <slot v-bind="asset"></slot>
+                        <slot :asset></slot>
                         <NDropdown v-if="table.allowedMethods?.includes('u') || table.allowedMethods?.includes('d')"
                             trigger="click" :options="dropdownOptions" @select="(key) => dropdownOnSelect(key, asset)">
                             <NIcon class="assetActionsButton">

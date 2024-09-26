@@ -29,7 +29,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 	if (user.value) {
 		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
 			return navigateTo(
-				fromPath.value && !fromPath.value.endsWith("/auth")
+				fromPath.value &&
+					!fromPath.value.endsWith("/auth") &&
+					fromPath.value.startsWith(to.params.database as string)
 					? fromPath.value
 					: to.params.database
 						? `/${to.params.database}/admin`
