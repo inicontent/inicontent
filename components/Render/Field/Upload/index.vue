@@ -7,7 +7,7 @@
 		<template #label>
 			<NFlex align="center">
 				{{ t(field.key) }}
-				<LazyUploadActions v-model="showAssetsModal" :callback="handleSelectAssets" />
+				<UploadActions v-model="showAssetsModal" :callback="handleSelectAssets" />
 			</NFlex>
 		</template>
 
@@ -31,12 +31,12 @@
 
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
 			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
-				<LazyAssetCard targetID="assetsModal">
+				<AssetCard targetID="assetsModal">
 					<template v-slot="{ asset }">
 						<NRadio v-if="asset.type !== 'folder'" :checked="getChecked(asset.publicURL)"
 							@update:checked="handleSelectAssets(asset.publicURL)" />
 					</template>
-				</LazyAssetCard>
+				</AssetCard>
 			</NDrawerContent>
 		</NDrawer>
 	</NFormItem>

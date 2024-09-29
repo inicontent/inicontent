@@ -590,3 +590,29 @@ useHead({
     link: [{ rel: "icon", href: database.value?.icon ?? "" }],
 });
 </script>
+
+<style scoped>
+.masonry {
+    column-count: 1;
+    column-gap: 1rem;
+    width: 100%;
+}
+
+.masonry>* {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+@media only screen and (min-width: 869px) and (max-width: 1200px) {
+    .masonry {
+        columns: 2;
+    }
+}
+
+@media only screen and (min-width: 1201px) {
+    .masonry {
+        columns: 3;
+    }
+}
+</style>

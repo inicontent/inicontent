@@ -1,5 +1,5 @@
 <template>
-    <LazyAuth />
+    <Auth />
 </template>
 
 <script lang="ts" setup>

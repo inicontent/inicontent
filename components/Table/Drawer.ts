@@ -13,7 +13,7 @@ import {
 	NSpace,
 	NText,
 } from "naive-ui";
-import { LazyRenderFieldS } from "#components";
+import { RenderFieldS } from "#components";
 
 export default defineNuxtComponent({
 	setup() {
@@ -241,7 +241,7 @@ export default defineNuxtComponent({
 										model: Drawer.value.data,
 									},
 									() =>
-										h(LazyRenderFieldS, {
+										h(RenderFieldS, {
 											modelValue: Drawer.value.data,
 											schema:
 												database.value.tables

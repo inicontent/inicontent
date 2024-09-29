@@ -30,7 +30,7 @@
             </NButton>
         </template>
         <NForm :model="newItemObject" ref="formRef">
-            <LazyRenderFieldS v-model="newItemObject" :schema />
+            <RenderFieldS v-model="newItemObject" :schema />
         </NForm>
     </NCard>
 </template>

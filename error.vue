@@ -1,8 +1,8 @@
 <template>
-    <LazyApp>
+    <App>
         <NResult :status="code" :title="message">
         </NResult>
-    </LazyApp>
+    </App>
 </template>
 
 <script setup lang="ts">

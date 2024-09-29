@@ -4,7 +4,7 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <LazyRenderFieldHtmlEditor v-model="modelValue" v-bind="field.inputProps
+        <RenderFieldHtmlEditor v-model="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps

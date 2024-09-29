@@ -3,7 +3,7 @@
         <n-tabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
             <n-tab-pane name="signin" :tab="t('signin')">
                 <n-form ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
-                    <LazyRenderFieldS v-model="SigninForm" :schema="SigninColumns" />
+                    <RenderFieldS v-model="SigninForm" :schema="SigninColumns" />
                     <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
                         {{ t("signin") }}
                     </n-button>
@@ -11,7 +11,7 @@
             </n-tab-pane>
             <n-tab-pane name="signup" :tab="t('signup')">
                 <n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
-                    <LazyRenderFieldS v-model="SignupForm" :schema="SignupColumns" />
+                    <RenderFieldS v-model="SignupForm" :schema="SignupColumns" />
                     <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
                         {{ t("signup") }}
                     </n-button>

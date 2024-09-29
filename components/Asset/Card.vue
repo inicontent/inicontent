@@ -62,11 +62,11 @@
             </NUpload>
         </template>
         <NFlex vertical align="center">
-            <LazyAssetGrid v-model="assets" :is-asset-route="isAssetRoute" :target-id="targetId">
+            <AssetGrid v-model="assets" :is-asset-route="isAssetRoute" :target-id="targetId">
                 <template v-slot="slotProps">
                     <slot v-bind="slotProps"></slot>
                 </template>
-            </LazyAssetGrid>
+            </AssetGrid>
             <NPagination v-if="itemCount && pageCount > 1" :simple="!!isMobile" :page-sizes="[15, 30, 60, 100, 500]"
                 :show-size-picker="showSizePicker" style="margin-top: 25px;" @update:page-size="onUpdatePageSize"
                 @update:page="onUpdatePage" :page="page" :page-size="pageSize" :item-count="itemCount"

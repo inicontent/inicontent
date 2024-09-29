@@ -34,7 +34,7 @@
                 <n-flex vertical>
                     <n-card id="general" :title="t('general')" hoverable>
                         <n-form ref="databaseRef" :model="databaseCopy">
-                            <LazyRenderFieldS v-model="databaseCopy" :schema="databaseSchema" />
+                            <RenderFieldS v-model="databaseCopy" :schema="databaseSchema" />
                         </n-form>
                     </n-card>
                     <n-card id="translation" :title="t('translation')" hoverable>
@@ -110,7 +110,7 @@ const route = useRoute(),
     router = useRouter(),
     database = useState<Database>("database"),
     databaseRef = ref<FormInst | null>(null),
-    databaseCopy = ref(JSON.parse(JSON.stringify(database.value))),
+    databaseCopy = ref(toRaw(database.value)),
     updateDatabase = async () => {
         databaseRef.value?.validate(async (errors) => {
             if (!errors) {
@@ -199,7 +199,7 @@ const databaseSchema = [
         type: "array",
         subType: "select",
         children: "string",
-        values: Languages,
+        options: Languages,
         required: false,
     },
     {

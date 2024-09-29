@@ -1,5 +1,5 @@
 <template>
-    <LazyApp>
+    <App>
         <NuxtPage />
-    </LazyApp>
+    </App>
 </template>

@@ -1,5 +1,5 @@
 <template>
-    <LazyTableFlows />
+    <TableFlows />
 </template>
 
 <script lang="ts" setup>

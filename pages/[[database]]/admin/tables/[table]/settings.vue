@@ -36,7 +36,7 @@
                 <NFlex vertical>
                     <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
                         <NForm ref="tableRef" :model="tableCopy">
-                            <LazyRenderFieldS v-model="tableCopy" :schema="[
+                            <RenderFieldS v-model="tableCopy" :schema="[
                                 {
                                     id: 1,
                                     key: 'slug',
@@ -47,7 +47,7 @@
                                     id: 2,
                                     key: 'label',
                                     type: 'mention',
-                                    values: generateMentionOptions(
+                                    options: generateMentionOptions(
                                         table?.schema ?? [],
                                     ) as any
                                 },
@@ -88,7 +88,7 @@
                         </template>
                         <NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
                         <NForm :class="{ notSortable: !showDraggable }" size="small">
-                            <LazyRenderSettingSchema v-model="tableCopy.schema" />
+                            <RenderSettingSchema v-model="tableCopy.schema" />
                         </NForm>
                     </NCard>
                 </NFlex>

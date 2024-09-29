@@ -3,7 +3,7 @@
         style="margin: 0 0 20px;" arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
         <NCollapseItem display-directive="show" :title="t(field.key)" :path="field.id" :name="field.id">
             <div style="padding-left: 10px">
-                <LazyRenderFieldS :schema="(field.children as Schema)" v-model="modelValue" />
+                <RenderFieldS :schema="(field.children as Schema)" v-model="modelValue" />
             </div>
         </NCollapseItem>
     </NCollapse>

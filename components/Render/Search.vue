@@ -94,15 +94,8 @@
                             <NSelect :consistent-menu-width="false" tag filterable :value="item[1]"
                                 @update:value="(v) => item[1] = v" :options="searchSelectOptions(item[3])"
                                 style="width:33.33%" />
-                            <LazyRenderField :model-value="ref({
-                                [item[3].key]: item[2] ?? undefined,
-                            })" @update:modelValue="(v: any) => {
-                                console.log(v)
-                                item[2] = Array.isArray(
-                                    v[item[3].key],
-                                )
-                                    ? v[item[3].key].join(',')
-                                    : v[item[3].key];
+                            <LazyRenderField :model-value="item[2]" @update:modelValue="(v) => {
+                                item[2] = Array.isArray(v) ? v.join(',') : v;
                             }" :schema="[
                                 {
                                     ...item[3],
@@ -157,7 +150,7 @@ import {
     IconPlus,
     IconTrash,
     IconSwitchHorizontal,
-    IconMinus
+    IconMinus,
 } from "@tabler/icons-vue";
 import { getField as getFieldFromSchema } from "inibase/utils";
 import { deleteProperty, getProperty, setProperty } from "inidot";
@@ -173,58 +166,26 @@ import {
     NSelect,
 } from "naive-ui";
 
-defineProps(["path"])
+defineProps(["path"]);
 
 const searchArray = useState<{
     and?: [string | null, string, any][];
     or?: [string | null, string, any][];
 }>("searchArray");
-const searchQuery = useState<string>("searchQuery")
-const pagination = useState<any>("pagination")
-const table = useState<Table>("table")
+const searchQuery = useState<string>("searchQuery");
+const pagination = useState<any>("pagination");
+const table = useState<Table>("table");
 
 function searchSelectOptions(field: any): any {
-    return comparisonOperatorOptions().filter(
-        ({ value }) => {
-            if (
-                checkFieldType(field.type, [
-                    "number",
-                    "date",
-                ])
-            )
-                return [
-                    "=",
-                    "!=",
-                    ">",
-                    ">=",
-                    "<",
-                    "<=",
-                ].includes(value);
-            if (
-                checkFieldType(
-                    field.type,
-                    "array",
-                ) ||
-                checkFieldType(
-                    field.type,
-                    "table",
-                )
-            )
-                return ![
-                    ">",
-                    ">=",
-                    "<",
-                    "<=",
-                ].includes(value);
-            return ![
-                ">",
-                ">=",
-                "<",
-                "<=",
-                "[]",
-                "![]",
-            ].includes(value);
-        },
-    )
+    return comparisonOperatorOptions().filter(({ value }) => {
+        if (checkFieldType(field.type, ["number", "date"]))
+            return ["=", "!=", ">", ">=", "<", "<="].includes(value);
+        if (
+            checkFieldType(field.type, "array") ||
+            checkFieldType(field.type, "table")
+        )
+            return ![">", ">=", "<", "<="].includes(value);
+        return ![">", ">=", "<", "<=", "[]", "![]"].includes(value);
+    });
 }
 </script>

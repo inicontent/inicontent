@@ -395,5 +395,13 @@ const updateContent = (event: InputEvent) => {
 .internalRichEditor {
   min-height: 100px;
   outline: 0px solid transparent;
+  border: 1px solid #efeff2;
+  border-radius: 10px;
+  padding: 15px;
+  width: calc(100% - 32px);
+}
+
+.dark .internalRichEditor {
+  border-color: #2d2d31;
 }
 </style>

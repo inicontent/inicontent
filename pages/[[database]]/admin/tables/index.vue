@@ -1,6 +1,6 @@
 <template>
     <NCard :title="t('tables')" style="background:none" :bordered="false">
-        <LazyTableGrid v-model="database" />
+        <TableGrid v-model="database" />
     </NCard>
 </template>
 

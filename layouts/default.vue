@@ -186,7 +186,6 @@ import {
     NTooltip,
     useMessage
 } from "naive-ui";
-
 const Language = useCookie<string>("Language", { sameSite: true });
 useLanguage({
     ar: {

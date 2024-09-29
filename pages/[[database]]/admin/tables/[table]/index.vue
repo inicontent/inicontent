@@ -61,7 +61,7 @@
                             </NButton>
                         </NFlex>
                     </template>
-                    <LazyRenderSearch />
+                    <RenderSearch />
                 </NPopover>
                 <NDropdown :options="toolsDropdownOptions" trigger="click">
                     <NTooltip :delay="500">
@@ -143,7 +143,7 @@ import {
     NPopover,
     NTooltip,
 } from "naive-ui";
-import { LazyRenderColumn } from "#components";
+import { RenderColumn } from "#components";
 
 onBeforeRouteLeave(() => {
     clearNuxtState(["searchArray", "searchQuery"]);
@@ -394,7 +394,7 @@ const tableColumns: any = computed(() => [
             ? `${sortObject.value[field.key]}end`
             : false,
         render: (row: { [x: string]: any }) =>
-            h(LazyRenderColumn, { value: row[field.key], field }),
+            h(RenderColumn, { value: row[field.key], field }),
     })),
     {
         title: t("actions"),

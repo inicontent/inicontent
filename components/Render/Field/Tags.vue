@@ -4,11 +4,11 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NFlex v-if="field.defaultValue">
-            <NTag v-for="value in field.defaultValue">{{ t(value) }}</NTag>
+        <NFlex v-if="field.defaultValue" style="margin-right: 8px;">
+            <NTag v-for="value in field.defaultValue" size="large">{{ t(value) }}</NTag>
         </NFlex>
         <NDynamicTags size="large"
-            :value="!field.defaultValue ? modelValue : modelValue?.filter((value) => !field.defaultValue.includes(value))"
+            :value="modelValue?.filter((value) => !field.defaultValue || !field.defaultValue.includes(value))"
             @update:value="(value: string[]) => modelValue = [...value, ...(field.defaultValue ?? [])]"
             :placeholder="t(field.key)" clearable v-bind="field.inputProps
                 ? typeof field.inputProps === 'function'
@@ -75,7 +75,7 @@ const { field } = defineProps({
 });
 
 const modelValue = defineModel({
-    type: Array as PropType<string[]>,
+    type: Array as PropType<string[]>
 });
 
 const fieldChildrenLabels = field.children
@@ -112,7 +112,7 @@ const dynamicTags = ref<FormInst>();
 const inputValue = ref();
 function addValue() {
     if (inputValue.value) {
-        modelValue.value?.push(inputValue.value);
+        modelValue.value = [...(modelValue.value ?? []), inputValue.value];
         inputValue.value = undefined;
     }
 }

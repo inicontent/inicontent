@@ -1,5 +1,5 @@
 <template>
-	<LazyRenderColumn v-for="field of schema" :field="field" v-model="modelValue" />
+	<RenderColumn v-for="field of schema" :field="field" v-model="modelValue" />
 </template>
 
 <script lang="ts" setup>

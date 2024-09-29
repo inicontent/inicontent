@@ -6,7 +6,7 @@
         <NFlex vertical>
             <NFlex v-for="child in (field.children as Schema)" align="center" inline>
                 <strong>{{ child.key }}:</strong>
-                <LazyRenderColumn :field="child" :value="value[child.key]" />
+                <RenderColumn :field="child" :value="value[child.key]" />
             </NFlex>
         </NFlex>
     </NPopover>

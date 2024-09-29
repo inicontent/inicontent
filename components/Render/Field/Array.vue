@@ -45,7 +45,7 @@
                         </NButton>
                     </template>
                     <div style="padding-left: 10px">
-                        <LazyRenderFieldS :schema="field.children.map((child) => ({
+                        <LazyRenderFieldS v-model="modelValue[index]" :schema="field.children.map((child) => ({
                             ...child,
                             ...(field.disabledItems
                                 ? {
@@ -57,7 +57,7 @@
                                     },
                                 }
                                 : {}),
-                        }))" v-model="modelValue[index]" />
+                        }))" />
                     </div>
                 </NCollapseItem>
             </NCollapse>
@@ -93,7 +93,6 @@ import {
 import { isArrayOfObjects } from "inibase/utils";
 import { IconChevronRight, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { LazyRenderField } from "#components";
-import type { PropType } from "vue";
 
 useLanguage({
     ar: {
@@ -176,7 +175,7 @@ function getTableColumns(): DataTableColumns {
                         isArray: true,
                         isTable: true,
                     },
-                    modelValue: modelValue.value[index],
+                    modelValue: modelValue.value[index][child.key],
                 }),
         })) as any,
         field.disableActions === true

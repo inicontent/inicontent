@@ -72,8 +72,7 @@ const route = useRoute(),
             return table.value.slug;
         } return decodeURI(lastPathInRoute?.toString() ?? "");
     });
-console.log(defaultValue.value)
-watch(defaultValue, (v) => console.log(`changed: ${v}`))
+
 const renderSingleItem = ({ slug, allowedMethods }: Table) => {
     const itemChildren = [
         ...(slug !== "asset" && allowedMethods?.includes("c")

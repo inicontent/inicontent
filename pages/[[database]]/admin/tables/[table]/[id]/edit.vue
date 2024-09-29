@@ -88,7 +88,7 @@
             </NButtonGroup>
         </template>
         <NForm v-if="itemObject" :model="itemObject" ref="formRef">
-            <LazyRenderFieldS v-model="itemObject" :schema />
+            <RenderFieldS v-model="itemObject" :schema />
         </NForm>
     </NCard>
 </template>

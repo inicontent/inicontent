@@ -4,6 +4,24 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		fromPath = useCookie("from");
 
 	if (
+		!database.value ||
+		database.value.slug !== (to.params.database ?? "inicontent")
+	)
+		database.value = (
+			await $fetch<apiResponse<Database>>(
+				`${useRuntimeConfig().public.apiBase}inicontent/database/${
+					to.params.database ?? "inicontent"
+				}`,
+			)
+		).result;
+
+	if (!database.value)
+		throw createError({
+			statusCode: 404,
+			statusMessage: "database",
+		});
+
+	if (
 		!user.value ||
 		(database.value && database.value.slug !== to.params.database)
 	)
@@ -14,20 +32,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 				}/auth/current`,
 			)
 		).result;
-
-	if (!database.value || database.value.slug !== to.params.database)
-		database.value = (
-			await $fetch<apiResponse<Database>>(
-				`${useRuntimeConfig().public.apiBase}inicontent/database/${
-					to.params.database ?? "inicontent"
-				}`,
-			)
-		).result;
-
-	if (!database.value) {
-		fromPath.value = null;
-		return navigateTo("/auth");
-	}
 
 	if (user.value) {
 		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {

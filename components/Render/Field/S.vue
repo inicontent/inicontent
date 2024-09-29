@@ -1,5 +1,5 @@
 <template>
-	<LazyRenderField v-for="field of schema" :field="field" :schema="schema" v-model="modelValue" />
+	<RenderField v-for="field of schema" :field="field" :schema="schema" v-model="modelValue[field.key]" />
 </template>
 
 <script lang="ts" setup>
@@ -12,8 +12,9 @@ let { schema } = defineProps({
 		default: [],
 	},
 })
+let newSchema = schema
 if (schema.every(({ id }) => !id))
-	schema = addIdToSchema(schema)
+	newSchema = addIdToSchema(schema)
 const modelValue = defineModel({
 	type: Object as PropType<any>,
 	default: {},
