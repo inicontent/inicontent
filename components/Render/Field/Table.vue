@@ -131,7 +131,7 @@ if (modelValue.value) {
         options.value =
             (
                 await $fetch<apiResponse>(
-                    `${useRuntimeConfig().public.apiBase}${useRuntimeConfig().public.databaseName ?? "inicontent"
+                    `${useRuntimeConfig().public.apiBase}${useRuntimeConfig().public.databaseName || "inicontent"
                     }/${field.table}`,
                     {
                         params: {

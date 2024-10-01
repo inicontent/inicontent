@@ -87,7 +87,7 @@ export const fetchTranslation = async () => {
 		const fetchResult = (
 			await $fetch<apiResponse<Item[]>>(
 				`${useRuntimeConfig().public.apiBase}${
-					route.params?.database ?? "inicontent"
+					route.params?.database || "inicontent"
 				}/translation`,
 				{
 					params: {

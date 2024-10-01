@@ -131,9 +131,12 @@ import {
 definePageMeta({
     middleware: "dashboard",
 });
-const route = useRoute()
-// if (route.params.database)
-//     navigateTo('admin/tables')
+
+const database = useState<Database>("database")
+
+if (database.value.slug !== "inicontent")
+    await navigateTo('admin/tables')
+
 useLanguage({
     ar: {
         newItem: "عنصر جديد",
@@ -154,8 +157,7 @@ useLanguage({
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.Database = false;
 
-const database = useState<Database>("database"),
-    { isMobile } = useDevice(),
+const { isMobile } = useDevice(),
     { data: databases } = await useFetch<apiResponse<Database[]>>(
         `${useRuntimeConfig().public.apiBase}inicontent/database`,
     ),

@@ -5,12 +5,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 	if (
 		!database.value ||
-		database.value.slug !== (to.params.database ?? "inicontent")
+		database.value.slug !== (to.params.database || "inicontent")
 	)
 		database.value = (
 			await $fetch<apiResponse<Database>>(
 				`${useRuntimeConfig().public.apiBase}inicontent/database/${
-					to.params.database ?? "inicontent"
+					to.params.database || "inicontent"
 				}`,
 			)
 		).result;
@@ -28,7 +28,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		user.value = (
 			await $fetch<apiResponse<User>>(
 				`${useRuntimeConfig().public.apiBase}${
-					to.params.database ?? "inicontent"
+					to.params.database || "inicontent"
 				}/auth/current`,
 			)
 		).result;

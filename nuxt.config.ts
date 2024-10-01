@@ -1,8 +1,5 @@
 export default defineNuxtConfig({
 	ssr: false,
-	routeRules: {
-		"/*/admin": { redirect: "admin/tables" },
-	},
 	sourcemap: false,
 	modules: ["@nuxtjs/device", "nuxtjs-naive-ui"],
 	imports: {
