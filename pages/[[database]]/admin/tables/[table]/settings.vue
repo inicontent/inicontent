@@ -38,15 +38,14 @@
                         <NForm ref="tableRef" :model="tableCopy">
                             <RenderFieldS v-model="tableCopy" :schema="[
                                 {
-                                    id: 1,
                                     key: 'slug',
                                     type: 'string',
                                     required: true,
                                 },
                                 {
-                                    id: 2,
                                     key: 'label',
-                                    type: 'mention',
+                                    type: 'string',
+                                    subType: 'mention',
                                     options: generateMentionOptions(
                                         table?.schema ?? [],
                                     ) as any
@@ -59,7 +58,7 @@
                             <NFlex>
                                 <NTooltip :delay="500">
                                     <template #trigger>
-                                        <NButton round :type="showDraggable ? 'primary' : 'default'" @click="() => showDraggable =
+                                        <NButton round :type="showDraggable ? 'primary' : 'default'" @click="showDraggable =
                                             !showDraggable">
                                             <template #icon>
                                                 <NIcon>
@@ -74,7 +73,7 @@
                                     id: `temp-${randomID()}`,
                                     key: null,
                                     required: false,
-                                    ...handleSelectedType(type),
+                                    ...handleSelectedSchemaType(type),
                                 })">
                                     <NButton round>
                                         <template #icon>
@@ -152,6 +151,7 @@ useLanguage({
     },
     en: {},
 });
+
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.updateTable = false;
 Loading.value.deleteTable = false;
@@ -163,66 +163,6 @@ const route = useRoute(),
     table = useState<Table>("table"),
     tableRef = ref<FormInst | null>(null),
     tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
-    handleSelectedType = (type: string) => {
-        switch (type) {
-            case "textarea":
-                return {
-                    type: "string",
-                    subType: "textarea",
-                };
-            case "role":
-                return {
-                    type: "string",
-                    subType: "role",
-                };
-            case "upload":
-                return {
-                    type: "url",
-                    subType: "upload",
-                };
-            case "array-upload":
-                return {
-                    type: "array",
-                    children: "url",
-                    subType: "upload",
-                };
-            case "array-table":
-                return {
-                    type: "array",
-                    children: "table",
-                    subType: "table",
-                };
-            case "tags":
-                return {
-                    type: "array",
-                    subType: "tags",
-                };
-            case "select":
-                return {
-                    type: ["string", "number"],
-                    subType: "select",
-                };
-            case "array-select":
-                return {
-                    type: "array",
-                    children: ["string", "number"],
-                    subType: "select",
-                };
-            case "color":
-                return {
-                    type: "string",
-                    subType: "color",
-                };
-            case "array":
-            case "object":
-                return {
-                    type: type,
-                    children: [],
-                };
-            default:
-                return { type };
-        }
-    },
     updateTable = async () => {
         tableRef.value?.validate(async (errors) => {
             if (!errors) {
@@ -345,6 +285,6 @@ const route = useRoute(),
 
 useHead({
     title: `${database.value.slug} | ${t(table.value.slug)} > ${t("settings")}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

@@ -3,17 +3,17 @@
         <template #header>
             <span v-if="isAssetRoute">{{ t("assets") }}</span>
             <NBreadcrumb v-else>
-                <NBreadcrumbItem @click="() => modelValue = ''">
+                <NBreadcrumbItem @click="modelValue = ''">
                     {{ t("assets") }}
                 </NBreadcrumbItem>
                 <NBreadcrumbItem v-for="(singlePath, index) in (modelValue ?? '').split('/').slice(1)"
-                    @click="() => modelValue = `/${(modelValue ?? '').split('/').slice(1, index + 1).join('/')}`">
+                    @click="modelValue = `/${(modelValue ?? '').split('/').slice(1, index + 1).join('/')}`">
                     {{ singlePath }}
                 </NBreadcrumbItem>
             </NBreadcrumb>
         </template>
         <template #header-extra>
-            <NUpload v-if="table.allowedMethods?.includes('c')" multiple abstract
+            <NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
                 :action="`${useRuntimeConfig().public.apiBase}${database.slug}/asset${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
                 @update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
                 <NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
@@ -38,7 +38,7 @@
                                 </template>
                                 <NInputGroup>
                                     <NInput v-model:value="folder"
-                                        @keydown="({ key }) => { if (key === 'Enter') createFolder(); }"
+                                        @keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
                                         :placeholder="t('folderName')">
                                         <template #suffix>
                                             <NIcon>
@@ -62,15 +62,14 @@
             </NUpload>
         </template>
         <NFlex vertical align="center">
-            <AssetGrid v-model="assets" :is-asset-route="isAssetRoute" :target-id="targetId">
+            <AssetGrid v-model="assets" :isAssetRoute :table :target-id="targetId">
                 <template v-slot="slotProps">
                     <slot v-bind="slotProps"></slot>
                 </template>
             </AssetGrid>
             <NPagination v-if="itemCount && pageCount > 1" :simple="!!isMobile" :page-sizes="[15, 30, 60, 100, 500]"
                 :show-size-picker="showSizePicker" style="margin-top: 25px;" @update:page-size="onUpdatePageSize"
-                @update:page="onUpdatePage" :page="page" :page-size="pageSize" :item-count="itemCount"
-                :page-count="pageCount" />
+                @update:page="onUpdatePage" :page="page" :page-size="pageSize" :item-count="itemCount" />
         </NFlex>
     </NCard>
 </template>
@@ -113,11 +112,15 @@ const route = useRoute();
 const isAssetRoute = !!(route.params.folder || route.params.folder === '')
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
-const table = useState<Table>("table");
+const parentTable = useState<Table>("table");
+const table = ref<Table>(parentTable.value)
+if (!parentTable.value || parentTable.value.slug !== 'asset')
+    table.value = (await $fetch<apiResponse<Table>>(`${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug}/asset`)).result
+
 const { isMobile } = useDevice();
 const router = useRouter();
 const page = ref(route.query.page ? Number(route.query.page) : 1);
-const pageSize = ref(route.query.perPage ? Number(route.query.perPage) : 15);
+const pageSize = ref(route.query.perPage ? Number(route.query.perPage) : 22);
 const pageCount = ref(0);
 const itemCount = ref(0);
 const showSizePicker = ref(false);
@@ -222,7 +225,7 @@ function onFinishUpload({ file, event }: {
             (event?.target as any).response,
         );
         file.url = response.result.publicURL;
-        file.name = response.result.name;
+        file.name = response.result.id;
         if (assets.value) assets.value?.push(response.result);
         else assets.value = [response.result];
         if (!database.value.size) database.value.size = 0;
@@ -232,7 +235,7 @@ function onFinishUpload({ file, event }: {
     return file;
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
-    const data = await $fetch<apiResponse>(
+    const data = await $fetch<apiResponse<Asset>>(
         `${useRuntimeConfig().public.apiBase}${database.value.slug
         }/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
         { method: "DELETE" },
@@ -264,7 +267,6 @@ function createFolder() {
 
     }
 }
-
 
 watch(
     modelValue,

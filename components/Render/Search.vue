@@ -23,7 +23,7 @@
                             }.${value}`,
                             [[null, '=', null]],
                         )">
-                        <NButton @click="() => setProperty(
+                        <NButton @click="setProperty(
                             searchArray,
                             `${path ? `${path}.` : ''}${condition}.${items.length
                             }`,
@@ -66,7 +66,7 @@
                             `convertTo_"${condition === "and" ? "or" : "and"}"_group`,
                         ) }}
                     </NTooltip>
-                    <NButton :disabled="['and', 'or'].includes(`${path ? `${path}.` : ''}${condition}`)" @click="() => deleteProperty(
+                    <NButton :disabled="['and', 'or'].includes(`${path ? `${path}.` : ''}${condition}`)" @click="deleteProperty(
                         searchArray,
                         `${path ? `${path}.` : ''}${condition}`,
                     )" circle size="small">
@@ -125,7 +125,7 @@
                                 },
                             ] as any" />
                         </template>
-                        <NButton :disabled="items.length === 1" @click="() => deleteProperty(
+                        <NButton :disabled="items.length === 1" @click="deleteProperty(
                             searchArray,
                             `${path ? `${path}.` : ''
                             }${condition}.${index}`,

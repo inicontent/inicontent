@@ -90,8 +90,6 @@
 
 <script>
     const path = window.location.pathname;
-    console.log(path);
-
     if (!path.includes('/auth') && !path.includes('/admin')) {
         document.getElementById('loaderDIV').style.display = 'none';
     }

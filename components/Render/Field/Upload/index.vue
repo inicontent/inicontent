@@ -7,14 +7,15 @@
 		<template #label>
 			<NFlex align="center">
 				{{ t(field.key) }}
-				<UploadActions v-model="showAssetsModal" :callback="handleSelectAssets" />
+				<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal"
+					:callback="handleSelectAssets" />
 			</NFlex>
 		</template>
 
 		<NUpload directory-dnd :onUpdateFileList :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="generateAcceptedFileType(field.accept)"
 			:action="`${useRuntimeConfig().public.apiBase}${database.slug ?? 'inicontent'}/asset`" response-type="json"
-			:file-list :onFinish :onPreview :list-type="!field.isTable ? 'image' : 'image-card'">
+			:fileList :onFinish :onPreview :list-type="!field.isTable ? 'image' : 'image-card'">
 			<template v-if="!field.isTable">
 				<NUploadDragger>
 					<NIcon size="48" depth="3">
@@ -24,7 +25,8 @@
 			</template>
 			<template v-else>
 				<NFlex align="center" size="small">
-					<LazyRenderFieldUploadActions v-model="showAssetsModal" :callback="handleSelectAssets" />
+					<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal"
+						:callback="handleSelectAssets" />
 				</Nflex>
 			</template>
 		</NUpload>
@@ -33,8 +35,8 @@
 			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
 				<AssetCard targetID="assetsModal">
 					<template v-slot="{ asset }">
-						<NRadio v-if="asset.type !== 'folder'" :checked="getChecked(asset.publicURL)"
-							@update:checked="handleSelectAssets(asset.publicURL)" />
+						<NRadio v-if="asset.type !== 'dir'" :checked="getChecked(asset)"
+							@update:checked="handleSelectAssets(asset)" />
 					</template>
 				</AssetCard>
 			</NDrawerContent>
@@ -53,11 +55,10 @@ import {
 	NUpload,
 	NUploadDragger,
 	type FormItemRule,
-	type UploadFileInfo
+	type UploadFileInfo,
 } from "naive-ui";
-import {
-	IconUpload,
-} from "@tabler/icons-vue";
+import { IconUpload } from "@tabler/icons-vue";
+import { isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps({
 	field: {
@@ -66,12 +67,10 @@ const { field } = defineProps({
 	},
 });
 
-const modelValue = defineModel({
-	type: [Array, String] as PropType<string[] | string>,
-});
+const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 
 const rule: FormItemRule = {
-	type: field.isArray ? "array" : "url",
+	type: field.isArray ? "array" : "object",
 	required: field.required,
 	trigger: "change",
 	min: field.isArray ? field.min : undefined,
@@ -103,7 +102,7 @@ const database = useState<Database>("database");
 const showAssetsModal = ref(false);
 
 const generateAcceptedFileType = (types: Field["accept"]) => {
-	if (!types) return undefined
+	if (!types) return undefined;
 	const RETURN = [];
 	for (const type of types) {
 		switch (type) {
@@ -127,71 +126,86 @@ const generateAcceptedFileType = (types: Field["accept"]) => {
 	return RETURN.join(",");
 };
 
-function handleSelectAssets(url?: string) {
-	if (!url) return;
+function handleSelectAssets(asset?: Asset) {
+	if (!asset) return;
+	const value = field.type === 'url' || field.children === 'url' ? asset.publicURL : asset
+
 	if (!field.isArray) {
-		if (modelValue.value === url) modelValue.value = undefined;
-		else modelValue.value = url;
+		if (
+			modelValue.value &&
+			!Array.isArray(modelValue.value) &&
+			((typeof modelValue.value === "string" && modelValue.value === asset.publicURL) || (isObject(modelValue.value) && modelValue.value.id === asset.id))
+		)
+			modelValue.value = undefined;
+		else
+			modelValue.value = value;
 	} else {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
-			const index = modelValue.value.indexOf(url);
+			const index = isArrayOfObjects(modelValue.value) ? (modelValue.value as Asset[]).findIndex(
+				(value) => value.id === asset.id,
+			) : (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
-			else modelValue.value.push(url);
-		} else modelValue.value = [url];
+			else modelValue.value.push(value);
+		} else modelValue.value = [value];
 	}
-};
+}
 
 function onUpdateFileList(files: UploadFileInfo[]) {
 	if (files.every((file) => !file)) modelValue.value = undefined;
 	else
-		modelValue.value =
-			(!field.isArray
-				? files
-					.filter((file) => file)
-					.map((file) => (file.status === "finished" ? file.url : file))[0]
-				: files
-					.filter((file) => file)
-					.map((file) => (file.status === "finished" ? file.url : file))) as string[]
-};
+		modelValue.value = (!field.isArray
+			? files.filter((file) => file)[0]
+			: files.filter((file) => file)) as unknown as Asset | Asset[];
+}
 
-const getFileNameFromUrl = (url: string) => url.split('/').pop()?.split('?')[0].split('#')[0] || '';
-const fileList = ([] as string[])
-	.concat(modelValue.value as string | string[])
-	.filter((src) => src)
-	.map((src) =>
-		typeof src === "object"
-			? src
-			: {
-				id: getFileNameFromUrl(src),
-				name: getFileNameFromUrl(src),
-				status: "finished",
-				url: src,
-				thumbnailUrl:
-					src.includes("inicontent") &&
-						isImage(getFileNameFromUrl(src))
-						? `${src}?fit=94`
-						: null,
-			},
-	) as UploadFileInfo[];
+const fileList = computed(() =>
+	(
+		(Array.isArray(modelValue.value)
+			? modelValue.value
+			: [modelValue.value]) as (Asset | string)[]
+	).filter(asset => asset).map((asset) => typeof asset === "string" ? ({
+		id: asset,
+		name: asset.split("/").pop(),
+		status: "finished",
+		url: asset,
+		type: field.accept?.includes('image') ? 'image/jpeg' : undefined,
+		thumbnailUrl: field.accept?.includes('image')
+			? `${asset}?fit=94`
+			: undefined,
+	}) : ({
+		id: asset.id as string,
+		name: asset.id as string,
+		status: "finished",
+		url: asset.publicURL,
+		type: asset.type,
+		thumbnailUrl: asset.type?.startsWith("image/")
+			? `${asset.publicURL}?fit=94`
+			: undefined,
+	})) as UploadFileInfo[],
+);
 
-function onFinish({ file, event }: {
-	file: UploadFileInfo
-	event?: ProgressEvent
+function onFinish({
+	file,
+	event,
+}: {
+	file: UploadFileInfo;
+	event?: ProgressEvent;
 }) {
 	if ((event?.target as XMLHttpRequest).response) {
 		file.url = (event?.target as XMLHttpRequest).response.result.publicURL;
-		file.name = (event?.target as XMLHttpRequest).response.result.name;
+		file.name = (event?.target as XMLHttpRequest).response.result.id;
 		return file;
 	}
 	return file;
-};
+}
 
 function onPreview({ url }: UploadFileInfo) {
 	if (url && !!field.isArray) return window.open(url, "blank")?.focus();
-	return undefined
-};
+	return undefined;
+}
 
-const getChecked = (url: string) => ([] as string[])
-	.concat(modelValue.value as string | string[])
-	.includes(url);
+const getChecked = (asset: Asset) =>
+	([] as (Asset | string)[])
+		.concat(modelValue.value ?? [])
+		.findIndex((value) => typeof value === "string" ? value === asset.publicURL : value.id === asset.id) > -1;
 </script>

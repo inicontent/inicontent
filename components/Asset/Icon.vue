@@ -1,6 +1,6 @@
 <template>
     <IconFileText v-if="!type" />
-    <IconFolder v-else-if="type === 'folder'" />
+    <IconFolder v-else-if="type === 'dir'" />
     <IconVideo v-else-if="type.startsWith('video/')" />
     <IconFileMusic v-else-if="type.startsWith('audio/')" />
     <IconFileTypography v-else-if="type.startsWith('font/')" />

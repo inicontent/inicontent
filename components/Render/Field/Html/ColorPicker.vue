@@ -1,7 +1,7 @@
 <template>
     <div class="colorPicker">
         <div v-for="colorsGroup in colors">
-            <span v-for="color in colorsGroup" :style="{ background: color }" @click="() => modelValue = color"></span>
+            <span v-for="color in colorsGroup" :style="{ background: color }" @click="modelValue = color"></span>
         </div>
     </div>
 </template>

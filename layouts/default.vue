@@ -6,7 +6,7 @@
                     <template #avatar>
                         <NTag v-if="String($route.matched[0].name).startsWith(
                             'database',
-                        )" @click="navigateTo(`/${database?.slug}`)" strong round :bordered="false" :style='{
+                        )" @click="navigateTo(`/${database?.slug ?? ''}`)" strong round :bordered="false" :style='{
                             cursor: "pointer",
                             fontWeight: 600,
                             ...(ThemeConfig.revert &&
@@ -20,18 +20,19 @@
                             <template #avatar>
                                 <NAvatar fallbackSrc="/favicon.ico" :style='{
                                     backgroundColor: "transparent"
-                                }' :src='database?.icon ?? "/favicon.ico"' />
+                                }' :src='database?.icon?.publicURL ?? "/favicon.ico"' />
                             </template>
-                            {{ t(database?.slug) }}
+                            {{ t(database?.slug ?? 'inicontent') }}
                         </NTag>
                         <NTag v-else strong round :bordered="false">
                             <template #avatar>
-                                <NAvatar fallbackSrc="/favicon.ico" :src='database?.icon ?? "/favicon.ico"' />
+                                <NAvatar fallbackSrc="/favicon.ico"
+                                    :src='database?.icon?.publicURL ?? "/favicon.ico"' />
                             </template>
-                            {{ t(database?.slug) }}
+                            {{ t(database?.slug ?? 'inicontent') }}
                         </NTag>
                     </template>
-                    <template #title v-if='![
+                    <template #title v-if='database?.slug && ![
                         "index",
                         "auth",
                         "dashboard",
@@ -214,10 +215,7 @@ onMounted(() => {
 })
 const user = useState<User | null>("user"),
     Theme = useCookie<string>("Theme", { sameSite: true }),
-    database = useState<Database>("database", () => ({
-        slug: "inicontent",
-        icon: "/favicon.ico",
-    })),
+    database = useState<Database>("database"),
     ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 const userDropdownOptions = [
     {

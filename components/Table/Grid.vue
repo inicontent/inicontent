@@ -1,6 +1,6 @@
 <template>
     <NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
-        <NGi v-for="table in filteredTables" :key="table.slug">
+        <NGridItem v-for="table in filteredTables" :key="table.slug">
             <NCard @click="navigateTo(`/${modelValue.slug}/admin/tables/${table.slug}`)" style="cursor: pointer"
                 hoverable>
                 <template #header>
@@ -18,15 +18,15 @@
                         <NButton circle @mouseover="Hover[table.slug] = true" @mouseleave="Hover[table.slug] = false">
                             <NIcon>
                                 <component
-                                    :is="Hover[table.slug] || (table.slug === 'asset' && user.role !== 'd7b3d61a582e53ee29b5a1d02a436d55') ? IconArrowRight : IconDots" />
+                                    :is="Hover[table.slug] || (table.slug === 'asset' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55') ? IconArrowRight : IconDots" />
                             </NIcon>
                         </NButton>
                     </NDropdown>
                 </template>
             </NCard>
-        </NGi>
+        </NGridItem>
 
-        <NGi>
+        <NGridItem>
             <NPopover placement="bottom">
                 <template #trigger>
                     <NPopover trigger="click">
@@ -40,7 +40,7 @@
                             </NCard>
                         </template>
                         <NInputGroup>
-                            <NInput v-model="Table" @keydown.enter="createTable" :placeholder="t('tableSlug')">
+                            <NInput v-model:value="Table" @keydown.enter="createTable" :placeholder="t('tableSlug')">
                                 <template #suffix>
                                     <NIcon>
                                         <IconLetterCase />
@@ -59,7 +59,7 @@
                 </template>
                 {{ t('newTable') }}
             </NPopover>
-        </NGi>
+        </NGridItem>
     </NGrid>
 </template>
 
@@ -81,7 +81,7 @@ import {
     NButton,
     NCard,
     NDropdown,
-    NGi,
+    NGridItem,
     NGrid,
     NH4,
     NIcon,

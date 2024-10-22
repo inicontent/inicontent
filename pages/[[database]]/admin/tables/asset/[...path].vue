@@ -16,6 +16,6 @@ useHead({
         ? ` > /${[].concat(route.params.folder as any).join("/")}`
         : ""
         }`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

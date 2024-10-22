@@ -3,11 +3,11 @@
         :theme="Theme === 'dark' ? darkTheme : null" :theme-overrides="{ common: ThemeConfig }"
         :locale="(Locales as any)[Language]" :date-locale="(dateLocales as any)[Language]">
         <NuxtLoadingIndicator :color="ThemeConfig.primaryColor" :height=2 />
-        <AppPreLayout>
+        <AppPreLayoutContent>
             <NuxtLayout>
                 <slot></slot>
             </NuxtLayout>
-        </AppPreLayout>
+        </AppPreLayoutContent>
     </NConfigProvider>
 </template>
 
@@ -36,8 +36,8 @@ import {
     unstableSpaceRtl,
     unstableTableRtl,
     unstableTagRtl,
+    useOsTheme,
 } from "naive-ui";
-// import Vibrant from "node-vibrant";
 
 const rtlStyles: any = [
     unstableListRtl,
@@ -57,29 +57,31 @@ const rtlStyles: any = [
     unstableSpaceRtl,
     unstableInputRtl,
     unstableAvatarGroupRtl,
-],
-    Language = useCookie<string>("Language", { sameSite: true }),
-    Theme = useCookie<string>("Theme", { sameSite: true }),
-    // database = useState<Database>("database", () => ({
-    //     slug: "inicontent",
-    //     icon: "/favicon.ico",
-    // })),
-    ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
-        primaryColor: "#FF9800",
-        primaryColorHover: "#F7A42A",
-        primaryColorPressed: "#E19421",
-        primaryColorSuppl: "#CB7900",
-    })),
-    Locales = {
-        ar: arDZ,
-        en: enUS,
-    },
-    dateLocales = {
-        ar: dateArDZ,
-        en: dateEnUS,
-    };
+];
+const Language = useCookie<string>("Language", { sameSite: true });
+const Theme = useCookie<string>("Theme", { sameSite: true });
 
-if (!Theme.value) Theme.value = "light";
+const osThemeRef = useOsTheme();
+if (!Theme.value) Theme.value = osThemeRef.value ?? "light";
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
+    primaryColor: "#FF9800",
+    primaryColorHover: "#F7A42A",
+    primaryColorPressed: "#E19421",
+    primaryColorSuppl: "#CB7900"
+}));
+
+setThemeConfig()
+
+watch(Theme, setThemeConfig)
+
+const Locales = {
+    ar: arDZ,
+    en: enUS,
+};
+const dateLocales = {
+    ar: dateArDZ,
+    en: dateEnUS,
+};
 
 if (!Language.value) Language.value = "en";
 
@@ -95,30 +97,6 @@ useHead({
 });
 
 // onMounted(fetchTranslation);
-
-// if (database.value?.icon && database.value.slug !== "inicontent") {
-//     try {
-//         const Palette = await Vibrant.from(database.value.icon).getPalette();
-//         if (Palette.DarkVibrant && Palette.LightVibrant) {
-//             const vibrantColor =
-//                 Palette[Theme.value === "light" ? "DarkVibrant" : "LightVibrant"];
-//             const mutedColor =
-//                 Palette[Theme.value === "light" ? "DarkMuted" : "LightMuted"];
-//             if (vibrantColor && mutedColor && Palette.Vibrant)
-//                 ThemeConfig.value.revert = Palette.Vibrant.bodyTextColor === "#fff";
-//             // ThemeConfig.value = {
-//             // 	primaryColor: vibrantColor.hex,
-//             // 	primaryColorHover: `${vibrantColor.hex}CC`,
-//             // 	primaryColorPressed: `${vibrantColor.hex}80`,
-//             // 	primaryColorSuppl: mutedColor.hex,
-//             // 	revert: Palette.Vibrant.bodyTextColor === "#fff",
-//             // };
-//         }
-//     } catch (error) {
-//         console.error(database.value.icon);
-//     }
-// }
-
 // watch(Language, fetchTranslation);
 </script>
 

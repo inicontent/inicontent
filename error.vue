@@ -1,7 +1,6 @@
 <template>
     <App>
-        <NResult :status="code" :title="message">
-        </NResult>
+        <NResult :status="code" :title="message" />
     </App>
 </template>
 

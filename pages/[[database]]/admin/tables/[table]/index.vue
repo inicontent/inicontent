@@ -4,14 +4,10 @@
         content-style="padding: 0" :bordered="false">
         <template #header-extra>
             <NButtonGroup>
-                <NPopover :disabled="!searchQuery &&
-                    (!data?.result ||
-                        !database.tables?.find(
-                            ({ slug }) => slug === table.slug,
-                        )?.schema)" :style="{
-                            maxHeight: '240px',
-                            width: isMobile ? '350px' : '500px',
-                        }" placement="bottom-end" trigger="click" scrollable>
+                <NPopover :disabled="!searchQuery && (!data?.result || !table?.schema)" :style="{
+                    maxHeight: '240px',
+                    width: isMobile ? '350px' : '500px',
+                }" placement="bottom-end" trigger="click" scrollable>
                     <template #trigger>
                         <NTooltip :delay="500">
                             <template #trigger>
@@ -158,33 +154,6 @@ const route = useRoute(),
     router = useRouter(),
     database = useState<Database>("database"),
     table = useState<Table>("table");
-
-useLanguage({
-    ar: {
-        clickToCopy: "نسخ",
-        textCopied: "تم نسخ النص",
-        viewTheItem: "مُعاينة العنصر",
-        new: "جديد",
-        createdAt: "أُضيف",
-        updatedAt: "عُدِّل",
-        update: "تحديث",
-        create: "إنشاء",
-        delete: "حذف",
-        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
-        edit: "تعديل",
-        published: "المنشورة",
-        trash: "سلة المهملات",
-        id: "المُعرف",
-        actions: "الأوامر",
-        tableSettings: "إعدادات الجدول",
-        search: "بحث",
-        reset: "إفراغ",
-        tools: "الأدوات",
-        andGroup: "مجموعة و",
-        orGroup: "مجموعة أو",
-    },
-    en: {},
-});
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
     { isMobile } = useDevice(),
@@ -386,7 +355,7 @@ const tableColumns: any = computed(() => [
             ]),
         width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
         key: field.key,
-        sorter: true,
+        sorter: !!data.value?.result,
         ellipsis: {
             tooltip: true
         },
@@ -407,65 +376,49 @@ const tableColumns: any = computed(() => [
                 [
                     table.value.allowedMethods?.includes("r")
                         ? h(
-                            NTooltip,
-                            { delay: 500 },
+                            NButton,
                             {
-                                trigger: () =>
-                                    h(
-                                        NButton,
-                                        {
-                                            tag: "a",
-                                            href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                            onClick: (e) => {
-                                                e.preventDefault();
-                                                navigateTo(
-                                                    `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                                );
-                                            },
-                                            secondary: true,
-                                            circle: true,
-                                            type: "primary",
-                                        },
-                                        { icon: () => h(NIcon, () => h(IconEye)) },
-                                    ),
-                                default: () => t("viewTheItem"),
+                                tag: "a",
+                                href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
+                                onClick: (e) => {
+                                    e.preventDefault();
+                                    navigateTo(
+                                        `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
+                                    );
+                                },
+                                secondary: true,
+                                circle: true,
+                                type: "primary",
                             },
+                            { icon: () => h(NIcon, () => h(IconEye)) },
                         )
                         : null,
                     table.value.allowedMethods?.includes("u")
                         ? h(
-                            NTooltip,
-                            { delay: 500 },
+                            NButton,
                             {
-                                trigger: () =>
-                                    h(
-                                        NButton,
-                                        {
-                                            tag: "a",
-                                            href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
-                                            onClick: (e) => {
-                                                e.preventDefault();
-                                                if (!isMobile)
-                                                    Drawer.value = {
-                                                        ...Drawer.value,
-                                                        id: row.id,
-                                                        table: table.value.slug as string,
-                                                        data: JSON.parse(JSON.stringify(row)),
-                                                        show: true,
-                                                    };
-                                                else
-                                                    navigateTo(
-                                                        `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
-                                                    );
-                                            },
-                                            secondary: true,
-                                            circle: true,
-                                            type: "info",
-                                        },
-                                        { icon: () => h(NIcon, () => h(IconPencil)) },
-                                    ),
-                                default: () => t("edit"),
+                                tag: "a",
+                                href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                onClick: (e) => {
+                                    e.preventDefault();
+                                    if (!isMobile)
+                                        Drawer.value = {
+                                            ...Drawer.value,
+                                            id: row.id,
+                                            table: table.value.slug as string,
+                                            data: JSON.parse(JSON.stringify(row)),
+                                            show: true,
+                                        };
+                                    else
+                                        navigateTo(
+                                            `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                        );
+                                },
+                                secondary: true,
+                                circle: true,
+                                type: "info",
                             },
+                            { icon: () => h(NIcon, () => h(IconPencil)) },
                         )
                         : null,
                     table.value.allowedMethods?.includes("d")
@@ -475,27 +428,18 @@ const tableColumns: any = computed(() => [
                                 onPositiveClick: () => DELETE(row.id),
                             },
                             {
-                                trigger: () =>
-                                    h(
-                                        NTooltip,
-                                        { delay: 500 },
-                                        {
-                                            trigger: () =>
-                                                h(
-                                                    NButton,
-                                                    {
-                                                        strong: true,
-                                                        secondary: true,
-                                                        circle: true,
-                                                        type: "error",
-                                                    },
-                                                    {
-                                                        icon: () => h(NIcon, () => h(IconTrash)),
-                                                    },
-                                                ),
-                                            default: () => t("delete"),
-                                        },
-                                    ),
+                                trigger: () => h(
+                                    NButton,
+                                    {
+                                        strong: true,
+                                        secondary: true,
+                                        circle: true,
+                                        type: "error",
+                                    },
+                                    {
+                                        icon: () => h(NIcon, () => h(IconTrash)),
+                                    },
+                                ),
                                 default: () => t("theFollowingActionIsIrreversible"),
                             },
                         )
@@ -526,6 +470,6 @@ watch(searchQuery, (v) => {
 
 useHead({
     title: `${database.value.slug} | ${t(table.value.slug)}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

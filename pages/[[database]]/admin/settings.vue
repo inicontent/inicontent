@@ -92,7 +92,6 @@ useLanguage({
         save: "حِفظ",
         slug: "الإسم",
         allowedMethods: "الأوامر المسموح بها",
-        allowedDomains: "النِطاقات المسموح بها",
         languages: "اللغات",
         roles: "الأدوار",
         guest: "زائر",
@@ -130,6 +129,7 @@ const route = useRoute(),
                         router.replace({
                             params: { database: database.value.slug },
                         });
+                    setThemeConfig()
                     Loading.value.updateDatabase = false;
                     window.$message.success(data.message);
                 } else window.$message.error(data.message);
@@ -147,7 +147,6 @@ const route = useRoute(),
             },
         );
         if (data.result) {
-            database.value = {};
             Loading.value.deleteDatabase = false;
             window.$message.success(data.message);
             setTimeout(async () => {
@@ -158,77 +157,8 @@ const route = useRoute(),
         Loading.value.deleteDatabase = false;
     };
 
-const databaseSchema = [
-    {
-        id: 1,
-        key: "slug",
-        type: "string",
-        required: true,
-    },
-    {
-        id: 2,
-        key: "icon",
-        type: "url",
-        subType: "upload",
-        required: true,
-    },
-    {
-        id: 3,
-        key: "primaryColor",
-        type: "string",
-        subType: "color",
-        required: true,
-    },
-    {
-        id: 4,
-        key: "primaryDarkColor",
-        type: "string",
-        subType: "color",
-        required: true,
-    },
-    {
-        id: 5,
-        key: "allowedDomains",
-        type: "array",
-        children: "url",
-        required: false,
-    },
-    {
-        id: 6,
-        key: "languages",
-        type: "array",
-        subType: "select",
-        children: "string",
-        options: Languages,
-        required: false,
-    },
-    {
-        id: 7,
-        key: "roles",
-        type: "array",
-        children: [
-            {
-                id: 8,
-                key: "id",
-                type: "id",
-                inputProps: {
-                    disabled: true,
-                },
-            },
-            {
-                id: 9,
-                key: "name",
-                type: "string",
-            },
-        ],
-        onCreate: { id: `temp-${randomID()}` },
-        disabledItems: [0, 1, 2],
-        required: false,
-    },
-]
-
 useHead({
     title: `${database.value.slug} | ${t("settings")}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

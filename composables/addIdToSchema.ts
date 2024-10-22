@@ -4,7 +4,7 @@ export default function (schema: Schema, startWithID = 0) {
 	function _addIdToField(field: Field) {
 		if (!field.id) {
 			startWithID++;
-			field.id = startWithID;
+			field.id = String(startWithID);
 		}
 
 		if (

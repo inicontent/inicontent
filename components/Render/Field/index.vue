@@ -9,8 +9,8 @@
     }" />
     <LazyRenderFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field="field" />
     <LazyRenderFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field="field" />
+    <LazyRenderFieldUpload v-else-if="field.table === 'asset'" v-model="modelValue" :field="field" />
     <LazyRenderFieldTable v-else-if="detectedFieldType === 'table'" v-model="modelValue" :field="field" />
-    <LazyRenderFieldUpload v-else-if="detectedFieldType === 'upload'" v-model="modelValue" :field="field" />
     <LazyRenderFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :field="field" />
     <LazyRenderFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :field="field" />
     <LazyRenderFieldEmail v-else-if="detectedFieldType === 'email'" v-model="modelValue" :field="field" />
@@ -39,20 +39,32 @@ const { field } = defineProps({
 });
 
 const modelValue = defineModel({
-    type: [Array, Object, String, Boolean, Number, null]
+    type: [Array, Object, String, Boolean, Number, null],
 })
+
+function getDefaultValue(field: Field): any {
+    if (Array.isArray(field.type)) {
+        if (field.type.includes('array'))
+            return []
+        if (field.type.includes('object'))
+            return {}
+    } else {
+        if (field.type === "array")
+            return [];
+        if (field.type === "object")
+            return {};
+    }
+    return null
+}
 
 if (field.defaultValue && !modelValue.value)
     modelValue.value = field.defaultValue;
-
-if (
-    modelValue.value &&
-    modelValue.value === null
+else if (
+    !modelValue.value
 )
-    delete modelValue.value
+    modelValue.value = getDefaultValue(field)
 
 if (
-    field.subType &&
     ((Array.isArray(field.type) && field.type.includes("array")) ||
         (typeof field.type === "string" && field.type === "array"))
 )

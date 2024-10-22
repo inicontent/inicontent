@@ -17,7 +17,7 @@
                         @mouseleave="() => Hover[`${currentFlow}-${index}`] = false">
                         <NButtonGroup vertical size="small" style="position:absolute;top:0;right:0;z-index:999999"
                             :style="Hover[`${currentFlow}-${index}`] ? '' : 'visibility:hidden'">
-                            <NButton secondary type="primary" @click="() => currentFlowCard =
+                            <NButton secondary type="primary" @click="currentFlowCard =
                                 currentFlowCard ===
                                     `${currentFlow}-${index}`
                                     ? undefined
@@ -41,11 +41,9 @@
                         <NCard hoverable content-style="padding: 0">
                             <NScrollbar x-scrollable>
                                 <NFlex vertical :wrap="false" style="padding:  20px 22px;">
-                                    <NEmpty v-if="!flow.length" />
-                                    <template v-if="currentFlowCard === `${currentFlow}-${index}`"
-                                        v-for="([firstValue, secondValue, thirdValue], index) of flow"
-                                        :key="firstValue">
-                                        <NInputGroup>
+                                    <template v-if="currentFlowCard === `${currentFlow}-${index}`">
+                                        <NInputGroup v-for="([firstValue, secondValue, thirdValue], index) of flow"
+                                            :key="firstValue">
                                             <template v-if="firstValue === 'set'">
                                                 <NDropdown v-bind="DropdownProps(flow, index)">
                                                     <NButton size="small" type="success" secondary
@@ -54,9 +52,9 @@
                                                     </NButton>
                                                 </NDropdown>
                                                 <NCascader size="small" style="height: fit-content;"
-                                                    :options="generateFlowCascaderOptions()" check-strategy="child"
-                                                    expand-trigger="hover" show-path separator="." filterable
-                                                    v-model:value="flow[index][1]" />
+                                                    :options="generateFlowCascaderOptions(true, true)"
+                                                    check-strategy="child" expand-trigger="hover" show-path
+                                                    separator="." filterable v-model:value="flow[index][1]" />
                                                 <NSelect size="small"
                                                     style="border-radius: 0 50px 50px 0!important;overflow: hidden;"
                                                     :consistent-menu-width="false" filterable tag :options="generateFlowSelectOptions(
@@ -86,10 +84,11 @@
                                                         {{ t('unset') }}
                                                     </NButton>
                                                 </NDropdown>
-                                                <NCascader size="small" style="height: fit-content;"
-                                                    :options="generateFlowCascaderOptions()" check-strategy="child"
+                                                <NCascader size="small"
+                                                    style="border-radius: 0 50px 50px 0!important;overflow: hidden;height: fit-content;"
+                                                    :options="generateFlowCascaderOptions()" check-strategy="parent"
                                                     expand-trigger="hover" show-path separator="." filterable
-                                                    v-model:value="flow[index][1]" />
+                                                    v-model:value="flow[index][1]" multiple :max-tag-count="1" />
                                             </template>
                                             <template v-else>
                                                 <NDropdown v-bind="DropdownProps(flow, index)">
@@ -100,7 +99,7 @@
                                                 </NDropdown>
                                                 <NCascader size="small" style="height: fit-content;max-width: 156px;"
                                                     :options="[
-                                                        ...generateFlowCascaderOptions(true, true),
+                                                        ...generateFlowCascaderOptions(true, true, true),
                                                         { label: '@method', value: '@method' },
                                                     ]" check-strategy="child" expand-trigger="hover" show-path
                                                     separator="." filterable v-model:value="flow[index][0]" />
@@ -134,7 +133,29 @@
                                                     @update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
                                             </template>
                                         </NInputGroup>
+                                        <NDropdown show-arrow :options="addNewRuleDropdownOptions" @select="(value) => {
+                                            switch (value) {
+                                                case 'if':
+                                                    flow.push([null, null, null]);
+                                                    break;
+                                                case 'set':
+                                                    flow.push(['set', null, null]);
+                                                    break;
+                                                default:
+                                                    flow.push([value, null] as any);
+                                                    break;
+                                            }
+                                        }">
+                                            <NButton style="margin: auto" round dashed>
+                                                <template #icon>
+                                                    <NIcon>
+                                                        <IconPlus />
+                                                    </NIcon>
+                                                </template>
+                                            </NButton>
+                                        </NDropdown>
                                     </template>
+                                    <NEmpty v-else-if="!flow.length" />
                                     <template v-else v-for="[firstValue, secondValue, thirdValue] of flow">
                                         <template v-if="firstValue === 'set'">
                                             <NFlex align="center" :wrap="false">
@@ -150,27 +171,25 @@
                                                 </NFlex>
                                                 <NTag v-if="thirdValue === undefined" :bordered="false" round>--
                                                 </NTag>
-                                                <NScrollbar v-else>
-                                                    <NFlex :wrap="false">
-                                                        <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
-                                                            round>
-                                                            {{ String(
-                                                                secondValue &&
-                                                                    (secondValue ===
-                                                                        "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-                                                                        (table.slug === "user" &&
-                                                                            secondValue.endsWith(
-                                                                                ".c12f82766d02ae29c6a94a3acf11cda4",
-                                                                            ))) &&
-                                                                    isValidID(value)
-                                                                    ? database.roles?.find(
-                                                                        ({ id }) => id === value,
-                                                                    )?.name
-                                                                    : formatValue(value),
-                                                            ) }}
-                                                        </NTag>
-                                                    </NFlex>
-                                                </NScrollbar>
+                                                <NFlex v-else :wrap="false" :size="[4, 8]">
+                                                    <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
+                                                        round>
+                                                        {{ String(
+                                                            secondValue &&
+                                                                (secondValue ===
+                                                                    "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
+                                                                    (table.slug === "user" &&
+                                                                        secondValue.endsWith(
+                                                                            ".c12f82766d02ae29c6a94a3acf11cda4",
+                                                                        ))) &&
+                                                                isValidID(value)
+                                                                ? database.roles?.find(
+                                                                    ({ id }) => id === value,
+                                                                )?.name
+                                                                : formatValue(value),
+                                                        ) }}
+                                                    </NTag>
+                                                </NFlex>
                                             </NFlex>
                                         </template>
                                         <template v-else-if="firstValue === 'error'">
@@ -191,18 +210,18 @@
                                         </template>
                                         <template v-else-if="firstValue === 'unset'">
                                             <NFlex :wrap="false" :size="0">
-                                                <NTag type="warning" :bordered="false"
-                                                    style="padding: 0 13px; border-radius: 50px 0 0 50px;">
+                                                <NTag type="warning" :bordered="false" round style="margin-right: 12px">
                                                     {{ t('unset') }}
                                                 </NTag>
-                                                <NTag
+                                                <NFlex
                                                     v-if="(Array.isArray(secondValue) && secondValue.length) || secondValue"
-                                                    v-for="value of [].concat(secondValue)" :bordered="false"
-                                                    style="padding-right: 10px; border-radius: 0 50px 50px 0;">
-                                                    {{ value }}
-                                                </NTag>
-                                                <NTag v-else :bordered="false"
-                                                    style="padding-right: 10px; border-radius: 0 50px 50px 0;">
+                                                    :size="[4, 8]">
+                                                    <NTag v-for="value of [].concat(secondValue)" :bordered="false"
+                                                        round>
+                                                        {{ formatValue(value) }}
+                                                    </NTag>
+                                                </NFlex>
+                                                <NTag v-else :bordered="false" round>
                                                     --
                                                 </NTag>
                                             </NFlex>
@@ -231,27 +250,25 @@
                                                 </NTooltip>
                                                 <NTag v-if="thirdValue === undefined" :bordered="false" round>--
                                                 </NTag>
-                                                <NScrollbar v-else>
-                                                    <NFlex :wrap="false" :size="[4, 8]">
-                                                        <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
-                                                            round>
-                                                            {{ value === null ? '@null' : String(
-                                                                firstValue &&
-                                                                    (firstValue ===
-                                                                        "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-                                                                        (table.slug === "user" &&
-                                                                            firstValue.endsWith(
-                                                                                ".c12f82766d02ae29c6a94a3acf11cda4",
-                                                                            ))) &&
-                                                                    isValidID(value)
-                                                                    ? database.roles?.find(
-                                                                        ({ id }) => id === value,
-                                                                    )?.name
-                                                                    : formatValue(value),
-                                                            ) }}
-                                                        </NTag>
-                                                    </NFlex>
-                                                </NScrollbar>
+                                                <NFlex v-else :wrap="false" :size="[4, 8]">
+                                                    <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
+                                                        round>
+                                                        {{ value === null ? '@null' : String(
+                                                            firstValue &&
+                                                                (firstValue ===
+                                                                    "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
+                                                                    (table.slug === "user" &&
+                                                                        firstValue.endsWith(
+                                                                            ".c12f82766d02ae29c6a94a3acf11cda4",
+                                                                        ))) &&
+                                                                isValidID(value)
+                                                                ? database.roles?.find(
+                                                                    ({ id }) => id === value,
+                                                                )?.name
+                                                                : formatValue(value),
+                                                        ) }}
+                                                    </NTag>
+                                                </NFlex>
                                             </NFlex>
                                         </template>
                                     </template>
@@ -263,8 +280,7 @@
                         <template #trigger>
                             <NCard style="cursor: pointer;" content-style="padding: 34px 0" hoverable @click="() => {
                                 if (tableCopy[flowName] && Array.isArray(tableCopy[flowName]))
-                                    currentFlowCard = `${currentFlow}-${tableCopy[flowName].push([]) - 1
-                                        }`;
+                                    currentFlowCard = `${currentFlow}-${tableCopy[flowName].push([]) - 1}`;
                                 else {
                                     tableCopy[flowName] = [[]];
                                     currentFlowCard = `${currentFlow}-${0}`;
@@ -365,30 +381,44 @@ const database = useState<Database>("database"),
         for (const item of schema) flattenHelper(item, "");
 
         return result;
-    },
-    generateFlowCascaderOptions = (
-        withWhereOr = true,
-        withUser?: boolean,
-    ) => {
-        const result: CascaderOption[] = [];
-        if (withUser) {
-            let userSchema = database.value.tables?.find(
-                ({ slug }) => slug === "user",
-            )?.schema;
-            if (userSchema) {
-                userSchema = flattenSchema(userSchema);
-                result.push({
-                    label: "@user",
-                    value: "@user",
-                    children: userSchema.map(({ id, key }) => ({
-                        label: key,
-                        value: `@user.${id}`,
-                    })),
-                });
-            }
+    };
+function schemaToOptions(schema: Schema, prefix = '@data') {
+    const options: CascaderOption[] = []
+    for (const field of schema) {
+        let option: CascaderOption = {
+            label: field.key,
+            value: `${prefix}.${field.id}`
         }
-        if (table.value.schema) {
-            const schema = flattenSchema(table.value.schema);
+        if (isArrayOfObjects(field.children))
+            option.children = schemaToOptions(field.children)
+        options.push(option)
+    }
+    return options
+}
+function generateFlowCascaderOptions(
+    withWhere?: boolean,
+    withWhereOr?: boolean,
+    withUser?: boolean,
+) {
+    const result: CascaderOption[] = [];
+    if (withUser) {
+        let userSchema = database.value.tables?.find(
+            ({ slug }) => slug === "user",
+        )?.schema;
+        if (userSchema) {
+            userSchema = flattenSchema(userSchema);
+            result.push({
+                label: "@user",
+                value: "@user",
+                children: userSchema.map(({ id, key }) => ({
+                    label: key,
+                    value: `@user.${id}`,
+                })),
+            });
+        }
+    }
+    if (table.value.schema) {
+        if (withWhere)
             result.push({
                 label: "@where",
                 value: "@where",
@@ -398,152 +428,145 @@ const database = useState<Database>("database"),
                             {
                                 label: "or",
                                 value: "@where.or",
-                                children: schema.map(({ id, key }) => ({
-                                    label: key,
-                                    value: `@where.or.${id}`,
-                                })),
+                                children: schemaToOptions(table.value.schema, '@where.or'),
                             },
                         ]
                         : []),
-                    ...schema.map(({ id, key }) => ({
-                        label: key,
-                        value: `@where.${id}`,
-                    })),
+                    ...schemaToOptions(table.value.schema, '@where'),
                 ],
             });
-            result.push({
-                label: "@data",
-                value: "@data",
-                children: schema.map(({ id, key }) => ({
-                    label: key,
-                    value: `@data.${id}`,
-                })),
-            });
-        }
-        return result;
-    },
-    generateFlowSelectOptions = (
-        value: string,
-        withWhereOr = true,
-        withUser?: boolean,
-    ) => {
-        const result: (SelectOption | SelectGroupOption)[] = [];
-        if (value === "@method")
-            return ["get", "post", "put", "delete"].map((method) => ({
-                label: method.toUpperCase(),
-                value: method.toUpperCase(),
-            }));
-
         result.push({
-            label: "@null",
-            value: "null",
+            label: "@data",
+            value: "@data",
+            children: schemaToOptions(table.value.schema),
         });
+    }
+    return result;
+}
+function generateFlowSelectOptions(
+    value: string,
+    withWhereOr = true,
+    withUser?: boolean,
+) {
+    const result: (SelectOption | SelectGroupOption)[] = [];
+    if (value === "@method")
+        return ["get", "post", "put", "delete"].map((method) => ({
+            label: method.toUpperCase(),
+            value: method.toUpperCase(),
+        }));
 
-        if (
-            value &&
-            (value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-                (table.value.slug === "user" &&
-                    value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
-        )
-            // @user.role
+    result.push({
+        label: "@null",
+        value: "null",
+    });
+
+    if (
+        value &&
+        (value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
+            (table.value.slug === "user" &&
+                value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
+    )
+        // @user.role
+        result.push({
+            key: "@role",
+            label: "@role",
+            type: "group",
+            children: database.value.roles?.map(({ name, id }) => ({
+                label: name,
+                value: id,
+            })),
+        });
+    if (withUser) {
+        let userSchema = database.value.tables?.find(
+            ({ slug }) => slug === "user",
+        )?.schema;
+        if (userSchema) {
+            userSchema = flattenSchema(userSchema);
             result.push({
-                key: "@role",
-                label: "@role",
+                key: "@user",
+                label: "@user",
                 type: "group",
-                children: database.value.roles?.map(({ name, id }) => ({
-                    label: name,
-                    value: id,
-                })),
-            });
-        if (withUser) {
-            let userSchema = database.value.tables?.find(
-                ({ slug }) => slug === "user",
-            )?.schema;
-            if (userSchema) {
-                userSchema = flattenSchema(userSchema);
-                result.push({
-                    key: "@user",
-                    label: "@user",
-                    type: "group",
-                    children: userSchema.map(({ id, key }) => ({
-                        label: `@user.${key}`,
-                        value: `@user.${id}`,
-                    })),
-                });
-            }
-        }
-        if (table.value.schema) {
-            const schema = flattenSchema(table.value.schema);
-            result.push({
-                key: "@where",
-                label: "@where",
-                type: "group",
-                children: [
-                    ...(withWhereOr
-                        ? [
-                            {
-                                key: "@where.or",
-                                label: "or",
-                                type: "group",
-                                children: schema.map(({ id, key }) => ({
-                                    label: `@where.or.${key}`,
-                                    value: `@where.or.${id}`,
-                                })),
-                            },
-                        ]
-                        : []),
-                    ...schema.map(({ id, key }) => ({
-                        label: `@where.${key}`,
-                        value: `@where.${id}`,
-                    })),
-                ],
-            });
-            result.push({
-                key: "@data",
-                label: "@data",
-                type: "group",
-                children: schema.map(({ id, key }) => ({
-                    label: `@data.${key}`,
-                    value: `@data.${id}`,
+                children: userSchema.map(({ id, key }) => ({
+                    label: `@user.${key}`,
+                    value: `@user.${id}`,
                 })),
             });
         }
-        return result;
-    },
-    formatValue = (
-        value?: string | number | boolean | null,
-        property: keyof Field = "key",
-        defaultValue?: string,
-    ) => {
-        if (
-            value &&
-            typeof value === "string" &&
-            (value.startsWith("@user.") ||
-                value.startsWith("@data.") ||
-                value.startsWith("@where."))
-        ) {
-            const splitedValue = value.split("."),
-                lastItem = splitedValue.pop();
-            let schema =
-                splitedValue[0] === "@user"
-                    ? database.value?.tables?.find(({ slug }) => slug === "user")
-                        ?.schema
-                    : table.value.schema;
-            if (schema) {
-                schema = flattenSchema(schema, true);
-                const item = schema.find(({ id }) => id === lastItem);
+    }
+    if (table.value.schema) {
+        const schema = flattenSchema(table.value.schema);
+        result.push({
+            key: "@where",
+            label: "@where",
+            type: "group",
+            children: [
+                ...(withWhereOr
+                    ? [
+                        {
+                            key: "@where.or",
+                            label: "or",
+                            type: "group",
+                            children: schema.map(({ id, key }) => ({
+                                label: `@where.or.${key}`,
+                                value: `@where.or.${id}`,
+                            })),
+                        },
+                    ]
+                    : []),
+                ...schema.map(({ id, key }) => ({
+                    label: `@where.${key}`,
+                    value: `@where.${id}`,
+                })),
+            ],
+        });
+        result.push({
+            key: "@data",
+            label: "@data",
+            type: "group",
+            children: schema.map(({ id, key }) => ({
+                label: `@data.${key}`,
+                value: `@data.${id}`,
+            })),
+        });
+    }
+    return result;
+};
 
-                if (!item) return undefined;
+function formatValue(
+    value?: string | number | boolean | null,
+    property: keyof Field = "key",
+    defaultValue?: string,
+) {
+    if (
+        value &&
+        typeof value === "string" &&
+        (value.startsWith("@user.") ||
+            value.startsWith("@data.") ||
+            value.startsWith("@where."))
+    ) {
+        const splitedValue = value.split("."),
+            lastItem = splitedValue.pop();
+        let schema =
+            splitedValue[0] === "@user"
+                ? database.value?.tables?.find(({ slug }) => slug === "user")
+                    ?.schema
+                : table.value.schema;
+        if (schema) {
+            schema = flattenSchema(schema, true);
+            const item = schema.find(({ id }) => id === lastItem);
 
-                if (property === "key")
-                    return `${splitedValue.join(".")}.${item?.key}`;
+            if (!item) return undefined;
 
-                return item[property] ?? defaultValue;
-            }
+            if (property === "key")
+                return `${splitedValue.join(".")}.${item?.key}`;
+
+            return item[property] ?? defaultValue;
         }
-        return value || defaultValue;
-    },
-    DropdownProps = (flow: FlowType, index: number) => ({
+    }
+    return value || defaultValue;
+}
+function DropdownProps(flow: FlowType, index: number) {
+    return ({
         options: [
             {
                 label: t("delete"),
@@ -583,11 +606,32 @@ const database = useState<Database>("database"),
             }
         },
     })
+}
 
+const addNewRuleDropdownOptions = [
+    {
+        key: "if",
+        label: t("condition"),
+    },
+    {
+        key: "set",
+        label: t("set"),
+        show: table.value.slug !== "asset",
+    },
+    {
+        key: "unset",
+        label: t("unset"),
+        show: table.value.slug !== "asset",
+    },
+    {
+        key: "error",
+        label: t("throwError"),
+    },
+]
 
 useHead({
     title: `${database.value.slug} | ${t(table.value.slug)} > ${t("flows")}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>
 

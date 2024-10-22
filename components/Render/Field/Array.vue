@@ -6,20 +6,20 @@
     }" v-model="modelValue" />
     <LazyRenderField v-else-if="!isArrayOfObjects(field.children)" :field="{
         ...field,
-        type: field.children === 'table' ? 'table' : 'tags',
+        subType: field.children === 'table' ? 'table' : 'tags',
         isArray: true,
     }" v-model="modelValue" />
     <NCollapse v-else-if="field.isTable === false || field.children.filter(
         (f: any) => f.type === 'array' && isArrayOfObjects(f.children),
-    ).length" display-directive="show" style="margin: 0 0 20px;" arrow-placement="right"
-        :trigger-areas="['main', 'arrow']" :default-expanded-names="field.expand ? field.id : undefined" accordion>
+    ).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
+        :default-expanded-names="field.expand ? field.id : undefined" accordion>
         <template #arrow>
-            <NIcon v-if="modelValue.length > 0">
-                <IconChevronRight />
+            <NIcon>
+                <IconChevronRight v-if="modelValue && modelValue.length > 0" />
             </NIcon>
         </template>
-        <NCollapseItem display-directive="show" :title="t(field.key)" :name="field.id"
-            :disabled="modelValue.length === 0">
+        <NCollapseItem style="margin: 0 0 20px;" display-directive="show" :title="t(field.key)" :name="field.id"
+            :disabled="!modelValue?.length">
             <template #header-extra>
                 <NButton size="small" round @click="handleAddNewItem">
                     <template #icon>
@@ -29,14 +29,14 @@
                     </template>
                 </NButton>
             </template>
-            <NCollapse display-directive="show" accordion>
-                <NCollapseItem v-for="(_item, index) of modelValue" display-directive="show"
-                    :title="field.children[0].type === 'string' ? modelValue[index][field.children[0].key] : `${field.id}.${index}`"
+            <NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames">
+                <NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
+                    :title="field.children[0].type === 'string' ? _item[field.children[0].key] ?? `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
                     :name="`${field.id}.${index}`">
                     <template #header-extra>
                         <NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
                             index,
-                        )" @click="() => modelValue.splice(index, 1)">
+                        )" @click="modelValue.splice(index, 1)">
                             <template #icon>
                                 <NIcon>
                                     <IconTrash />
@@ -109,19 +109,19 @@ const { field } = defineProps({
     }
 });
 
+const modelValue = defineModel<any[]>();
 
-const modelValue = defineModel({
-    type: Array as PropType<any>,
-    default: []
-});
+const expandedNames = ref()
 
 function handleAddNewItem() {
+    if (!modelValue.value) return
     const oldLength = toRaw(modelValue.value).length;
     modelValue.value?.push(field.onCreate
         ? field.onCreate instanceof Function
             ? field.onCreate(oldLength)
             : field.onCreate
         : {})
+    expandedNames.value = `${field.id}.${oldLength}`
 }
 
 function getTableWidth(): number {
@@ -175,7 +175,7 @@ function getTableColumns(): DataTableColumns {
                         isArray: true,
                         isTable: true,
                     },
-                    modelValue: modelValue.value[index][child.key],
+                    modelValue: (modelValue.value as any[])[index][child.key],
                 }),
         })) as any,
         field.disableActions === true
@@ -200,7 +200,7 @@ function getTableColumns(): DataTableColumns {
                                         secondary: true,
                                         circle: true,
                                         type: 'error',
-                                        onClick: () => modelValue.splice(index, 1),
+                                        onClick: () => modelValue.value?.splice(index, 1),
                                     },
                                     {
                                         icon: () => h(NIcon, () => h(IconTrash)),

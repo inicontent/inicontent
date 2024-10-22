@@ -1,33 +1,35 @@
-import type { FieldType, pageInfo, ComparisonOperator } from "inibase";
+import type {
+	FieldType as dbFieldType,
+	pageInfo,
+	ComparisonOperator,
+} from "inibase";
 import type { useMessage } from "naive-ui";
-type CMS_FieldType =
-	| "text"
-	| "upload"
-	| "textarea"
-	| "radio"
-	| "checkbox"
-	| "tags"
-	| "color"
-	| "select"
-	| "role";
+
 type onCreateCallback = (index: number) => onCreateType;
 type onCreateType = string | number | boolean | null | Record<any, any>;
 declare global {
 	interface Window {
 		$message: useMessage;
 	}
+	type CMS_FieldType =
+		| "text"
+		| "textarea"
+		| "radio"
+		| "checkbox"
+		| "tags"
+		| "color"
+		| "select"
+		| "role"
+		| "mention";
+	type FieldType = dbFieldType;
 	type Field = {
 		id?: string | number;
 		key: string;
-		children?: string | string[] | Schema;
+		children?: FieldType | FieldType[] | Schema;
 		required?: boolean;
 		table?: string;
-		type:
-			| FieldType
-			| CMS_FieldType
-			| string
-			| (FieldType | CMS_FieldType | string)[];
-		subType?: string;
+		type: CMS_FieldType | FieldType | FieldType[];
+		subType?: CMS_FieldType | FieldType | FieldType[];
 		accept?: string[];
 		isArray?: boolean;
 		searchIn?: string[];
@@ -97,9 +99,11 @@ declare global {
 	type Database = {
 		slug?: string;
 		id?: string;
-		icon?: null | string;
-		languages?: string[];
-		allowedDomains?: string[];
+		icon?: Asset;
+		primaryColor?: string;
+		primaryDarkColor?: string;
+		domains?: string[];
+		locales?: string[];
 		roles?: { name: string; id: string }[];
 		tables?: Table[];
 		user?: User;
@@ -110,14 +114,12 @@ declare global {
 		message: string;
 		options: pageInfo;
 	};
-	type Asset = {
-		name: string;
+	type Asset = Item & {
+		name?: string;
 		type: string;
 		size: number;
-		createdAt: number;
-		updatedAt?: number;
 		publicURL: string;
-		createdBy?: Record<string, string | number | boolean | null>;
+		createdBy?: User;
 	};
 	type ThemeConfig = {
 		primaryColor: string;
@@ -134,6 +136,8 @@ declare module "nuxt/schema" {
 }
 
 export type {
+	CMS_FieldType,
+	FieldType,
 	Field,
 	Schema,
 	Table,

@@ -18,15 +18,15 @@
                         <NFlex>
                             <template
                                 v-if="['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)">
-                                <NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable @select="(type) => schema[index].children = [
+                                <NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable @select="(type) => schema[index].children = ([
                                     ...(schema[index].children ?? []),
                                     {
                                         id: `temp-${randomID()}`,
                                         key: null,
                                         required: false,
-                                        ...handleSelectedType(type),
+                                        ...handleSelectedSchemaType(type),
                                     },
-                                ]">
+                                ] as any)">
                                     <NButton :disabled="!element.key" circle size="small">
                                         <template #icon>
                                             <NIcon>
@@ -39,7 +39,7 @@
                             <template v-else-if="element.id !== 'b6477d47f0b3cb6d75a8c2771d4d9469'">
                                 <NButton :round="!isMobile" :circle="isMobile" strong secondary size="small"
                                     :type="schema[index].required ? 'error' : 'tertiary'"
-                                    @click="() => schema[index].required = !schema[index].required">
+                                    @click="schema[index].required = !schema[index].required">
                                     <template #icon>
                                         <NIcon>
                                             <IconAsterisk />
@@ -66,7 +66,7 @@
                                 </NButton>
                             </NDropdown>
                             <NButton v-if="element.id !== 'b6477d47f0b3cb6d75a8c2771d4d9469'" circle secondary
-                                size="small" type="error" @click="() => schema.splice(index, 1)">
+                                size="small" type="error" @click="schema.splice(index, 1)">
                                 <template #icon>
                                     <NIcon>
                                         <IconTrash />
@@ -81,7 +81,7 @@
                         </template>
                         <NInput v-model:value="schema[index].key" />
                     </NFormItem>
-                    <template v-if="(schema[index].subType ?? schema[index].type) === 'upload'">
+                    <template v-if="schema[index].table === 'asset'">
                         <NFormItem :label="t('allowedFiles')">
                             <NSelect multiple :render-label="(option: any) =>
                                 h(NFlex, { align: 'center' }, () => [
@@ -242,85 +242,23 @@ useLanguage({
     },
     en: {},
 });
-const schema = defineModel({
-    type: Object as PropType<Schema | never>,
-    default: [],
+const schema = defineModel<Schema>({
+    default: () => reactive([]),
 });
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const { isMobile } = useDevice();
 
-function handleSelectedType(type: string): any {
-    switch (type) {
-        case "textarea":
-            return {
-                type: "string",
-                subType: "textarea",
-            };
-        case "role":
-            return {
-                type: "string",
-                subType: "role",
-            };
-        case "upload":
-            return {
-                type: "url",
-                subType: "upload",
-            };
-        case "array-upload":
-            return {
-                type: "array",
-                children: "url",
-                subType: "upload",
-            };
-        case "array-table":
-            return {
-                type: "array",
-                children: "table",
-                subType: "table",
-            };
-        case "tags":
-            return {
-                type: "array",
-                subType: "tags",
-            };
-        case "select":
-            return {
-                type: ["string", "number"],
-                subType: "select",
-            };
-        case "array-select":
-            return {
-                type: "array",
-                children: ["string", "number"],
-                subType: "select",
-            };
-        case "color":
-            return {
-                type: "string",
-                subType: "color",
-            };
-        case "array":
-        case "object":
-            return {
-                type: type,
-                children: [],
-            };
-        default:
-            return { type };
-    }
-}
-
 function changeFieldType(
     { id, key, required, children }: any,
     newType: string,
-) {
+): Field {
     switch (newType) {
         case "object":
         case "array":
             return { id, key, type: newType, required, children };
         default:
-            return { id, key, ...handleSelectedType(newType), required };
+            return { id, key, ...(handleSelectedSchemaType(newType) as any), required };
     }
 }
 </script>

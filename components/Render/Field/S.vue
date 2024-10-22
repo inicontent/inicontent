@@ -1,5 +1,5 @@
 <template>
-	<RenderField v-for="field of schema" :field="field" :schema="schema" v-model="modelValue[field.key]" />
+	<RenderField v-for="field of schema" :field="field" :schema="newSchema" v-model="modelValue[field.key]" />
 </template>
 
 <script lang="ts" setup>
@@ -8,7 +8,7 @@
 
 let { schema } = defineProps({
 	schema: {
-		type: Object as PropType<Schema | never>,
+		type: Object as PropType<Schema>,
 		default: [],
 	},
 })
@@ -16,7 +16,7 @@ let newSchema = schema
 if (schema.every(({ id }) => !id))
 	newSchema = addIdToSchema(schema)
 const modelValue = defineModel({
-	type: Object as PropType<any>,
-	default: {},
+	type: Object,
+	default: () => reactive({}),
 })
 </script>

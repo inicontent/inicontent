@@ -54,21 +54,19 @@ const SigninFormRef = ref<FormInst | null>(null),
         username: "",
         password: "",
     }),
-    SigninColumns = [
+    SigninColumns: Schema = [
         {
-            id: 1,
             key: "username",
-            type: "text",
+            type: "string",
             required: true,
         },
         {
-            id: 2,
             key: "password",
             type: "password",
             required: true,
         },
     ],
-    SignupColumns = database.value?.tables
+    SignupColumns: Schema = database.value?.tables
         ?.find((item) => item.slug === "user")
         ?.schema?.filter(
             (field) =>
@@ -77,19 +75,16 @@ const SigninFormRef = ref<FormInst | null>(null),
                 ),
         ) ?? [
             {
-                id: 1,
                 key: "username",
-                type: "text",
+                type: "string",
                 required: true,
             },
             {
-                id: 2,
                 key: "email",
                 type: "email",
                 required: true,
             },
             {
-                id: 3,
                 key: "password",
                 type: "password",
                 required: true,
@@ -157,6 +152,6 @@ const SigninSubmit = async (e: Event) => {
 };
 useHead({
     title: `${database.value.slug} | ${t("authentication")}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

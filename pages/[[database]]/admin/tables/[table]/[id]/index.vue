@@ -129,6 +129,7 @@ if (!itemObject.value?.id)
     throw createError({
         statusCode: 404,
         statusMessage: "item",
+        fatal: true
     });
 
 function PRINT() {
@@ -142,7 +143,7 @@ const itemLabel = useState("itemLabel", () =>
 
 useHead({
     title: `${database.value.slug} | ${t(table.value.slug)} > ${itemLabel.value}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>
 

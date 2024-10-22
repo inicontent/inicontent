@@ -12,68 +12,27 @@
                 </template>
             </NButton>
         </template>
-        <NModal v-model:show="showDatabaseModal" :style="{
-            width: !isMobile ? '600px' : '100%'
-        }" preset="card" :title="t('createDatabase')" :bordered="false" :segmented="{
-            footer: 'soft',
-        }">
-            <template #footer>
-                <NFlex justify="end">
-                    <NButton :loading="Loading.Database" @click="DatabaseSave">
-                        <template #icon>
-                            <NIcon>
-                                <IconDeviceFloppy />
-                            </NIcon>
-                        </template>
-                        {{ t("create") }}
-                    </NButton>
-                </NFlex>
-            </template>
-            <NForm ref="DatabaseRef" :model="DatabaseModal">
-                <RenderFieldS v-model="DatabaseModal" :schema="[
-                    {
-                        id: 1,
-                        key: 'slug',
-                        type: 'string',
-                        required: true,
-                    },
-                    {
-                        id: 2,
-                        key: 'icon',
-                        type: 'url',
-                        subType: 'upload',
-                        required: true,
-                    },
-                    {
-                        id: 3,
-                        key: 'allowedDomains',
-                        type: 'array',
-                        children: 'url',
-                        required: false,
-                    },
-                    {
-                        id: 4,
-                        key: 'languages',
-                        type: 'array',
-                        subType: 'select',
-                        children: 'string',
-                        options: Languages,
-                        required: false,
-                    },
-                    {
-                        id: 5,
-                        key: 'roles',
-                        type: 'array',
-                        subType: 'tags',
-                        children: 'string',
-                        disabledItems: [0, 1, 2],
-                        defaultValue: ['admin', 'user', 'guest'],
-                        required: false,
-                    },
-                ]" />
-            </NForm>
-        </NModal>
-        <NCollapse v-if="databases?.result?.length" :expanded-names="defaultOpenedDatabase"
+        <NDrawer v-model:show="showDatabaseModal" :placement="Language === 'ar' ? 'left' : 'right'"
+            :width="isMobile ? '100%' : 350">
+            <NDrawerContent :title="t('createDatabase')" closable>
+                <template #footer>
+                    <NFlex justify="end">
+                        <NButton round :loading="Loading.Database" @click="DatabaseSave">
+                            <template #icon>
+                                <NIcon>
+                                    <IconDeviceFloppy />
+                                </NIcon>
+                            </template>
+                            {{ t("create") }}
+                        </NButton>
+                    </NFlex>
+                </template>
+                <NForm ref="DatabaseRef" :model="DatabaseModal">
+                    <RenderFieldS v-model="DatabaseModal" :schema="databaseSchema" />
+                </NForm>
+            </NDrawerContent>
+        </NDrawer>
+        <NCollapse v-if="databases?.result?.length" v-model:expanded-names="expandedNames"
             :triggerAreas="['main', 'arrow']" accordion>
             <NCollapseItem v-for="(database, index) in databases?.result" :title="t(database.slug)"
                 :name="database.slug">
@@ -97,7 +56,6 @@
                                 </NIcon>
                             </template>
                         </NButton>
-
                     </NButtonGroup>
                 </template>
                 <LazyTableGrid v-model="databases.result[index]" />
@@ -124,7 +82,8 @@ import {
     NEmpty,
     NForm,
     NIcon,
-    NModal,
+    NDrawer,
+    NDrawerContent,
     NFlex,
 } from "naive-ui";
 
@@ -132,10 +91,10 @@ definePageMeta({
     middleware: "dashboard",
 });
 
+const route = useRoute();
 const database = useState<Database>("database")
 
-if (database.value.slug !== "inicontent")
-    await navigateTo('admin/tables')
+const Language = useCookie("Language")
 
 useLanguage({
     ar: {
@@ -145,7 +104,6 @@ useLanguage({
         createDatabase: "إنشاء قاعدة بيانات جديدة",
         slug: "الإسم",
         allowedMethods: "الأوامر المسموح بها",
-        allowedDomains: "النِطاقات المسموح بها",
         languages: "اللغات",
         roles: "الأدوار",
         guest: "زائر",
@@ -158,10 +116,12 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.Database = false;
 
 const { isMobile } = useDevice(),
-    { data: databases } = await useFetch<apiResponse<Database[]>>(
-        `${useRuntimeConfig().public.apiBase}inicontent/database`,
+    { data: databases, execute } = await useFetch<apiResponse<Database[]>>(
+        `${useRuntimeConfig().public.apiBase}inicontent/database`, {
+        immediate: false
+    }
     ),
-    defaultOpenedDatabase = ref(
+    expandedNames = ref(
         databases.value?.result?.length ? databases.value.result[0].slug : null,
     ),
     showDatabaseModal = ref(false),
@@ -188,7 +148,7 @@ const { isMobile } = useDevice(),
                     if (databases.value.result)
                         databases.value.result.push(data.result);
                     else databases.value.result = [data.result];
-                    defaultOpenedDatabase.value = data.result.slug;
+                    expandedNames.value = data.result.slug;
                 }
                 showDatabaseModal.value = false;
                 window.$message.success(data.message);
@@ -196,9 +156,14 @@ const { isMobile } = useDevice(),
         });
     };
 
+if (database.value.slug !== "inicontent")
+    await navigateTo(`/${route.params.database ? (`${database.value.slug}/`) : ''}admin/tables`)
+else
+    await execute()
+
 useHead({
     title: `${database.value.slug} | ${t('dashboard')}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 
 </script>

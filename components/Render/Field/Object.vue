@@ -20,6 +20,7 @@ const { field } = defineProps({
 })
 
 const modelValue = defineModel({
-    type: Object
+    type: Object,
+    default: () => reactive({})
 })
 </script>

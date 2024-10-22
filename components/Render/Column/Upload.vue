@@ -1,15 +1,14 @@
 <template>
     <NImageGroup>
         <NFlex :wrap="false">
-            <template v-for="singleValue in ([] as string[]).concat(value)" #default>
-                <NImage v-if="isImage(singleValue)" lazy
-                    :src="singleValue.includes('inicontent.') ? `${singleValue}?fit=32` : singleValue"
-                    :preview-src="singleValue" :width="32" />
-                <a v-else :href="singleValue" target="_blank">
+            <template v-for="singleValue in ([] as Asset[]).concat(value)" #default>
+                <NImage v-if="singleValue.type.startsWith('image/')" lazy :src="`${singleValue.publicURL}?fit=32`"
+                    :preview-src="singleValue.publicURL" :width="32" />
+                <NA v-else :href="singleValue.publicURL" target="_blank">
                     <NIcon>
                         <IconFileUpload />
                     </NIcon>
-                </a>
+                </NA>
             </template>
         </NFlex>
     </NImageGroup>
@@ -17,11 +16,11 @@
 
 <script lang="ts" setup>
 import { IconFileUpload } from "@tabler/icons-vue";
-import { NIcon, NImageGroup, NImage, NFlex } from "naive-ui";
+import { NIcon, NImageGroup, NImage, NFlex, NA } from "naive-ui";
 
 defineProps({
     value: {
-        type: [String, Array] as PropType<string | string[]>,
+        type: [Array, Object] as PropType<Asset | Asset[]>,
         required: true
     }
 })

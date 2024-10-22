@@ -1,5 +1,5 @@
 <template>
-    <NTime style="cursor: pointer;" @click="() => isRelative = !isRelative" :time="Number(value)"
+    <NTime style="cursor: pointer;" @click="isRelative = !isRelative" :time="Number(value)"
         :type="isRelative ? 'relative' : 'date'">
         {{ value }}
     </NTime>

@@ -1,7 +1,7 @@
 <template>
     <NuxtLayout name="default">
         <NLayout position="absolute" has-sider>
-            <NLayoutSider :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
+            <NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
                 isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
                 :collapsed-width="isMobile ? 0 : 64" width="240" :native-scrollbar="false">
                 <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="isMobile ? 0 : 64"
@@ -15,17 +15,7 @@
                         ? '24px 88px 24px 24px'
                         : '24px 24px 24px 88px',
             }" :native-scrollbar="false">
-                <div v-if="isMenuOpen" :style='{
-                    width: "100%",
-                    height: "100%",
-                    right: "0px",
-                    top: "0px",
-                    backgroundColor: "#0000006e",
-                    position: "absolute",
-                    zIndex: 99,
-                    cursor: "pointer",
-                }'>
-                </div>
+                <div v-if="isMenuOpen" class="Overlay"></div>
                 <slot></slot>
             </NLayoutContent>
         </NLayout>
@@ -34,24 +24,48 @@
 
 <script setup lang="ts">
 import {
+    IconAppWindow,
     IconEye,
     IconFingerprint,
     IconFolders,
     IconLanguage,
     IconPlus,
     IconSettings,
+    IconTournament,
     IconUsers,
     IconWebhook,
 } from "@tabler/icons-vue";
-import { NIcon, NLayout, NLayoutContent, NLayoutSider, NMenu } from "naive-ui";
+import { NIcon, NLayout, NLayoutContent, NLayoutSider, NMenu, type MenuOption } from "naive-ui";
 import { NuxtLink } from "#components";
 
 const Language = useCookie<string>("Language");
 
 useLanguage({
     ar: {
+        clickToCopy: "نسخ",
+        textCopied: "تم نسخ النص",
+        viewTheItem: "مُعاينة العنصر",
+        createdAt: "أُضيف",
+        updatedAt: "عُدِّل",
+        update: "تحديث",
+        create: "إنشاء",
+        delete: "حذف",
+        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
+        edit: "تعديل",
+        published: "المنشورة",
+        trash: "سلة المهملات",
+        id: "المُعرف",
+        actions: "الأوامر",
+        tableSettings: "إعدادات الجدول",
+        search: "بحث",
+        reset: "إفراغ",
+        tools: "الأدوات",
+        andGroup: "مجموعة و",
+        orGroup: "مجموعة أو",
         showAll: "أظهر الكل",
         newItem: "عنصر جديد",
+        new: "جديد",
+        publish: "نشر",
     },
     en: {},
 });
@@ -73,7 +87,7 @@ const route = useRoute(),
         } return decodeURI(lastPathInRoute?.toString() ?? "");
     });
 
-const renderSingleItem = ({ slug, allowedMethods }: Table) => {
+const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
     const itemChildren = [
         ...(slug !== "asset" && allowedMethods?.includes("c")
             ? [
@@ -157,6 +171,10 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
                         return h(IconUsers);
                     case "session":
                         return h(IconFingerprint);
+                    case "page":
+                        return h(IconAppWindow);
+                    case "component":
+                        return h(IconTournament);
                     default:
                         return t(slug).charAt(0).toUpperCase();
                 }
@@ -164,32 +182,44 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
         children: itemChildren.length ? itemChildren : undefined,
     };
 };
-const menuOptions: any = database.value.tables
+const menuOptions: MenuOption[] = database.value?.tables
     ? [
-        ...(database.value.tables
-            ?.filter(
-                ({ slug, allowedMethods }) =>
-                    !["user", "session", "asset", "translation"].includes(slug) &&
-                    allowedMethods?.includes("r"),
-            )
-            .map(renderSingleItem) ?? []),
-        database.value.tables?.filter(
+        ...(database.value.tables.filter(
             ({ slug, allowedMethods }) =>
-                ["user", "session", "asset", "translation"].includes(slug) &&
+                !["user", "session", "asset", "translation", "page", "component"].includes(slug) &&
+                allowedMethods?.includes("r"),
+        )
+            .map(renderSingleItem) ?? []),
+        database.value.tables.filter(
+            ({ slug, allowedMethods }) =>
+                ["user", "session", "asset", "translation", "page", "component"].includes(slug) &&
                 allowedMethods?.includes("r"),
         ).length
             ? {
                 key: "divider-1",
                 type: "divider",
             }
-            : null,
+            : undefined,
         ...(database.value.tables
             ?.filter(
                 ({ slug, allowedMethods }) =>
-                    ["user", "session", "asset"].includes(slug) &&
+                    ["user", "session", "asset", "page", "component"].includes(slug) &&
                     allowedMethods?.includes("r"),
             )
             .map(renderSingleItem) ?? []),
-    ]
+    ].filter(item => item) as MenuOption[]
     : [];
 </script>
+
+<style>
+.Overlay {
+    width: 100%;
+    height: 100%;
+    right: 0;
+    top: 0;
+    position: absolute;
+    background-color: #0000006e;
+    z-index: 99;
+    cursor: pointer;
+}
+</style>

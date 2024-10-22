@@ -10,7 +10,7 @@
                 : field.inputProps
             : {}">
             <NFlex>
-                <NRadio v-for="value in field.options" :value="value" :label="t(value)" />
+                <NRadio v-for="value in (field.options as (string | number)[])" :value="value" :label="t(value)" />
             </NFlex>
         </NRadioGroup>
     </NFormItem>

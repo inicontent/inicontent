@@ -61,14 +61,6 @@ onMounted(() => {
     };
 });
 
-useLanguage({
-    ar: {
-        new: "جديد",
-        publish: "نشر",
-    },
-    en: {},
-});
-
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute()
 const database = useState<Database>("database")
@@ -108,6 +100,6 @@ async function CREATE() {
 
 useHead({
     title: `${database.value.slug} | ${t(table.value.slug)} > ${t('new')}`,
-    link: [{ rel: "icon", href: database.value?.icon ?? "" }],
+    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

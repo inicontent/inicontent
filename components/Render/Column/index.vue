@@ -6,10 +6,9 @@
     <div v-else>
         <LazyRenderColumnRole v-if="detectedFieldType === 'role'" :value="value" />
         <LazyRenderColumnId v-else-if="detectedFieldType === 'id'" :value="value" />
-        <NScrollbar v-else-if="['table', 'upload', 'tags', 'select', 'checkbox'].includes(detectedFieldType)"
-            x-scrollable>
-            <LazyRenderColumnTable v-if="detectedFieldType === 'table'" :value="value" :field="field" />
-            <LazyRenderColumnUpload v-else-if="detectedFieldType === 'upload'" :value="value" />
+        <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
+            <LazyRenderColumnUpload v-if="detectedFieldType === 'table' && field.table === 'asset'" :value="value" />
+            <LazyRenderColumnTable v-else-if="detectedFieldType === 'table'" :value="value" :field="field" />
             <LazyRenderColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)"
                 :value="value" />
         </NScrollbar>
@@ -31,12 +30,11 @@
 import { NText, NScrollbar } from "naive-ui"
 const { field, ...props } = defineProps({
     field: {
-        type: Object as PropType<Field | never>,
-        default: [],
+        type: Object as PropType<Field>,
+        default: {},
     },
     value: null
 });
-
 
 let detectedFieldType = field.subType ?? field.type;
 if (Array.isArray(detectedFieldType))
@@ -44,5 +42,5 @@ if (Array.isArray(detectedFieldType))
         field.subType ?? field.type,
         props.value,
     ).key;
-detectedFieldType = detectedFieldType as string
+detectedFieldType = detectedFieldType as FieldType | CMS_FieldType
 </script>

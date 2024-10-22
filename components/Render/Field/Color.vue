@@ -27,6 +27,7 @@ const modelValue = defineModel({
 })
 
 const rule: FormItemRule = {
+    type: "hex",
     required: field.required,
     trigger: "change",
     validator() {

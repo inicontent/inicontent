@@ -10,7 +10,7 @@
                 : field.inputProps
             : {}">
             <NFlex>
-                <NCheckbox v-for="value in field.options" :value="value" :label="t(value)" />
+                <NCheckbox v-for="value in (field.options as (string | number)[])" :value="value" :label="t(value)" />
             </NFlex>
         </NCheckboxGroup>
     </NFormItem>

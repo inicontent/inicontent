@@ -3,7 +3,7 @@
     <NDrawerContent id="assetsModal" :native-scrollbar="false" body-content-style="padding: 0">
       <LazyAssetCard targetID="assetsModal">
         <template v-slot="{ asset }">
-          <NRadio v-if="asset.type !== 'folder'" @update:checked="insertImage(asset.publicURL)" />
+          <NRadio v-if="asset.type !== 'dir'" @update:checked="execCommand('InsertImage', asset.publicURL)" />
         </template>
       </LazyAssetCard>
     </NDrawerContent>
@@ -14,36 +14,36 @@
       <NFlex :wrap="false">
         <NButtonGroup size="small">
           <NButton :disabled="!currentSelection" :type="isState('bold') ? 'primary' : 'default'"
-            @click="() => applyStyle('bold')">
+            @click="execCommand('bold')">
             <NIcon>
               <IconBold />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('italic') ? 'primary' : 'default'"
-            @click="() => applyStyle('italic')">
+            @click="execCommand('italic')">
             <NIcon>
               <IconItalic />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('underline') ? 'primary' : 'default'"
-            @click="() => applyStyle('underline')">
+            @click="execCommand('underline')">
             <NIcon>
               <IconUnderline />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('strikeThrough') ? 'primary' : 'default'"
-            @click="() => applyStyle('strikeThrough')">
+            @click="execCommand('strikeThrough')">
             <NIcon>
               <IconStrikethrough />
             </NIcon>
           </NButton>
 
           <NPopselect :disabled="!isFocused" size="small"
-            :value="currentSelection?.commonAncestorContainer.parentElement.tagName.toLowerCase() ?? null"
-            @update:value="(value) => applyStyle('formatBlock', value)" :options="headingOptions">
+            :value="currentSelection?.commonAncestorContainer.parentElement?.tagName.toLowerCase() ?? null"
+            @update:value="(value: string) => execCommand('formatBlock', value)" :options="headingOptions">
             <NButton :disabled="!isFocused" :type="isState('heading') ? 'primary' : 'default'">
               <NIcon>
                 <IconHeading />
@@ -53,30 +53,28 @@
 
           <NPopover v-if="currentSelection" v-model:show="showForeColorPicker">
             <NButton :style="{ color: foreColor }"
-              @click="() => (applyStyle('foreColor', foreColor), showForeColorPicker = false)"
-              :disabled="!currentSelection">
+              @click="(execCommand('foreColor', foreColor), showForeColorPicker = false)" :disabled="!currentSelection">
               <NIcon>
                 <IconColorPicker />
               </NIcon>
             </NButton>
             <LazyRenderFieldHtmlColorPicker :modelValue="foreColor"
-              @update:modelValue="(value) => applyStyle('foreColor', value)" />
+              @update:modelValue="(value: string) => execCommand('foreColor', value)" />
           </NPopover>
 
           <NPopover v-if="currentSelection" v-model:show="showBackColorPicker">
             <NButton :style="{ backgroundColor: backColor }"
-              @click="() => (applyStyle('backColor', foreColor), showBackColorPicker = false)"
-              :disabled="!currentSelection">
+              @click="(execCommand('backColor', foreColor), showBackColorPicker = false)" :disabled="!currentSelection">
               <NIcon>
                 <IconHighlight />
               </NIcon>
             </NButton>
             <LazyRenderFieldHtmlColorPicker :modelValue="backColor"
-              @update:modelValue="(value) => applyStyle('backColor', value)" />
+              @update:modelValue="(value: string) => execCommand('backColor', value)" />
           </NPopover>
 
           <NPopselect :disabled="!isFocused" size="small" scrollable :value="currentFontSize"
-            @update:value="(value) => applyStyle('fontSize', value)" :options="fontSizeOptions">
+            @update:value="(value: string) => execCommand('fontSize', value)" :options="fontSizeOptions">
             <NButton :disabled="!isFocused" :type="isState('fontSize') ? 'primary' : 'default'">
               <NIcon>
                 <IconTextResize />
@@ -87,14 +85,14 @@
         <NDivider vertical />
         <NButtonGroup size="small">
           <NButton :disabled="!isFocused" :type="isState('img') ? 'primary' : 'default'"
-            @click="() => showAssetsModal = true">
+            @click="showAssetsModal = true">
             <NIcon>
               <IconUpload />
             </NIcon>
           </NButton>
 
           <NPopover :disabled="!isFocused"
-            @update:show="(show: boolean) => { if (show) currentSelection = saveSelection(); else restoreSelection(); }">
+            @update:show="(show: boolean) => { if (show) saveSelection(); else restoreSelection(); }">
             <template #trigger>
               <NButton :disabled="!isFocused" :type="isState('a') ? 'primary' : 'default'">
                 <NIcon>
@@ -105,7 +103,7 @@
             <NInputGroup>
               <NInput :input-props="{ type: 'url' }" size="small" v-model="aHref" />
               <NButton type="primary"
-                @click="() => (restoreSelection(), applyStyle('createLink', aHref), aHref = undefined)">
+                @click="(restoreSelection(), execCommand('createLink', aHref), aHref = undefined)">
                 <NIcon>
                   <IconArrowRight />
                 </NIcon>
@@ -114,14 +112,14 @@
           </NPopover>
 
           <NButton :disabled="!isFocused" :type="isState('insertOrderedList') ? 'primary' : 'default'"
-            @click="() => applyStyle('insertOrderedList')">
+            @click="execCommand('insertOrderedList')">
             <NIcon>
               <IconListNumbers />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('insertUnorderedList') ? 'primary' : 'default'"
-            @click="() => applyStyle('insertUnorderedList')">
+            @click="execCommand('insertUnorderedList')">
             <NIcon>
               <IconList />
             </NIcon>
@@ -132,21 +130,21 @@
 
         <NButtonGroup size="small">
           <NButton :disabled="!isFocused" :type="isState('justifyLeft') ? 'primary' : 'default'"
-            @click="() => applyStyle('justifyLeft')">
+            @click="execCommand('justifyLeft')">
             <NIcon>
               <IconAlignLeft />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('justifyCenter') ? 'primary' : 'default'"
-            @click="() => applyStyle('justifyCenter')">
+            @click="execCommand('justifyCenter')">
             <NIcon>
               <IconAlignCenter />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('justifyRight') ? 'primary' : 'default'"
-            @click="() => applyStyle('justifyRight')">
+            @click="execCommand('justifyRight')">
             <NIcon>
               <IconAlignRight />
             </NIcon>
@@ -156,13 +154,13 @@
         <NDivider vertical />
 
         <NButtonGroup size="small">
-          <NButton :disabled="!isSupported('undo')" @click="() => applyStyle('undo')">
+          <NButton :disabled="!isSupported('undo')" @click="execCommand('undo')">
             <NIcon>
               <IconArrowBackUp />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!isSupported('redo')" @click="() => applyStyle('redo')">
+          <NButton :disabled="!isSupported('redo')" @click="execCommand('redo')">
             <NIcon>
               <IconArrowForwardUp />
             </NIcon>
@@ -244,8 +242,8 @@ onMounted(() => {
   for (const event of ["mouseup", "keyup", "selectionchange"]) {
     document.getElementById(id)?.addEventListener(event, () => {
       if (window?.getSelection()?.anchorNode?.textContent?.length !== 0)
-        currentSelection.value = saveSelection();
-      else currentSelection.value = null;
+        saveSelection();
+      else currentSelection.value = undefined;
     });
   }
 });
@@ -334,8 +332,8 @@ const currentFontSize = computed(() =>
       small: 2,
       "x-small": 1,
     }[
-    currentSelection.value.commonAncestorContainer.parentElement.style
-      .fontSize
+    currentSelection.value.commonAncestorContainer.parentElement?.style
+      .fontSize ?? "medium"
     ]
     : null,
 );
@@ -344,14 +342,14 @@ function isState(state: string) {
   switch (state) {
     case "heading":
       return (
-        currentSelection.value?.commonAncestorContainer.parentElement.tagName
+        currentSelection.value?.commonAncestorContainer.parentElement?.tagName
           .toLowerCase()
           .charAt(0) === "h"
       );
     case "a":
     case "img":
       return (
-        currentSelection.value.commonAncestorContainer.parentElement.tagName.toLowerCase() ===
+        currentSelection.value?.commonAncestorContainer.parentElement?.tagName.toLowerCase() ===
         state
       );
     default:
@@ -363,7 +361,7 @@ function isSupported(command: string) {
   return document.queryCommandEnabled(command)
 }
 
-function applyStyle(name: string, value?: string) {
+function execCommand(name: string, value?: string) {
   if (value) document.execCommand(name, false, value);
   else document.execCommand(name);
 }
