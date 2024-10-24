@@ -2,9 +2,9 @@
     <NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']">
         <draggable :list="schema" item-key="id" handle=".handle">
             <template #item="{ element, index }">
-                <NCollapseItem :name="index" :disabled="element.id === 'b6477d47f0b3cb6d75a8c2771d4d9469'">
+                <NCollapseItem :name="index" :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)">
                     <template #header>
-                        <NTooltip v-if="element.id !== 'b6477d47f0b3cb6d75a8c2771d4d9469'" :delay="500">
+                        <NTooltip v-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)" :delay="500">
                             <template #trigger>
                                 <NIcon class="handle" :size="18">
                                     <IconMenu2 />
@@ -36,7 +36,7 @@
                                     </NButton>
                                 </NDropdown>
                             </template>
-                            <template v-else-if="element.id !== 'b6477d47f0b3cb6d75a8c2771d4d9469'">
+                            <template v-else-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)">
                                 <NButton :round="!isMobile" :circle="isMobile" strong secondary size="small"
                                     :type="schema[index].required ? 'error' : 'tertiary'"
                                     @click="schema[index].required = !schema[index].required">
@@ -50,11 +50,11 @@
                                     </template>
                                 </NButton>
                             </template>
-                            <NDropdown :disabled="element.id === 'b6477d47f0b3cb6d75a8c2771d4d9469'"
+                            <NDropdown :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)"
                                 :options="fieldsList()" style="max-height: 200px" trigger="click" scrollable
                                 @select="(type) => schema[index] = changeFieldType(schema[index], type)">
                                 <NButton round strong secondary size="small" type="primary"
-                                    :disabled="element.id === 'b6477d47f0b3cb6d75a8c2771d4d9469'">
+                                    :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)">
                                     <template #icon>
                                         <component :is="getField(element.subType ?? element.type).icon" />
                                     </template>
@@ -65,7 +65,7 @@
                                     </template>
                                 </NButton>
                             </NDropdown>
-                            <NButton v-if="element.id !== 'b6477d47f0b3cb6d75a8c2771d4d9469'" circle secondary
+                            <NButton v-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)" circle secondary
                                 size="small" type="error" @click="schema.splice(index, 1)">
                                 <template #icon>
                                     <NIcon>
@@ -190,7 +190,7 @@
                             </NFormItem>
                         </NFormItem>
                     </template>
-                    <LazyRenderSettingSchema
+                    <LazyTableSettingsSchema
                         v-if="['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
                         v-model="element.children" />
                 </NCollapseItem>
