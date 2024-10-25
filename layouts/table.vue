@@ -15,7 +15,9 @@
                         ? '24px 88px 24px 24px'
                         : '24px 24px 24px 88px',
             }" :native-scrollbar="false">
-                <div v-if="isMenuOpen" class="overlay"></div>
+                <div v-if="isMenuOpen"
+                    style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
+                </div>
                 <slot></slot>
             </NLayoutContent>
         </NLayout>
@@ -210,16 +212,3 @@ const menuOptions: MenuOption[] = database.value?.tables
     ].filter(item => item) as MenuOption[]
     : [];
 </script>
-
-<style scoped>
-.overlay {
-    width: 100%;
-    height: 100%;
-    right: 0;
-    top: 0;
-    position: absolute;
-    background-color: #0000006e;
-    z-index: 99;
-    cursor: pointer;
-}
-</style>
