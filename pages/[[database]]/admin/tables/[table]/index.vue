@@ -146,7 +146,7 @@ onBeforeRouteLeave(() => {
 });
 
 definePageMeta({
-    middleware: ["dashboard", "table"],
+    middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 
@@ -154,7 +154,7 @@ const route = useRoute(),
     router = useRouter(),
     database = useState<Database>("database"),
     table = useState<Table>("table");
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
     { isMobile } = useDevice(),
     searchQuery = useState<string | undefined>(
@@ -228,7 +228,7 @@ const Drawer = useState<{
     );
 
 const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
-    `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
     }`,
     {
         query: {
@@ -251,7 +251,7 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 const DELETE = async (id: string) => {
     Loading.value.data = true;
     const deleteResponse = await $fetch<apiResponse>(
-        `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+        `${appConfig.apiBase}${database.value.slug}/${table.value.slug
         }/${id}`,
         {
             method: "DELETE",
@@ -326,7 +326,7 @@ const tableColumns: any = computed(() => [
                                 onSelect: async () => {
                                     Loading.value.data = true;
                                     await $fetch<apiResponse>(
-                                        `${useRuntimeConfig().public.apiBase}${database.value.slug
+                                        `${appConfig.apiBase}${database.value.slug
                                         }/${table.value.slug}`,
                                         {
                                             method: "DELETE",

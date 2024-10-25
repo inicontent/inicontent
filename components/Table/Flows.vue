@@ -340,7 +340,7 @@ onMounted(() => {
         saveFlow();
     };
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database"),
     table = useState<Table>("table"),
@@ -352,7 +352,7 @@ const database = useState<Database>("database"),
         Loading.value.updateTable = true;
         const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
         await $fetch<apiResponse>(
-            `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+            `${appConfig.apiBase}inicontent/database/${database.value.slug
             }/${table.value.slug}`,
             {
                 method: "PUT",

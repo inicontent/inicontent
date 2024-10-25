@@ -88,7 +88,7 @@ import {
 } from "naive-ui";
 
 definePageMeta({
-    middleware: "dashboard",
+    middleware: ["database", "user", "dashboard"],
 });
 
 const route = useRoute();
@@ -111,13 +111,13 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.Database = false;
 
 const { isMobile } = useDevice(),
     { data: databases, execute } = await useFetch<apiResponse<Database[]>>(
-        `${useRuntimeConfig().public.apiBase}inicontent/database`, {
+        `${appConfig.apiBase}inicontent/database`, {
         immediate: false
     }
     ),
@@ -133,7 +133,7 @@ const { isMobile } = useDevice(),
                 const bodyContent = JSON.parse(JSON.stringify(DatabaseModal.value));
                 Loading.value.Database = true;
                 const data = await $fetch<apiResponse>(
-                    `${useRuntimeConfig().public.apiBase}inicontent/database${bodyContent.id ? `/${bodyContent.slug}` : ""
+                    `${appConfig.apiBase}inicontent/database${bodyContent.id ? `/${bodyContent.slug}` : ""
                     }`,
                     {
                         method: bodyContent.id ? "PUT" : "POST",

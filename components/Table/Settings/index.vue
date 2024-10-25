@@ -148,7 +148,7 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.updateTable = false;
 Loading.value.deleteTable = false;
@@ -176,7 +176,7 @@ const route = useRoute(),
                 Loading.value.updateTable = true;
 
                 const data = await $fetch<apiResponse<Table>>(
-                    `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+                    `${appConfig.apiBase}inicontent/database/${database.value.slug
                     }/${route.params.table}`,
                     {
                         method: "PUT",
@@ -209,7 +209,7 @@ const route = useRoute(),
     deleteTable = async () => {
         Loading.value.deleteTable = true;
         const data = await $fetch<apiResponse>(
-            `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+            `${appConfig.apiBase}inicontent/database/${database.value.slug
             }/${route.params.table}`,
             {
                 method: "DELETE",

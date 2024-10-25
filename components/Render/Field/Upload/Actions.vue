@@ -84,7 +84,7 @@ const { callback } = defineProps({
 defineEmits(["update:showAssetsModal"])
 
 const showPopover = ref(false)
-
+const appConfig = useAppConfig()
 const message = useMessage()
 const assetURL = ref()
 const database = useState<Database>("database");
@@ -131,7 +131,7 @@ async function importAsset() {
         formData.append("file", blob, fileName);
 
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${useRuntimeConfig().public.apiBase}${database.value.slug ?? 'inicontent'}/asset`, true);
+        xhr.open("POST", `${appConfig.apiBase}${database.value.slug ?? 'inicontent'}/asset`, true);
         xhr.upload.onprogress = (event) => {
             importProgress.value = 100 + Math.round((event.loaded * 100) / event.total);
         };

@@ -1,17 +1,18 @@
-/*
-    To set a default database
-    change this file name to "database.global.ts"
-    and replace the value of "databaseName" const
-    to your database name
-*/
-
-export default defineNuxtRouteMiddleware(async () => {
-	const databaseName = "inicontent"; // CHANGE IT!
+export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
+	const appConfig = useAppConfig();
+	if (!database.value)
+		database.value = (
+			await $fetch<apiResponse<Database>>(
+				`${appConfig.apiBase}inicontent/database/${
+					to.params.database || "inicontent"
+				}`,
+			)
+		).result;
 
-	database.value = (
-		await $fetch<apiResponse<Database>>(
-			`${useRuntimeConfig().public.apiBase}inicontent/database/${databaseName}`,
-		)
-	).result;
+	if (!database.value)
+		throw createError({
+			statusCode: 404,
+			statusMessage: "database",
+		});
 });

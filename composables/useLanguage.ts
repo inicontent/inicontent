@@ -78,6 +78,7 @@ export const t = (key: string | number | null | undefined): string => {
 };
 
 export const fetchTranslation = async () => {
+	const appConfig = useAppConfig();
 	const Language = useCookie<string>("Language"),
 		route = useRoute(),
 		Messages = useState<Record<string, any>>("LanguageMessages"),
@@ -86,7 +87,7 @@ export const fetchTranslation = async () => {
 	if (Language.value && UnfoundMessages.value) {
 		const fetchResult = (
 			await $fetch<apiResponse<Item[]>>(
-				`${useRuntimeConfig().public.apiBase}${
+				`${appConfig.apiBase}${
 					route.params?.database || "inicontent"
 				}/translation`,
 				{

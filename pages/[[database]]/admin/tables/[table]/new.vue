@@ -49,7 +49,7 @@ import {
 import { IconSend } from "@tabler/icons-vue";
 
 definePageMeta({
-    middleware: ["dashboard", "table"],
+    middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 
@@ -60,7 +60,7 @@ onMounted(() => {
         CREATE();
     };
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute()
 const database = useState<Database>("database")
@@ -77,7 +77,7 @@ async function CREATE() {
             const bodyContent = toRaw(newItemObject.value);
             Loading.value.CREATE = true;
             const data = await $fetch<apiResponse>(
-                `${useRuntimeConfig().public.apiBase}${route.params.database}/${route.params.table
+                `${appConfig.apiBase}${database.value.slug}/${route.params.table
                 }`,
                 {
                     method: "POST",
@@ -91,7 +91,7 @@ async function CREATE() {
 
             window.$message.success(data.message);
             return navigateTo(
-                `/${route.params.database}/admin/tables/${route.params.table}/${data.result.id}/edit`,
+                `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${route.params.table}/${data.result.id}/edit`,
             );
         }
         window.$message.error(t("inputsAreInvalid"));

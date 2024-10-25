@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 definePageMeta({
-    middleware: ["dashboard", "table"],
+    middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 

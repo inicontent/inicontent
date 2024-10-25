@@ -55,7 +55,7 @@ const rule = {
             return new Error(`${t(field.key)} ${t("isNotValid")}`);
     },
 };
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
@@ -74,7 +74,7 @@ async function loadOptions(searchValue?: string | number) {
     const data =
         (
             await $fetch<apiResponse>(
-                `${useRuntimeConfig().public.apiBase}${database.value.slug}/${field.table}`,
+                `${appConfig.apiBase}${database.value.slug}/${field.table}`,
                 searchValue
                     ? {
                         params: {
@@ -131,7 +131,7 @@ if (modelValue.value) {
         options.value =
             (
                 await $fetch<apiResponse>(
-                    `${useRuntimeConfig().public.apiBase}${useRuntimeConfig().public.databaseName || "inicontent"
+                    `${appConfig.apiBase}${useRuntimeConfig().public.databaseName || "inicontent"
                     }/${field.table}`,
                     {
                         params: {

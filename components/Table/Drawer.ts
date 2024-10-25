@@ -24,7 +24,7 @@ export default defineNuxtComponent({
 				Drawer.value.id ? UpdateDrawer() : CreateDrawer();
 			};
 		});
-
+		const appConfig = useAppConfig();
 		const Language = useCookie("Language", { sameSite: true }),
 			drawerWidth = useCookie<number>("drawerWidth", { sameSite: true });
 
@@ -51,7 +51,7 @@ export default defineNuxtComponent({
 				Loading.value[`Drawer_${Drawer.value.table}_${Drawer.value.id}`] = true;
 				Drawer.value.data = (
 					await $fetch<apiResponse>(
-						`${useRuntimeConfig().public.apiBase}${route.params.database}/${
+						`${appConfig.apiBase}${database.value.slug}/${
 							Drawer.value.table
 						}/${Drawer.value.id}`,
 					)
@@ -66,7 +66,7 @@ export default defineNuxtComponent({
 						const bodyContent = JSON.parse(JSON.stringify(Drawer.value));
 						Loading.value.DrawerContent = true;
 						const data = await $fetch<apiResponse>(
-							`${useRuntimeConfig().public.apiBase}${route.params.database}/${
+							`${appConfig.apiBase}${database.value.slug}/${
 								bodyContent.table
 							}/${bodyContent.id}`,
 							{
@@ -98,9 +98,7 @@ export default defineNuxtComponent({
 						const bodyContent = JSON.parse(JSON.stringify(Drawer.value));
 						Loading.value.DrawerContent = true;
 						const data = await $fetch<apiResponse>(
-							`${useRuntimeConfig().public.apiBase}${route.params.database}/${
-								bodyContent.table
-							}`,
+							`${appConfig.apiBase}${database.value.slug}/${bodyContent.table}`,
 							{
 								method: "POST",
 								body: bodyContent.data,
@@ -161,11 +159,11 @@ export default defineNuxtComponent({
 												NText,
 												{
 													tag: "a",
-													href: `/${route.params.database}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`,
+													href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`,
 													onClick(e: MouseEvent) {
 														e.preventDefault();
 														navigateTo(
-															`/${route.params.database}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`,
+															`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${Drawer.value.table}/${Drawer.value.id}/edit`,
 														);
 													},
 													style: {

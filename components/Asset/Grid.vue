@@ -120,7 +120,7 @@ useLanguage({
 const modelValue = defineModel({
     type: [Array, null] as PropType<Asset[] | null>,
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const CurrentAsset = ref<Asset>()
@@ -128,7 +128,7 @@ const CurrentAsset = ref<Asset>()
 async function deleteAsset(asset: Asset) {
     Loading.value[`deleteAsset${asset.id}`] = true;
     const data = await $fetch<apiResponse>(
-        `${useRuntimeConfig().public.apiBase}${database.value.slug}/asset${path
+        `${appConfig.apiBase}${database.value.slug}/asset${path
         }/${asset.id}`,
         {
             method: "DELETE",

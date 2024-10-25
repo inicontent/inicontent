@@ -224,11 +224,11 @@ export default defineNuxtComponent({
 													NButton,
 													{
 														tag: "a",
-														href: `/${route.params.database}/admin/tables/${field.table}/${item.id}`,
+														href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${field.table}/${item.id}`,
 														onClick(e) {
 															e.preventDefault();
 															navigateTo(
-																`/${route.params.database}/admin/tables/${field.table}/${item.id}`,
+																`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${field.table}/${item.id}`,
 															);
 														},
 														size: "small",

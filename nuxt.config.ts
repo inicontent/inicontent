@@ -22,10 +22,5 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-	runtimeConfig: {
-		public: {
-			apiBase: "https://test.api.inicontent.com/",
-		},
-	},
 	compatibilityDate: "2024-09-04",
 });

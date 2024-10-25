@@ -75,7 +75,7 @@ import {
 } from "naive-ui";
 
 definePageMeta({
-    middleware: "dashboard",
+    middleware: ["database", "user", "dashboard"],
     layout: "table",
 });
 
@@ -103,6 +103,7 @@ useLanguage({
     },
     en: {},
 });
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute(),
     { isMobile } = useDevice(),
@@ -116,7 +117,7 @@ const route = useRoute(),
                 const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
                 Loading.value.updateDatabase = true;
                 const data = await $fetch<apiResponse>(
-                    `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+                    `${appConfig.apiBase}inicontent/database/${database.value.slug
                     }`,
                     {
                         method: "PUT",
@@ -140,7 +141,7 @@ const route = useRoute(),
     deleteDatabase = async () => {
         Loading.value.deleteDatabase = true;
         const data = await $fetch<apiResponse>(
-            `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+            `${appConfig.apiBase}inicontent/database/${database.value.slug
             }`,
             {
                 method: "DELETE",

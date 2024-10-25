@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { NCard } from "naive-ui";
 definePageMeta({
-    middleware: "dashboard",
+    middleware: ["database", "user", "dashboard"],
 });
 
 const database = useState<Database>("database");

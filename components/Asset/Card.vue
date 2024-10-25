@@ -14,7 +14,7 @@
         </template>
         <template #header-extra>
             <NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-                :action="`${useRuntimeConfig().public.apiBase}${database.slug}/asset${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
+                :action="`${appConfig.apiBase}${database.slug}/asset${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
                 @update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
                 <NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
                     <template #trigger>
@@ -107,7 +107,7 @@ defineProps({
 const modelValue = defineModel({
     type: String
 })
-
+const appConfig = useAppConfig()
 const route = useRoute();
 const isAssetRoute = !!(route.params.folder || route.params.folder === '')
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -115,7 +115,7 @@ const database = useState<Database>("database");
 const parentTable = useState<Table>("table");
 const table = ref<Table>(parentTable.value)
 if (!parentTable.value || parentTable.value.slug !== 'asset')
-    table.value = (await $fetch<apiResponse<Table>>(`${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug}/asset`)).result
+    table.value = (await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/database/${database.value.slug}/asset`)).result
 
 const { isMobile } = useDevice();
 const router = useRouter();
@@ -157,7 +157,7 @@ const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
     `asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
     () =>
         $fetch<apiResponse<Asset[]>>(
-            `${useRuntimeConfig().public.apiBase}${database.value.slug}/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
+            `${appConfig.apiBase}${database.value.slug}/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
             {
                 onRequest: () => {
                     Loading.value.AssetData = true;
@@ -236,7 +236,7 @@ function onFinishUpload({ file, event }: {
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
     const data = await $fetch<apiResponse<Asset>>(
-        `${useRuntimeConfig().public.apiBase}${database.value.slug
+        `${appConfig.apiBase}${database.value.slug
         }/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
         { method: "DELETE" },
     ),

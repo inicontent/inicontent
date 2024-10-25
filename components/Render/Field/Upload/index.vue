@@ -14,8 +14,8 @@
 
 		<NUpload directory-dnd :onUpdateFileList :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="generateAcceptedFileType(field.accept)"
-			:action="`${useRuntimeConfig().public.apiBase}${database.slug ?? 'inicontent'}/asset`" response-type="json"
-			:fileList :onFinish :onPreview :list-type="!field.isTable ? 'image' : 'image-card'">
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/asset`" response-type="json" :fileList
+			:onFinish :onPreview :list-type="!field.isTable ? 'image' : 'image-card'">
 			<template v-if="!field.isTable">
 				<NUploadDragger>
 					<NIcon size="48" depth="3">
@@ -68,7 +68,7 @@ const { field } = defineProps({
 });
 
 const modelValue = defineModel<string | Asset | (string | Asset)[]>();
-
+const appConfig = useAppConfig()
 const rule: FormItemRule = {
 	type: field.isArray ? "array" : "object",
 	required: field.required,

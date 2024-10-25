@@ -110,7 +110,7 @@ import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 clearNuxtState("itemLabel");
 
 definePageMeta({
-    middleware: ["dashboard", "table"],
+    middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 
@@ -132,7 +132,7 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute()
 const database = useState<Database>("database")
@@ -142,7 +142,7 @@ const schema = table.value.schema?.filter(
         !["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(field.key),
 )
 const { data: itemObject } = await useFetch<Item>(
-    `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
     }/${route.params.id}`,
     {
 
@@ -165,7 +165,7 @@ async function UPDATE() {
             const bodyContent = toRaw(itemObject.value);
             Loading.value.UPDATE = true;
             const data = await $fetch<apiResponse<Item>>(
-                `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+                `${appConfig.apiBase}${database.value.slug}/${table.value.slug
                 }/${itemObject.value?.id}`,
                 {
                     method: "PUT",
@@ -184,7 +184,7 @@ async function UPDATE() {
 async function DELETE() {
     Loading.value.DELETE = true;
     const data = await $fetch<apiResponse<Item>>(
-        `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+        `${appConfig.apiBase}${database.value.slug}/${table.value.slug
         }/${itemObject.value?.id}`,
         {
             method: "DELETE",

@@ -101,7 +101,7 @@ import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
 clearNuxtState("itemLabel");
 
 definePageMeta({
-    middleware: ["dashboard", "table"],
+    middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 
@@ -112,12 +112,12 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const route = useRoute()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const { data: itemObject } = await useFetch<Item>(
-    `${useRuntimeConfig().public.apiBase}${database.value.slug}/${table.value.slug
+    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
     }/${route.params.id}`,
     {
 

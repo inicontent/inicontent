@@ -106,7 +106,7 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const user = useState<User>("user");
 const Hover = ref<Record<string, boolean>>({});
@@ -117,7 +117,7 @@ const createTable = async () => {
         const bodyContent: string = toRaw(Table.value);
         Loading.value.Table = true;
 
-        const data = await $fetch<apiResponse<Table>>(`${useRuntimeConfig().public.apiBase}inicontent/database/${modelValue.value.slug}/${bodyContent}`, {
+        const data = await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/database/${modelValue.value.slug}/${bodyContent}`, {
             method: "POST",
         });
 

@@ -39,7 +39,7 @@ useLanguage({
     },
     en: {},
 });
-
+const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 const SigninFormRef = ref<FormInst | null>(null),
@@ -99,7 +99,7 @@ const SignupSubmit = async (e: Event) => {
             if (Loading.value.Signup !== true) {
                 Loading.value.Signup = true;
                 const data = await $fetch<Record<string, any>>(
-                    `${useRuntimeConfig().public.apiBase}${database.value.slug}/user`,
+                    `${appConfig.apiBase}${database.value.slug}/user`,
                     {
                         method: "POST",
                         body: bodyContent,
@@ -123,7 +123,7 @@ const SigninSubmit = async (e: Event) => {
             if (Loading.value.Signin !== true) {
                 Loading.value.Signin = true;
                 const data = await $fetch<Record<string, any>>(
-                    `${useRuntimeConfig().public.apiBase}${database.value.slug
+                    `${appConfig.apiBase}${database.value.slug
                     }/auth/signin`,
                     {
                         method: "PUT",
@@ -135,7 +135,7 @@ const SigninSubmit = async (e: Event) => {
                     user.value = data.result;
                     database.value = (
                         await $fetch<any>(
-                            `${useRuntimeConfig().public.apiBase}inicontent/database/${database.value.slug
+                            `${appConfig.apiBase}inicontent/database/${database.value.slug
                             }`,
                         )
                     ).result;
