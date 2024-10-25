@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		database.value = (
 			await $fetch<apiResponse<Database>>(
 				`${appConfig.apiBase}inicontent/database/${
-					to.params.database || "inicontent"
+					appConfig.database || to.params.database || "inicontent"
 				}`,
 			)
 		).result;
