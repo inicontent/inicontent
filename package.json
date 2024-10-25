@@ -10,9 +10,7 @@
 	},
 	"dependencies": {
 		"@nuxtjs/device": "3.2.2",
-		"@nuxtjs/tailwindcss": "^6.12.1",
 		"@tabler/icons-vue": "3.14.0",
-		"@tailwindcss/container-queries": "^0.1.1",
 		"inibase": "1.0.0-rc.88",
 		"inidot": "1.0.0-rc.2",
 		"inison": "1.0.0-rc.4",
