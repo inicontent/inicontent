@@ -159,7 +159,7 @@ const route = useRoute(),
     };
 
 useHead({
-    title: `${database.value.slug} | ${t("settings")}`,
+    title: `${t(database.value.slug)} | ${t("settings")}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

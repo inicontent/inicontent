@@ -99,7 +99,7 @@ async function CREATE() {
 };
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug)} > ${t('new')}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${t('new')}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

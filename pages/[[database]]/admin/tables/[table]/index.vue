@@ -469,7 +469,7 @@ watch(searchQuery, (v) => {
 });
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug)}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

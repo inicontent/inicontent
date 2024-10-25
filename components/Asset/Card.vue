@@ -225,7 +225,7 @@ function onFinishUpload({ file, event }: {
             (event?.target as any).response,
         );
         file.url = response.result.publicURL;
-        file.name = response.result.id;
+        file.name = response.result.id as string;
         if (assets.value) assets.value?.push(response.result);
         else assets.value = [response.result];
         if (!database.value.size) database.value.size = 0;
@@ -263,7 +263,7 @@ function createFolder() {
         modelValue.value = `${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${folder.value}`
         window.$message.success(t("folderCreatedSuccessfully"));
         if (isAssetRoute)
-            navigateTo(`/${database.value.slug}/admin/tables/asset${modelValue.value}`)
+            navigateTo(`${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/asset${modelValue.value}`)
 
     }
 }

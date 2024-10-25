@@ -630,7 +630,7 @@ const addNewRuleDropdownOptions = [
 ]
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug)} > ${t("flows")}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${t("flows")}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

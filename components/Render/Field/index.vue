@@ -42,27 +42,8 @@ const modelValue = defineModel({
     type: [Array, Object, String, Boolean, Number, null],
 })
 
-function getDefaultValue(field: Field): any {
-    if (Array.isArray(field.type)) {
-        if (field.type.includes('array'))
-            return []
-        if (field.type.includes('object'))
-            return {}
-    } else {
-        if (field.type === "array")
-            return [];
-        if (field.type === "object")
-            return {};
-    }
-    return null
-}
-
 if (field.defaultValue && !modelValue.value)
     modelValue.value = field.defaultValue;
-else if (
-    !modelValue.value
-)
-    modelValue.value = getDefaultValue(field)
 
 if (
     ((Array.isArray(field.type) && field.type.includes("array")) ||

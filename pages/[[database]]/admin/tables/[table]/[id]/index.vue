@@ -142,7 +142,7 @@ const itemLabel = useState("itemLabel", () =>
 
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug)} > ${itemLabel.value}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${itemLabel.value}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

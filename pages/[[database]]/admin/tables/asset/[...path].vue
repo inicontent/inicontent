@@ -12,7 +12,7 @@ const route = useRoute()
 const database = useState<Database>("database");
 
 useHead({
-    title: `${database.value.slug} | ${t("assets")}${route.params.folder
+    title: `${t(database.value.slug)} | ${t("assets")}${route.params.folder
         ? ` > /${[].concat(route.params.folder as any).join("/")}`
         : ""
         }`,

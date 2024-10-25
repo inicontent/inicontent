@@ -151,7 +151,7 @@ const SigninSubmit = async (e: Event) => {
     });
 };
 useHead({
-    title: `${database.value.slug} | ${t("authentication")}`,
+    title: `${t(database.value.slug)} | ${t("authentication")}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

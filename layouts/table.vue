@@ -15,7 +15,7 @@
                         ? '24px 88px 24px 24px'
                         : '24px 24px 24px 88px',
             }" :native-scrollbar="false">
-                <div v-if="isMenuOpen" class="Overlay"></div>
+                <div v-if="isMenuOpen" class="overlay"></div>
                 <slot></slot>
             </NLayoutContent>
         </NLayout>
@@ -211,8 +211,8 @@ const menuOptions: MenuOption[] = database.value?.tables
     : [];
 </script>
 
-<style>
-.Overlay {
+<style scoped>
+.overlay {
     width: 100%;
     height: 100%;
     right: 0;

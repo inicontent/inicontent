@@ -148,140 +148,124 @@ useLanguage({
     },
     en: {},
 });
-const appConfig = useAppConfig()
+const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 Loading.value.updateTable = false;
 Loading.value.deleteTable = false;
-const route = useRoute(),
-    router = useRouter(),
-    showDraggable = ref(false),
-    { isMobile } = useDevice(),
-    database = useState<Database>("database"),
-    table = useState<Table>("table"),
-    tableRef = ref<FormInst | null>(null),
-    tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
-    updateTable = async () => {
-        tableRef.value?.validate(async (errors) => {
-            if (!errors) {
-                const bodyContent = JSON.parse(
-                    JSON.stringify(
-                        (({ schema, slug, id, label }) => ({
-                            schema,
-                            slug,
-                            id,
-                            label,
-                        }))(tableCopy.value),
-                    ),
-                );
-                Loading.value.updateTable = true;
+const route = useRoute();
+const router = useRouter();
+const showDraggable = ref(false);
+const { isMobile } = useDevice();
+const database = useState<Database>("database");
+const table = useState<Table>("table");
+const tableRef = ref<FormInst | null>(null);
+const tableCopy = ref(JSON.parse(JSON.stringify(table.value)));
+async function updateTable() {
+    tableRef.value?.validate(async (errors) => {
+        if (!errors) {
+            const bodyContent = JSON.parse(
+                JSON.stringify(
+                    (({ schema, slug, id, label }) => ({
+                        schema,
+                        slug,
+                        id,
+                        label,
+                    }))(tableCopy.value),
+                ),
+            );
+            Loading.value.updateTable = true;
 
-                const data = await $fetch<apiResponse<Table>>(
-                    `${appConfig.apiBase}inicontent/database/${database.value.slug
-                    }/${route.params.table}`,
-                    {
-                        method: "PUT",
-                        body: bodyContent,
-                    },
-                );
-                const tableIndex = database.value.tables?.findIndex(
-                    ({ slug }) => slug === route.params.table,
-                );
-                if (
-                    tableIndex !== undefined &&
-                    tableIndex !== -1 &&
-                    database.value.tables &&
-                    data?.result
-                ) {
-                    database.value.tables[tableIndex] = data.result;
-                    tableCopy.value = data.result;
-
-                    if (route.params.table !== data.result.slug)
-                        router.replace({
-                            params: { table: data.result.slug },
-                        });
-                    window.$message.success(data?.message ?? t("success"));
-                } else window.$message.error(data?.message ?? t("error"));
-
-                Loading.value.updateTable = false;
-            } else window.$message.error(t('inputsAreInvalid'));
-        });
-    },
-    deleteTable = async () => {
-        Loading.value.deleteTable = true;
-        const data = await $fetch<apiResponse>(
-            `${appConfig.apiBase}inicontent/database/${database.value.slug
-            }/${route.params.table}`,
-            {
-                method: "DELETE",
-            },
-        );
-        if (data?.result) {
+            const data = await $fetch<apiResponse<Table>>(
+                `${appConfig.apiBase}inicontent/database/${database.value.slug
+                }/${route.params.table}`,
+                {
+                    method: "PUT",
+                    body: bodyContent,
+                },
+            );
             const tableIndex = database.value.tables?.findIndex(
                 ({ slug }) => slug === route.params.table,
             );
-            if (tableIndex !== undefined && tableIndex !== -1)
-                database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
-            Loading.value.deleteTable = false;
-            window.$message.success(data?.message ?? t("success"));
-            setTimeout(
-                async () => await navigateTo(`/${database.value.slug}/admin/tables`),
-                800,
-            );
-        } else window.$message.error(data?.message ?? t("error"));
-        Loading.value.deleteTable = false;
-    },
-    GenerateLabelOptions = (
-        schema: any,
-        { type, key, children }: any,
-        path?: string,
-        prefix?: string,
-    ) => {
-        switch (type) {
-            case "array":
-            case "object":
-                return children.map(
-                    (field: any) =>
-                        GenerateLabelOptions(schema, field, `${(path ?? "") + key}.`),
-                    (prefix ? `${prefix} ` : "") + t(key),
-                );
-            default:
-                return {
-                    label: (prefix ? `${prefix} ` : "") + t(key),
-                    value: (path ?? "") + key,
-                };
-        }
-    },
-    generateMentionOptions = (
-        schema: Schema,
-        prefix?: string,
-    ): MentionOption[] => {
-        let RETURN: MentionOption[] = [];
-        for (const field of schema) {
-            if (field.id?.toString().startsWith("temp-")) continue;
             if (
-                (Array.isArray(field.type) && field.subType !== "tags") ||
-                (field.type === "array" &&
-                    field.children &&
-                    isArrayOfObjects(field.children)) ||
-                field.type === "table"
-            )
-                continue;
-            if (field.children && isArrayOfObjects(field.children))
-                RETURN = [
-                    ...RETURN,
-                    ...generateMentionOptions(field.children, field.key),
-                ];
-            else
-                RETURN.push({
-                    label: (prefix ? `${prefix}/` : "") + field.key,
-                    value: field.key,
-                });
-        }
-        return RETURN;
-    };
+                tableIndex !== undefined &&
+                tableIndex !== -1 &&
+                database.value.tables &&
+                data?.result
+            ) {
+                database.value.tables[tableIndex] = data.result;
+                tableCopy.value = data.result;
+
+                if (route.params.table !== data.result.slug)
+                    router.replace({
+                        params: { table: data.result.slug },
+                    });
+                window.$message.success(data?.message ?? t("success"));
+            } else window.$message.error(data?.message ?? t("error"));
+
+            Loading.value.updateTable = false;
+        } else window.$message.error(t("inputsAreInvalid"));
+    });
+}
+async function deleteTable() {
+    Loading.value.deleteTable = true;
+    const data = await $fetch<apiResponse>(
+        `${appConfig.apiBase}inicontent/database/${database.value.slug
+        }/${route.params.table}`,
+        {
+            method: "DELETE",
+        },
+    );
+    if (data?.result) {
+        const tableIndex = database.value.tables?.findIndex(
+            ({ slug }) => slug === route.params.table,
+        );
+        if (tableIndex !== undefined && tableIndex !== -1)
+            database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
+        Loading.value.deleteTable = false;
+        window.$message.success(data?.message ?? t("success"));
+        setTimeout(
+            async () =>
+                await navigateTo(
+                    `${route.params.database ? `/${database.value.slug}` : ""}/admin/tables`,
+                ),
+            800,
+        );
+    } else window.$message.error(data?.message ?? t("error"));
+    Loading.value.deleteTable = false;
+}
+function generateMentionOptions(
+    schema: Schema,
+    prefix?: string,
+): MentionOption[] {
+    let RETURN: MentionOption[] = [];
+    for (const field of schema) {
+        if (field.id?.toString().startsWith("temp-")) continue;
+        if (
+            (Array.isArray(field.type) && field.subType !== "tags") ||
+            (field.type === "array" &&
+                field.children &&
+                isArrayOfObjects(field.children)) ||
+            field.type === "table"
+        )
+            continue;
+        if (field.children && isArrayOfObjects(field.children))
+            RETURN = [
+                ...RETURN,
+                ...generateMentionOptions(field.children, field.key),
+            ];
+        else
+            RETURN.push({
+                label: (prefix ? `${prefix}/` : "") + field.key,
+                value: field.key,
+            });
+    }
+    return RETURN;
+}
 
 useHead({
-    title: `${database.value.slug} | ${t(table.value.slug)} > ${t("settings")}`,
-    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${t("settings")}`,
+    link: [
+        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+    ],
 });
 </script>

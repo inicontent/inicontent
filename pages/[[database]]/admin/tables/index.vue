@@ -12,7 +12,7 @@ definePageMeta({
 
 const database = useState<Database>("database");
 useHead({
-    title: `${database.value.slug} | ${t("tables")}`,
+    title: `${t(database.value.slug)} | ${t("tables")}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>
