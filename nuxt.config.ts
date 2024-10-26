@@ -22,5 +22,12 @@ export default defineNuxtConfig({
 			},
 		},
 	},
+	...(process.env.GIGET_AUTH
+		? {
+				extends: [
+					["gh:inicontent/private", { install: true, peferOffline: true }],
+				],
+			}
+		: {}),
 	compatibilityDate: "2024-09-04",
 });
