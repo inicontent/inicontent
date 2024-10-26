@@ -63,14 +63,7 @@ const Theme = useCookie<string>("Theme", { sameSite: true });
 
 const osThemeRef = useOsTheme();
 if (!Theme.value) Theme.value = osThemeRef.value ?? "light";
-const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
-    primaryColor: "#FF9800",
-    primaryColorHover: "#F7A42A",
-    primaryColorPressed: "#E19421",
-    primaryColorSuppl: "#CB7900"
-}));
-
-setThemeConfig()
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 
 watch(Theme, setThemeConfig)
 

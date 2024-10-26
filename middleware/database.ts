@@ -15,4 +15,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			statusCode: 404,
 			statusMessage: "database",
 		});
+
+	useState<ThemeConfig>("ThemeConfig", () => ({
+		primaryColor: "#FF9800",
+		primaryColorHover: "#F7A42A",
+		primaryColorPressed: "#E19421",
+		primaryColorSuppl: "#CB7900",
+	}));
+
+	setThemeConfig();
 });
