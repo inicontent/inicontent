@@ -8,6 +8,8 @@ export default [
 		key: "icon",
 		type: "table",
 		table: "asset",
+		accept: ["image"],
+		params: "format=avif&fit=94",
 		required: true,
 	},
 	{

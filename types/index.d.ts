@@ -58,6 +58,7 @@ declare global {
 			| "quarterrange"
 			| "week";
 		expand?: boolean;
+		params?: string;
 	};
 	type Schema = Field[];
 	type FlowType = (
