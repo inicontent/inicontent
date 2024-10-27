@@ -19,5 +19,5 @@
 		"nuxtjs-naive-ui": "^1.0.2",
 		"vuedraggable": "4.1.0"
 	},
-	"packageManager": "pnpm@9.9.0"
+	"packageManager": "pnpm@9.12.2"
 }
