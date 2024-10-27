@@ -21,9 +21,9 @@
                 <NTooltip :delay="500">
                     <template #trigger>
                         <NButton secondary round type="info" tag="a"
-                            :href="`/${database.slug}/admin/tables/${table.slug}/${$route.params.id}/edit`"
+                            :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`"
                             @click.prevent.stop="() => navigateTo(
-                                `/${database.slug}/admin/tables/${table.slug}/${$route.params.id}/edit`,
+                                `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`,
                             )">
                             <template #icon>
                                 <NIcon>
@@ -61,8 +61,9 @@
                 </NButton>
 
                 <NButton secondary round type="info" tag="a"
-                    :href="`/${database.slug}/admin/tables/${table.slug}/${$route.params.id}/edit`" @click.prevent.stop="() => navigateTo(
-                        `/${database.slug}/admin/tables/${table.slug}/${$route.params.id}/edit`,
+                    :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`"
+                    @click.prevent.stop="() => navigateTo(
+                        `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`,
                     )">
                     <template #icon>
                         <NIcon>

@@ -77,7 +77,7 @@
                 <NTooltip :delay="500">
                     <template #trigger>
                         <NButton round :disabled="!table.schema" tag="a"
-                            :href="table.schema ? `/${database.slug}/admin/tables/${table.slug}/new` : ''"
+                            :href="table.schema ? `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/new` : '#'"
                             @click.prevent="() => {
                                 if (!isMobile)
                                     Drawer = {
@@ -88,7 +88,7 @@
                                         show: true,
                                     };
                                 else
-                                    navigateTo(`/${database.slug}/admin/tables/${table.slug}/new`,
+                                    navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/new`,
                                     );
                             }">
                             <template #icon>

@@ -1,8 +1,9 @@
 <template>
     <NFlex :wrap="false">
         <NButton v-for="singleValue in ([] as Item[]).concat(value)" tag="a"
-            :href="`/admin/tables/${field.table}/${singleValue.id}/edit`" @click="(e) => handleClick(e, singleValue)"
-            :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]" size="small" round>
+            :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${field.table}/${singleValue.id}/edit`"
+            @click="(e) => handleClick(e, singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
+            size="small" round>
             <template #icon>
                 <NIcon>
                     {{ field.table?.charAt(0).toUpperCase() }}
@@ -30,6 +31,7 @@ const { field } = defineProps({
         required: true
     }
 })
+const route = useRoute()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database")
 
@@ -58,7 +60,7 @@ function handleClick(e: MouseEvent, item: Item) {
             };
         else
             navigateTo(
-                `/admin/tables/${field.table}/${item.id}/edit`,
+                `${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/${field.table}/${item.id}/edit`,
             );
     }
 }

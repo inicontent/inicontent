@@ -140,9 +140,9 @@ const SigninSubmit = async (e: Event) => {
                         )
                     ).result;
                     navigateTo(
-                        !route.params.database
-                            ? "/admin"
-                            : `/${database.value.slug}/admin`,
+                        route.params.database
+                            ? `/${database.value.slug}/admin`
+                            : "/admin",
                     );
                 } else window.$message.error(data.message);
                 Loading.value.Signin = false;

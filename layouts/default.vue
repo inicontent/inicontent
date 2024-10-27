@@ -92,8 +92,9 @@
                                     <NTooltip :delay="500">
                                         <template #trigger>
                                             <NButton round size="small" tag="a"
-                                                :href="`/${database?.slug}/admin/settings`" @click.stop.prevent="navigateTo(
-                                                    `/${database?.slug}/admin/settings`,
+                                                :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/settings`"
+                                                @click.stop.prevent="navigateTo(
+                                                    `${$route.params.database ? `/${database.slug}` : ''}/admin/settings`,
                                                 )">
                                                 <template #icon>
                                                     <NIcon>
@@ -131,11 +132,13 @@
                             </NTooltip>
                             <NDropdown :value="Language" :options="languagesDropdownOptions"
                                 @select="(v) => Language = v">
-                                <NButton round size="small"><template #icon>
+                                <NButton round size="small">
+                                    <template #icon>
                                         <NIcon>
                                             <IconLanguage />
                                         </NIcon>
-                                    </template></NButton>
+                                    </template>
+                                </NButton>
                             </NDropdown>
                         </NButtonGroup>
                     </template>
