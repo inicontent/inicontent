@@ -7,8 +7,8 @@
 		<template #label>
 			<NFlex align="center">
 				{{ t(field.key) }}
-				<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal"
-					:callback="handleSelectAssets" />
+				<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal" :field
+					:callback="importAssetCallback" />
 			</NFlex>
 		</template>
 
@@ -26,8 +26,8 @@
 			</template>
 			<template v-else>
 				<NFlex align="center" size="small">
-					<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal"
-						:callback="handleSelectAssets" />
+					<LazyRenderFieldUploadActions v-model:showAssetsModal="showAssetsModal" :field
+						:callback="importAssetCallback" />
 				</Nflex>
 			</template>
 		</NUpload>
@@ -37,7 +37,7 @@
 				<AssetCard targetID="assetsModal">
 					<template v-slot="{ asset }">
 						<NRadio v-if="asset.type !== 'dir'" :checked="getChecked(asset)"
-							@update:checked="handleSelectAssets(asset)" />
+							@update:checked="handleSelectAsset(asset)" />
 					</template>
 				</AssetCard>
 			</NDrawerContent>
@@ -129,7 +129,17 @@ function generateAcceptedFileType(types: Field["accept"]) {
 	return RETURN.join(",");
 }
 
-function handleSelectAssets(asset?: Asset) {
+function importAssetCallback(assets: Asset | Asset[]) {
+	const isModelValueTable = field.type !== "url" && field.children !== "url"
+	const value = ([] as Asset[]).concat(assets).map(asset => isModelValueTable ? asset : asset.publicURL)
+
+	if (field.isArray)
+		modelValue.value = [...(modelValue.value ? (Array.isArray(modelValue.value) ? modelValue.value : [modelValue.value]) : []), ...value]
+	else
+		modelValue.value = value[0]
+}
+
+function handleSelectAsset(asset?: Asset) {
 	if (!asset) return;
 	const value =
 		field.type === "url" || field.children === "url" ? asset.publicURL : asset;
