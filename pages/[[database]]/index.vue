@@ -5,9 +5,8 @@ definePageMeta({
     middleware: ["database", "user", "dashboard"],
 });
 
-const route = useRoute()
 const database = useState<Database>("database");
 await navigateTo(
-    `/${route.params.database ? `${database.value.slug}/` : ""}admin${database.value.slug === 'inicontent' ? '' : '/tables'}`,
+    database.value.slug === "inicontent" ? "admin" : "admin/tables",
 );
 </script>
