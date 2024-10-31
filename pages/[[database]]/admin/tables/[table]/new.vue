@@ -1,38 +1,40 @@
 <template>
-    <NCard style="height: fit-content">
-        <template #header>
-            <NEllipsis>{{ t('new') }} {{ t(table.slug) }}</NEllipsis>
-        </template>
-        <template v-if="schema && schema.length > 4" #header-extra>
-            <NFlex>
-                <NTooltip :delay="500">
-                    <template #trigger>
-                        <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
-                            <template #icon>
-                                <NIcon>
-                                    <IconSend />
-                                </NIcon>
-                            </template>
-                        </NButton>
+    <NSpin :show="!!Loading.CREATE">
+        <NCard style="height: fit-content">
+            <template #header>
+                <NEllipsis>{{ t('new') }} {{ t(table.slug) }}</NEllipsis>
+            </template>
+            <template v-if="schema && schema.length > 4" #header-extra>
+                <NFlex>
+                    <NTooltip :delay="500">
+                        <template #trigger>
+                            <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
+                                <template #icon>
+                                    <NIcon>
+                                        <IconSend />
+                                    </NIcon>
+                                </template>
+                            </NButton>
+                        </template>
+                        {{ t('publish') }}
+                    </NTooltip>
+                </NFlex>
+            </template>
+            <template #actions>
+                <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
+                    <template #icon>
+                        <NIcon>
+                            <IconSend />
+                        </NIcon>
                     </template>
                     {{ t('publish') }}
-                </NTooltip>
-            </NFlex>
-        </template>
-        <template #actions>
-            <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
-                <template #icon>
-                    <NIcon>
-                        <IconSend />
-                    </NIcon>
-                </template>
-                {{ t('publish') }}
-            </NButton>
-        </template>
-        <NForm :model="newItemObject" ref="formRef">
-            <RenderFieldS v-model="newItemObject" :schema />
-        </NForm>
-    </NCard>
+                </NButton>
+            </template>
+            <NForm :model="newItemObject" ref="formRef">
+                <RenderFieldS v-model="newItemObject" :schema />
+            </NForm>
+        </NCard>
+    </NSpin>
 </template>
 
 <script lang="ts" setup>
@@ -45,8 +47,11 @@ import {
     NFlex,
     NTooltip,
     type FormInst,
+    NSpin,
 } from "naive-ui";
 import { IconSend } from "@tabler/icons-vue";
+
+clearNuxtState("itemLabel");
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],
@@ -99,7 +104,7 @@ async function CREATE() {
 };
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${t('new')}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t('new')}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

@@ -3,9 +3,5 @@
 </template>
 
 <script lang="ts" setup>
-defineProps({
-    value: {
-        type: [String, Number],
-        required: true
-    }
-})</script>
+defineProps<{ value?: string | number }>()
+</script>

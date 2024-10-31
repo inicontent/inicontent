@@ -3,10 +3,5 @@
 </template>
 
 <script lang="ts" setup>
-defineProps({
-    value: {
-        type: String,
-        required: true
-    }
-})
+const { value } = defineProps<{ value?: string }>()
 </script>

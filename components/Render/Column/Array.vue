@@ -24,14 +24,5 @@
 import { NButton, NFlex, NPopover, NCollapse, NCollapseItem } from 'naive-ui';
 import { isArrayOfObjects } from "inibase/utils";
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field>,
-        default: [],
-    },
-    value: {
-        type: Array as PropType<Record<string, any>[]>,
-        required: true
-    }
-});
+const { field, value } = defineProps<{ field: Field, value?: any }>()
 </script>

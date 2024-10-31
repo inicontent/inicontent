@@ -1,96 +1,100 @@
 <template>
-    <NCard style="height: fit-content">
-        <template #header>
-            <NEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NEllipsis>
-        </template>
-        <template v-if="schema && schema.length > 4" #header-extra>
-            <NButtonGroup>
-                <NTooltip :delay="500">
-                    <template #trigger>
-                        <NButton type="info" secondary round tag="a"
-                            :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}`"
-                            @click.prevent.stop="() => navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}`)">
-                            <template #icon>
+    <NSpin :show="!!Loading.UPDATE">
+        <NCard style="height: fit-content">
+            <template #header>
+                <NEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NEllipsis>
+            </template>
+            <template v-if="schema && schema.length > 4" #header-extra>
+                <NButtonGroup>
+                    <NTooltip :delay="500">
+                        <template #trigger>
+                            <NButton type="info" secondary round>
+                                <template #icon>
+                                    <NuxtLink
+                                        :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
+                                        <NIcon>
+                                            <IconEye />
+                                        </NIcon>
+                                    </NuxtLink>
+                                </template>
+                            </NButton>
+                        </template>
+                        {{ t('view') }}
+                    </NTooltip>
+                    <NPopconfirm @positive-click="DELETE">
+                        <template #trigger>
+                            <NTooltip :delay="500">
+                                <template #trigger>
+                                    <NButton secondary round type="error" :loading="Loading.DELETE">
+                                        <template #icon>
+                                            <NIcon>
+                                                <IconTrash />
+                                            </NIcon>
+                                        </template>
+                                    </NButton>
+                                </template>
+                                {{ t('delete') }}
+                            </NTooltip>
+                        </template>
+                        {{ t("theFollowingActionIsIrreversible") }}
+                    </NPopconfirm>
+
+                    <NTooltip :delay="500">
+                        <template #trigger>
+                            <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
+                                <template #icon>
+                                    <NIcon>
+                                        <IconDeviceFloppy />
+                                    </NIcon>
+                                </template>
+                            </NButton>
+                        </template>
+                        {{ t('update') }}
+                    </NTooltip>
+                </NButtonGroup>
+            </template>
+            <template #actions>
+                <NButtonGroup>
+                    <NButton type="info" secondary round>
+                        <template #icon>
+                            <NuxtLink
+                                :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                 <NIcon>
                                     <IconEye />
                                 </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t('view') }}
-                </NTooltip>
-                <NPopconfirm @positive-click="DELETE">
-                    <template #trigger>
-                        <NTooltip :delay="500">
-                            <template #trigger>
-                                <NButton secondary round type="error" :loading="Loading.DELETE">
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconTrash />
-                                        </NIcon>
-                                    </template>
-                                </NButton>
-                            </template>
-                            {{ t('delete') }}
-                        </NTooltip>
-                    </template>
-                    {{ t("theFollowingActionIsIrreversible") }}
-                </NPopconfirm>
+                            </NuxtLink>
+                        </template>
+                        {{ t('view') }}
+                    </NButton>
+                    <NPopconfirm @positive-click="DELETE">
+                        <template #trigger>
+                            <NButton secondary round type="error" :loading="Loading.DELETE">
+                                <template #icon>
+                                    <NIcon>
+                                        <IconTrash />
+                                    </NIcon>
+                                </template>
+                                {{ t('delete') }}
+                            </NButton>
+                        </template>
+                        {{ t("theFollowingActionIsIrreversible") }}
+                    </NPopconfirm>
 
-                <NTooltip :delay="500">
-                    <template #trigger>
-                        <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
-                            <template #icon>
-                                <NIcon>
-                                    <IconDeviceFloppy />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t('update') }}
-                </NTooltip>
-            </NButtonGroup>
-        </template>
-        <template #actions>
-            <NButtonGroup>
-                <NButton type="info" secondary round tag="a"
-                    :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}`"
-                    @click.prevent.stop="() => navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}`)">
-                    <template #icon>
-                        <NIcon>
-                            <IconEye />
-                        </NIcon>
-                    </template>
-                    {{ t('view') }}
-                </NButton>
-                <NPopconfirm @positive-click="DELETE">
-                    <template #trigger>
-                        <NButton secondary round type="error" :loading="Loading.DELETE">
-                            <template #icon>
-                                <NIcon>
-                                    <IconTrash />
-                                </NIcon>
-                            </template>
-                            {{ t('delete') }}
-                        </NButton>
-                    </template>
-                    {{ t("theFollowingActionIsIrreversible") }}
-                </NPopconfirm>
-
-                <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
-                    <template #icon>
-                        <NIcon>
-                            <IconDeviceFloppy />
-                        </NIcon>
-                    </template>
-                    {{ t('update') }}
-                </NButton>
-            </NButtonGroup>
-        </template>
-        <NForm v-if="itemObject" :model="itemObject" ref="formRef">
-            <RenderFieldS v-model="itemObject" :schema />
-        </NForm>
-    </NCard>
+                    <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
+                        <template #icon>
+                            <NIcon>
+                                <IconDeviceFloppy />
+                            </NIcon>
+                        </template>
+                        {{ t('update') }}
+                    </NButton>
+                </NButtonGroup>
+            </template>
+            <NForm v-if="itemObject" :model="itemObject" ref="formRef">
+                <RenderFieldS v-model="itemObject" :schema />
+            </NForm>
+        </NCard>
+    </NSpin>
 </template>
 
 <script lang="ts" setup>
@@ -102,12 +106,16 @@ import {
     NIcon,
     NTooltip,
     NPopconfirm,
-    type FormInst,
     NButtonGroup,
+    NSpin,
+    type FormInst
 } from "naive-ui";
 import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 
-clearNuxtState("itemLabel");
+onBeforeRouteLeave((route, currentRoute) => {
+    if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
+        clearNuxtState("itemLabel");
+});
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],
@@ -194,19 +202,17 @@ async function DELETE() {
         window.$message.success(data.message);
         Loading.value.DELETE = false;
         return navigateTo(
-            `/${database.value.slug}/admin/tables/${table.value.slug}`,
+            `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}`,
         );
     }
     window.$message.error(data.message);
     Loading.value.DELETE = false;
 };
 
-const itemLabel = useState("itemLabel", () =>
-    renderLabel(table.value.label, table.value.schema, itemObject.value),
-)
+const itemLabel = useState("itemLabel", () => renderLabel(table.value.label, table.value.schema, itemObject.value))
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${itemLabel.value}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>

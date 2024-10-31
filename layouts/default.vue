@@ -4,26 +4,18 @@
             <NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
                 <NPageHeader>
                     <template #avatar>
-                        <NTag v-if="String($route.matched[0].name).startsWith(
-                            'database',
-                        )" @click="navigateTo(`/${database?.slug ?? ''}`)" strong round :bordered="false" :style='{
-                            cursor: "pointer",
-                            fontWeight: 600,
-                            ...(ThemeConfig.revert &&
-                                Theme === "dark"
-                                ? {
-                                    color: "#000",
-                                    backgroundColor: "#fff",
-                                }
-                                : {}),
-                        }'>
-                            <template #avatar>
-                                <NAvatar fallbackSrc="/favicon.ico" :style='{
-                                    backgroundColor: "transparent"
-                                }' :src='database?.icon?.publicURL ?? "/favicon.ico"' />
-                            </template>
-                            {{ t(database?.slug ?? 'inicontent') }}
-                        </NTag>
+                        <NuxtLink v-if="String($route.matched[0].name).startsWith('database')"
+                            :to="`/${$route.params.database ?? ''}`">
+                            <NTag strong round :bordered="false" style="cursor:pointer;font-weight:600"
+                                :style="ThemeConfig.revert && Theme === 'dark' ? 'color:#000;background-color:#fff' : ''">
+                                <template #avatar>
+                                    <NAvatar fallbackSrc="/favicon.ico" :style='{
+                                        backgroundColor: "transparent"
+                                    }' :src='database?.icon?.publicURL ?? "/favicon.ico"' />
+                                </template>
+                                {{ t(database?.slug ?? 'inicontent') }}
+                            </NTag>
+                        </NuxtLink>
                         <NTag v-else strong round :bordered="false">
                             <template #avatar>
                                 <NAvatar fallbackSrc="/favicon.ico"
@@ -32,47 +24,12 @@
                             {{ t(database?.slug ?? 'inicontent') }}
                         </NTag>
                     </template>
-                    <template #title v-if='database?.slug && ![
-                        "index",
-                        "auth",
-                        "dashboard",
-                        "database",
-                        "database-auth",
-                    ].includes(String($route.matched[0].name))'>
+                    <template #title v-if='showBreadcrumb'>
                         <NBreadcrumb>
-                            <NBreadcrumbItem v-for='(childRoute, index) of $route.path
-                                .split("/")
-                                .filter(Boolean)
-                                .filter(
-                                    (_path, index) =>
-                                        !String($route.matched[0].name)?.startsWith("database") || index !== 0,
-                                )' :href='$route.path
-                                    .split("/")
-                                    .slice(
-                                        0,
-                                        index +
-                                        (String($route.matched[0].name)?.startsWith("database")
-                                            ? 3
-                                            : 2),
-                                    )
-                                    .join("/")' @click.stop.prevent='navigateTo(
-                                        $route.path
-                                            .split("/")
-                                            .slice(
-                                                0,
-                                                index +
-                                                (String($route.matched[0].name).startsWith("database")
-                                                    ? 3
-                                                    : 2),
-                                            )
-                                            .join("/"),
-                                    )'>
-                                {{ isValidID(childRoute) &&
-                                    useState("itemLabel").value ? useState("itemLabel").value : t(
-                                        childRoute === "admin"
-                                            ? "routeAdmin"
-                                            : childRoute,
-                                    ) }}
+                            <NBreadcrumbItem v-for="(_, index) of breadcrumbArray">
+                                <NuxtLink :to="breadCrumbItemLink(index)">
+                                    {{ breadCrumbItemLabel(index) }}
+                                </NuxtLink>
                             </NBreadcrumbItem>
                         </NBreadcrumb>
                     </template>
@@ -91,32 +48,33 @@
                                     </NTooltip>
                                     <NTooltip :delay="500">
                                         <template #trigger>
-                                            <NButton round size="small" tag="a"
-                                                :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/settings`"
-                                                @click.stop.prevent="navigateTo(
-                                                    `${$route.params.database ? `/${database.slug}` : ''}/admin/settings`,
-                                                )">
+                                            <NButton size="small">
                                                 <template #icon>
-                                                    <NIcon>
-                                                        <IconSettings />
-                                                    </NIcon>
+                                                    <NuxtLink
+                                                        :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/settings`">
+                                                        <NIcon>
+                                                            <IconSettings />
+                                                        </NIcon>
+                                                    </NuxtLink>
                                                 </template>
                                             </NButton>
                                         </template>
                                         {{ t("databaseSettings") }}
                                     </NTooltip>
                                 </template>
-                                <NDropdown :options='userDropdownOptions' @select='onSelectUserDropdown'>
-                                    <NButton round size="small"><template #icon>
+                                <NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+                                    <NButton size="small">
+                                        <template #icon>
                                             <NIcon>
                                                 <IconUser />
                                             </NIcon>
-                                        </template></NButton>
+                                        </template>
+                                    </NButton>
                                 </NDropdown>
                             </template>
                             <NTooltip :delay="500">
                                 <template #trigger>
-                                    <NButton round size="small" @click="Theme =
+                                    <NButton size="small" @click="Theme =
                                         Theme === 'dark'
                                             ? 'light'
                                             : 'dark'">
@@ -145,16 +103,8 @@
                 </NPageHeader>
             </NLayoutHeader>
         </NScrollbar>
-        <NLayoutContent id="container" position="absolute" :style="{
-            top: '64px',
-            height: 'calc(~\'100vh - 98px\')',
-        }" :nativeScrollbar="false" :contentStyle='{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "24px 0",
-            height: "max-content",
-        }'>
+        <NLayoutContent id="container" position="absolute" style="top: 64px;height: calc(100vh - 64px);overflow: auto;"
+            content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content">
             <slot></slot>
         </NLayoutContent>
     </NLayout>
@@ -178,18 +128,19 @@ import {
     NButton,
     NButtonGroup,
     NDropdown,
+    NFlex,
     NIcon,
     NLayout,
     NLayoutContent,
     NLayoutHeader,
     NPageHeader,
     NScrollbar,
-    NSpace,
     NTag,
     NText,
     NTooltip,
-    useMessage
+    useMessage,
 } from "naive-ui";
+
 const Language = useCookie<string>("Language", { sameSite: true });
 useLanguage({
     ar: {
@@ -201,6 +152,8 @@ useLanguage({
         logout: "تسجيل الخروج",
         profile: "تعديل الحساب",
         session: "سجل الدخول",
+        component: "أجزاء",
+        page: "صفحات",
         user: "مستخدم",
         admin: "مدير",
         translation: "ترجمة",
@@ -214,19 +167,51 @@ useLanguage({
     en: { routeAdmin: "Admin Panel" },
 });
 onMounted(() => {
-    window.$message = useMessage()
-})
+    window.$message = useMessage();
+});
+const route = useRoute();
 const user = useState<User | null>("user"),
     Theme = useCookie<string>("Theme", { sameSite: true }),
     database = useState<Database>("database"),
     ThemeConfig = useState<ThemeConfig>("ThemeConfig");
+
+const showBreadcrumb =
+    database.value?.slug &&
+    !["index", "auth", "dashboard", "database", "database-auth"].includes(
+        String(route.matched[0].name),
+    );
+
+const breadcrumbArray = computed(() => route.path
+    .split("/")
+    .filter(Boolean)
+    .filter(
+        (_path, index) =>
+            !String(route.matched[0].name)?.startsWith("database") || index !== 0,
+    ));
+function breadCrumbItemLink(index: number) {
+    return route.path
+        .split("/")
+        .slice(
+            0,
+            index + (String(route.matched[0].name)?.startsWith("database") ? 3 : 2),
+        )
+        .join("/");
+}
+const itemLabel = useState("itemLabel");
+function breadCrumbItemLabel(index: number) {
+    const childRoute = breadcrumbArray.value[index];
+    return (
+        (isValidID(childRoute) && itemLabel.value) ? itemLabel.value :
+            t(childRoute === "admin" ? "routeAdmin" : childRoute)
+    );
+}
 const userDropdownOptions = [
     {
         key: "header",
         type: "render",
         render: () =>
             h(
-                NSpace,
+                NFlex,
                 {
                     justify: "center",
                     style: {
@@ -239,11 +224,11 @@ const userDropdownOptions = [
                         {
                             strong: true,
                         },
-                        () => user.value?.username ?
-                            user.value.username
-                                .charAt(0)
-                                .toUpperCase() +
-                            user.value.username.slice(1) : "--",
+                        () =>
+                            user.value?.username
+                                ? user.value.username.charAt(0).toUpperCase() +
+                                user.value.username.slice(1)
+                                : "--",
                     ),
             ),
     },
@@ -254,45 +239,33 @@ const userDropdownOptions = [
     {
         label: t("profile"),
         key: "edit",
-        icon: () =>
-            h(NIcon, () => h(IconPencil)),
+        icon: () => h(NIcon, () => h(IconPencil)),
         show: database.value?.tables
-            ?.find(
-                ({ slug }) => slug === "user",
-            )
+            ?.find(({ slug }) => slug === "user")
             ?.allowedMethods?.includes("u"),
     },
     {
         label: t("logout"),
         key: "logout",
-        icon: () =>
-            h(NIcon, () => h(IconLogout)),
+        icon: () => h(NIcon, () => h(IconLogout)),
     },
-]
+];
 async function onSelectUserDropdown(v: string) {
     switch (v) {
         case "edit":
             navigateTo(
-                `/${database.value.slug
-                }/admin/tables/user/${(user.value as User).id
+                `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/user/${(user.value as User).id
                 }/edit`,
             );
             break;
         case "logout":
             await $fetch(
-                `${useRuntimeConfig().public
-                    .apiBase
-                }${database.value.slug ??
-                "inicontent"
+                `${useRuntimeConfig().public.apiBase}${database.value.slug ?? "inicontent"
                 }/auth/signout`,
                 {},
             );
             user.value = null;
-            await navigateTo(
-                database.value.slug
-                    ? `/${database.value.slug}/auth`
-                    : "/auth",
-            );
+            await navigateTo(`${route.params.database ? `/${route.params.database}` : ''}/auth`);
             break;
     }
 }
@@ -305,5 +278,5 @@ const languagesDropdownOptions = [
         label: "English",
         key: "en",
     },
-]
+];
 </script>

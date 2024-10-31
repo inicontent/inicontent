@@ -65,6 +65,7 @@ useLanguage({
         andGroup: "مجموعة و",
         orGroup: "مجموعة أو",
         showAll: "أظهر الكل",
+        flows: "تدفقات",
         newItem: "عنصر جديد",
         new: "جديد",
         publish: "نشر",
@@ -98,7 +99,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                         h(
                             NuxtLink,
                             {
-                                to: `/${database.value.slug}/admin/tables/${slug}`,
+                                to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${slug}`,
                             },
                             { default: () => t("showAll") },
                         ),
@@ -110,7 +111,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                         h(
                             NuxtLink,
                             {
-                                to: `/${database.value.slug}/admin/tables/${slug}/new`,
+                                to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${slug}/new`,
                             },
                             { default: () => t("newItem") },
                         ),
@@ -128,7 +129,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                                 h(
                                     NuxtLink,
                                     {
-                                        to: `/${database.value.slug}/admin/tables/${slug}/settings`,
+                                        to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${slug}/settings`,
                                     },
                                     { default: () => t("settings") },
                                 ),
@@ -142,7 +143,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                         h(
                             NuxtLink,
                             {
-                                to: `/${database.value.slug}/admin/tables/${slug}/flows`,
+                                to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${slug}/flows`,
                             },
                             { default: () => t("flows") },
                         ),
@@ -157,7 +158,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
             h(
                 NuxtLink,
                 {
-                    to: `/${database.value.slug}/admin/tables/${slug}`,
+                    to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${slug}`,
                 },
                 { default: () => t(slug) },
             ),

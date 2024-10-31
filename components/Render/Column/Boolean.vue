@@ -11,10 +11,5 @@
 import { IconCheck, IconX } from '@tabler/icons-vue';
 import { NIcon, NIconWrapper } from 'naive-ui';
 
-defineProps({
-    value: {
-        type: Boolean,
-        required: false
-    }
-})
+const { value } = defineProps<{ value?: boolean }>()
 </script>

@@ -1,10 +1,11 @@
 <template>
-    <NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']">
+    <NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
+        v-model:expanded-names="expandedNames">
         <draggable :list="schema" item-key="id" handle=".handle">
             <template #item="{ element, index }">
-                <NCollapseItem :name="index" :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)">
+                <NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)">
                     <template #header>
-                        <NTooltip v-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)" :delay="500">
+                        <NTooltip v-if="!isDisabled(element.key)" :delay="500">
                             <template #trigger>
                                 <NIcon class="handle" :size="18">
                                     <IconMenu2 />
@@ -18,15 +19,8 @@
                         <NFlex>
                             <template
                                 v-if="['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)">
-                                <NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable @select="(type) => schema[index].children = ([
-                                    ...(schema[index].children ?? []),
-                                    {
-                                        id: `temp-${randomID()}`,
-                                        key: null,
-                                        required: false,
-                                        ...handleSelectedSchemaType(type),
-                                    },
-                                ] as any)">
+                                <NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable
+                                    @select="(type) => pushToChildrenSchema(type, index)">
                                     <NButton :disabled="!element.key" circle size="small">
                                         <template #icon>
                                             <NIcon>
@@ -36,7 +30,7 @@
                                     </NButton>
                                 </NDropdown>
                             </template>
-                            <template v-else-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)">
+                            <template v-else-if="!isDisabled(element.key)">
                                 <NButton :round="!isMobile" :circle="isMobile" strong secondary size="small"
                                     :type="schema[index].required ? 'error' : 'tertiary'"
                                     @click="schema[index].required = !schema[index].required">
@@ -50,11 +44,11 @@
                                     </template>
                                 </NButton>
                             </template>
-                            <NDropdown :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)"
-                                :options="fieldsList()" style="max-height: 200px" trigger="click" scrollable
+                            <NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
+                                style="max-height: 200px" trigger="click" scrollable
                                 @select="(type) => schema[index] = changeFieldType(schema[index], type)">
                                 <NButton round strong secondary size="small" type="primary"
-                                    :disabled="['id', 'createdAt', 'updatedAt'].includes(element.key)">
+                                    :disabled="isDisabled(element.key)">
                                     <template #icon>
                                         <component :is="getField(element.subType ?? element.type).icon" />
                                     </template>
@@ -65,8 +59,8 @@
                                     </template>
                                 </NButton>
                             </NDropdown>
-                            <NButton v-if="!['id', 'createdAt', 'updatedAt'].includes(element.key)" circle secondary
-                                size="small" type="error" @click="schema.splice(index, 1)">
+                            <NButton v-if="!isDisabled(element.key)" circle secondary size="small" type="error"
+                                @click="schema.splice(index, 1)">
                                 <template #icon>
                                     <NIcon>
                                         <IconTrash />
@@ -76,44 +70,15 @@
                         </NFlex>
                     </template>
                     <NFormItem :label="t('fieldName')">
-                        <template #feedback>
+                        <template v-if="getPath(table.schema ?? [], element.id, true)" #feedback>
                             {{ `#${getPath(table.schema ?? [], element.id, true)}` }}
                         </template>
                         <NInput v-model:value="schema[index].key" />
                     </NFormItem>
                     <template v-if="schema[index].table === 'asset'">
                         <NFormItem :label="t('allowedFiles')">
-                            <NSelect multiple :render-label="(option: any) =>
-                                h(NFlex, { align: 'center' }, () => [
-                                    h(NIcon, () => option.icon),
-                                    option.label as string,
-                                ])" :options="[
-                                    {
-                                        label: t('image'),
-                                        value: 'image',
-                                        icon: h(IconPhoto),
-                                    },
-                                    {
-                                        label: t('video'),
-                                        value: 'video',
-                                        icon: h(IconVideo),
-                                    },
-                                    {
-                                        label: t('audio'),
-                                        value: 'audio',
-                                        icon: h(IconMusic),
-                                    },
-                                    {
-                                        label: t('documents'),
-                                        value: 'document',
-                                        icon: h(IconFileDescription),
-                                    },
-                                    {
-                                        label: t('archive'),
-                                        value: 'archive',
-                                        icon: h(IconFileZip),
-                                    },
-                                ]" v-model:value="schema[index].accept" />
+                            <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
+                                v-model:value="schema[index].accept" />
                         </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'select'">
@@ -137,53 +102,20 @@
                         </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'tags'">
-                        <NFormItem :label="t('contentType')">
-                            <NSelect v-model:value="(schema[index].children as any)" filterable multiple :render-label="(option: any) =>
-                                h(NFlex, { align: 'center' }, () => [
-                                    h(NIcon, () => option.icon),
-                                    option.label as string,
-                                ])" :options="flatFieldsList()
-                                    ?.filter(({ key }) =>
-                                        [
-                                            'string',
-                                            'number',
-                                            'password',
-                                            'email',
-                                            'url',
-                                            'id',
-                                        ].includes(key),
-                                    )
-                                    .map((field) => ({
-                                        label: field.label,
-                                        value: field.key,
-                                        icon: field.icon,
-                                    }))" />
+                        <NFormItem :label="t('valuesType')">
+                            <NSelect v-model:value="(schema[index].children as any)" filterable multiple
+                                :render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
                         </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'table'">
                         <NFormItem :label="t('tableName')">
-                            <NSelect filterable v-model:value="schema[index].table" :options="database.tables
-                                ?.filter(
-                                    ({ slug }) =>
-                                        slug !== $route.params.table ||
-                                        $route.params.table === 'user',
-                                )
-                                .map(({ slug, id }) => ({
-                                    label: t(slug),
-                                    value: slug,
-                                }))" />
+                            <NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
                         </NFormItem>
                         <NFormItem :label="t('searchIn')" :disabled="!schema[index].key">
                             <NCascader :disabled="!schema[index].key" multiple clearable filterable
                                 expand-trigger="hover" check-strategy="child" :cascard="false"
-                                v-model:value="schema[index].searchIn" :options="schema[index].key
-                                    ? database.tables
-                                        ?.find(({ slug }) => slug === schema[index].table)
-                                        ?.schema?.map((_item, _index: number, schema) =>
-                                            generateSearchInOptions(schema),
-                                        )
-                                        .flat(Number.POSITIVE_INFINITY) ?? []
-                                    : []" />
+                                v-model:value="schema[index].searchIn"
+                                :options="searchInSelectOptions(schema[index])" />
                             <NFormItem v-if="schema[index].type === 'array'" :label="t('minimumItems')">
                                 <NInputNumber :value="schema[index].min"
                                     @update:value="(value) => { if (value) schema[index].min = value; else delete schema[index].min }" />
@@ -192,7 +124,7 @@
                     </template>
                     <LazyTableSettingsSchema
                         v-if="['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
-                        v-model="element.children" />
+                        v-model="element.children" v-model:expanded-names="expandedChildNames" />
                 </NCollapseItem>
             </template>
         </draggable>
@@ -210,6 +142,7 @@ import {
     IconMusic,
     IconPhoto,
     IconVideo,
+    type Icon,
 } from "@tabler/icons-vue";
 import {
     NCollapse,
@@ -224,27 +157,65 @@ import {
     NSelect,
     NSwitch,
     NInputNumber,
-    NTooltip
+    NTooltip,
+    type SelectOption,
 } from "naive-ui";
 import draggable from "vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
 
 useLanguage({
     ar: {
-        fieldName: "ﻞﻘﺤﻟا ﻢﺳﺇ",
-        allowedFiles: "ﺎﻬﺑ ﺡﻮﻤﺴﻤﻟا ﺕﺎﻔﻠﻤﻟا",
-        options: "ﺕاﺭﺎﻴﺨﻟا",
-        contentType: "ﻯﻮﺘﺤﻤﻟا ﻉﻮﻧ",
-        showAsTable: "ﻝﻭﺪﺠﻛ ﺮﻬﻇﺃ",
-        labelText: "ﺔﻴﻤﺴﺘﻟا ﺺﻧ",
-        searchIn: "ﻲﻓ ﺚﺤﺒﻟا",
-        labelImage: "ﺔﻴﻤﺴﺘﻟا ﺓﺭﻮﺻ", // TO-DO: support image in table field
+        fieldName: "إسم الحقل",
+        allowedFiles: "الملفات المسموح بها",
+        options: "الخيارات",
+        valuesType: "نوع القيم",
+        showAsTable: "إظهار كجدول",
+        labelText: "النص الظاهري",
+        searchIn: "بحث في",
+        tableName: "إسم الجدول",
+        labelImage: "الصورة", // TO-DO: support image in table field
+        expandByDefault: "توسيع بشكل افتراضي",
+        dragToMove: "اسحب للتحريك",
+        fileType: {
+            image: "صورة",
+            video: "فيديو",
+            audio: "صوت",
+            document: "نص",
+            archive: "أرشيف",
+        },
+        allowCustomValues: "السماح بإدخال قيم جديدة",
     },
     en: {},
 });
+
+function isDisabled(key?: string) {
+    return !!key && ["id", "createdAt", "updatedAt"].includes(key);
+}
+const expandedNames = defineModel<string[]>("expandedNames");
+const expandedChildNames = ref<string[]>();
+function pushToChildrenSchema(type: string, index: number) {
+    if (!schema.value[index].children)
+        schema.value[index].children = [] as Schema;
+    (schema.value[index].children as Schema).push({
+        id: `temp-${randomID()}`,
+        key: null,
+        required: false,
+        ...handleSelectedSchemaType(type),
+    } as any);
+    expandedNames.value = [schema.value[index].id as string];
+    const newElementId = (
+        (schema.value[index].children as Schema).at(-1) as Field
+    ).id as string;
+    expandedChildNames.value = [newElementId];
+    setTimeout(
+        () => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
+        300,
+    );
+}
 const schema = defineModel<Schema>({
     default: () => reactive([]),
 });
+const route = useRoute();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const { isMobile } = useDevice();
@@ -258,8 +229,78 @@ function changeFieldType(
         case "array":
             return { id, key, type: newType, required, children };
         default:
-            return { id, key, ...(handleSelectedSchemaType(newType) as any), required };
+            return {
+                id,
+                key,
+                ...(handleSelectedSchemaType(newType) as any),
+                required,
+            };
     }
+}
+
+function renderIcon(icon: Icon) {
+    return () => h(NIcon, () => h(icon));
+}
+
+const fileTypeSelectOptions = [
+    {
+        label: t("fileType.image"),
+        value: "image",
+        icon: renderIcon(IconPhoto),
+    },
+    {
+        label: t("fileType.video"),
+        value: "video",
+        icon: renderIcon(IconVideo),
+    },
+    {
+        label: t("fileType.audio"),
+        value: "audio",
+        icon: renderIcon(IconMusic),
+    },
+    {
+        label: t("fileType.documents"),
+        value: "document",
+        icon: renderIcon(IconFileDescription),
+    },
+    {
+        label: t("fileType.archive"),
+        value: "archive",
+        icon: renderIcon(IconFileZip),
+    },
+];
+function selectRenderLabelWithIcon(option: SelectOption & { icon: string }) {
+    return h(NFlex, { align: "center" }, () => [
+        option.icon,
+        option.label as string,
+    ]);
+}
+
+const valuesTypeSelectOptions = flatFieldsList()
+    ?.filter(({ key }) =>
+        ["string", "number", "password", "email", "url", "id"].includes(key),
+    )
+    .map((field) => ({
+        label: field.label,
+        value: field.key,
+        icon: field.icon,
+    }));
+
+const tableSelectOptions = computed(() => database.value.tables
+    ?.map(({ slug }) => ({
+        label: t(slug),
+        value: slug,
+    })));
+
+function searchInSelectOptions(field: Field) {
+    return field.key
+        ? (database.value.tables
+            ?.find(({ slug }) => slug === field.table)
+            ?.schema?.map((_item, _index: number, schema) =>
+                generateSearchInOptions(schema),
+            )
+            .flat(Number.POSITIVE_INFINITY) ?? [])
+        : [];
 }
 </script>
 

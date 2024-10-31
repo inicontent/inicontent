@@ -18,10 +18,5 @@
 import { IconFileUpload } from "@tabler/icons-vue";
 import { NIcon, NImageGroup, NImage, NFlex, NA } from "naive-ui";
 
-defineProps({
-    value: {
-        type: [Array, Object] as PropType<Asset | Asset[]>,
-        required: true
-    }
-})
+defineProps<{ value: Asset | Asset[] }>()
 </script>

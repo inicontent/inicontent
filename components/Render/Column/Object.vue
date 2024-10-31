@@ -15,14 +15,5 @@
 <script lang="ts" setup>
 import { NButton, NFlex, NPopover } from 'naive-ui';
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field | never>,
-        default: [],
-    },
-    value: {
-        type: Object,
-        required: true
-    }
-});
+const { field, value } = defineProps<{ field: Field, value?: any }>()
 </script>

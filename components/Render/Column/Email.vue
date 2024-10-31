@@ -7,10 +7,5 @@
 <script lang="ts" setup>
 import { NA } from 'naive-ui';
 
-defineProps({
-    value: {
-        type: String,
-        required: true
-    }
-})
+const { value } = defineProps<{ value?: string }>()
 </script>

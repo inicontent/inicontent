@@ -7,9 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-const modelValue = defineModel({
-    type: String,
-})
+const modelValue = defineModel<string>()
 
 const colors = [
     [

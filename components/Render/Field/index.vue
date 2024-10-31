@@ -20,7 +20,6 @@
     <LazyRenderFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :field="field" />
     <LazyRenderFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :field="field" />
     <LazyRenderFieldSelect v-else-if="detectedFieldType === 'select'" v-model="modelValue" :field="field" />
-    <LazyRenderFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field="field" />
     <LazyRenderFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :field="field" />
     <LazyRenderFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field="field" />
     <LazyRenderFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field="field" />
@@ -31,12 +30,7 @@
 <script lang="ts" setup>
 import { NEmpty } from "naive-ui";
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field | never>,
-        default: {},
-    }
-});
+const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel({
     type: [Array, Object, String, Boolean, Number, null],

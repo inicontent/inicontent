@@ -38,7 +38,5 @@ import {
     IconVideo,
 } from "@tabler/icons-vue";
 
-defineProps({
-    type: String
-})
+defineProps<{ type?: string }>()
 </script>

@@ -15,15 +15,11 @@
 import { IconCopy } from '@tabler/icons-vue';
 import { NTag, NIcon, NFlex, NEllipsis } from 'naive-ui';
 
-const props = defineProps({
-    value: {
-        type: String,
-        required: true
-    }
-})
+const { value } = defineProps<{ value?: string }>()
 
 async function copyID() {
-    await copyToClipboard(props.value as string);
+    if (!value) return
+    await copyToClipboard(value);
     window.$message.success(t("textCopied"));
 }
 </script>

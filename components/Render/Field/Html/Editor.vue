@@ -59,7 +59,7 @@
               </NIcon>
             </NButton>
             <LazyRenderFieldHtmlColorPicker :modelValue="foreColor"
-              @update:modelValue="(value: string) => execCommand('foreColor', value)" />
+              @update:modelValue="(value) => execCommand('foreColor', value)" />
           </NPopover>
 
           <NPopover v-if="currentSelection" v-model:show="showBackColorPicker">
@@ -70,7 +70,7 @@
               </NIcon>
             </NButton>
             <LazyRenderFieldHtmlColorPicker :modelValue="backColor"
-              @update:modelValue="(value: string) => execCommand('backColor', value)" />
+              @update:modelValue="(value) => execCommand('backColor', value)" />
           </NPopover>
 
           <NPopselect :disabled="!isFocused" size="small" scrollable :value="currentFontSize"
@@ -224,17 +224,7 @@ import {
   IconArrowForwardUp
 } from "@tabler/icons-vue";
 
-defineProps({
-  modelValue: {
-    type: String,
-    default: "",
-  },
-});
-
-const modelValue = defineModel({
-  type: String,
-});
-
+const modelValue = defineModel<string>();
 const id = randomID()
 
 onMounted(() => {

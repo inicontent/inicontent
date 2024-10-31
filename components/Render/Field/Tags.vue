@@ -67,12 +67,7 @@ import type { FieldType } from "inibase";
 import { validateFieldType } from "inibase/utils";
 import { IconPlus } from "@tabler/icons-vue";
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field>,
-        required: true,
-    },
-});
+const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel({
     type: Array as PropType<string[]>

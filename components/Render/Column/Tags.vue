@@ -7,10 +7,5 @@
 <script lang="ts" setup>
 import { NFlex, NTag } from 'naive-ui';
 
-defineProps({
-    value: {
-        type: [Array, String] as PropType<string | string[]>,
-        required: true
-    }
-})
+defineProps<{ value: string | string[] }>()
 </script>

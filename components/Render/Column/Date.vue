@@ -10,10 +10,5 @@ import { NTime } from 'naive-ui';
 
 const isRelative = useState("isRelative", () => false)
 
-defineProps({
-    value: {
-        type: Number,
-        required: true
-    }
-})
+const { value } = defineProps<{ value?: number }>()
 </script>

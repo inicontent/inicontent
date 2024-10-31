@@ -1,8 +1,8 @@
 <template>
     <NFlex :wrap="false">
         <NButton v-for="singleValue in ([] as Item[]).concat(value)" tag="a"
-            :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${field.table}/${singleValue.id}/edit`"
-            @click="(e) => handleClick(e, singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
+            :href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${field.table}/${singleValue.id}/edit`"
+            @click.prevent.stop="handleClick(singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
             size="small" round>
             <template #icon>
                 <NIcon>
@@ -21,16 +21,7 @@
 <script lang="ts" setup>
 import { NFlex, NButton, NIcon } from 'naive-ui';
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field | never>,
-        default: [],
-    },
-    value: {
-        type: Object as PropType<Item | Item[]>,
-        required: true
-    }
-})
+const { field, value } = defineProps<{ field: Field, value: Item | Item[] }>()
 const route = useRoute()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database")
@@ -47,19 +38,17 @@ const Drawer = useState<{
     table: null,
     data: {},
 }))
-function handleClick(e: MouseEvent, item: Item) {
-    e.preventDefault();
+async function handleClick(item: Item) {
     if (item.id && field.table) {
         if (!isMobile)
             Drawer.value = {
                 ...Drawer.value,
                 id: item.id,
                 table: field.table,
-                data: {},
                 show: true,
             };
         else
-            navigateTo(
+            await navigateTo(
                 `${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/${field.table}/${item.id}/edit`,
             );
     }

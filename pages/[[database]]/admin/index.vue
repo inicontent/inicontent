@@ -1,7 +1,8 @@
 <template>
     <NCard :title="t('databases')" style="background: none" :bordered="false">
         <template #header-extra>
-            <NButton :circle="isMobile" :round="!isMobile" @click="(DatabaseModal = {}, showDatabaseModal = true)">
+            <NButton :circle="isMobile" :round="!isMobile"
+                @click="DatabaseModal = defaultDatabase, showDatabaseModal = true">
                 <template #icon>
                     <NIcon>
                         <IconPlus />
@@ -38,24 +39,24 @@
                 :name="database.slug">
                 <template #header-extra>
                     <NButtonGroup>
-                        <NButton round tag="a" :href="`/${database.slug}/admin/settings`" @click.stop.prevent="navigateTo(
-                            `/${database.slug}/admin/settings`,
-                        )">
-                            <template #icon>
-                                <NIcon>
-                                    <IconSettings />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                        <NButton round tag="a" :href="`/${database.slug}/admin`" @click.stop.prevent="clearNuxtState(['database', 'user']), navigateTo(
-                            `/${database.slug}/admin/tables`,
-                        )">
-                            <template #icon>
-                                <NIcon>
-                                    <IconArrowRight />
-                                </NIcon>
-                            </template>
-                        </NButton>
+                        <NuxtLink :to="`/${database.slug}/admin/settings`">
+                            <NButton round>
+                                <template #icon>
+                                    <NIcon>
+                                        <IconSettings />
+                                    </NIcon>
+                                </template>
+                            </NButton>
+                        </NuxtLink>
+                        <NuxtLink :to="`/${database.slug}/admin/tables`">
+                            <NButton round>
+                                <template #icon>
+                                    <NIcon>
+                                        <IconArrowRight />
+                                    </NIcon>
+                                </template>
+                            </NButton>
+                        </NuxtLink>
                     </NButtonGroup>
                 </template>
                 <LazyTableGrid v-model="databases.result[index]" />
@@ -95,7 +96,11 @@ const route = useRoute();
 const database = useState<Database>("database");
 
 const Language = useCookie("Language");
+onBeforeRouteLeave((route) => {
+    if (route.params.database)
+        clearNuxtState(['database', 'table', 'user'])
 
+})
 useLanguage({
     ar: {
         newItem: "عنصر جديد",
@@ -119,22 +124,30 @@ const { data: databases, execute } = await useFetch<apiResponse<Database[]>>(
     `${appConfig.apiBase}inicontent/database`,
     {
         immediate: false,
+        onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
+            if (response._data.result?.length)
+                expandedNames.value = [response._data.result.at(-1)?.slug as string]
+        }
     },
 );
-const expandedNames = ref(
-    databases.value?.result?.length ? databases.value.result[0].slug : null,
-);
+const expandedNames = ref<string[]>();
 const showDatabaseModal = ref(false);
 const DatabaseRef = ref<FormInst | null>(null);
 const DatabaseModal = ref<Database>();
+const defaultDatabase = {
+    rules: [
+        { name: "admin", id: "d7b3d61a582e53ee29b5a1d02a436d55" },
+        { name: "user", id: "b4694ff1f8c483824582c1e2dc75f0f9" },
+        { name: "guest", id: "00a8f55f513a7633b4c8bd5c00b817a5" },
+    ],
+} as Database;
 async function saveDatabase() {
     DatabaseRef.value?.validate(async (errors: any) => {
         if (!errors) {
             const bodyContent = JSON.parse(JSON.stringify(DatabaseModal.value));
             Loading.value.Database = true;
             const data = await $fetch<apiResponse>(
-                `${appConfig.apiBase}inicontent/database${bodyContent.id ? `/${bodyContent.slug}` : ""
-                }`,
+                `${appConfig.apiBase}inicontent/database/${bodyContent.slug}`,
                 {
                     method: bodyContent.id ? "PUT" : "POST",
                     body: bodyContent,
@@ -147,7 +160,7 @@ async function saveDatabase() {
             if (databases.value) {
                 if (databases.value.result) databases.value.result.push(data.result);
                 else databases.value.result = [data.result];
-                expandedNames.value = data.result.slug;
+                expandedNames.value = [data.result.slug];
             }
             showDatabaseModal.value = false;
             window.$message.success(data.message);

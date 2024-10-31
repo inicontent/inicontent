@@ -77,8 +77,8 @@
                 <NTooltip :delay="500">
                     <template #trigger>
                         <NButton round :disabled="!table.schema" tag="a"
-                            :href="table.schema ? `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/new` : '#'"
-                            @click.prevent="() => {
+                            :href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+                            @click="() => {
                                 if (!isMobile)
                                     Drawer = {
                                         ...Drawer,
@@ -88,7 +88,7 @@
                                         show: true,
                                     };
                                 else
-                                    navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/new`,
+                                    navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
                                     );
                             }">
                             <template #icon>
@@ -103,13 +103,8 @@
             </NButtonGroup>
         </template>
         <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
-            :columns="tableColumns" :data="data?.result ?? []" :loading="Loading.data" :pagination="{
-                simple: isMobile,
-                showSizePicker: data?.options && (!data.options.perPage || (
-                    data.options.total as number >= data.options.perPage)),
-                pageSizes: [15, 30, 60, 100, 500],
-                prefix: ({ itemCount }) => itemCount, ...pagination
-            }" :row-key="(row) => row.id" :checked-row-keys="checkedRowKeys"
+            :columns="tableColumns" :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+            :row-key="(row) => row.id" :checked-row-keys="checkedRowKeys"
             @update-checked-row-keys="(keys) => checkedRowKeys = keys" @update:sorter="handleSorterChange" />
     </NCard>
 </template>
@@ -139,10 +134,10 @@ import {
     NPopover,
     NTooltip,
 } from "naive-ui";
-import { RenderColumn } from "#components";
+import { NuxtLink, RenderColumn } from "#components";
 
 onBeforeRouteLeave(() => {
-    clearNuxtState(["searchArray", "searchQuery"]);
+    clearNuxtState(["searchArray", "searchQuery", "Drawer", "itemLabel"]);
 });
 
 definePageMeta({
@@ -154,21 +149,21 @@ const route = useRoute(),
     router = useRouter(),
     database = useState<Database>("database"),
     table = useState<Table>("table");
-const appConfig = useAppConfig()
-const Loading = useState<Record<string, boolean>>("Loading", () => ({})),
-    { isMobile } = useDevice(),
-    searchQuery = useState<string | undefined>(
-        "searchQuery",
-        () => route.query.search as string | undefined,
-    ),
-    searchArray = useState<{
-        and?: [string | null, string, any][];
-        or?: [string | null, string, any][];
-    }>("searchArray", () =>
-        route.query.search
-            ? generateSearchArray(Inison.unstringify(route.query.search as string))
-            : { and: [[null, "=", null]] },
-    );
+const appConfig = useAppConfig();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const { isMobile } = useDevice()
+const searchQuery = useState<string | undefined>(
+    "searchQuery",
+    () => route.query.search as string | undefined,
+)
+const searchArray = useState<{
+    and?: [string | null, string, any][];
+    or?: [string | null, string, any][];
+}>("searchArray", () =>
+    route.query.search
+        ? generateSearchArray(Inison.unstringify(route.query.search as string))
+        : { and: [[null, "=", null]] },
+);
 
 const Drawer = useState<{
     show: boolean;
@@ -180,56 +175,54 @@ const Drawer = useState<{
     id: null,
     table: null,
     data: {},
-})),
-    dataRef = ref(null),
-    checkedRowKeys = ref<any>([]),
-    pagination = reactive({
-        page: route.query.page ? Number(route.query.page) : 1,
-        pageCount: 1,
-        pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
-        itemCount: 0,
-        onUpdatePage(currentPage: number) {
-            pagination.page = currentPage;
-            let { page, ...Query }: any = route.query;
+}))
+const dataRef = ref(null)
+const checkedRowKeys = ref<any>([]);
+const pagination = reactive({
+    page: route.query.page ? Number(route.query.page) : 1,
+    pageCount: 1,
+    pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
+    itemCount: 0,
+    onUpdatePage(currentPage: number) {
+        pagination.page = currentPage;
+        let { page, ...Query }: any = route.query;
+        Query = {
+            ...Query,
+            page: currentPage !== 1 ? currentPage : undefined,
+        };
+        router.push({ query: Query });
+        queryOptions.value = Inison.stringify({
+            ...Inison.unstringify(queryOptions.value),
+            page: pagination.page,
+        });
+    },
+    onUpdatePageSize(pageSize: number) {
+        const OLD_pageSize = JSON.parse(JSON.stringify(pagination.pageSize));
+        pagination.pageSize = pageSize;
+        let { perPage, page, ...Query }: any = route.query;
+        if (pageSize !== 15) {
+            pagination.page = Math.round(
+                OLD_pageSize < pageSize
+                    ? page / (pageSize / OLD_pageSize)
+                    : page * (pageSize / OLD_pageSize),
+            );
             Query = {
                 ...Query,
-                page: currentPage !== 1 ? currentPage : undefined,
+                perPage: pageSize,
+                page: pagination.page === 1 ? undefined : pagination.page,
             };
-            router.push({ query: Query });
-            queryOptions.value = Inison.stringify({
-                ...Inison.unstringify(queryOptions.value),
-                page: pagination.page,
-            });
-        },
-        onUpdatePageSize(pageSize: number) {
-            const OLD_pageSize = JSON.parse(JSON.stringify(pagination.pageSize));
-            pagination.pageSize = pageSize;
-            let { perPage, page, ...Query }: any = route.query;
-            if (pageSize !== 15) {
-                pagination.page = Math.round(
-                    OLD_pageSize < pageSize
-                        ? page / (pageSize / OLD_pageSize)
-                        : page * (pageSize / OLD_pageSize),
-                );
-                Query = {
-                    ...Query,
-                    perPage: pageSize,
-                    page: pagination.page === 1 ? undefined : pagination.page,
-                };
-            }
         }
+    },
+});
+const queryOptions = ref(
+    Inison.stringify({
+        page: pagination.page,
+        perPage: pagination.pageSize,
+        columns: [],
     }),
-    queryOptions = ref(
-        Inison.stringify({
-            page: pagination.page,
-            perPage: pagination.pageSize,
-            columns: [],
-        }),
-    );
-
+);
 const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
-    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-    }`,
+    `${appConfig.apiBase}${database.value.slug}/${table.value.slug}`,
     {
         query: {
             options: queryOptions,
@@ -238,7 +231,13 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
         onRequest() {
             Loading.value.data = true;
         },
-        onResponse({ response: { _data: { options: { total, totalPages } } } }) {
+        onResponse({
+            response: {
+                _data: {
+                    options: { total, totalPages },
+                },
+            },
+        }) {
             Loading.value.data = false;
             if (total && totalPages) {
                 pagination.pageCount = totalPages;
@@ -247,12 +246,22 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
         },
     },
 );
+const dataTablePagination = computed(() => ({
+    disabled: !data.value?.options.total,
+    simple: isMobile,
+    showSizePicker:
+        data.value?.options &&
+        (!data.value.options.perPage ||
+            (data.value.options.total as number) > data.value.options.perPage),
+    pageSizes: [15, 30, 60, 100, 500],
+    prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
+    ...pagination,
+}));
 
 const DELETE = async (id: string) => {
     Loading.value.data = true;
     const deleteResponse = await $fetch<apiResponse>(
-        `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-        }/${id}`,
+        `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/${id}`,
         {
             method: "DELETE",
         },
@@ -293,20 +302,22 @@ const toolsDropdownOptions = [
 
 const sortObject = ref<Record<string, "asc" | "desc">>({});
 
-function handleSorterChange({ columnKey, order }: { columnKey: string; order: string }) {
-    if (!order)
-        delete sortObject.value[columnKey];
+function handleSorterChange({
+    columnKey,
+    order,
+}: { columnKey: string; order: string }) {
+    if (!order) delete sortObject.value[columnKey];
     else {
-        sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc"
+        sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
     }
     queryOptions.value = Object.keys(sortObject.value).length
         ? Inison.stringify({
             ...Inison.unstringify(queryOptions.value),
             sort: sortObject.value,
         })
-        : Inison.stringify((({ sort, ...rest }) => rest)(Inison.unstringify(
-            queryOptions.value
-        )));
+        : Inison.stringify(
+            (({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
+        );
 }
 
 const tableColumns: any = computed(() => [
@@ -349,7 +360,7 @@ const tableColumns: any = computed(() => [
                     Array.isArray(field.subType ?? field.type) &&
                         (field.subType ?? field.type).includes("table")
                         ? "table"
-                        : field.subType ?? field.type,
+                        : (field.subType ?? field.type),
                 ).icon(),
                 t(field.key),
             ]),
@@ -357,7 +368,7 @@ const tableColumns: any = computed(() => [
         key: field.key,
         sorter: !!data.value?.result,
         ellipsis: {
-            tooltip: true
+            tooltip: true,
         },
         sortOrder: sortObject.value[field.key]
             ? `${sortObject.value[field.key]}end`
@@ -371,26 +382,18 @@ const tableColumns: any = computed(() => [
         align: "center",
         width: 150,
         key: "actions",
-        render(row: { id: any }) {
+        render(row: { id: string }) {
             return h(NButtonGroup, () =>
                 [
                     table.value.allowedMethods?.includes("r")
                         ? h(
                             NButton,
                             {
-                                tag: "a",
-                                href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                onClick: (e) => {
-                                    e.preventDefault();
-                                    navigateTo(
-                                        `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}`,
-                                    );
-                                },
                                 secondary: true,
                                 circle: true,
                                 type: "primary",
                             },
-                            { icon: () => h(NIcon, () => h(IconEye)) },
+                            { icon: () => h(NuxtLink, { to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}` }, () => h(NIcon, () => h(IconEye))) },
                         )
                         : null,
                     table.value.allowedMethods?.includes("u")
@@ -398,7 +401,7 @@ const tableColumns: any = computed(() => [
                             NButton,
                             {
                                 tag: "a",
-                                href: `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                href: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}/edit`,
                                 onClick: (e) => {
                                     e.preventDefault();
                                     if (!isMobile)
@@ -411,7 +414,7 @@ const tableColumns: any = computed(() => [
                                         };
                                     else
                                         navigateTo(
-                                            `/${database.value.slug}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                            `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}/edit`,
                                         );
                                 },
                                 secondary: true,
@@ -428,18 +431,19 @@ const tableColumns: any = computed(() => [
                                 onPositiveClick: () => DELETE(row.id),
                             },
                             {
-                                trigger: () => h(
-                                    NButton,
-                                    {
-                                        strong: true,
-                                        secondary: true,
-                                        circle: true,
-                                        type: "error",
-                                    },
-                                    {
-                                        icon: () => h(NIcon, () => h(IconTrash)),
-                                    },
-                                ),
+                                trigger: () =>
+                                    h(
+                                        NButton,
+                                        {
+                                            strong: true,
+                                            secondary: true,
+                                            circle: true,
+                                            type: "error",
+                                        },
+                                        {
+                                            icon: () => h(NIcon, () => h(IconTrash)),
+                                        },
+                                    ),
                                 default: () => t("theFollowingActionIsIrreversible"),
                             },
                         )
@@ -449,10 +453,10 @@ const tableColumns: any = computed(() => [
         },
     },
 ]);
-const tableWidth = tableColumns.value.reduce(
+const tableWidth = computed(() => tableColumns.value.reduce(
     (accumulator: number, value: any) => accumulator + (value.width ?? 0),
     40,
-);
+));
 
 watch(searchQuery, (v) => {
     const { search, page, ...Query }: any = route.query;
@@ -470,6 +474,8 @@ watch(searchQuery, (v) => {
 
 useHead({
     title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
-    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
+    link: [
+        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+    ],
 });
 </script>

@@ -14,12 +14,7 @@
 import { IconQuestionMark } from "@tabler/icons-vue"
 import { NIcon, NTag } from 'naive-ui';
 
-const props = defineProps({
-    value: {
-        type: String,
-        required: true
-    }
-})
+const { value } = defineProps<{ value: string }>()
 const database = useState<Database>("database");
-const role = database.value.roles?.find(({ id }) => id === props.value)?.name
+const role = database.value.roles?.find(({ id }) => id === value)?.name
 </script>

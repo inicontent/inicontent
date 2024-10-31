@@ -258,12 +258,12 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 }
 
 const folder = ref();
-function createFolder() {
+async function createFolder() {
     if (folder.value) {
         modelValue.value = `${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${folder.value}`
         window.$message.success(t("folderCreatedSuccessfully"));
         if (isAssetRoute)
-            navigateTo(`${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/asset${modelValue.value}`)
+            await navigateTo(`${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/asset${modelValue.value}`)
 
     }
 }

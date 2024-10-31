@@ -1,4 +1,5 @@
 <template>
+    <LazyTableDrawer v-if="!isMobile" />
     <NCard style="height: fit-content">
         <template #header>
             <NEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NEllipsis>
@@ -20,15 +21,14 @@
 
                 <NTooltip :delay="500">
                     <template #trigger>
-                        <NButton secondary round type="info" tag="a"
-                            :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`"
-                            @click.prevent.stop="() => navigateTo(
-                                `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`,
-                            )">
+                        <NButton secondary round type="info">
                             <template #icon>
-                                <NIcon>
-                                    <IconPencil />
-                                </NIcon>
+                                <NuxtLink
+                                    :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
+                                    <NIcon>
+                                        <IconPencil />
+                                    </NIcon>
+                                </NuxtLink>
                             </template>
                         </NButton>
                     </template>
@@ -60,15 +60,14 @@
                     {{ t('settings') }}
                 </NButton>
 
-                <NButton secondary round type="info" tag="a"
-                    :href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`"
-                    @click.prevent.stop="() => navigateTo(
-                        `${$route.params.database ? `/${database.slug}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`,
-                    )">
+                <NButton secondary round type="info">
                     <template #icon>
-                        <NIcon>
-                            <IconPencil />
-                        </NIcon>
+                        <NuxtLink
+                            :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
+                            <NIcon>
+                                <IconPencil />
+                            </NIcon>
+                        </NuxtLink>
                     </template>
 
                     {{ t('edit') }}
@@ -84,7 +83,7 @@
                 </NButton>
             </NButtonGroup>
         </template>
-        <LazyRenderDatas v-if="itemObject" v-model="itemObject" :schema="table.schema" />
+        <LazyRenderDataS v-if="itemObject && table.schema" :value="itemObject" :schema="table.schema" />
     </NCard>
 </template>
 
@@ -99,7 +98,10 @@ import {
 } from "naive-ui";
 import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
 
-clearNuxtState("itemLabel");
+onBeforeRouteLeave((route, currentRoute) => {
+    if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
+        clearNuxtState("itemLabel");
+});
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],
@@ -113,6 +115,8 @@ useLanguage({
     },
     en: {},
 });
+
+const { isMobile } = useDevice()
 const appConfig = useAppConfig()
 const route = useRoute()
 const database = useState<Database>("database")
@@ -137,13 +141,11 @@ function PRINT() {
     window.print()
 }
 
-const itemLabel = useState("itemLabel", () =>
-    renderLabel(table.value.label, table.value.schema, itemObject.value),
-)
+const itemLabel = useState("itemLabel", () => renderLabel(table.value.label, table.value.schema, itemObject.value))
 
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${itemLabel.value}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
     link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
 });
 </script>
@@ -167,12 +169,12 @@ useHead({
     #__nuxt .n-config-provider,
     #__nuxt .n-config-provider .n-layout,
     #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2),
-    #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2) #PRINT_CONTENT * {
+    #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2) #Printable * {
         top: 0 !important;
         visibility: visible !important;
     }
 
-    #PRINT_CONTENT {
+    #Printable {
         position: absolute !important;
         top: 0 !important;
         bottom: 0 !important;

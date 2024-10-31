@@ -208,7 +208,7 @@ function dropdownOnClickOutside(e: MouseEvent) {
     if (!isRightClick)
         showDropdown.value = false
 }
-function handleOnClickAsset(e: MouseEvent, asset: Asset) {
+async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
     if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         window.open(asset.publicURL)

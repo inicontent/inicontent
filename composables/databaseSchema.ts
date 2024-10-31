@@ -10,13 +10,11 @@ export default [
 		table: "asset",
 		accept: ["image"],
 		params: "format=avif&fit=94",
-		required: true,
 	},
 	{
 		key: "primaryColor",
 		type: "string",
 		subType: "color",
-		required: true,
 	},
 	{
 		key: "primaryDarkColor",

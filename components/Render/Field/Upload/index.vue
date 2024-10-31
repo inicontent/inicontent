@@ -61,14 +61,9 @@ import {
 import { IconUpload } from "@tabler/icons-vue";
 import { isArrayOfObjects, isObject } from "inibase/utils";
 
-const { field } = defineProps({
-	field: {
-		type: Object as PropType<Field>,
-		required: true,
-	},
-});
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string | Asset | (string | Asset)[]>({});
+const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 watch(modelValue, () => { fileList.value = getFileList() })
 
 const appConfig = useAppConfig();

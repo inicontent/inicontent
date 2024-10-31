@@ -1,97 +1,82 @@
 <template>
     <NGrid x-gap="12" cols="12" layout-shift-disabled>
         <NGridItem :span="!isMobile ? 10 : 12">
-            <NCard :title="t('tableSettings')" hoverable>
-                <template #header-extra>
-                    <NFlex>
-                        <NTooltip :delay="500">
-                            <template #trigger>
-                                <NPopconfirm :show-icon="false" @positive-click="deleteTable">
-                                    <template #activator>
-                                        <NButton type="error" tertiary round :loading="Loading.deleteTable">
-                                            <template #icon>
-                                                <NIcon>
-                                                    <IconTrash />
-                                                </NIcon>
-                                            </template>
-                                        </NButton>
-                                    </template>
-                                    {{ t("theFollowingActionIsIrreversible") }}
-                                </NPopconfirm>
-                            </template>
-                            {{ t("deleteTable") }}
-                        </NTooltip>
-                        <NButton round :loading="Loading.updateTable" @click="updateTable">
-                            <template #icon>
-                                <NIcon>
-                                    <IconDeviceFloppy />
-                                </NIcon>
-                            </template>
-                            <template v-if="!isMobile" #default>
-                                {{ t('save') }}
-                            </template>
-                        </NButton>
-                    </NFlex>
-                </template>
-                <NFlex vertical>
-                    <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-                        <NForm ref="tableRef" :model="tableCopy">
-                            <RenderFieldS v-model="tableCopy" :schema="[
-                                {
-                                    key: 'slug',
-                                    type: 'string',
-                                    required: true,
-                                },
-                                {
-                                    key: 'label',
-                                    type: 'string',
-                                    subType: 'mention',
-                                    options: generateMentionOptions(
-                                        table?.schema ?? [],
-                                    ) as any
-                                },
-                            ]" />
-                        </NForm>
-                    </NCard>
-                    <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
-                        <template #header-extra>
-                            <NFlex>
-                                <NTooltip :delay="500">
-                                    <template #trigger>
-                                        <NButton round :type="showDraggable ? 'primary' : 'default'" @click="showDraggable =
-                                            !showDraggable">
-                                            <template #icon>
-                                                <NIcon>
-                                                    <IconArrowsSort />
-                                                </NIcon>
-                                            </template>
-                                        </NButton>
-                                    </template>
-                                    {{ t("changeOrder") }}
-                                </NTooltip>
-                                <NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable @select="(type) => tableCopy.schema.push({
-                                    id: `temp-${randomID()}`,
-                                    key: null,
-                                    required: false,
-                                    ...handleSelectedSchemaType(type),
-                                })">
-                                    <NButton round>
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconPlus />
-                                            </NIcon>
+            <NSpin :show="!!Loading.updateTable">
+                <NCard :title="t('tableSettings')" hoverable>
+                    <template #header-extra>
+                        <NFlex>
+                            <NTooltip :delay="500">
+                                <template #trigger>
+                                    <NPopconfirm :show-icon="false" @positive-click="deleteTable">
+                                        <template #activator>
+                                            <NButton type="error" tertiary round :loading="Loading.deleteTable">
+                                                <template #icon>
+                                                    <NIcon>
+                                                        <IconTrash />
+                                                    </NIcon>
+                                                </template>
+                                            </NButton>
                                         </template>
-                                    </NButton>
-                                </NDropdown>
-                            </NFlex>
-                        </template>
-                        <NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-                        <NForm :class="{ notSortable: !showDraggable }" size="small">
-                            <TableSettingsSchema v-model="tableCopy.schema" />
-                        </NForm>
-                    </NCard>
-                </NFlex>
-            </NCard>
+                                        {{ t("theFollowingActionIsIrreversible") }}
+                                    </NPopconfirm>
+                                </template>
+                                {{ t("deleteTable") }}
+                            </NTooltip>
+                            <NButton round :loading="Loading.updateTable" @click="updateTable">
+                                <template #icon>
+                                    <NIcon>
+                                        <IconDeviceFloppy />
+                                    </NIcon>
+                                </template>
+                                <template v-if="!isMobile" #default>
+                                    {{ t('save') }}
+                                </template>
+                            </NButton>
+                        </NFlex>
+                    </template>
+                    <NFlex vertical>
+                        <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
+                            <NForm ref="tableRef" :model="tableCopy">
+                                <RenderFieldS v-model="tableCopy" :schema="generalSettingsSchema" />
+                            </NForm>
+                        </NCard>
+                        <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
+                            <template #header-extra>
+                                <NFlex>
+                                    <NTooltip :delay="500">
+                                        <template #trigger>
+                                            <NButton round :type="showDraggable ? 'primary' : 'default'" @click="showDraggable =
+                                                !showDraggable">
+                                                <template #icon>
+                                                    <NIcon>
+                                                        <IconArrowsSort />
+                                                    </NIcon>
+                                                </template>
+                                            </NButton>
+                                        </template>
+                                        {{ t("changeOrder") }}
+                                    </NTooltip>
+                                    <NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable
+                                        @select="pushToSchema">
+                                        <NButton round>
+                                            <template #icon>
+                                                <NIcon>
+                                                    <IconPlus />
+                                                </NIcon>
+                                            </template>
+                                        </NButton>
+                                    </NDropdown>
+                                </NFlex>
+                            </template>
+                            <NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
+                            <NForm :class="{ notSortable: !showDraggable }" size="small">
+                                <TableSettingsSchema v-model="tableCopy.schema"
+                                    v-model:expanded-names="expandedNames" />
+                            </NForm>
+                        </NCard>
+                    </NFlex>
+                </NCard>
+            </NSpin>
         </NGridItem>
         <NGridItem v-if="!isMobile" span="2">
             <NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
@@ -126,6 +111,7 @@ import {
     NIcon,
     NPopconfirm,
     NTooltip,
+    NSpin,
 } from "naive-ui";
 
 onMounted(() => {
@@ -138,20 +124,35 @@ onMounted(() => {
 
 useLanguage({
     ar: {
-        tableSettings: "ﻝﻭﺪﺠﻟا ﺕاﺩاﺪﻋﺇ",
-        generalSettings: "ﺔﻣﺎﻋ ﺕاﺩاﺪﻋﺇ",
-        schemaSettings: "ﺓﺪﻤﻋﻷا ﺕاﺩاﺪﻋﺇ",
-        save: "ﻆﻔِﺣ",
-        required: "ﻲﻣاﺰﻟﺇ",
-        changeOrder: "ﺐﻴﺗﺮﺘﻟا ﺮﻴﻴﻐﺗ",
-        theFollowingActionIsIrreversible: "ﻪﻴﻓ ﺔﻌﺟﺭ ﻻ ﻲﻟﺎﺘﻟا ءاﺮﺟﻹا",
+        tableSettings: "إعدادات الجدول",
+        generalSettings: "إعدادات عامة",
+        schemaSettings: "إعدادات الأعمدة",
+        save: "حِفظ",
+        required: "إلزامي",
+        changeOrder: "تغيير الترتيب",
+        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
+        slug: "الإسم",
+        label: "الإسم الظاهري"
     },
     en: {},
 });
+
+const expandedNames = ref<string[]>()
+function pushToSchema(type: string) {
+    tableCopy.value.schema.splice(-2, 0, {
+        id: `temp-${randomID()}`,
+        key: null,
+        required: false,
+        ...handleSelectedSchemaType(type),
+    });
+    const newElementId = tableCopy.value.schema.at(-3).id
+    expandedNames.value = [newElementId]
+    setTimeout(() =>
+        document.getElementById(`element-${newElementId}`)?.scrollIntoView(), 300)
+}
+
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-Loading.value.updateTable = false;
-Loading.value.deleteTable = false;
 const route = useRoute();
 const router = useRouter();
 const showDraggable = ref(false);
@@ -262,8 +263,24 @@ function generateMentionOptions(
     return RETURN;
 }
 
+const generalSettingsSchema: Schema = [
+    {
+        key: 'slug',
+        type: 'string',
+        required: true,
+    },
+    {
+        key: 'label',
+        type: 'string',
+        subType: 'mention',
+        options: generateMentionOptions(
+            table.value?.schema ?? [],
+        ) as any
+    },
+]
+
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} > ${t("settings")}`,
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("settings")}`,
     link: [
         { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
     ],

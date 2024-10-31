@@ -44,7 +44,7 @@
                             </template>
                         </NButton>
                     </template>
-                    <div style="padding-left: 10px">
+                    <div class="collapseContentPadding">
                         <LazyRenderFieldS v-model="modelValue[index]" :schema="field.children.map((child) => ({
                             ...child,
                             ...(field.disabledItems
@@ -102,14 +102,9 @@ useLanguage({
     en: {},
 });
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field>,
-        required: true,
-    }
-});
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<any[]>();
+const modelValue = defineModel<any[]>({ default: () => reactive([]) });
 
 const expandedNames = ref()
 

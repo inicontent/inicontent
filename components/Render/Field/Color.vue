@@ -15,12 +15,7 @@
 <script lang="ts" setup>
 import { NFormItem, NColorPicker, type FormItemRule } from "naive-ui";
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field>,
-        required: true,
-    }
-})
+const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel({
     type: String,

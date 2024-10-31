@@ -139,9 +139,9 @@ const SigninSubmit = async (e: Event) => {
                             }`,
                         )
                     ).result;
-                    navigateTo(
+                    await navigateTo(
                         route.params.database
-                            ? `/${database.value.slug}/admin`
+                            ? `/${route.params.database}/admin`
                             : "/admin",
                     );
                 } else window.$message.error(data.message);

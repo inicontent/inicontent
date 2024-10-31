@@ -6,12 +6,7 @@
 // TO-DO:
 // Add fields: Mention, Range, Slider
 
-const { schema } = defineProps({
-	schema: {
-		type: Object as PropType<Schema | never>,
-		default: [],
-	},
-})
+const { schema } = defineProps<{ schema?: Schema }>()
 
 const modelValue = defineModel({
 	type: Object as PropType<any>,

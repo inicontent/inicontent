@@ -18,12 +18,7 @@
 import { NFormItem, NSelect, type FormItemRule } from "naive-ui";
 import type { PropType } from "vue";
 
-const { field } = defineProps({
-    field: {
-        type: Object as PropType<Field>,
-        required: true,
-    },
-});
+const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel({
     type: [Array, String] as PropType<string[] | string>,
@@ -32,7 +27,6 @@ const modelValue = defineModel({
 const rule: FormItemRule = {
     type: field.isArray ? "array" : "any",
     required: field.required,
-    trigger: "change",
     min: field.isArray ? field.min : undefined,
     max: field.isArray ? field.max : undefined,
     validator() {
