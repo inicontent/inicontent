@@ -9,6 +9,7 @@
 		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {
+		"@fontsource-variable/cairo": "^5.1.0",
 		"@nuxtjs/device": "3.2.2",
 		"@tabler/icons-vue": "3.14.0",
 		"inibase": "1.0.0-rc.93",
