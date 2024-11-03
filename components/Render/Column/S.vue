@@ -9,7 +9,6 @@
 const { schema } = defineProps<{ schema?: Schema }>()
 
 const modelValue = defineModel({
-	type: Object as PropType<any>,
 	default: {},
 })
 </script>

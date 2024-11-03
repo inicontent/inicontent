@@ -13,13 +13,13 @@ export default function (type: string) {
 		case "upload":
 			return {
 				type: "table",
-				table: "asset",
+				table: "assets",
 			};
 		case "array-upload":
 			return {
 				type: "array",
 				children: "table",
-				table: "asset",
+				table: "assets",
 			};
 		case "array-table":
 			return {

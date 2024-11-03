@@ -19,7 +19,7 @@
                                 @mouseleave="Hover[table.slug] = false">
                                 <NIcon>
                                     <IconArrowRight
-                                        v-if="Hover[table.slug] || (table.slug === 'asset' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
+                                        v-if="Hover[table.slug] || (table.slug === 'assets' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
                                     <IconDots v-else />
                                 </NIcon>
                             </NButton>
@@ -97,7 +97,6 @@ import {
     NInputGroup,
     NPopover,
     NFlex,
-    type SelectOption,
     type DropdownOption
 } from "naive-ui";
 import { NuxtLink } from "#components";
@@ -108,7 +107,6 @@ useLanguage({
     ar: {
         newTable: "جدول جديد",
         newItem: "عنصر جديد",
-        tableSettings: "إعدادات الجدول",
         tableFlows: "تدفقات الجدول",
         tableSlug: "إسم الجدول"
     },
@@ -119,7 +117,7 @@ const showPopover = ref(false)
 
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const user = useState<User>("user");
+const user = useState<User>("users");
 const Hover = ref<Record<string, boolean>>({});
 const newTableSlug = ref();
 const route = useRoute()
@@ -137,7 +135,7 @@ const createTable = async () => {
         const bodyContent: string = toRaw(newTableSlug.value);
         Loading.value.Table = true;
 
-        const data = await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/database/${modelValue.value.slug}/${bodyContent}`, {
+        const data = await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`, {
             method: "POST",
         });
 
@@ -157,24 +155,24 @@ const filteredTables = computed(() =>
     modelValue.value.tables
         ?.filter(({ allowedMethods }) => allowedMethods?.includes("r"))
         .sort((a, b) =>
-            Number(["user", "session", "translation", "asset"].includes(b.slug)) -
-            Number(["user", "session", "translation", "asset"].includes(a.slug))
+            Number(["users", "sessions", "translations", "assets"].includes(b.slug)) -
+            Number(["users", "sessions", "translations", "assets"].includes(a.slug))
         )
 );
 
 const getTableIcon = (slug: string) => {
     switch (slug) {
-        case "asset":
+        case "assets":
             return IconFolders;
-        case "translation":
+        case "translations":
             return IconLanguage;
-        case "user":
+        case "users":
             return IconUsers;
-        case "session":
+        case "sessions":
             return IconFingerprint;
-        case "page":
+        case "pages":
             return IconAppWindow;
-        case "component":
+        case "components":
             return IconTournament;
         default:
             return () => t(slug).charAt(0).toUpperCase();
@@ -186,19 +184,19 @@ const getDropdownOptions = (table: Table) => [
         key: `${getTableUrl(table.slug)}/new`,
         label: t("newItem"),
         icon: () => h(NIcon, () => h(IconPlus)),
-        show: table.slug !== "asset" && table.allowedMethods?.includes("c"),
+        show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
     },
     {
         key: `${getTableUrl(table.slug)}/settings`,
         label: t("tableSettings"),
         icon: () => h(NIcon, () => h(IconSettings)),
-        show: table.slug !== "asset" && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
+        show: !["sessions", "translations", "assets"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
     },
     {
         key: `${getTableUrl(table.slug)}/flows`,
         label: t("tableFlows"),
         icon: () => h(NIcon, () => h(IconWebhook)),
-        show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
+        show: !["sessions", "translations"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
     },
 ];
 

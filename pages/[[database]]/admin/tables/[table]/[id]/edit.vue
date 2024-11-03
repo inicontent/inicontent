@@ -53,42 +53,44 @@
                     </NTooltip>
                 </NButtonGroup>
             </template>
-            <template #actions>
-                <NButtonGroup>
-                    <NButton type="info" secondary round>
-                        <template #icon>
-                            <NuxtLink
-                                :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
-                                <NIcon>
-                                    <IconEye />
-                                </NIcon>
-                            </NuxtLink>
-                        </template>
-                        {{ t('view') }}
-                    </NButton>
-                    <NPopconfirm @positive-click="DELETE">
-                        <template #trigger>
-                            <NButton secondary round type="error" :loading="Loading.DELETE">
-                                <template #icon>
+            <template #action>
+                <NFlex justify="end">
+                    <NButtonGroup>
+                        <NButton type="info" secondary round>
+                            <template #icon>
+                                <NuxtLink
+                                    :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                     <NIcon>
-                                        <IconTrash />
+                                        <IconEye />
                                     </NIcon>
-                                </template>
-                                {{ t('delete') }}
-                            </NButton>
-                        </template>
-                        {{ t("theFollowingActionIsIrreversible") }}
-                    </NPopconfirm>
+                                </NuxtLink>
+                            </template>
+                            {{ t('view') }}
+                        </NButton>
+                        <NPopconfirm @positive-click="DELETE">
+                            <template #trigger>
+                                <NButton secondary round type="error" :loading="Loading.DELETE">
+                                    <template #icon>
+                                        <NIcon>
+                                            <IconTrash />
+                                        </NIcon>
+                                    </template>
+                                    {{ t('delete') }}
+                                </NButton>
+                            </template>
+                            {{ t("theFollowingActionIsIrreversible") }}
+                        </NPopconfirm>
 
-                    <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
-                        <template #icon>
-                            <NIcon>
-                                <IconDeviceFloppy />
-                            </NIcon>
-                        </template>
-                        {{ t('update') }}
-                    </NButton>
-                </NButtonGroup>
+                        <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
+                            <template #icon>
+                                <NIcon>
+                                    <IconDeviceFloppy />
+                                </NIcon>
+                            </template>
+                            {{ t('update') }}
+                        </NButton>
+                    </NButtonGroup>
+                </NFlex>
             </template>
             <NForm v-if="itemObject" :model="itemObject" ref="formRef">
                 <RenderFieldS v-model="itemObject" :schema />
@@ -108,11 +110,12 @@ import {
     NPopconfirm,
     NButtonGroup,
     NSpin,
+    NFlex,
     type FormInst
 } from "naive-ui";
 import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 
-onBeforeRouteLeave((route, currentRoute) => {
+onBeforeRouteUpdate((route, currentRoute) => {
     if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
         clearNuxtState("itemLabel");
 });
@@ -130,16 +133,6 @@ onMounted(() => {
     };
 });
 
-useLanguage({
-    ar: {
-        view: "مُعاينة",
-        update: "حِفظ",
-        publish: "نشر",
-        delete: "حذف",
-        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
-    },
-    en: {},
-});
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute()

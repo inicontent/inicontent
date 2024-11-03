@@ -9,7 +9,8 @@
                                 <template #trigger>
                                     <NPopconfirm :show-icon="false" @positive-click="deleteTable">
                                         <template #activator>
-                                            <NButton type="error" tertiary round :loading="Loading.deleteTable">
+                                            <NButton :disabled="isUnDeletable" type="error" tertiary round
+                                                :loading="Loading.deleteTable">
                                                 <template #icon>
                                                     <NIcon>
                                                         <IconTrash />
@@ -22,7 +23,7 @@
                                 </template>
                                 {{ t("deleteTable") }}
                             </NTooltip>
-                            <NButton round :loading="Loading.updateTable" @click="updateTable">
+                            <NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
                                 <template #icon>
                                     <NIcon>
                                         <IconDeviceFloppy />
@@ -38,6 +39,17 @@
                         <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
                             <NForm ref="tableRef" :model="tableCopy">
                                 <RenderFieldS v-model="tableCopy" :schema="generalSettingsSchema" />
+                                <NFormItem path="localLabel" :label="t('label')">
+                                    <NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+                                        :render-tag="renderSingleLabel">
+                                        <template #input="{ submit, deactivate }">
+                                            <NSelect size="small" filterable tag show
+                                                :options="generateLabelOptions(tableCopy.schema)"
+                                                @update:value="submit($event)"
+                                                @update:show="(value) => value ? '' : deactivate()" />
+                                        </template>
+                                    </NDynamicTags>
+                                </NFormItem>
                             </NForm>
                         </NCard>
                         <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -94,10 +106,9 @@ import {
     IconPlus,
     IconTrash,
 } from "@tabler/icons-vue";
-import { isArrayOfObjects } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 import {
     type FormInst,
-    type MentionOption,
     NAnchor,
     NAnchorLink,
     NButton,
@@ -112,6 +123,10 @@ import {
     NPopconfirm,
     NTooltip,
     NSpin,
+    NDynamicTags,
+    NFormItem,
+    NSelect,
+    NTag,
 } from "naive-ui";
 
 onMounted(() => {
@@ -124,15 +139,13 @@ onMounted(() => {
 
 useLanguage({
     ar: {
-        tableSettings: "إعدادات الجدول",
         generalSettings: "إعدادات عامة",
         schemaSettings: "إعدادات الأعمدة",
         save: "حِفظ",
         required: "إلزامي",
         changeOrder: "تغيير الترتيب",
-        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
-        slug: "الإسم",
-        label: "الإسم الظاهري"
+        label: "الإسم الظاهري",
+        deleteTable: "حذف الجدول"
     },
     en: {},
 });
@@ -175,9 +188,12 @@ async function updateTable() {
                 ),
             );
             Loading.value.updateTable = true;
-
+            if (bodyContent.localLabel) {
+                bodyContent.label = bodyContent.localLabel.map(({ value }: { value: string }) => value).join(' ')
+                delete bodyContent.localLabel
+            }
             const data = await $fetch<apiResponse<Table>>(
-                `${appConfig.apiBase}inicontent/database/${database.value.slug
+                `${appConfig.apiBase}inicontent/databases/${database.value.slug
                 }/${route.params.table}`,
                 {
                     method: "PUT",
@@ -194,6 +210,7 @@ async function updateTable() {
                 data?.result
             ) {
                 database.value.tables[tableIndex] = data.result;
+                table.value = data.result
                 tableCopy.value = data.result;
 
                 if (route.params.table !== data.result.slug)
@@ -207,10 +224,11 @@ async function updateTable() {
         } else window.$message.error(t("inputsAreInvalid"));
     });
 }
+const isUnDeletable = computed(() => ["users", "pages", "components"].includes(table.value?.slug))
 async function deleteTable() {
     Loading.value.deleteTable = true;
     const data = await $fetch<apiResponse>(
-        `${appConfig.apiBase}inicontent/database/${database.value.slug
+        `${appConfig.apiBase}inicontent/databases/${database.value.slug
         }/${route.params.table}`,
         {
             method: "DELETE",
@@ -234,11 +252,55 @@ async function deleteTable() {
     } else window.$message.error(data?.message ?? t("error"));
     Loading.value.deleteTable = false;
 }
-function generateMentionOptions(
-    schema: Schema,
+
+
+const flattenCopySchema = flattenSchema(tableCopy.value.schema)
+tableCopy.value.localLabel = tableCopy.value.label?.split(/(@\w+)/g).filter((value: string) => value != "").map((label: string) => {
+    if (label.startsWith('@'))
+        return ({
+            label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
+            value: label
+        })
+    return ({
+        label, value: label
+    })
+})
+function onAppendToLabel(label: string) {
+    if (label.startsWith('@') && isValidID(label.slice(1)))
+        return ({
+            label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ?? "undefined",
+            value: label
+        })
+
+    return ({
+        label: label,
+        value: label
+    })
+}
+function renderSingleLabel(labelObject: { label: string; value: string }, index: number) {
+    return h(
+        NTag,
+        {
+            type: labelObject.value.startsWith('@') && isValidID(labelObject.value.slice(1)) ? 'primary' : 'default',
+            closable: true,
+            onClose: () => {
+                tableCopy.value.localLabel.value.splice(index, 1)
+            }
+        },
+        {
+            default: () => labelObject.label
+        }
+    )
+}
+function generateLabelOptions(
+    schema?: Schema,
     prefix?: string,
-): MentionOption[] {
-    let RETURN: MentionOption[] = [];
+) {
+    let RETURN: {
+        label: string;
+        value: string | number;
+    }[] = [];
+    if (!schema) return RETURN;
     for (const field of schema) {
         if (field.id?.toString().startsWith("temp-")) continue;
         if (
@@ -252,35 +314,30 @@ function generateMentionOptions(
         if (field.children && isArrayOfObjects(field.children))
             RETURN = [
                 ...RETURN,
-                ...generateMentionOptions(field.children, field.key),
+                ...generateLabelOptions(field.children, field.key),
             ];
         else
             RETURN.push({
                 label: (prefix ? `${prefix}/` : "") + field.key,
-                value: field.key,
+                value: `@${field.id}`,
             });
     }
     return RETURN;
 }
 
-const generalSettingsSchema: Schema = [
+const generalSettingsSchema = reactive<Schema>([
     {
         key: 'slug',
         type: 'string',
         required: true,
-    },
-    {
-        key: 'label',
-        type: 'string',
-        subType: 'mention',
-        options: generateMentionOptions(
-            table.value?.schema ?? [],
-        ) as any
-    },
-]
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
+            disabled: true
+        } : {}
+    }
+])
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("settings")}`,
+    title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,
     link: [
         { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
     ],

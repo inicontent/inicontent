@@ -14,7 +14,7 @@
         </template>
         <template #header-extra>
             <NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-                :action="`${appConfig.apiBase}${database.slug}/asset${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
+                :action="`${appConfig.apiBase}${database.slug}/assets${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
                 @update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
                 <NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
                     <template #trigger>
@@ -62,7 +62,7 @@
             </NUpload>
         </template>
         <NFlex vertical align="center">
-            <AssetGrid v-model="assets" :isAssetRoute :table :target-id="targetId">
+            <AssetGrid v-model="assets" :isAssetRoute :table :targetId>
                 <template v-slot="slotProps">
                     <slot v-bind="slotProps"></slot>
                 </template>
@@ -104,9 +104,7 @@ defineProps({
         default: "assetsContainer",
     }
 });
-const modelValue = defineModel({
-    type: String
-})
+const modelValue = defineModel<string>()
 const appConfig = useAppConfig()
 const route = useRoute();
 const isAssetRoute = !!(route.params.folder || route.params.folder === '')
@@ -114,8 +112,8 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const parentTable = useState<Table>("table");
 const table = ref<Table>(parentTable.value)
-if (!parentTable.value || parentTable.value.slug !== 'asset')
-    table.value = (await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/database/${database.value.slug}/asset`)).result
+if (!parentTable.value || parentTable.value.slug !== 'assets')
+    table.value = (await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`)).result
 
 const { isMobile } = useDevice();
 const router = useRouter();
@@ -154,10 +152,10 @@ async function onUpdatePageSize(currentPageSize: number) {
     return refreshAssets();
 }
 const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
-    `asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
+    `assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
     () =>
         $fetch<apiResponse<Asset[]>>(
-            `${appConfig.apiBase}${database.value.slug}/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
+            `${appConfig.apiBase}${database.value.slug}/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
             {
                 onRequest: () => {
                     Loading.value.AssetData = true;
@@ -237,7 +235,7 @@ function onFinishUpload({ file, event }: {
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
     const data = await $fetch<apiResponse<Asset>>(
         `${appConfig.apiBase}${database.value.slug
-        }/asset${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
+        }/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
         { method: "DELETE" },
     ),
         singleAsset = assets.value?.find(
@@ -263,7 +261,7 @@ async function createFolder() {
         modelValue.value = `${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${folder.value}`
         window.$message.success(t("folderCreatedSuccessfully"));
         if (isAssetRoute)
-            await navigateTo(`${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/asset${modelValue.value}`)
+            await navigateTo(`${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/assets${modelValue.value}`)
 
     }
 }

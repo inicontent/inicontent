@@ -18,5 +18,5 @@ export default function (bytes?: number) {
 		u < units.length - 1
 	);
 
-	return `${bytes.toFixed(2)} ${units[u]}`;
+	return `${bytes.toFixed(2)} ${t(`units.${units[u]}`)}`;
 }

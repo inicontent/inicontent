@@ -136,7 +136,7 @@ import {
 } from "naive-ui";
 import { NuxtLink, RenderColumn } from "#components";
 
-onBeforeRouteLeave(() => {
+onBeforeRouteUpdate(() => {
     clearNuxtState(["searchArray", "searchQuery", "Drawer", "itemLabel"]);
 });
 

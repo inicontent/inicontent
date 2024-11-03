@@ -73,7 +73,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 async function importAsset() {
     Loading.value.import = true
-    const data = await $fetch<apiResponse<Asset | Asset[]>>(`${appConfig.apiBase}${database.value.slug ?? 'inicontent'}/asset/import${field.params ? `?${field.params}` : ''}`, {
+    const data = await $fetch<apiResponse<Asset | Asset[]>>(`${appConfig.apiBase}${database.value.slug ?? 'inicontent'}/assets/import${field.params ? `?${field.params}` : ''}`, {
         method: "POST",
         headers: {
             'Content-Type': 'text/plain; charset=utf-8'

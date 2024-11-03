@@ -178,7 +178,7 @@
                                                             secondValue &&
                                                                 (secondValue ===
                                                                     "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-                                                                    (table.slug === "user" &&
+                                                                    (table.slug === "users" &&
                                                                         secondValue.endsWith(
                                                                             ".c12f82766d02ae29c6a94a3acf11cda4",
                                                                         ))) &&
@@ -257,7 +257,7 @@
                                                             firstValue &&
                                                                 (firstValue ===
                                                                     "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-                                                                    (table.slug === "user" &&
+                                                                    (table.slug === "users" &&
                                                                         firstValue.endsWith(
                                                                             ".c12f82766d02ae29c6a94a3acf11cda4",
                                                                         ))) &&
@@ -352,7 +352,7 @@ const database = useState<Database>("database"),
         Loading.value.updateTable = true;
         const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
         await $fetch<apiResponse>(
-            `${appConfig.apiBase}inicontent/database/${database.value.slug
+            `${appConfig.apiBase}inicontent/databases/${database.value.slug
             }/${table.value.slug}`,
             {
                 method: "PUT",
@@ -403,7 +403,7 @@ function generateFlowCascaderOptions(
     const result: CascaderOption[] = [];
     if (withUser) {
         let userSchema = database.value.tables?.find(
-            ({ slug }) => slug === "user",
+            ({ slug }) => slug === "users",
         )?.schema;
         if (userSchema) {
             userSchema = flattenSchema(userSchema);
@@ -463,7 +463,7 @@ function generateFlowSelectOptions(
     if (
         value &&
         (value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-            (table.value.slug === "user" &&
+            (table.value.slug === "users" &&
                 value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
     )
         // @user.role
@@ -478,7 +478,7 @@ function generateFlowSelectOptions(
         });
     if (withUser) {
         let userSchema = database.value.tables?.find(
-            ({ slug }) => slug === "user",
+            ({ slug }) => slug === "users",
         )?.schema;
         if (userSchema) {
             userSchema = flattenSchema(userSchema);
@@ -548,7 +548,7 @@ function formatValue(
             lastItem = splitedValue.pop();
         let schema =
             splitedValue[0] === "@user"
-                ? database.value?.tables?.find(({ slug }) => slug === "user")
+                ? database.value?.tables?.find(({ slug }) => slug === "users")
                     ?.schema
                 : table.value.schema;
         if (schema) {
@@ -616,12 +616,12 @@ const addNewRuleDropdownOptions = [
     {
         key: "set",
         label: t("set"),
-        show: table.value.slug !== "asset",
+        show: table.value.slug !== "assets",
     },
     {
         key: "unset",
         label: t("unset"),
-        show: table.value.slug !== "asset",
+        show: table.value.slug !== "assets",
     },
     {
         key: "error",

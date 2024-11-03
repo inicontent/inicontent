@@ -69,9 +69,7 @@ import { IconPlus } from "@tabler/icons-vue";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: Array as PropType<string[]>
-});
+const modelValue = defineModel<string[]>();
 
 const fieldChildrenLabels = field.children
     ? flatFieldsList()

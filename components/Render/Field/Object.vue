@@ -14,8 +14,7 @@ import { NCollapse, NCollapseItem } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: Object,
+const modelValue = defineModel<Record<string | number, any>>({
     default: () => reactive({})
 })
 </script>

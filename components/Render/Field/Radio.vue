@@ -21,13 +21,10 @@ import { NFormItem, NRadio, NRadioGroup, NFlex, type FormItemRule } from "naive-
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: String,
-})
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
     required: field.required,
-    trigger: "change",
     validator() {
         if (!modelValue.value && field.required)
             return new Error(`${t(field.key)} ${t('isRequired')}`)

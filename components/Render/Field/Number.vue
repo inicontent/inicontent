@@ -25,9 +25,7 @@ import { NFormItem, NInputNumber, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: Number,
-})
+const modelValue = defineModel<number>()
 
 const rule: FormItemRule = {
     required: field.required,

@@ -94,7 +94,7 @@
                             <NSelect :consistent-menu-width="false" tag filterable :value="item[1]"
                                 @update:value="(v) => item[1] = v" :options="searchSelectOptions(item[3])"
                                 style="width:33.33%" />
-                            <LazyRenderField :model-value="item[2]" @update:modelValue="(v) => {
+                            <LazyRenderFieldS :model-value="item[2]" @update:modelValue="(v) => {
                                 item[2] = Array.isArray(v) ? v.join(',') : v;
                             }" :schema="[
                                 {
@@ -123,7 +123,7 @@
                                         },
                                     },
                                 },
-                            ] as any" />
+                            ]" />
                         </template>
                         <NButton :disabled="items.length === 1" @click="deleteProperty(
                             searchArray,

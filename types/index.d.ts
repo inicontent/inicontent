@@ -70,7 +70,7 @@ declare global {
 		| ["unset", string | string[]]
 		| ["error", string]
 		| [
-				`@${"user" | "data" | "where"}.${string | number}` | "@method",
+				`@${"users" | "data" | "where"}.${string | number}` | "@method",
 				ComparisonOperator,
 				string | number | boolean | null | (string | number | boolean | null)[],
 		  ]

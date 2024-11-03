@@ -1,7 +1,7 @@
 <template>
     <n-grid cols="12" :x-gap="12" item-responsive responsive="screen">
         <n-grid-item span="12 l:11">
-            <n-card :title="`${database.slug} ${t('settings')}`" hoverable>
+            <n-card :title="t('settings')" hoverable>
                 <template #header-extra>
                     <n-flex>
                         <n-tooltip :delay="500">
@@ -21,7 +21,8 @@
                             </template>
                             {{ t("deleteDatabase") }}
                         </n-tooltip>
-                        <n-button @click="updateDatabase" round :loading="Loading.updateDatabase">
+                        <n-button @click="updateDatabase" type="primary" secondary round
+                            :loading="Loading.updateDatabase">
                             <template #icon>
                                 <n-icon>
                                     <IconDeviceFloppy />
@@ -32,15 +33,17 @@
                     </n-flex>
                 </template>
                 <n-flex vertical>
-                    <n-card id="general" :title="t('general')" hoverable>
+                    <n-card id="general" :title="t('generalSettings')" hoverable>
                         <n-form ref="databaseRef" :model="databaseCopy">
                             <RenderFieldS v-model="databaseCopy" :schema="databaseSchema" />
                         </n-form>
                     </n-card>
-                    <n-card id="translation" :title="t('translation')" hoverable>
-                        <n-empty :description="t('soon')" />
+                    <n-card id="translation" :title="t('translationSettings')" hoverable>
+                        <n-form ref="databaseRef" :model="databaseCopy">
+                            <RenderFieldS v-model="databaseCopy" :schema="translationSchema" />
+                        </n-form>
                     </n-card>
-                    <n-card id="email" :title="t('email')" hoverable>
+                    <n-card id="email" :title="t('emailSettings')" hoverable>
                         <n-empty :description="t('soon')" />
                     </n-card>
                 </n-flex>
@@ -48,9 +51,9 @@
         </n-grid-item>
         <n-grid-item v-if="!isMobile" span="0 l:1">
             <n-anchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
-                <n-anchor-link :title="t('general')" href="#general" />
-                <n-anchor-link :title="t('translation')" href="#translation" />
-                <n-anchor-link :title="t('email')" href="#email" />
+                <n-anchor-link :title="t('generalSettings')" href="#general" />
+                <n-anchor-link :title="t('translationSettings')" href="#translation" />
+                <n-anchor-link :title="t('emailSettings')" href="#email" />
             </n-anchor>
         </n-grid-item>
     </n-grid>
@@ -90,73 +93,131 @@ onMounted(() => {
 useLanguage({
     ar: {
         save: "حِفظ",
-        slug: "الإسم",
-        allowedMethods: "الأوامر المسموح بها",
-        languages: "اللغات",
-        roles: "الأدوار",
-        guest: "زائر",
-        icon: "أيقونة",
-        general: "إعدادات عامة",
-        translation: "إعدادات الترجمة",
-        email: "إعدادات البريد",
-        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
+        generalSettings: "إعدادات عامة",
+        translationSettings: "إعدادات الترجمة",
+        emailSettings: "إعدادات البريد",
+        deleteDatabase: "حذف قاعدة البيانات",
+        soon: "قريباً"
     },
     en: {},
 });
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const route = useRoute(),
-    { isMobile } = useDevice(),
-    router = useRouter(),
-    database = useState<Database>("database"),
-    databaseRef = ref<FormInst | null>(null),
-    databaseCopy = ref(toRaw(database.value)),
-    updateDatabase = async () => {
-        databaseRef.value?.validate(async (errors) => {
-            if (!errors) {
-                const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
-                Loading.value.updateDatabase = true;
-                const data = await $fetch<apiResponse>(
-                    `${appConfig.apiBase}inicontent/database/${database.value.slug
-                    }`,
-                    {
-                        method: "PUT",
-                        body: bodyContent,
-                    },
-                );
-                if (data.result) {
-                    database.value = { ...database.value, ...data.result };
-                    if (route.params.database !== database.value.slug)
-                        router.replace({
-                            params: { database: database.value.slug },
-                        });
-                    setThemeConfig()
-                    Loading.value.updateDatabase = false;
-                    window.$message.success(data.message);
-                } else window.$message.error(data.message);
-                Loading.value.updateDatabase = false;
-            } else window.$message.error(t('inputsAreInvalid'));
-        });
+const route = useRoute()
+const { isMobile } = useDevice()
+const router = useRouter()
+const database = useState<Database>("database")
+const databaseRef = ref<FormInst | null>(null)
+const databaseCopy = ref(toRaw(database.value))
+
+const databaseSchema: Schema = [
+
+    {
+        key: "slug",
+        type: "string",
+        required: true,
     },
-    deleteDatabase = async () => {
-        Loading.value.deleteDatabase = true;
-        const data = await $fetch<apiResponse>(
-            `${appConfig.apiBase}inicontent/database/${database.value.slug
-            }`,
+    {
+        key: "icon",
+        type: "table",
+        table: "assets",
+        accept: ["image"],
+        params: "format=avif&fit=94",
+    },
+    {
+        key: "primaryColor",
+        type: "string",
+        subType: "color",
+    },
+    {
+        key: "primaryDarkColor",
+        type: "string",
+        subType: "color",
+    },
+    {
+        key: "roles",
+        type: "array",
+        children: [
             {
-                method: "DELETE",
+                key: "id",
+                type: "id",
+                inputProps: {
+                    disabled: true,
+                },
             },
-        );
-        if (data.result) {
-            Loading.value.deleteDatabase = false;
-            window.$message.success(data.message);
-            setTimeout(async () => {
-                clearNuxtState("database");
-                await navigateTo("/admin");
-            }, 800);
-        } else window.$message.error(data.message);
+            {
+                key: "name",
+                type: "string",
+            },
+        ],
+        onCreate: { id: `temp-${randomID()}` },
+        disabledItems: [0, 1, 2],
+        required: false,
+    }
+]
+
+const translationSchema: Schema = [
+    {
+        key: "primaryLanguage",
+        type: "string",
+        subType: "select",
+        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+        required: true,
+    },
+    {
+        key: "secondaryLanguages",
+        type: "array",
+        children: "string",
+        subType: "select",
+        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+    }
+]
+async function updateDatabase() {
+    databaseRef.value?.validate(async (errors) => {
+        if (!errors) {
+            const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
+            Loading.value.updateDatabase = true;
+            const data = await $fetch<apiResponse>(
+                `${appConfig.apiBase}inicontent/databases/${database.value.slug
+                }`,
+                {
+                    method: "PUT",
+                    body: bodyContent,
+                },
+            );
+            if (data.result) {
+                database.value = { ...database.value, ...data.result };
+                if (route.params.database !== database.value.slug)
+                    router.replace({
+                        params: { database: database.value.slug },
+                    });
+                setThemeConfig()
+                Loading.value.updateDatabase = false;
+                window.$message.success(data.message);
+            } else window.$message.error(data.message);
+            Loading.value.updateDatabase = false;
+        } else window.$message.error(t('inputsAreInvalid'));
+    });
+}
+async function deleteDatabase() {
+    Loading.value.deleteDatabase = true;
+    const data = await $fetch<apiResponse>(
+        `${appConfig.apiBase}inicontent/databases/${database.value.slug
+        }`,
+        {
+            method: "DELETE",
+        },
+    );
+    if (data.result) {
         Loading.value.deleteDatabase = false;
-    };
+        window.$message.success(data.message);
+        setTimeout(async () => {
+            clearNuxtState("database");
+            await navigateTo("/admin");
+        }, 800);
+    } else window.$message.error(data.message);
+    Loading.value.deleteDatabase = false;
+};
 
 useHead({
     title: `${t(database.value.slug)} | ${t("settings")}`,

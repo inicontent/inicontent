@@ -1,8 +1,7 @@
 <template>
     <NCard :title="t('databases')" style="background: none" :bordered="false">
         <template #header-extra>
-            <NButton :circle="isMobile" :round="!isMobile"
-                @click="DatabaseModal = defaultDatabase, showDatabaseModal = true">
+            <NButton :circle="isMobile" :round="!isMobile" @click="DatabaseModal = {}, showDatabaseModal = true">
                 <template #icon>
                     <NIcon>
                         <IconPlus />
@@ -96,7 +95,8 @@ const route = useRoute();
 const database = useState<Database>("database");
 
 const Language = useCookie("Language");
-onBeforeRouteLeave((route) => {
+
+onBeforeRouteUpdate((route) => {
     if (route.params.database)
         clearNuxtState(['database', 'table', 'user'])
 
@@ -104,15 +104,8 @@ onBeforeRouteLeave((route) => {
 useLanguage({
     ar: {
         newItem: "عنصر جديد",
-        tableSettings: "إعدادات الجدول",
         databases: "قواعد البيانات",
         createDatabase: "إنشاء قاعدة بيانات جديدة",
-        slug: "الإسم",
-        allowedMethods: "الأوامر المسموح بها",
-        languages: "اللغات",
-        roles: "الأدوار",
-        guest: "زائر",
-        icon: "أيقونة",
     },
     en: {},
 });
@@ -134,20 +127,43 @@ const expandedNames = ref<string[]>();
 const showDatabaseModal = ref(false);
 const DatabaseRef = ref<FormInst | null>(null);
 const DatabaseModal = ref<Database>();
-const defaultDatabase = {
-    rules: [
-        { name: "admin", id: "d7b3d61a582e53ee29b5a1d02a436d55" },
-        { name: "user", id: "b4694ff1f8c483824582c1e2dc75f0f9" },
-        { name: "guest", id: "00a8f55f513a7633b4c8bd5c00b817a5" },
-    ],
-} as Database;
+const databaseSchema: Schema = [
+    {
+        key: "slug",
+        type: "string",
+        required: true,
+    },
+    {
+        key: "icon",
+        type: "table",
+        table: "assets",
+        accept: ["image"],
+        params: "format=avif&fit=94",
+    },
+    {
+        key: "primaryLanguage",
+        type: "string",
+        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+        required: true,
+    },
+    {
+        key: "primaryColor",
+        type: "string",
+        subType: "color",
+    },
+    {
+        key: "primaryDarkColor",
+        type: "string",
+        subType: "color",
+    },
+]
 async function saveDatabase() {
     DatabaseRef.value?.validate(async (errors: any) => {
         if (!errors) {
             const bodyContent = JSON.parse(JSON.stringify(DatabaseModal.value));
             Loading.value.Database = true;
             const data = await $fetch<apiResponse>(
-                `${appConfig.apiBase}inicontent/database/${bodyContent.slug}`,
+                `${appConfig.apiBase}inicontent/databases/${bodyContent.slug}`,
                 {
                     method: bodyContent.id ? "PUT" : "POST",
                     body: bodyContent,

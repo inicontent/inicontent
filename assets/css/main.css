@@ -14,7 +14,7 @@ body {
 
 .rtl,
 .rtl * {
-	--n-label-padding: 0 0 0 12px !important;
+	/* --n-label-padding: 0 0 0 12px !important; */
 	--n-prefix-margin: 0 0 0 8px !important;
 	--n-padding-single: 0 12px 0 26px !important;
 	--n-padding-multiple: 3px 12px 0 26px !important;
@@ -59,10 +59,12 @@ body {
 	.n-collapse-item-arrow
 	.n-icon,
 .rtl .n-switch,
+.rtl .n-pagination .n-pagination-item svg,
 .rtl .tabler-icon-arrow-left,
 .rtl .tabler-icon-arrow-right,
 .rtl .tabler-icon-chevron-left,
-.rtl .tabler-icon-chevron-right {
+.rtl .tabler-icon-chevron-right,
+.rtl .tabler-icon-send {
 	transform: scaleX(-1) !important;
 }
 

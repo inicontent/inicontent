@@ -58,9 +58,9 @@ In this prject we are using [Nuxt 3](https://github.com/nuxt/nuxt), [Naive UI](h
 
 ```shell
 ────📁 middleware
-    ├───📄 dashboard.ts # Set "database" and "user" states and save redirection to be fired after signing in
+    ├───📄 dashboard.ts # Set "database" and "users" states and save redirection to be fired after signing in
     │   └───🖊️ # ToDo: Prevent multiple re-fetchs after each route changes
-    └───📄 table.ts # Set "table" and "user" state and handle invalid table slugs
+    └───📄 table.ts # Set "table" and "users" state and handle invalid table slugs
 ```
 
 ### Layouts
@@ -89,7 +89,7 @@ In this prject we are using [Nuxt 3](https://github.com/nuxt/nuxt), [Naive UI](h
     ├───📄 randomID.ts
     ├───📄 renderLabel.ts # Render item label based on table label template (display item id by default)
     ├───📄 useCookie.ts # Used to make cookies reactive (current_lang, current_theme[dark|light])
-    └───📄 useLanguage.ts # Used for managing multi-lang and display text based on current selected lang (+ fetch from "translation" table the non predefined translations)
+    └───📄 useLanguage.ts # Used for managing multi-lang and display text based on current selected lang (+ fetch from "translations" table the non predefined translations)
 ```
 
 ### Components

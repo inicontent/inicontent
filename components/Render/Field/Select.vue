@@ -15,14 +15,12 @@
 </template>
 
 <script lang="ts" setup>
+import { isArrayOfObjects } from "inibase/utils";
 import { NFormItem, NSelect, type FormItemRule } from "naive-ui";
-import type { PropType } from "vue";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: [Array, String] as PropType<string[] | string>,
-});
+const modelValue = defineModel<string | string[]>();
 
 const rule: FormItemRule = {
     type: field.isArray ? "array" : "any",
@@ -52,8 +50,8 @@ const rule: FormItemRule = {
     },
 };
 
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
+const options = field.options ? isArrayOfObjects(field.options) ? field.options : (field.options as string[]).map((value) => ({
     value: value,
     label: t(value),
-})) : field.options) : []
+})) : []
 </script>

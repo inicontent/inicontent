@@ -14,7 +14,7 @@
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="generateAcceptedFileType(field.accept)"
-			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/asset${field.params ? `?${field.params}` : ''}`"
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onFinish :onPreview
 			:list-type="!field.isTable ? 'image' : 'image-card'">
 			<template v-if="!field.isTable">

@@ -48,7 +48,7 @@
                                     </NTooltip>
                                     <NTooltip :delay="500">
                                         <template #trigger>
-                                            <NButton size="small">
+                                            <NButton round size="small">
                                                 <template #icon>
                                                     <NuxtLink
                                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/settings`">
@@ -63,7 +63,7 @@
                                     </NTooltip>
                                 </template>
                                 <NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-                                    <NButton size="small">
+                                    <NButton round size="small">
                                         <template #icon>
                                             <NIcon>
                                                 <IconUser />
@@ -74,7 +74,7 @@
                             </template>
                             <NTooltip :delay="500">
                                 <template #trigger>
-                                    <NButton size="small" @click="Theme =
+                                    <NButton round size="small" @click="Theme =
                                         Theme === 'dark'
                                             ? 'light'
                                             : 'dark'">
@@ -104,7 +104,7 @@
             </NLayoutHeader>
         </NScrollbar>
         <NLayoutContent id="container" position="absolute" style="top: 64px;height: calc(100vh - 64px);overflow: auto;"
-            content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content">
+            content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;">
             <slot></slot>
         </NLayoutContent>
     </NLayout>
@@ -147,30 +147,58 @@ useLanguage({
         settings: "الإعدادات",
         toggleTheme: "تغيير الوضع",
         edit: "تعديل",
-        routeAdmin: "لوحة التحكم",
+        adminPanel: "لوحة التحكم",
         allRightsReserved: "جميع الحقوق محفوظة",
         logout: "تسجيل الخروج",
         profile: "تعديل الحساب",
-        session: "سجل الدخول",
-        component: "أجزاء",
-        page: "صفحات",
-        user: "مستخدم",
+        sessions: "سِجل الدخول",
+        components: "أجزاء الصفحات",
+        pages: "الصفحات",
+        users: "المستخدمين",
         admin: "مدير",
-        translation: "ترجمة",
-        asset: "ملف",
+        user: "مستخدم",
+        guest: "زائر",
+        translations: "الترجمة",
+        assets: "الملفات",
         tables: "الجداول",
         totalDatabaseSize: "حجم قاعدة البيانات",
         databaseSettings: "إعدادات قاعدة البيانات",
         isRequired: "إجباري",
         isNotValid: "غير صالح",
+        username: "إسم المستخدم",
+        email: "البريد الإلكتروني",
+        password: "كلمة المرور",
+        role: "الصلاحية",
+        createdBy: "أُنشأ من قبل",
+        theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
+        slug: "الإسم",
+        roles: "الأدوار",
+        icon: "الأيقونة",
+        primaryLanguage: "اللغة الأساسية",
+        secondaryLanguages: "اللغات الثانوية",
+        tableSettings: "إعدادات الجدول",
+        primaryColor: "اللون الأساسي",
+        primaryDarkColor: "اللون الأساسي في الوضع الليلي",
+        units: {
+            kB: "ك.ب",
+            MB: "م.ب",
+            GB: "ج.ب",
+            TB: "ت.ب",
+        },
     },
-    en: { routeAdmin: "Admin Panel" },
+    en: {},
 });
+
+onBeforeUpdate(() => {
+    clearNuxtState("LanguageMessages");
+})
+
 onMounted(() => {
     window.$message = useMessage();
 });
+
 const route = useRoute();
-const user = useState<User | null>("user"),
+const user = useState<User | null>("users"),
     Theme = useCookie<string>("Theme", { sameSite: true }),
     database = useState<Database>("database"),
     ThemeConfig = useState<ThemeConfig>("ThemeConfig");
@@ -181,14 +209,28 @@ const showBreadcrumb =
         String(route.matched[0].name),
     );
 
-const breadcrumbArray = computed(() => route.path
-    .split("/")
-    .filter(Boolean)
-    .filter(
-        (_path, index) =>
-            !String(route.matched[0].name)?.startsWith("database") || index !== 0,
-    ));
+const breadcrumbArray = computed(() =>
+    route.path
+        .split("/")
+        .filter(Boolean)
+        .filter(
+            (_path, index) =>
+                !String(route.matched[0].name)?.startsWith("database") || index !== 0,
+        ),
+);
 function breadCrumbItemLink(index: number) {
+    if (index === 0) {
+        return (
+            route.path
+                .split("/")
+                .slice(
+                    0,
+                    index +
+                    (String(route.matched[0].name)?.startsWith("database") ? 3 : 2),
+                )
+                .join("/") + (database.value.slug === "inicontent" ? "" : "/tables")
+        );
+    }
     return route.path
         .split("/")
         .slice(
@@ -200,10 +242,9 @@ function breadCrumbItemLink(index: number) {
 const itemLabel = useState("itemLabel");
 function breadCrumbItemLabel(index: number) {
     const childRoute = breadcrumbArray.value[index];
-    return (
-        (isValidID(childRoute) && itemLabel.value) ? itemLabel.value :
-            t(childRoute === "admin" ? "routeAdmin" : childRoute)
-    );
+    return isValidID(childRoute) && itemLabel.value
+        ? itemLabel.value
+        : t(childRoute === "admin" ? "adminPanel" : childRoute);
 }
 const userDropdownOptions = [
     {
@@ -241,7 +282,7 @@ const userDropdownOptions = [
         key: "edit",
         icon: () => h(NIcon, () => h(IconPencil)),
         show: database.value?.tables
-            ?.find(({ slug }) => slug === "user")
+            ?.find(({ slug }) => slug === "users")
             ?.allowedMethods?.includes("u"),
     },
     {
@@ -254,7 +295,7 @@ async function onSelectUserDropdown(v: string) {
     switch (v) {
         case "edit":
             navigateTo(
-                `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/user/${(user.value as User).id
+                `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
                 }/edit`,
             );
             break;
@@ -265,7 +306,9 @@ async function onSelectUserDropdown(v: string) {
                 {},
             );
             user.value = null;
-            await navigateTo(`${route.params.database ? `/${route.params.database}` : ''}/auth`);
+            await navigateTo(
+                `${route.params.database ? `/${route.params.database}` : ""}/auth`,
+            );
             break;
     }
 }

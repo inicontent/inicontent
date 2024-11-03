@@ -20,15 +20,17 @@
                     </NTooltip>
                 </NFlex>
             </template>
-            <template #actions>
-                <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
-                    <template #icon>
-                        <NIcon>
-                            <IconSend />
-                        </NIcon>
-                    </template>
-                    {{ t('publish') }}
-                </NButton>
+            <template #action>
+                <NFlex justify="end">
+                    <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
+                        <template #icon>
+                            <NIcon>
+                                <IconSend />
+                            </NIcon>
+                        </template>
+                        {{ t('publish') }}
+                    </NButton>
+                </NFlex>
             </template>
             <NForm :model="newItemObject" ref="formRef">
                 <RenderFieldS v-model="newItemObject" :schema />
@@ -50,8 +52,6 @@ import {
     NSpin,
 } from "naive-ui";
 import { IconSend } from "@tabler/icons-vue";
-
-clearNuxtState("itemLabel");
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],

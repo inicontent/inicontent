@@ -75,7 +75,7 @@
                         </template>
                         <NInput v-model:value="schema[index].key" />
                     </NFormItem>
-                    <template v-if="schema[index].table === 'asset'">
+                    <template v-if="schema[index].table === 'assets'">
                         <NFormItem :label="t('allowedFiles')">
                             <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
                                 v-model:value="schema[index].accept" />
@@ -184,12 +184,34 @@ useLanguage({
             archive: "أرشيف",
         },
         allowCustomValues: "السماح بإدخال قيم جديدة",
+        username: "إسم المستخدم",
+        email: "البريد الإلكتروني",
+        password: "كلمة المرور",
+        role: "الصلاحية",
+        createdBy: "أُنشأ من قبل"
     },
     en: {},
 });
 
 function isDisabled(key?: string) {
-    return !!key && ["id", "createdAt", "updatedAt"].includes(key);
+    if (key) {
+        const defaultFields: string[] = ["id", "createdAt", "updatedAt"];
+        switch (table.value.slug) {
+            case "users":
+                defaultFields.push("username", "email", "password", "role", "createdBy");
+                break;
+            case "pages":
+                defaultFields.push("slug", "content", "seo");
+                break;
+            case "components":
+                defaultFields.push("component", "config", "hideOn");
+                break;
+            default:
+                break;
+        }
+        return defaultFields.includes(key)
+    }
+    return false;
 }
 const expandedNames = defineModel<string[]>("expandedNames");
 const expandedChildNames = ref<string[]>();
@@ -215,7 +237,6 @@ function pushToChildrenSchema(type: string, index: number) {
 const schema = defineModel<Schema>({
     default: () => reactive([]),
 });
-const route = useRoute();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const { isMobile } = useDevice();

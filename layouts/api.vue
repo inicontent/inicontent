@@ -158,13 +158,13 @@ const renderSingleItem = ({ slug, allowedMethods }: Table) => {
         icon: () =>
             h(NIcon, () => {
                 switch (slug) {
-                    case "asset":
+                    case "assets":
                         return h(IconFolders);
-                    case "translation":
+                    case "translations":
                         return h(IconLanguage);
-                    case "user":
+                    case "users":
                         return h(IconUsers);
-                    case "session":
+                    case "sessions":
                         return h(IconFingerprint);
                     default:
                         return t(slug).charAt(0).toUpperCase();
@@ -178,12 +178,12 @@ const menuOptions: any = database.value.tables
         ...(database.value.tables
             ?.filter(
                 ({ slug }) =>
-                    !["user", "session", "asset", "translation"].includes(slug)
+                    !["users", "sessions", "assets", "translations"].includes(slug)
             )
             .map(renderSingleItem) ?? []),
         database.value.tables?.filter(
             ({ slug }) =>
-                ["user", "session", "asset", "translation"].includes(slug)
+                ["users", "sessions", "assets", "translations"].includes(slug)
         ).length
             ? {
                 key: "divider-1",
@@ -193,7 +193,7 @@ const menuOptions: any = database.value.tables
         ...(database.value.tables
             ?.filter(
                 ({ slug }) =>
-                    ["user", "session", "asset", "translation"].includes(slug)
+                    ["users", "sessions", "assets", "translations"].includes(slug)
             )
             .map(renderSingleItem) ?? []),
     ]

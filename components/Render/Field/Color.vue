@@ -17,14 +17,11 @@ import { NFormItem, NColorPicker, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: String,
-})
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
     type: "hex",
     required: field.required,
-    trigger: "change",
     validator() {
         if (!modelValue.value && field.required)
             return new Error(`${t(field.key)} ${t('isRequired')}`)

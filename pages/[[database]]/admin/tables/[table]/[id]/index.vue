@@ -49,7 +49,7 @@
                 </NTooltip>
             </NButtonGroup>
         </template>
-        <template #actions>
+        <template #action>
             <NButtonGroup>
                 <NButton disabled round secondary>
                     <template #icon>
@@ -98,7 +98,7 @@ import {
 } from "naive-ui";
 import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
 
-onBeforeRouteLeave((route, currentRoute) => {
+onBeforeRouteUpdate((route, currentRoute) => {
     if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
         clearNuxtState("itemLabel");
 });

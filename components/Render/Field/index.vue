@@ -9,7 +9,8 @@
     }" />
     <LazyRenderFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field="field" />
     <LazyRenderFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field="field" />
-    <LazyRenderFieldUpload v-else-if="field.table === 'asset'" v-model="modelValue" :field="field" />
+    <LazyRenderFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field="field" />
+    <LazyRenderFieldUpload v-else-if="field.table === 'assets'" v-model="modelValue" :field="field" />
     <LazyRenderFieldTable v-else-if="detectedFieldType === 'table'" v-model="modelValue" :field="field" />
     <LazyRenderFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :field="field" />
     <LazyRenderFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :field="field" />
@@ -19,7 +20,11 @@
     <LazyRenderFieldPassword v-else-if="detectedFieldType === 'password'" v-model="modelValue" :field="field" />
     <LazyRenderFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :field="field" />
     <LazyRenderFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :field="field" />
-    <LazyRenderFieldSelect v-else-if="detectedFieldType === 'select'" v-model="modelValue" :field="field" />
+    <template v-else-if="detectedFieldType === 'select'">
+        <LazyRenderFieldSelect v-if="!field.options || field.options.length > 3" v-model="modelValue" :field="field" />
+        <LazyRenderFieldCheckbox v-else-if="field.isArray" v-model="modelValue" :field="field" />
+        <LazyRenderFieldRadio v-else v-model="modelValue" :field="field" />
+    </template>
     <LazyRenderFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :field="field" />
     <LazyRenderFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field="field" />
     <LazyRenderFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field="field" />
@@ -32,9 +37,7 @@ import { NEmpty } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: [Array, Object, String, Boolean, Number, null],
-})
+const modelValue = defineModel<any>()
 
 if (field.defaultValue && !modelValue.value)
     modelValue.value = field.defaultValue;

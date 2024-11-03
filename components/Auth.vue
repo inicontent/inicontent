@@ -47,7 +47,7 @@ const SigninFormRef = ref<FormInst | null>(null),
     tabsInstRef = ref<TabsInst | null>(null),
     tabsValue = ref((route.query.tab as string) ?? "signin"), // Default tab
     database = useState<Database>("database"),
-    user = useState<User>("user"),
+    user = useState<User>("users"),
     SignupForm = useState(() => ({})),
     SignupFormRef = ref<FormInst | null>(null),
     SigninForm = ref({
@@ -67,7 +67,7 @@ const SigninFormRef = ref<FormInst | null>(null),
         },
     ],
     SignupColumns: Schema = database.value?.tables
-        ?.find((item) => item.slug === "user")
+        ?.find((item) => item.slug === "users")
         ?.schema?.filter(
             (field) =>
                 !["id", "createdAt", "createdBy", "updatedAt", "role"].includes(
@@ -135,7 +135,7 @@ const SigninSubmit = async (e: Event) => {
                     user.value = data.result;
                     database.value = (
                         await $fetch<any>(
-                            `${appConfig.apiBase}inicontent/database/${database.value.slug
+                            `${appConfig.apiBase}inicontent/databases/${database.value.slug
                             }`,
                         )
                     ).result;

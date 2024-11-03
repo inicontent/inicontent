@@ -21,9 +21,8 @@ import {
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel({
-    type: [Object, Array] as PropType<Item | Item[]>,
-});
+const modelValue = defineModel<Item | Item[]>();
+
 const value: any = computed(() => modelValue.value
     ? (field.isArray
         ? isArrayOfObjects(modelValue.value)
@@ -39,7 +38,6 @@ const value: any = computed(() => modelValue.value
 const rule = {
     type: !field.isArray ? "string" : "array",
     required: field.required,
-    trigger: "change",
     min: field.isArray ? field.min : undefined,
     validator(_: any, value: string | string[]) {
         if (!value || (Array.isArray(value) && value.length === 0))

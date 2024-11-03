@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-	const user = useState<User>("user");
+	const user = useState<User>("users");
 	const database = useState<Database>("database");
 	const appConfig = useAppConfig();
 

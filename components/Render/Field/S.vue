@@ -12,8 +12,7 @@ let newSchema = schema ?? []
 if (newSchema.every(({ id }) => !id))
 	newSchema = addIdToSchema(newSchema)
 
-const modelValue = defineModel({
-	type: Object,
+const modelValue = defineModel<Record<string | number, any>>({
 	default: () => reactive({}),
 })
 </script>

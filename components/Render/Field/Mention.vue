@@ -20,13 +20,12 @@
 </template>
 
 <script lang="ts" setup>
+import { isArrayOfObjects } from "inibase/utils";
 import { NFormItem, NMention, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel({
-    type: String
-})
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
     required: field.required,
@@ -37,8 +36,8 @@ const rule: FormItemRule = {
     }
 }
 
-const options = field.options ? (field.options.every(option => typeof option !== 'object') ? field.options.map((value) => ({
+const options = field.options ? isArrayOfObjects(field.options) ? field.options : (field.options as string[]).map((value) => ({
     value: value,
     label: t(value),
-})) : field.options) : []
+})) : []
 </script>
