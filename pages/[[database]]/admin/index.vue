@@ -114,7 +114,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 const { isMobile } = useDevice();
 const { data: databases, execute } = await useFetch<apiResponse<Database[]>>(
-    `${appConfig.apiBase}inicontent/database`,
+    `${appConfig.apiBase}inicontent/databases`,
     {
         immediate: false,
         onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
