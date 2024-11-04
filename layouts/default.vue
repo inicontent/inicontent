@@ -198,11 +198,12 @@ onMounted(() => {
     window.$message = useMessage();
 });
 
+const appConfig = useAppConfig();
 const route = useRoute();
-const user = useState<User | null>("users"),
-    Theme = useCookie<string>("Theme", { sameSite: true }),
-    database = useState<Database>("database"),
-    ThemeConfig = useState<ThemeConfig>("ThemeConfig");
+const user = useState<User | null>("users");
+const Theme = useCookie<string>("Theme", { sameSite: true })
+const database = useState<Database>("database")
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 
 const showBreadcrumb =
     database.value?.slug &&
@@ -302,7 +303,7 @@ async function onSelectUserDropdown(v: string) {
             break;
         case "logout":
             await $fetch(
-                `${useRuntimeConfig().public.apiBase}${database.value.slug ?? "inicontent"
+                `${appConfig.apiBase}${database.value.slug ?? "inicontent"
                 }/auth/signout`,
                 {},
             );
