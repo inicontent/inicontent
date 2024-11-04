@@ -96,11 +96,11 @@ const database = useState<Database>("database");
 
 const Language = useCookie("Language");
 
-onBeforeRouteUpdate((route) => {
+onBeforeRouteLeave((route) => {
     if (route.params.database)
         clearNuxtState(['database', 'table', 'user'])
-
 })
+
 useLanguage({
     ar: {
         newItem: "عنصر جديد",

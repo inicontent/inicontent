@@ -123,9 +123,9 @@ import {
 } from "naive-ui";
 import { NuxtLink, RenderColumn } from "#components";
 
-// onBeforeRouteUpdate(() => {
-//     clearNuxtState(["whereQuery", "Drawer", "itemLabel"]);
-// });
+onBeforeRouteUpdate(() => {
+    clearNuxtState("Drawer");
+});
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],
