@@ -190,9 +190,9 @@ useLanguage({
     en: {},
 });
 
-onBeforeUpdate(() => {
-    clearNuxtState("LanguageMessages");
-})
+// onBeforeUpdate(() => {
+//     clearNuxtState("LanguageMessages");
+// })
 
 onMounted(() => {
     window.$message = useMessage();
