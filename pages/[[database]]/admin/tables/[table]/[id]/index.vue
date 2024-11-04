@@ -2,7 +2,7 @@
     <LazyTableDrawer v-if="!isMobile" />
     <NCard style="height: fit-content">
         <template #header>
-            <NEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NEllipsis>
+            <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>
         </template>
         <template v-if="table.schema && table.schema.length > 4" #header-extra>
             <NButtonGroup>
@@ -91,7 +91,7 @@
 import {
     NButton,
     NCard,
-    NEllipsis,
+    NPerformantEllipsis,
     NIcon,
     NTooltip,
     NButtonGroup,
@@ -111,7 +111,6 @@ definePageMeta({
 useLanguage({
     ar: {
         print: "طباعة",
-        edit: "تعديل"
     },
     en: {},
 });

@@ -38,7 +38,7 @@
                     <NFlex vertical>
                         <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
                             <NForm ref="tableRef" :model="tableCopy">
-                                <RenderFieldS v-model="tableCopy" :schema="generalSettingsSchema" />
+                                <RenderFieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 1)" />
                                 <NFormItem path="localLabel" :label="t('label')">
                                     <NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
                                         :render-tag="renderSingleLabel">
@@ -50,6 +50,7 @@
                                         </template>
                                     </NDynamicTags>
                                 </NFormItem>
+                                <RenderFieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(1)" />
                             </NForm>
                         </NCard>
                         <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -284,7 +285,7 @@ function renderSingleLabel(labelObject: { label: string; value: string }, index:
             type: labelObject.value.startsWith('@') && isValidID(labelObject.value.slice(1)) ? 'primary' : 'default',
             closable: true,
             onClose: () => {
-                tableCopy.value.localLabel.value.splice(index, 1)
+                tableCopy.value.localLabel.splice(index, 1)
             }
         },
         {
@@ -333,7 +334,26 @@ const generalSettingsSchema = reactive<Schema>([
         inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
             disabled: true
         } : {}
-    }
+    },
+    {
+        key: "compression",
+        type: "boolean",
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
+            disabled: true
+        } : {}
+    }, {
+        key: "prepend",
+        type: "boolean",
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
+            disabled: true
+        } : {}
+    }, {
+        key: "cache",
+        type: "boolean",
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
+            disabled: true
+        } : {}
+    },
 ])
 
 useHead({

@@ -38,24 +38,24 @@
                 :name="database.slug">
                 <template #header-extra>
                     <NButtonGroup>
-                        <NuxtLink :to="`/${database.slug}/admin/settings`">
-                            <NButton round>
-                                <template #icon>
+                        <NButton round>
+                            <template #icon>
+                                <NuxtLink :to="`/${database.slug}/admin/settings`">
                                     <NIcon>
                                         <IconSettings />
                                     </NIcon>
-                                </template>
-                            </NButton>
-                        </NuxtLink>
-                        <NuxtLink :to="`/${database.slug}/admin/tables`">
-                            <NButton round>
-                                <template #icon>
+                                </NuxtLink>
+                            </template>
+                        </NButton>
+                        <NButton round>
+                            <template #icon>
+                                <NuxtLink :to="`/${database.slug}/admin/tables`">
                                     <NIcon>
                                         <IconArrowRight />
                                     </NIcon>
-                                </template>
-                            </NButton>
-                        </NuxtLink>
+                                </NuxtLink>
+                            </template>
+                        </NButton>
                     </NButtonGroup>
                 </template>
                 <LazyTableGrid v-model="databases.result[index]" />

@@ -27,10 +27,18 @@ function generateSearchInOption(
 	};
 }
 
-export const generateSearchInOptions = (schema?: Schema) =>
-	schema
+export function generateSearchInOptions(
+	schema?: Schema,
+	excludedKeys?: string[],
+) {
+	if (!schema) return [];
+	const RETURN = schema
 		?.map((_item) => generateSearchInOption(schema, _item))
-		.flat(Number.POSITIVE_INFINITY) ?? [];
+		.flat(Number.POSITIVE_INFINITY);
+	if (excludedKeys)
+		return RETURN.filter(({ value }) => !excludedKeys.includes(value));
+	return RETURN;
+}
 
 export const generateSearchArray = (searchQuery: any) => {
 	const RETURN: any = {};

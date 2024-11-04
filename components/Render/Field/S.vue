@@ -1,11 +1,10 @@
 <template>
-	<RenderField v-for="field of schema" :field="field" :schema="newSchema" v-model="modelValue[field.key]" />
+	<RenderField v-for="field of newSchema" :field="field" v-model="modelValue[field.key]" />
 </template>
 
 <script lang="ts" setup>
 // TO-DO:
 // Add fields: Mention, Range, Slider
-
 const { schema } = defineProps<{ schema?: Schema }>()
 
 let newSchema = schema ?? []

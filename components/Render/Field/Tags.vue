@@ -1,5 +1,5 @@
 <template>
-    <NFormItem ref="dynamicTags" :label="t(field.key)" :rule v-bind="(field.labelProps
+    <NFormItem ref="dynamicTags" :label="t(field.key)" :path="field.id" :rule v-bind="(field.labelProps
         ? typeof field.labelProps === 'function'
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
@@ -92,7 +92,6 @@ const rule: FormItemRule = {
             return field.required
                 ? new Error(`${t(field.key)} ${t("isRequired")}`)
                 : true;
-
         for (const value of modelValue.value)
             if (!validateFieldType(value, field.children as FieldType | FieldType[]))
                 return new Error(

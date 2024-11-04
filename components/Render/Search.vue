@@ -1,34 +1,13 @@
 <template>
     <NCollapse :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
-        <NCollapseItem v-for="([condition, items], index) in Object.entries(
-            path ? getProperty(searchArray, path) : searchArray,
-        )" :title="t(`${condition}Group`)" :name="index.toString()">
+        <NCollapseItem v-for="(items, condition, index) in modeValue" :key="condition" :name="index.toString()"
+            :title="t(`${condition}Group`)">
             <template #header-extra>
-                <NFlex>
-                    <NDropdown :options="[
-                        {
-                            key: 'and',
-                            label: t('andGroup'),
-                        },
-                        {
-                            key: 'or',
-                            label: t('orGroup'),
-                        },
-                    ]" :style="{
-                        maxHeight: '200px',
-                    }" scrollable @select="(value) =>
-                        setProperty(
-                            searchArray,
-                            `${path ? `${path}.` : ''}${condition}.${items.length
-                            }.${value}`,
-                            [[null, '=', null]],
-                        )">
-                        <NButton @click="setProperty(
-                            searchArray,
-                            `${path ? `${path}.` : ''}${condition}.${items.length
-                            }`,
-                            [null, '=', null],
-                        )" circle size="small">
+                <NButtonGroup>
+                    <NDropdown :options="conditionDropdownOptions" style="max-height: 200px;" scrollable
+                        @select="(value: 'and' | 'or') => modeValue[condition]?.push({ [value]: [[null, '=', null]] })">
+                        <NButton round type="primary" secondary @click="modeValue[condition]?.push([null, '=', null])"
+                            circle size="small">
                             <template #icon>
                                 <NIcon>
                                     <IconPlus />
@@ -39,22 +18,8 @@
 
                     <NTooltip :delay="500">
                         <template #trigger>
-                            <NButton @click="() => {
-                                setProperty(
-                                    searchArray,
-                                    `${path ? `${path}.` : ''}${condition === 'and' ? 'or' : 'and'
-                                    }`,
-                                    getProperty(
-                                        searchArray,
-                                        `${path ? `${path}.` : ''}${condition}`,
-                                        [[null, '=', null]],
-                                    ),
-                                );
-                                deleteProperty(
-                                    searchArray,
-                                    `${path ? `${path}.` : ''}${condition}`,
-                                );
-                            }" circle size="small">
+                            <NButton round type="info" secondary @click="() => toggleCondition(condition)" circle
+                                size="small">
                                 <template #icon>
                                     <NIcon>
                                         <IconSwitchHorizontal />
@@ -66,70 +31,32 @@
                             `convertTo_"${condition === "and" ? "or" : "and"}"_group`,
                         ) }}
                     </NTooltip>
-                    <NButton :disabled="['and', 'or'].includes(`${path ? `${path}.` : ''}${condition}`)" @click="deleteProperty(
-                        searchArray,
-                        `${path ? `${path}.` : ''}${condition}`,
-                    )" circle size="small">
+                    <NButton round type="error" secondary @click="delete modeValue[condition]" circle size="small">
                         <template #icon>
                             <NIcon>
                                 <IconTrash />
                             </NIcon>
                         </template>
                     </NButton>
-                </NFlex>
+                </NButtonGroup>
             </template>
-            <NFlex item-style="width: 100%">
-                <template v-for="(item, index) in items.map((item: any) => {
-                    if (item[0]) item[3] = getFieldFromSchema(
-                        item[0],
-                        table.schema as any
-                    ); return item
-                })">
+            <NFlex v-if="items" item-style="width: 100%">
+                <template v-for="(item, index) in formatItems(items)">
                     <NInputGroup v-if="Array.isArray(item)">
-                        <NSelect :consistent-menu-width="false" tag filterable :value="item[0]"
+                        <NSelect size="small" :consistent-menu-width="false" tag filterable :value="item[0]"
                             @update:value="(v) => item[0] = v" :options="generateSearchInOptions(
-                                table.schema,
-                            )" :style="`width:${item[3] ? 33.33 : 100}%`" />
+                                table.schema, formatItems(items).toSpliced(index, 1).map(([value1]) => value1))"
+                            :style="`width:${item[3] ? 33.33 : 100}%`" />
                         <template v-if="item[3]">
-                            <NSelect :consistent-menu-width="false" tag filterable :value="item[1]"
+                            <NSelect size="small" :consistent-menu-width="false" tag filterable :value="item[1]"
                                 @update:value="(v) => item[1] = v" :options="searchSelectOptions(item[3])"
                                 style="width:33.33%" />
-                            <LazyRenderFieldS :model-value="item[2]" @update:modelValue="(v) => {
+                            <RenderField :model-value="item[2]" @update:modelValue="(v) => {
                                 item[2] = Array.isArray(v) ? v.join(',') : v;
-                            }" :schema="[
-                                {
-                                    ...item[3],
-                                    required: false,
-                                    labelProps: {
-                                        showLabel: false,
-                                        style: 'width:33.33%',
-                                        showFeedback: false,
-                                    },
-                                    inputProps: {
-                                        onKeydown: ({
-                                            key,
-                                        }: KeyboardEvent) => {
-                                            if (key === 'Enter') {
-                                                searchQuery =
-                                                    searchArray
-                                                        ? generateSearchInput(
-                                                            searchArray,
-                                                        )
-                                                        : undefined;
-                                                pagination.onUpdatePage(
-                                                    1,
-                                                );
-                                            }
-                                        },
-                                    },
-                                },
-                            ]" />
+                            }" :field="getFieldFromItem(item)" />
                         </template>
-                        <NButton :disabled="items.length === 1" @click="deleteProperty(
-                            searchArray,
-                            `${path ? `${path}.` : ''
-                            }${condition}.${index}`,
-                        )" circle size="small">
+                        <NButton :disabled="items.length === 1" @click="modeValue[condition]?.splice(index, 1)" circle
+                            size="small">
                             <template #icon>
                                 <NIcon>
                                     <IconMinus />
@@ -137,8 +64,7 @@
                             </template>
                         </NButton>
                     </NInputGroup>
-                    <LazyRenderSearch v-else :path="`${path ? `${path}.` : ''
-                        }${condition}.${index}`" />
+                    <LazyRenderSearch v-else v-model="(modeValue[condition] as any)[index]" :callback />
                 </template>
             </NFlex>
         </NCollapseItem>
@@ -151,9 +77,10 @@ import {
     IconTrash,
     IconSwitchHorizontal,
     IconMinus,
+    IconArrowMerge,
+    IconArrowFork,
 } from "@tabler/icons-vue";
 import { getField as getFieldFromSchema } from "inibase/utils";
-import { deleteProperty, getProperty, setProperty } from "inidot";
 import {
     NButton,
     NTooltip,
@@ -164,18 +91,75 @@ import {
     NIcon,
     NInputGroup,
     NSelect,
+    NButtonGroup,
 } from "naive-ui";
 
-defineProps(["path"]);
+useLanguage({
+    ar: {
+        andGroup: "مجموعة و",
+        orGroup: "مجموعة أو",
+    },
+});
 
-const searchArray = useState<{
-    and?: [string | null, string, any][];
-    or?: [string | null, string, any][];
-}>("searchArray");
-const searchQuery = useState<string>("searchQuery");
-const pagination = useState<any>("pagination");
+const { callback } = defineProps<{ callback: CallableFunction }>()
+
+type searchArrayValueItem =
+    | [string | null, string, any]
+    | [string | null, string, any, any];
+type searchArrayValue = (searchArrayValueItem | searchArray)[];
+type searchArray = {
+    and?: searchArrayValue;
+    or?: searchArrayValue;
+};
+const modeValue = defineModel<searchArray>({
+    default: { and: [[null, "=", null]] },
+});
+
 const table = useState<Table>("table");
 
+const conditionDropdownOptions = [
+    {
+        key: "and",
+        label: t("andGroup"),
+        icon: () => h(NIcon, () => h(IconArrowMerge))
+    },
+    {
+        key: "or",
+        label: t("orGroup"),
+        icon: () => h(NIcon, () => h(IconArrowFork))
+    },
+];
+function toggleCondition(oldCondition: "and" | "or") {
+    modeValue.value[oldCondition === "and" ? "or" : "and"] =
+        modeValue.value[oldCondition];
+    delete modeValue.value[oldCondition];
+}
+
+function formatItems(items: searchArrayValue) {
+    return items.map((item) => {
+        if (Array.isArray(item) && item[0])
+            item[3] = getFieldFromSchema(item[0], table.value.schema as any);
+        return item;
+    });
+}
+function getFieldFromItem(item: searchArrayValueItem) {
+    return {
+        ...item[3],
+        required: false,
+        labelProps: {
+            showLabel: false,
+            style: "margin-top: -3px;width:33.33%",
+            showFeedback: false,
+        },
+        inputProps: {
+            size: "small",
+            onKeydown: ({ key }: KeyboardEvent) => {
+                if (key === "Enter")
+                    callback()
+            },
+        },
+    };
+}
 function searchSelectOptions(field: any): any {
     return comparisonOperatorOptions().filter(({ value }) => {
         if (checkFieldType(field.type, ["number", "date"]))

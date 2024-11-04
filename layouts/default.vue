@@ -104,7 +104,7 @@
             </NLayoutHeader>
         </NScrollbar>
         <NLayoutContent id="container" position="absolute" style="top: 64px;height: calc(100vh - 64px);overflow: auto;"
-            content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;">
+            content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content">
             <slot></slot>
         </NLayoutContent>
     </NLayout>
@@ -171,6 +171,7 @@ useLanguage({
         role: "الصلاحية",
         createdBy: "أُنشأ من قبل",
         theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
+        inputsAreInvalid: "المُدخلات غير صحيحة",
         slug: "الإسم",
         roles: "الأدوار",
         icon: "الأيقونة",

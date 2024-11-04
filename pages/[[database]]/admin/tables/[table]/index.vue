@@ -4,10 +4,8 @@
         content-style="padding: 0" :bordered="false">
         <template #header-extra>
             <NButtonGroup>
-                <NPopover :disabled="!searchQuery && (!data?.result || !table?.schema)" :style="{
-                    maxHeight: '240px',
-                    width: isMobile ? '350px' : '500px',
-                }" placement="bottom-end" trigger="click" scrollable>
+                <NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
+                    :style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click" scrollable>
                     <template #trigger>
                         <NTooltip :delay="500">
                             <template #trigger>
@@ -24,40 +22,29 @@
                     </template>
                     <template #footer>
                         <NFlex justify="end">
-                            <NButton :loading="Loading.data" :disabled="searchArray.and?.length === 1 &&
-                                searchArray.and[0][0] === null" @click="() => {
-                                    searchArray = {
-                                        and: [[null, '=', null]],
-                                    };
-                                    if (searchQuery) {
-                                        searchQuery = undefined;
-                                        refresh();
-                                    }
-                                }">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconX />
-                                    </NIcon>
-                                </template>
-                                {{ t("reset") }}
-                            </NButton>
-                            <NButton :loading="Loading.data" :disabled="searchArray.and?.length === 1 &&
-                                searchArray.and[0][0] === null" @click="() => {
-                                    searchQuery = searchArray
-                                        ? generateSearchInput(searchArray)
-                                        : undefined;
-                                    pagination.page = 1;
-                                }">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconSearch />
-                                    </NIcon>
-                                </template>
-                                {{ t("search") }}
-                            </NButton>
+                            <NButtonGroup>
+                                <NButton round type="error" secondary :loading="Loading.data"
+                                    :disabled="isSearchDisabled" @click="resetSearch">
+                                    <template #icon>
+                                        <NIcon>
+                                            <IconX />
+                                        </NIcon>
+                                    </template>
+                                    {{ t("reset") }}
+                                </NButton>
+                                <NButton round type="primary" secondary :loading="Loading.data"
+                                    :disabled="isSearchDisabled" @click="executeSearch">
+                                    <template #icon>
+                                        <NIcon>
+                                            <IconSearch />
+                                        </NIcon>
+                                    </template>
+                                    {{ t("search") }}
+                                </NButton>
+                            </NButtonGroup>
                         </NFlex>
                     </template>
-                    <RenderSearch />
+                    <RenderSearch v-model="searchArray" :callback="executeSearch" />
                 </NPopover>
                 <NDropdown :options="toolsDropdownOptions" trigger="click">
                     <NTooltip :delay="500">
@@ -102,8 +89,8 @@
                 </NTooltip>
             </NButtonGroup>
         </template>
-        <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
-            :columns="tableColumns" :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+        <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
+            :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
             :row-key="(row) => row.id" :checked-row-keys="checkedRowKeys"
             @update-checked-row-keys="(keys) => checkedRowKeys = keys" @update:sorter="handleSorterChange" />
     </NCard>
@@ -136,34 +123,68 @@ import {
 } from "naive-ui";
 import { NuxtLink, RenderColumn } from "#components";
 
-onBeforeRouteUpdate(() => {
-    clearNuxtState(["searchArray", "searchQuery", "Drawer", "itemLabel"]);
-});
+// onBeforeRouteUpdate(() => {
+//     clearNuxtState(["whereQuery", "Drawer", "itemLabel"]);
+// });
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],
     layout: "table",
 });
 
-const route = useRoute(),
-    router = useRouter(),
-    database = useState<Database>("database"),
-    table = useState<Table>("table");
+useLanguage({
+    ar: {
+        search: "بحث",
+        reset: "إفراغ",
+        tools: "الأدوات",
+    },
+});
+
+const route = useRoute();
+const router = useRouter();
+const database = useState<Database>("database");
+const table = useState<Table>("table");
 const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const { isMobile } = useDevice()
-const searchQuery = useState<string | undefined>(
-    "searchQuery",
-    () => route.query.search as string | undefined,
-)
-const searchArray = useState<{
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const { isMobile } = useDevice();
+
+const whereQuery = ref<string | undefined>(route.query.search as string | undefined);
+const searchArray = ref<{
     and?: [string | null, string, any][];
     or?: [string | null, string, any][];
-}>("searchArray", () =>
+}>(
     route.query.search
         ? generateSearchArray(Inison.unstringify(route.query.search as string))
         : { and: [[null, "=", null]] },
 );
+const isSearchDisabled = computed(
+    () =>
+        searchArray.value.and?.length === 1 && searchArray.value.and[0][0] === null,
+);
+function resetSearch() {
+    searchArray.value = {
+        and: [[null, "=", null]],
+    };
+    if (whereQuery.value) whereQuery.value = undefined;
+}
+function executeSearch() {
+    whereQuery.value = Inison.stringify(generateSearchInput(searchArray.value));
+    pagination.onUpdatePage(1)
+}
+
+watch(whereQuery, (v) => {
+    const { search, page, ...Query }: any = route.query;
+    return v
+        ? router.push({
+            query: {
+                ...(Query ?? {}),
+                search: v,
+            },
+        })
+        : router.push({
+            query: Query ?? {},
+        });
+});
 
 const Drawer = useState<{
     show: boolean;
@@ -175,8 +196,8 @@ const Drawer = useState<{
     id: null,
     table: null,
     data: {},
-}))
-const dataRef = ref(null)
+}));
+const dataRef = ref(null);
 const checkedRowKeys = ref<any>([]);
 const pagination = reactive({
     page: route.query.page ? Number(route.query.page) : 1,
@@ -221,12 +242,13 @@ const queryOptions = ref(
         columns: [],
     }),
 );
+
 const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
     `${appConfig.apiBase}${database.value.slug}/${table.value.slug}`,
     {
         query: {
             options: queryOptions,
-            where: searchQuery,
+            where: whereQuery
         },
         onRequest() {
             Loading.value.data = true;
@@ -320,7 +342,7 @@ function handleSorterChange({
         );
 }
 
-const tableColumns: any = computed(() => [
+const columns: any = computed(() => [
     ...(table.value.allowedMethods !== "r"
         ? [
             {
@@ -393,7 +415,16 @@ const tableColumns: any = computed(() => [
                                 circle: true,
                                 type: "primary",
                             },
-                            { icon: () => h(NuxtLink, { to: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}` }, () => h(NIcon, () => h(IconEye))) },
+                            {
+                                icon: () =>
+                                    h(
+                                        NuxtLink,
+                                        {
+                                            to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+                                        },
+                                        () => h(NIcon, () => h(IconEye)),
+                                    ),
+                            },
                         )
                         : null,
                     table.value.allowedMethods?.includes("u")
@@ -401,7 +432,7 @@ const tableColumns: any = computed(() => [
                             NButton,
                             {
                                 tag: "a",
-                                href: `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
                                 onClick: (e) => {
                                     e.preventDefault();
                                     if (!isMobile)
@@ -414,7 +445,7 @@ const tableColumns: any = computed(() => [
                                         };
                                     else
                                         navigateTo(
-                                            `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}/${row.id}/edit`,
+                                            `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
                                         );
                                 },
                                 secondary: true,
@@ -453,24 +484,12 @@ const tableColumns: any = computed(() => [
         },
     },
 ]);
-const tableWidth = computed(() => tableColumns.value.reduce(
-    (accumulator: number, value: any) => accumulator + (value.width ?? 0),
-    40,
-));
-
-watch(searchQuery, (v) => {
-    const { search, page, ...Query }: any = route.query;
-    return v
-        ? router.push({
-            query: {
-                ...(Query ?? {}),
-                search: Inison.stringify(v),
-            },
-        })
-        : router.push({
-            query: Query ?? {},
-        });
-});
+const tableWidth = computed(() =>
+    columns.value.reduce(
+        (accumulator: number, value: any) => accumulator + (value.width ?? 0),
+        40,
+    ),
+);
 
 useHead({
     title: `${t(database.value.slug)} | ${t(table.value.slug)}`,

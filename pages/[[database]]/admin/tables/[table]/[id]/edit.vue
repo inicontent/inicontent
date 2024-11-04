@@ -2,7 +2,7 @@
     <NSpin :show="!!Loading.UPDATE">
         <NCard style="height: fit-content">
             <template #header>
-                <NEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NEllipsis>
+                <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>
             </template>
             <template v-if="schema && schema.length > 4" #header-extra>
                 <NButtonGroup>
@@ -103,7 +103,7 @@
 import {
     NButton,
     NCard,
-    NEllipsis,
+    NPerformantEllipsis,
     NForm,
     NIcon,
     NTooltip,
