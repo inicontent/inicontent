@@ -180,8 +180,9 @@ async function updateTable() {
         if (!errors) {
             const bodyContent = JSON.parse(
                 JSON.stringify(
-                    (({ schema, slug, id, label }) => ({
+                    (({ schema, config, slug, id, label }) => ({
                         schema,
+                        config,
                         slug,
                         id,
                         label,
