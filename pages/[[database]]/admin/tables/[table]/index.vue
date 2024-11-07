@@ -65,7 +65,7 @@
                     <template #trigger>
                         <NButton round :disabled="!table.schema" tag="a"
                             :href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-                            @click="() => {
+                            @click.prevent="() => {
                                 if (!isMobile)
                                     Drawer = {
                                         ...Drawer,
