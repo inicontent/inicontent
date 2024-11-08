@@ -351,7 +351,7 @@ const database = useState<Database>("database"),
     saveFlow = async () => {
         Loading.value.updateTable = true;
         const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
-        await $fetch<apiResponse>(
+        const data = await $fetch<apiResponse>(
             `${appConfig.apiBase}inicontent/databases/${database.value.slug
             }/${table.value.slug}`,
             {
@@ -362,6 +362,11 @@ const database = useState<Database>("database"),
                 }))(bodyContent),
             },
         );
+
+        if (data.result) {
+            tableCopy.value = data.result
+            window.$message.success(data.message);
+        } else window.$message.error(data.message);
         Loading.value.updateTable = false;
     },
     flattenSchema = (schema: Schema, keepParents = false) => {
