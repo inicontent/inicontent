@@ -290,9 +290,9 @@ const fileTypeSelectOptions = [
         icon: renderIcon(IconFileZip),
     },
 ];
-function selectRenderLabelWithIcon(option: SelectOption & { icon: string }) {
+function selectRenderLabelWithIcon(option: SelectOption & { icon: CallableFunction }) {
     return h(NFlex, { align: "center" }, () => [
-        option.icon,
+        option.icon(),
         option.label as string,
     ]);
 }
