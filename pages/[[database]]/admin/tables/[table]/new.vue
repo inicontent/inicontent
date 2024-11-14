@@ -11,7 +11,7 @@
                             <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
                                 <template #icon>
                                     <NIcon>
-                                        <IconSend />
+                                        <DataIcon value="send" />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -25,7 +25,7 @@
                     <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
                         <template #icon>
                             <NIcon>
-                                <IconSend />
+                                <DataIcon value="send" />
                             </NIcon>
                         </template>
                         {{ t('publish') }}
@@ -33,7 +33,7 @@
                 </NFlex>
             </template>
             <NForm :model="newItemObject" ref="formRef">
-                <RenderFieldS v-model="newItemObject" :schema />
+                <FieldS v-model="newItemObject" :schema />
             </NForm>
         </NCard>
     </NSpin>
@@ -51,7 +51,6 @@ import {
     type FormInst,
     NSpin,
 } from "naive-ui";
-import { IconSend } from "@tabler/icons-vue";
 
 definePageMeta({
     middleware: ["database", "user", "dashboard", "table"],

@@ -1,36 +1,11 @@
 import { NIcon } from "naive-ui";
-import {
-	IconKey,
-	IconNumber,
-	IconAt,
-	IconLink,
-	IconUpload,
-	IconTags,
-	IconCalendar,
-	IconToggleLeft,
-	IconCode,
-	IconAlignJustified,
-	IconLetterCase,
-	IconPalette,
-	IconListCheck,
-	IconBrackets,
-	IconBraces,
-	IconTable,
-	IconTypography,
-	IconShieldLock,
-	IconId,
-	IconQuestionMark,
-	IconTimelineEvent,
-	IconParentheses,
-	IconMessage,
-	type Icon,
-} from "@tabler/icons-vue";
 import { detectFieldType } from "inibase/utils";
 import Inison from "inison";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
+import { DataIcon } from "#components";
 
-function renderIcon(icon: Icon) {
-	return () => h(NIcon, () => h(icon));
+function renderIcon(icon: VNode) {
+	return () => h(NIcon, () => icon);
 }
 
 export default function fieldsList(): SelectMixedOption[] {
@@ -70,75 +45,75 @@ export default function fieldsList(): SelectMixedOption[] {
 		{
 			label: t("fields.string"),
 			key: "text",
-			icon: renderIcon(IconTypography),
+			icon: renderIcon(h(DataIcon, { value: "typography" })),
 			children: [
 				{
 					label: t("fields.shortText"),
 					key: "string",
-					icon: renderIcon(IconLetterCase),
+					icon: renderIcon(h(DataIcon, { value: "letter-case" })),
 				},
 				{
 					label: t("fields.longText"),
 					key: "textarea",
-					icon: renderIcon(IconAlignJustified),
+					icon: renderIcon(h(DataIcon, { value: "align-justified" })),
 				},
 				{
 					label: t("fields.html"),
 					key: "html",
-					icon: renderIcon(IconCode),
+					icon: renderIcon(h(DataIcon, { value: "code" })),
 				},
 				{
 					label: t("fields.password"),
 					key: "password",
-					icon: renderIcon(IconKey),
+					icon: renderIcon(h(DataIcon, { value: "key" })),
 				},
 				{
 					label: t("fields.email"),
 					key: "email",
-					icon: renderIcon(IconAt),
+					icon: renderIcon(h(DataIcon, { value: "at" })),
 				},
 				{
 					label: t("fields.link"),
 					key: "url",
-					icon: renderIcon(IconLink),
+					icon: renderIcon(h(DataIcon, { value: "link" })),
 				},
 				{
 					label: t("fields.color"),
 					key: "color",
-					icon: renderIcon(IconPalette),
+					icon: renderIcon(h(DataIcon, { value: "palette" })),
 				},
 				{
 					label: t("fields.role"),
 					key: "role",
-					icon: renderIcon(IconShieldLock),
+					icon: renderIcon(h(DataIcon, { value: "shield-lock" })),
 				},
 				{
 					label: t("fields.mention"),
 					key: "mention",
-					icon: renderIcon(IconMessage),
+					icon: renderIcon(h(DataIcon, { value: "message" })),
 				},
 			],
 		},
 		{
 			label: t("fields.id"),
 			key: "id",
-			icon: renderIcon(IconId),
+			icon: renderIcon(h(DataIcon, { value: "id" })),
 		},
 		{
 			label: t("fields.number"),
 			key: "number",
-			icon: renderIcon(IconNumber),
+			icon: renderIcon(h(DataIcon, { value: "number" })),
 			children: [
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
 					label: t("fields.number"),
 					key: "number",
-					icon: renderIcon(IconNumber),
+					icon: renderIcon(h(DataIcon, { value: "number" })),
 				},
 				{
 					label: t("fields.slider"),
 					key: "slider",
-					icon: renderIcon(IconTimelineEvent),
+					icon: renderIcon(h(DataIcon, { value: "timeline-event" })),
 					disabled: true,
 				},
 			],
@@ -146,71 +121,71 @@ export default function fieldsList(): SelectMixedOption[] {
 		{
 			label: t("fields.date"),
 			key: "date",
-			icon: renderIcon(IconCalendar),
+			icon: renderIcon(h(DataIcon, { value: "calendar" })),
 		},
 		{
 			label: t("fields.toggle"),
 			key: "boolean",
-			icon: renderIcon(IconToggleLeft),
+			icon: renderIcon(h(DataIcon, { value: "toggle-left" })),
 		},
 		{
 			label: t("fields.upload"),
 			key: "upload",
-			icon: renderIcon(IconUpload),
+			icon: renderIcon(h(DataIcon, { value: "upload" })),
 		},
 		{
 			label: t("fields.list"),
 			key: "select",
-			icon: renderIcon(IconListCheck),
+			icon: renderIcon(h(DataIcon, { value: "list-check" })),
 		},
 		{
 			label: t("fields.array"),
 			key: "array",
-			icon: renderIcon(IconBrackets),
+			icon: renderIcon(h(DataIcon, { value: "brackets" })),
 			children: [
 				{
 					label: t("fields.tags"),
 					key: "tags",
-					icon: renderIcon(IconTags),
+					icon: renderIcon(h(DataIcon, { value: "tags" })),
 				},
 				{
 					label: t("fields.list"),
 					key: "array-select",
-					icon: renderIcon(IconListCheck),
+					icon: renderIcon(h(DataIcon, { value: "list-check" })),
 				},
 				{
 					label: t("fields.upload"),
 					key: "array-upload",
-					icon: renderIcon(IconUpload),
+					icon: renderIcon(h(DataIcon, { value: "upload" })),
 				},
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
 					label: t("fields.range"),
 					key: "range",
-					icon: renderIcon(IconParentheses),
+					icon: renderIcon(h(DataIcon, { value: "parentheses" })),
 					disabled: true,
 				},
 				{
 					label: t("fields.table"),
 					key: "array-table",
-					icon: renderIcon(IconTable),
+					icon: renderIcon(h(DataIcon, { value: "table" })),
 				},
 				{
 					label: t("fields.object"),
 					key: "array",
-					icon: renderIcon(IconBraces),
+					icon: renderIcon(h(DataIcon, { value: "braces" })),
 				},
 			],
 		},
 		{
 			label: t("fields.object"),
 			key: "object",
-			icon: renderIcon(IconBraces),
+			icon: renderIcon(h(DataIcon, { value: "braces" })),
 		},
 		{
 			label: t("fields.table"),
 			key: "table",
-			icon: renderIcon(IconTable),
+			icon: renderIcon(h(DataIcon, { value: "table" })),
 		},
 	];
 }
@@ -218,7 +193,7 @@ export default function fieldsList(): SelectMixedOption[] {
 const defaultUnfoundField = {
 	key: "custom",
 	label: "custom",
-	icon: renderIcon(IconQuestionMark),
+	icon: renderIcon(h(DataIcon, { value: "question-mark" })),
 };
 
 export function flatFieldsList() {

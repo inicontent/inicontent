@@ -5,7 +5,7 @@
             :loading="Loading.updateTable" type="primary" size="large" @click="saveFlow">
             <template #icon>
                 <NIcon>
-                    <IconDeviceFloppy />
+                    <DataIcon value="device-floppy" />
                 </NIcon>
             </template>
         </NButton>
@@ -24,8 +24,8 @@
                                     : `${currentFlow}-${index}`">
                                 <template #icon>
                                     <NIcon>
-                                        <IconEye v-if="currentFlowCard === `${currentFlow}-${index}`" />
-                                        <IconPencil v-else />
+                                        <DataIcon v-if="currentFlowCard === `${currentFlow}-${index}`" value="eye" />
+                                        <DataIcon v-else value="pencil" />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -33,7 +33,7 @@
                                 @click="() => { if (currentFlowCard === `${currentFlow}-${index}`) currentFlowCard = undefined; tableCopy[flowName].splice(index, 1) }">
                                 <template #icon>
                                     <NIcon>
-                                        <IconTrash />
+                                        <DataIcon value="trash" />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -149,7 +149,7 @@
                                             <NButton style="margin: auto" round dashed>
                                                 <template #icon>
                                                     <NIcon>
-                                                        <IconPlus />
+                                                        <DataIcon value="plus" />
                                                     </NIcon>
                                                 </template>
                                             </NButton>
@@ -288,7 +288,7 @@
                             }">
                                 <NFlex justify="center" align="center">
                                     <NIcon :size="36">
-                                        <IconPlus />
+                                        <DataIcon value="plus" />
                                     </NIcon>
                                 </NFlex>
                             </NCard>
@@ -302,15 +302,6 @@
 </template>
 
 <script lang="ts" setup>
-import {
-    IconDeviceFloppy,
-    IconEye,
-    IconArrowDown,
-    IconArrowUp,
-    IconPencil,
-    IconPlus,
-    IconTrash,
-} from "@tabler/icons-vue";
 import {
     NButton,
     NButtonGroup,
@@ -333,6 +324,8 @@ import {
     NTooltip,
 } from "naive-ui";
 import { isArrayOfObjects, isValidID } from "inibase/utils";
+import { DataIcon } from "#components";
+
 onMounted(() => {
     document.onkeydown = (e) => {
         if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
@@ -576,18 +569,18 @@ function DropdownProps(flow: FlowType, index: number) {
             {
                 label: t("delete"),
                 key: "delete",
-                icon: () => h(NIcon, () => h(IconTrash)),
+                icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
             },
             {
                 label: t("moveUp"),
                 key: "moveUp",
-                icon: () => h(NIcon, () => h(IconArrowUp)),
+                icon: () => h(NIcon, () => h(DataIcon, { value: "arrow-up" })),
                 disabled: index === 0,
             },
             {
                 label: t("moveDown"),
                 key: "moveDown",
-                icon: () => h(NIcon, () => h(IconArrowDown)),
+                icon: () => h(NIcon, () => h(DataIcon, { value: "arrow-down" })),
                 disabled: index + 1 === flow.length,
             },
         ],

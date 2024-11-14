@@ -1,0 +1,30 @@
+<template>
+    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
+        ? typeof field.labelProps === 'function'
+            ? field.labelProps(modelValue) ?? {}
+            : field.labelProps
+        : {})">
+        <FieldHtmlEditor v-model="modelValue" v-bind="field.inputProps
+            ? typeof field.inputProps === 'function'
+                ? field.inputProps(modelValue) ?? {}
+                : field.inputProps
+            : {}" />
+    </NFormItem>
+</template>
+
+<script lang="ts" setup>
+import { NFormItem, type FormItemRule } from "naive-ui";
+
+const { field } = defineProps<{ field: Field }>()
+
+const modelValue = defineModel<string>()
+
+const rule: FormItemRule = {
+    required: field.required,
+    trigger: ['blur', 'input'],
+    validator() {
+        if (!modelValue.value && field.required)
+            return new Error(`${t(field.key)} ${t('isRequired')}`)
+    }
+}
+</script>

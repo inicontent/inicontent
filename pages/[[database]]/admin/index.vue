@@ -4,7 +4,7 @@
             <NButton :circle="isMobile" :round="!isMobile" @click="DatabaseModal = {}, showDatabaseModal = true">
                 <template #icon>
                     <NIcon>
-                        <IconPlus />
+                        <DataIcon value="plus" />
                     </NIcon>
                 </template>
                 <template v-if="!isMobile">
@@ -20,7 +20,7 @@
                         <NButton round :loading="Loading.Database" @click="saveDatabase">
                             <template #icon>
                                 <NIcon>
-                                    <IconDeviceFloppy />
+                                    <DataIcon value="device-floppy" />
                                 </NIcon>
                             </template>
                             {{ t("create") }}
@@ -28,7 +28,7 @@
                     </NFlex>
                 </template>
                 <NForm ref="DatabaseRef" :model="DatabaseModal">
-                    <LazyRenderFieldS v-model="DatabaseModal" :schema="databaseSchema" />
+                    <LazyFieldS v-model="DatabaseModal" :schema="databaseSchema" />
                 </NForm>
             </NDrawerContent>
         </NDrawer>
@@ -42,7 +42,7 @@
                             <template #icon>
                                 <NuxtLink :to="`/${database.slug}/admin/settings`">
                                     <NIcon>
-                                        <IconSettings />
+                                        <DataIcon value="settings" />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -51,7 +51,7 @@
                             <template #icon>
                                 <NuxtLink :to="`/${database.slug}/admin/tables`">
                                     <NIcon>
-                                        <IconArrowRight />
+                                        <DataIcon value="arrow-right" />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -66,12 +66,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-    IconArrowRight,
-    IconDeviceFloppy,
-    IconPlus,
-    IconSettings,
-} from "@tabler/icons-vue";
 import {
     type FormInst,
     NButton,

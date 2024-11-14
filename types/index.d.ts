@@ -20,7 +20,8 @@ declare global {
 		| "color"
 		| "select"
 		| "role"
-		| "mention";
+		| "mention"
+		| "icon";
 	type FieldType = dbFieldType;
 	type Field = {
 		id?: string | number;

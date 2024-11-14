@@ -10,7 +10,7 @@
                         <NText type="primary">
                             {{ t(drawer.table) }}
                             <NIcon size="small">
-                                <IconExternalLink />
+                                <DataIcon value="external-link" />
                             </NIcon>
                         </NText>
                     </NuxtLink>
@@ -25,8 +25,9 @@
                     <NButton v-if="!isMobile" round secondary type="info" @click="toggleDrawerWidth()">
                         <template #icon>
                             <NIcon>
-                                <IconChevronRight v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
-                                <IconChevronLeft v-else />
+                                <DataIcon value="chevron-right"
+                                    v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
+                                <DataIcon value="chevron-left" v-else />
                             </NIcon>
                         </template>
                     </NButton>
@@ -35,7 +36,7 @@
                         @click="drawer.id ? updateDrawer() : createDrawer()">
                         <template #icon>
                             <NIcon>
-                                <IconDeviceFloppy />
+                                <DataIcon value="device-floppy" />
                             </NIcon>
                         </template>
                         {{ drawer.id ? t('update') : t('create') }}
@@ -44,19 +45,13 @@
             </template>
 
             <NForm ref="drawerFormRef" :model="drawer.data">
-                <RenderFieldS v-model="drawer.data" :schema="filteredSchema" />
+                <FieldS v-model="drawer.data" :schema="filteredSchema" />
             </NForm>
         </NDrawerContent>
     </NDrawer>
 </template>
 
 <script setup lang="ts">
-import {
-    IconChevronLeft,
-    IconChevronRight,
-    IconDeviceFloppy,
-    IconExternalLink,
-} from '@tabler/icons-vue';
 import {
     NButton,
     NDrawer,

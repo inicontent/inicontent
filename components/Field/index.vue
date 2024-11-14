@@ -1,0 +1,62 @@
+<template>
+    <LazyFieldText v-if="['string', 'text', 'id'].includes(detectedFieldType)" v-model="modelValue" :field="field" />
+    <LazyFieldSelect v-else-if="detectedFieldType === 'role'" v-model="modelValue" :field="{
+        ...field, options: database.roles?.map(({ name, id }) => ({
+            label: t(name),
+            value: id,
+        }))
+    }" />
+    <LazyFieldIcon v-else-if="detectedFieldType === 'icon'" v-model="modelValue" :field="field" />
+    <LazyFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field="field" />
+    <LazyFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field="field" />
+    <LazyFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field="field" />
+    <LazyFieldUpload v-else-if="field.table === 'assets'" v-model="modelValue" :field="field" />
+    <LazyFieldTable v-else-if="detectedFieldType === 'table'" v-model="modelValue" :field="field" />
+    <LazyFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :field="field" />
+    <LazyFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :field="field" />
+    <LazyFieldEmail v-else-if="detectedFieldType === 'email'" v-model="modelValue" :field="field" />
+    <LazyFieldHtml v-else-if="detectedFieldType === 'html'" v-model="modelValue" :field="field" />
+    <LazyFieldNumber v-else-if="detectedFieldType === 'number'" v-model="modelValue" :field="field" />
+    <LazyFieldPassword v-else-if="detectedFieldType === 'password'" v-model="modelValue" :field="field" />
+    <LazyFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :field="field" />
+    <LazyFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :field="field" />
+    <template v-else-if="detectedFieldType === 'select'">
+        <LazyFieldSelect v-if="!field.options || field.options.length > 3" v-model="modelValue" :field="field" />
+        <LazyFieldCheckbox v-else-if="field.isArray" v-model="modelValue" :field="field" />
+        <LazyFieldRadio v-else v-model="modelValue" :field="field" />
+    </template>
+    <LazyFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :field="field" />
+    <LazyFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field="field" />
+    <LazyFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field="field" />
+    <LazyFieldArray v-else-if="detectedFieldType === 'array'" v-model="modelValue" :field="field" />
+    <NEmpty v-else :description="`${t('fieldTypeNotExisting')}: '${String(detectedFieldType)}'`" />
+</template>
+
+<script lang="ts" setup>
+import { NEmpty } from "naive-ui";
+
+const { field } = defineProps<{ field: Field }>()
+
+const modelValue = defineModel<any>()
+
+if (field.defaultValue && !modelValue.value)
+    modelValue.value = field.defaultValue;
+
+if (
+    ((Array.isArray(field.type) && field.type.includes("array")) ||
+        (typeof field.type === "string" && field.type === "array"))
+)
+    field.isArray = true;
+
+let detectedFieldType = (field.subType ?? field.type) as string;
+if (
+    Array.isArray(detectedFieldType) &&
+    modelValue.value
+)
+    detectedFieldType = getField(
+        field.subType ?? field.type,
+        modelValue.value,
+    ).key;
+
+const database = useState<Database>("database")
+</script>

@@ -64,14 +64,12 @@
         </NGrid>
         <NDropdown v-if="table.allowedMethods?.includes('u') || table.allowedMethods?.includes('d')"
             placement="bottom-start" trigger="manual" :x="xRef" :y="yRef" :show="showDropdown"
-            :options="dropdownOptions" @clickoutside="dropdownOnClickOutside"
-            @select="(key: string) => dropdownOnSelect(key)" />
+            :options="dropdownOptions" @clickoutside="dropdownOnClickOutside" @select="dropdownOnSelect" />
     </template>
     <NEmpty v-else />
 </template>
 
 <script lang="ts" setup>
-import { IconPencil, IconTrash, IconUpload } from "@tabler/icons-vue";
 import {
     NDropdown,
     NFlex,
@@ -89,6 +87,7 @@ import {
     NText,
     NTime,
 } from "naive-ui";
+import { DataIcon } from "#components";
 
 const path = defineModel<string>("path");
 const { isAssetRoute, table } = defineProps<{
@@ -139,7 +138,7 @@ const dropdownOptions = [
         label: t("delete"),
         key: "delete",
         show: table.allowedMethods?.includes("d"),
-        icon: () => h(NIcon, () => h(IconTrash)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
     },
     {
         label: t("rename"),
@@ -147,14 +146,14 @@ const dropdownOptions = [
         disabled: true,
         show:
             table.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
-        icon: () => h(NIcon, () => h(IconPencil)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "pencil" })),
     },
     {
         label: t("replace"),
         key: "replace",
         disabled: true,
         show: table.allowedMethods?.includes("u"),
-        icon: () => h(NIcon, () => h(IconUpload)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "upload" })),
     },
 ];
 

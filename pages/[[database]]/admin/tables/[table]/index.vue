@@ -12,7 +12,7 @@
                                 <NButton round>
                                     <template #icon>
                                         <NIcon>
-                                            <IconSearch />
+                                            <DataIcon value="search" />
                                         </NIcon>
                                     </template>
                                 </NButton>
@@ -27,7 +27,7 @@
                                     :disabled="isSearchDisabled" @click="resetSearch">
                                     <template #icon>
                                         <NIcon>
-                                            <IconX />
+                                            <DataIcon value="x" />
                                         </NIcon>
                                     </template>
                                     {{ t("reset") }}
@@ -36,7 +36,7 @@
                                     :disabled="isSearchDisabled" @click="executeSearch">
                                     <template #icon>
                                         <NIcon>
-                                            <IconSearch />
+                                            <DataIcon value="search" />
                                         </NIcon>
                                     </template>
                                     {{ t("search") }}
@@ -44,7 +44,7 @@
                             </NButtonGroup>
                         </NFlex>
                     </template>
-                    <RenderSearch v-model="searchArray" :callback="executeSearch" />
+                    <TableSearch v-model="searchArray" :callback="executeSearch" />
                 </NPopover>
                 <NDropdown :options="toolsDropdownOptions" trigger="click">
                     <NTooltip :delay="500">
@@ -52,7 +52,7 @@
                             <NButton round>
                                 <template #icon>
                                     <NIcon>
-                                        <IconTools />
+                                        <DataIcon value="tools" />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -80,7 +80,7 @@
                             }">
                             <template #icon>
                                 <NIcon>
-                                    <IconPlus />
+                                    <DataIcon value="plus" />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -97,17 +97,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-    IconEye,
-    IconPencil,
-    IconPlus,
-    IconSearch,
-    IconTableExport,
-    IconTableImport,
-    IconTools,
-    IconTrash,
-    IconX,
-} from "@tabler/icons-vue";
 import Inison from "inison";
 import {
     NButton,
@@ -121,7 +110,7 @@ import {
     NPopover,
     NTooltip,
 } from "naive-ui";
-import { NuxtLink, RenderColumn } from "#components";
+import { DataIcon, NuxtLink, Column } from "#components";
 
 onBeforeRouteUpdate(() => {
     clearNuxtState("Drawer");
@@ -299,13 +288,13 @@ const DELETE = async (id: string) => {
 
 const toolsDropdownOptions = [
     {
-        icon: () => h(NIcon, () => h(IconTableImport)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "table-import" })),
         label: t("import"),
         disabled: true,
         key: "import",
     },
     {
-        icon: () => h(NIcon, () => h(IconTableExport)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "table-export" })),
         label: t("export"),
         key: "export",
         disabled: true,
@@ -355,7 +344,7 @@ const columns: any = computed(() => [
                                 label: t("delete"),
                                 key: "delete",
                                 disabled: checkedRowKeys.value.length === 0,
-                                icon: () => h(NIcon, () => h(IconTrash)),
+                                icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
                                 onSelect: async () => {
                                     Loading.value.data = true;
                                     await $fetch<apiResponse>(
@@ -366,7 +355,7 @@ const columns: any = computed(() => [
                                             body: checkedRowKeys.value,
                                         } as any,
                                     );
-                                    window.$message.success("Deleted Successfully");
+                                    window.$message.success(t("deletedSuccessfully"));
                                     await refresh();
                                 },
                             },
@@ -396,7 +385,7 @@ const columns: any = computed(() => [
             ? `${sortObject.value[field.key]}end`
             : false,
         render: (row: { [x: string]: any }) =>
-            h(RenderColumn, { value: row[field.key], field }),
+            h(Column, { value: row[field.key], field }),
     })),
     {
         title: t("actions"),
@@ -422,7 +411,7 @@ const columns: any = computed(() => [
                                         {
                                             to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
                                         },
-                                        () => h(NIcon, () => h(IconEye)),
+                                        () => h(NIcon, () => h(DataIcon, { value: "eye" })),
                                     ),
                             },
                         )
@@ -452,7 +441,7 @@ const columns: any = computed(() => [
                                 circle: true,
                                 type: "info",
                             },
-                            { icon: () => h(NIcon, () => h(IconPencil)) },
+                            { icon: () => h(NIcon, () => h(DataIcon, { value: "pencil" })) },
                         )
                         : null,
                     table.value.allowedMethods?.includes("d")
@@ -472,7 +461,7 @@ const columns: any = computed(() => [
                                             type: "error",
                                         },
                                         {
-                                            icon: () => h(NIcon, () => h(IconTrash)),
+                                            icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
                                         },
                                     ),
                                 default: () => t("theFollowingActionIsIrreversible"),

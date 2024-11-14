@@ -26,18 +26,6 @@
 
 <script setup lang="ts">
 import {
-    IconAppWindow,
-    IconEye,
-    IconFingerprint,
-    IconFolders,
-    IconLanguage,
-    IconPlus,
-    IconSettings,
-    IconTournament,
-    IconUsers,
-    IconWebhook,
-} from "@tabler/icons-vue";
-import {
     NIcon,
     NLayout,
     NLayoutContent,
@@ -45,7 +33,7 @@ import {
     NMenu,
     type MenuOption,
 } from "naive-ui";
-import { NuxtLink } from "#components";
+import { DataIcon, NuxtLink } from "#components";
 
 const Language = useCookie<string>("Language");
 
@@ -88,6 +76,25 @@ const defaultValue = computed(() => {
     return decodeURI(lastPathInRoute?.toString() ?? "");
 });
 
+const getTableIcon = (slug: string) => {
+    switch (slug) {
+        case "assets":
+            return h(DataIcon, { value: "folders" });
+        case "translations":
+            return h(DataIcon, { value: "language" });
+        case "users":
+            return h(DataIcon, { value: "users" });
+        case "sessions":
+            return h(DataIcon, { value: "fingerprint" });
+        case "pages":
+            return h(DataIcon, { value: "app-window" });
+        case "components":
+            return h(DataIcon, { value: "tournament" });
+        default:
+            return t(slug).charAt(0).toUpperCase();
+    }
+};
+
 const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
     const itemChildren = [
         {
@@ -101,7 +108,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                 ),
             key: slug,
             show: slug !== "assets",
-            icon: () => h(NIcon, () => h(IconEye)),
+            icon: () => h(NIcon, () => h(DataIcon, { value: "eye" })),
         },
         {
             label: () =>
@@ -114,7 +121,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                 ),
             key: `${slug}-new`,
             show: slug !== "assets" && allowedMethods?.includes("c"),
-            icon: () => h(NIcon, () => h(IconPlus)),
+            icon: () => h(NIcon, () => h(DataIcon, { value: "plus" })),
         },
         {
             label: () =>
@@ -126,7 +133,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                     { default: () => t("settings") },
                 ),
             key: `${slug}-settings`,
-            icon: () => h(NIcon, () => h(IconSettings)),
+            icon: () => h(NIcon, () => h(DataIcon, { value: "settings" })),
             show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations", "assets"].includes(slug)
         },
         {
@@ -139,7 +146,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                     { default: () => t("flows") },
                 ),
             key: `${slug}-flows`,
-            icon: () => h(NIcon, () => h(IconWebhook)),
+            icon: () => h(NIcon, () => h(DataIcon, { value: "webhook" })),
             show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations"].includes(slug)
         },
     ];
@@ -153,25 +160,7 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
                 { default: () => t(slug) },
             ),
         key: itemChildren.length ? `${slug}Group` : slug,
-        icon: () =>
-            h(NIcon, () => {
-                switch (slug) {
-                    case "assets":
-                        return h(IconFolders);
-                    case "translations":
-                        return h(IconLanguage);
-                    case "users":
-                        return h(IconUsers);
-                    case "sessions":
-                        return h(IconFingerprint);
-                    case "pages":
-                        return h(IconAppWindow);
-                    case "components":
-                        return h(IconTournament);
-                    default:
-                        return t(slug).charAt(0).toUpperCase();
-                }
-            }),
+        icon: () => h(NIcon, () => getTableIcon(slug)),
         children: itemChildren.length ? itemChildren : undefined,
     };
 };

@@ -11,7 +11,7 @@
                                         <n-button type="error" tertiary round :loading="Loading.deleteDatabase">
                                             <template #icon>
                                                 <n-icon>
-                                                    <IconTrash />
+                                                    <DataIcon value="trash" />
                                                 </n-icon>
                                             </template>
                                         </n-button>
@@ -25,7 +25,7 @@
                             :loading="Loading.updateDatabase">
                             <template #icon>
                                 <n-icon>
-                                    <IconDeviceFloppy />
+                                    <DataIcon value="device-floppy" />
                                 </n-icon>
                             </template>
                             {{ t("save") }}
@@ -35,12 +35,12 @@
                 <n-flex vertical>
                     <n-card id="general" :title="t('generalSettings')" hoverable>
                         <n-form ref="databaseRef" :model="databaseCopy">
-                            <RenderFieldS v-model="databaseCopy" :schema="databaseSchema" />
+                            <FieldS v-model="databaseCopy" :schema="databaseSchema" />
                         </n-form>
                     </n-card>
                     <n-card id="translation" :title="t('translationSettings')" hoverable>
                         <n-form ref="databaseRef" :model="databaseCopy">
-                            <RenderFieldS v-model="databaseCopy" :schema="translationSchema" />
+                            <FieldS v-model="databaseCopy" :schema="translationSchema" />
                         </n-form>
                     </n-card>
                     <n-card id="email" :title="t('emailSettings')" hoverable>
@@ -60,7 +60,6 @@
 </template>
 
 <script lang="ts" setup>
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
 import {
     type FormInst,
     NAnchor,

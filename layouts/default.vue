@@ -53,7 +53,7 @@
                                                     <NuxtLink
                                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/settings`">
                                                         <NIcon>
-                                                            <IconSettings />
+                                                            <DataIcon value="settings" />
                                                         </NIcon>
                                                     </NuxtLink>
                                                 </template>
@@ -66,7 +66,7 @@
                                     <NButton round size="small">
                                         <template #icon>
                                             <NIcon>
-                                                <IconUser />
+                                                <DataIcon value="user" />
                                             </NIcon>
                                         </template>
                                     </NButton>
@@ -80,8 +80,8 @@
                                             : 'dark'">
                                         <template #icon>
                                             <NIcon>
-                                                <IconMoon v-if="Theme === 'light'" />
-                                                <IconSun v-else />
+                                                <DataIcon value="moon" v-if="Theme === 'light'" />
+                                                <DataIcon value="sun" v-else />
                                             </NIcon>
                                         </template>
                                     </NButton>
@@ -93,7 +93,7 @@
                                 <NButton round size="small">
                                     <template #icon>
                                         <NIcon>
-                                            <IconLanguage />
+                                            <DataIcon value="language" />
                                         </NIcon>
                                     </template>
                                 </NButton>
@@ -111,15 +111,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-    IconLanguage,
-    IconLogout,
-    IconMoon,
-    IconPencil,
-    IconSettings,
-    IconSun,
-    IconUser,
-} from "@tabler/icons-vue";
 import { isValidID } from "inibase/utils";
 import {
     NAvatar,
@@ -140,6 +131,7 @@ import {
     NTooltip,
     useMessage,
 } from "naive-ui";
+import { DataIcon } from "#components";
 
 const Language = useCookie<string>("Language", { sameSite: true });
 useLanguage({
@@ -180,6 +172,7 @@ useLanguage({
         tableSettings: "إعدادات الجدول",
         primaryColor: "اللون الأساسي",
         primaryDarkColor: "اللون الأساسي في الوضع الليلي",
+        deletedSuccessfully: "تم الحذف بنجاح",
         units: {
             kB: "ك.ب",
             MB: "م.ب",
@@ -282,7 +275,7 @@ const userDropdownOptions = [
     {
         label: t("profile"),
         key: "edit",
-        icon: () => h(NIcon, () => h(IconPencil)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "pencil" })),
         show: database.value?.tables
             ?.find(({ slug }) => slug === "users")
             ?.allowedMethods?.includes("u"),
@@ -290,7 +283,7 @@ const userDropdownOptions = [
     {
         label: t("logout"),
         key: "logout",
-        icon: () => h(NIcon, () => h(IconLogout)),
+        icon: () => h(NIcon, () => h(DataIcon, { value: "logout" })),
     },
 ];
 async function onSelectUserDropdown(v: string) {

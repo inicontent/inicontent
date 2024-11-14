@@ -13,7 +13,7 @@
                                                 :loading="Loading.deleteTable">
                                                 <template #icon>
                                                     <NIcon>
-                                                        <IconTrash />
+                                                        <DataIcon value="trash" />
                                                     </NIcon>
                                                 </template>
                                             </NButton>
@@ -26,7 +26,7 @@
                             <NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
                                 <template #icon>
                                     <NIcon>
-                                        <IconDeviceFloppy />
+                                        <DataIcon value="device-floppy" />
                                     </NIcon>
                                 </template>
                                 <template v-if="!isMobile" #default>
@@ -38,7 +38,7 @@
                     <NFlex vertical>
                         <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
                             <NForm ref="tableRef" :model="tableCopy">
-                                <RenderFieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 1)" />
+                                <FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
                                 <NFormItem path="localLabel" :label="t('label')">
                                     <NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
                                         :render-tag="renderSingleLabel">
@@ -50,7 +50,7 @@
                                         </template>
                                     </NDynamicTags>
                                 </NFormItem>
-                                <RenderFieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(1)" />
+                                <FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
                             </NForm>
                         </NCard>
                         <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -62,7 +62,7 @@
                                                 !showDraggable">
                                                 <template #icon>
                                                     <NIcon>
-                                                        <IconArrowsSort />
+                                                        <DataIcon value="arrows-sort" />
                                                     </NIcon>
                                                 </template>
                                             </NButton>
@@ -74,7 +74,7 @@
                                         <NButton round>
                                             <template #icon>
                                                 <NIcon>
-                                                    <IconPlus />
+                                                    <DataIcon value="plus" />
                                                 </NIcon>
                                             </template>
                                         </NButton>
@@ -101,12 +101,6 @@
 </template>
 
 <script lang="ts" setup>
-import {
-    IconArrowsSort,
-    IconDeviceFloppy,
-    IconPlus,
-    IconTrash,
-} from "@tabler/icons-vue";
 import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 import {
     type FormInst,
@@ -146,12 +140,17 @@ useLanguage({
         required: "إلزامي",
         changeOrder: "تغيير الترتيب",
         label: "الإسم الظاهري",
-        deleteTable: "حذف الجدول"
+        deleteTable: "حذف الجدول",
+        compression: "ضغط البيانات",
+        prepend: "العناصر الحديثة تظهر في الأعلى",
+        cache: "التخزين المؤقت",
     },
-    en: {},
+    en: {
+        prepend: "Recent items appear at the top",
+    },
 });
 
-const expandedNames = ref<string[]>()
+const expandedNames = ref<string[]>();
 function pushToSchema(type: string) {
     tableCopy.value.schema.splice(-2, 0, {
         id: `temp-${randomID()}`,
@@ -159,10 +158,12 @@ function pushToSchema(type: string) {
         required: false,
         ...handleSelectedSchemaType(type),
     });
-    const newElementId = tableCopy.value.schema.at(-3).id
-    expandedNames.value = [newElementId]
-    setTimeout(() =>
-        document.getElementById(`element-${newElementId}`)?.scrollIntoView(), 300)
+    const newElementId = tableCopy.value.schema.at(-3).id;
+    expandedNames.value = [newElementId];
+    setTimeout(
+        () => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
+        300,
+    );
 }
 
 const appConfig = useAppConfig();
@@ -180,19 +181,17 @@ async function updateTable() {
         if (!errors) {
             const bodyContent = JSON.parse(
                 JSON.stringify(
-                    (({ schema, config, slug, id, label }) => ({
-                        schema,
-                        config,
-                        slug,
-                        id,
-                        label,
+                    (({ localLabel, onRequest, onResponse, ...rest }) => ({
+                        ...rest
                     }))(tableCopy.value),
                 ),
             );
             Loading.value.updateTable = true;
             if (bodyContent.localLabel) {
-                bodyContent.label = bodyContent.localLabel.map(({ value }: { value: string }) => value).join(' ')
-                delete bodyContent.localLabel
+                bodyContent.label = bodyContent.localLabel
+                    .map(({ value }: { value: string }) => value)
+                    .join(" ");
+                delete bodyContent.localLabel;
             }
             const data = await $fetch<apiResponse<Table>>(
                 `${appConfig.apiBase}inicontent/databases/${database.value.slug
@@ -212,7 +211,7 @@ async function updateTable() {
                 data?.result
             ) {
                 database.value.tables[tableIndex] = data.result;
-                table.value = data.result
+                table.value = data.result;
                 tableCopy.value = data.result;
 
                 if (route.params.table !== data.result.slug)
@@ -226,7 +225,9 @@ async function updateTable() {
         } else window.$message.error(t("inputsAreInvalid"));
     });
 }
-const isUnDeletable = computed(() => ["users", "pages", "components"].includes(table.value?.slug))
+const isUnDeletable = computed(() =>
+    ["users", "pages", "components"].includes(table.value?.slug),
+);
 async function deleteTable() {
     Loading.value.deleteTable = true;
     const data = await $fetch<apiResponse>(
@@ -255,49 +256,58 @@ async function deleteTable() {
     Loading.value.deleteTable = false;
 }
 
-
-const flattenCopySchema = flattenSchema(tableCopy.value.schema)
-tableCopy.value.localLabel = tableCopy.value.label?.split(/(@\w+)/g).filter((value: string) => value != "").map((label: string) => {
-    if (label.startsWith('@'))
-        return ({
-            label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
-            value: label
-        })
-    return ({
-        label, value: label
-    })
-})
+const flattenCopySchema = flattenSchema(tableCopy.value.schema);
+tableCopy.value.localLabel = tableCopy.value.label
+    ?.split(/(@\w+)/g)
+    .filter((value: string) => value != "")
+    .map((label: string) => {
+        if (label.startsWith("@"))
+            return {
+                label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
+                value: label,
+            };
+        return {
+            label,
+            value: label,
+        };
+    });
 function onAppendToLabel(label: string) {
-    if (label.startsWith('@') && isValidID(label.slice(1)))
-        return ({
-            label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ?? "undefined",
-            value: label
-        })
+    if (label.startsWith("@") && isValidID(label.slice(1)))
+        return {
+            label:
+                flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ??
+                "undefined",
+            value: label,
+        };
 
-    return ({
+    return {
         label: label,
-        value: label
-    })
+        value: label,
+    };
 }
-function renderSingleLabel(labelObject: { label: string; value: string }, index: number) {
+function renderSingleLabel(
+    labelObject: { label: string; value: string },
+    index: number,
+) {
     return h(
         NTag,
         {
-            type: labelObject.value.startsWith('@') && isValidID(labelObject.value.slice(1)) ? 'primary' : 'default',
+            type:
+                labelObject.value.startsWith("@") &&
+                    isValidID(labelObject.value.slice(1))
+                    ? "primary"
+                    : "default",
             closable: true,
             onClose: () => {
-                tableCopy.value.localLabel.splice(index, 1)
-            }
+                tableCopy.value.localLabel.splice(index, 1);
+            },
         },
         {
-            default: () => labelObject.label
-        }
-    )
+            default: () => labelObject.label,
+        },
+    );
 }
-function generateLabelOptions(
-    schema?: Schema,
-    prefix?: string,
-) {
+function generateLabelOptions(schema?: Schema, prefix?: string) {
     let RETURN: {
         label: string;
         value: string | number;
@@ -314,10 +324,7 @@ function generateLabelOptions(
         )
             continue;
         if (field.children && isArrayOfObjects(field.children))
-            RETURN = [
-                ...RETURN,
-                ...generateLabelOptions(field.children, field.key),
-            ];
+            RETURN = [...RETURN, ...generateLabelOptions(field.children, field.key)];
         else
             RETURN.push({
                 label: (prefix ? `${prefix}/` : "") + field.key,
@@ -329,33 +336,53 @@ function generateLabelOptions(
 
 const generalSettingsSchema = reactive<Schema>([
     {
-        key: 'slug',
-        type: 'string',
+        key: "slug",
+        type: "string",
         required: true,
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
-            disabled: true
-        } : {}
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+            ? {
+                disabled: true,
+            }
+            : {},
+    },
+    {
+        key: "icon",
+        type: "string",
+        subType: "icon",
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+            ? {
+                disabled: true,
+            }
+            : {},
     },
     {
         key: "compression",
         type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
-            disabled: true
-        } : {}
-    }, {
-        key: "prepend",
-        type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
-            disabled: true
-        } : {}
-    }, {
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+            ? {
+                disabled: true,
+            }
+            : {},
+    },
+    {
         key: "cache",
         type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug) ? {
-            disabled: true
-        } : {}
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+            ? {
+                disabled: true,
+            }
+            : {},
     },
-])
+    {
+        key: "prepend",
+        type: "boolean",
+        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+            ? {
+                disabled: true,
+            }
+            : {},
+    },
+]);
 
 useHead({
     title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,
