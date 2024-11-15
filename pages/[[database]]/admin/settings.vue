@@ -10,9 +10,9 @@
                                     <template #trigger>
                                         <n-button type="error" tertiary round :loading="Loading.deleteDatabase">
                                             <template #icon>
-                                                <n-icon>
-                                                    <DataIcon value="trash" />
-                                                </n-icon>
+                                                <NIcon>
+                                                    <IconTrash />
+                                                </NIcon>
                                             </template>
                                         </n-button>
                                     </template>
@@ -24,9 +24,9 @@
                         <n-button @click="updateDatabase" type="primary" secondary round
                             :loading="Loading.updateDatabase">
                             <template #icon>
-                                <n-icon>
-                                    <DataIcon value="device-floppy" />
-                                </n-icon>
+                                <NIcon>
+                                    <IconDeviceFloppy />
+                                </NIcon>
                             </template>
                             {{ t("save") }}
                         </n-button>
@@ -60,6 +60,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
 import {
     type FormInst,
     NAnchor,

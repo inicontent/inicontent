@@ -3,7 +3,7 @@
         <template #trigger>
             <NButton circle strong secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
                 <NIcon>
-                    <DataIcon value="link" />
+                    <IconLink />
                 </NIcon>
             </NButton>
         </template>
@@ -12,7 +12,7 @@
                 @keydown.enter.prevent="importAsset">
                 <template #suffix>
                     <NIcon>
-                        <DataIcon value="link" />
+                        <IconLink />
                     </NIcon>
                 </template>
             </NInput>
@@ -21,7 +21,7 @@
                     <NButton :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
                         <template #icon>
                             <NIcon>
-                                <DataIcon value="arrow-right" />
+                                <IconArrowRight />
                             </NIcon>
                         </template>
                     </NButton>
@@ -36,7 +36,7 @@
             <NButton circle strong secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
                 <template #icon>
                     <NIcon>
-                        <DataIcon value="books" />
+                        <IconBooks />
                     </NIcon>
                 </template>
             </NButton>
@@ -46,6 +46,11 @@
 </template>
 
 <script lang="ts" setup>
+import {
+    IconArrowRight,
+    IconBooks,
+    IconLink,
+} from "@tabler/icons-vue";
 import {
     NButton,
     NIcon,

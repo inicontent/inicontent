@@ -11,7 +11,7 @@
                             <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="send" />
+                                        <IconSend />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -25,7 +25,7 @@
                     <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
                         <template #icon>
                             <NIcon>
-                                <DataIcon value="send" />
+                                <IconSend />
                             </NIcon>
                         </template>
                         {{ t('publish') }}
@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconSend } from "@tabler/icons-vue";
 import {
     NButton,
     NCard,

@@ -10,7 +10,7 @@
                             circle size="small">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="plus" />
+                                    <IconPlus />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -22,7 +22,7 @@
                                 size="small">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="switch-horizontal" />
+                                        <IconSwitchHorizontal />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -34,7 +34,7 @@
                     <NButton round type="error" secondary @click="delete modeValue[condition]" circle size="small">
                         <template #icon>
                             <NIcon>
-                                <DataIcon value="trash" />
+                                <IconTrash />
                             </NIcon>
                         </template>
                     </NButton>
@@ -59,12 +59,12 @@
                             size="small">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="minus" />
+                                    <IconMinus />
                                 </NIcon>
                             </template>
                         </NButton>
                     </NInputGroup>
-                    <LazyTableSearch v-else v-model="(modeValue[condition] as any)[index]" :callback />
+                    <LazyRenderSearch v-else v-model="(modeValue[condition] as any)[index]" :callback />
                 </template>
             </NFlex>
         </NCollapseItem>
@@ -72,6 +72,14 @@
 </template>
 
 <script lang="ts" setup>
+import {
+    IconPlus,
+    IconTrash,
+    IconSwitchHorizontal,
+    IconMinus,
+    IconArrowMerge,
+    IconArrowFork,
+} from "@tabler/icons-vue";
 import { getField as getFieldFromSchema } from "inibase/utils";
 import {
     NButton,
@@ -85,7 +93,6 @@ import {
     NSelect,
     NButtonGroup,
 } from "naive-ui";
-import { DataIcon } from "#components";
 
 useLanguage({
     ar: {
@@ -114,12 +121,12 @@ const conditionDropdownOptions = [
     {
         key: "and",
         label: t("andGroup"),
-        icon: () => h(NIcon, () => h(DataIcon, { value: "arrow-merge" })),
+        icon: () => h(NIcon, () => h(IconArrowMerge))
     },
     {
         key: "or",
         label: t("orGroup"),
-        icon: () => h(NIcon, () => h(DataIcon, { value: "arrow-fork" })),
+        icon: () => h(NIcon, () => h(IconArrowFork))
     },
 ];
 function toggleCondition(oldCondition: "and" | "or") {

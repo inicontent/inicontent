@@ -13,7 +13,7 @@
                                                 :loading="Loading.deleteTable">
                                                 <template #icon>
                                                     <NIcon>
-                                                        <DataIcon value="trash" />
+                                                        <IconTrash />
                                                     </NIcon>
                                                 </template>
                                             </NButton>
@@ -26,7 +26,7 @@
                             <NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="device-floppy" />
+                                        <IconDeviceFloppy />
                                     </NIcon>
                                 </template>
                                 <template v-if="!isMobile" #default>
@@ -62,7 +62,7 @@
                                                 !showDraggable">
                                                 <template #icon>
                                                     <NIcon>
-                                                        <DataIcon value="arrows-sort" />
+                                                        <IconArrowsSort />
                                                     </NIcon>
                                                 </template>
                                             </NButton>
@@ -74,7 +74,7 @@
                                         <NButton round>
                                             <template #icon>
                                                 <NIcon>
-                                                    <DataIcon value="plus" />
+                                                    <IconPlus />
                                                 </NIcon>
                                             </template>
                                         </NButton>
@@ -101,6 +101,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconArrowsSort, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 import {
     type FormInst,

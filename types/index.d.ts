@@ -80,6 +80,7 @@ declare global {
 		id?: string;
 		slug: string;
 		label?: string;
+		icon?: string;
 		allowedMethods?: string;
 		schema?: Schema;
 		onRequest?: FlowType[];

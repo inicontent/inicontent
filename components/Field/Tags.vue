@@ -41,7 +41,7 @@
                 <NButton type="primary" dashed :disabled="disabled" @click="activate()">
                     <template #icon>
                         <NIcon>
-                            <DataIcon value="plus" />
+                            <IconPlus />
                         </NIcon>
                     </template>
                 </NButton>
@@ -65,6 +65,7 @@ import {
 } from "naive-ui";
 import type { FieldType } from "inibase";
 import { validateFieldType } from "inibase/utils";
+import { IconPlus } from "@tabler/icons-vue";
 
 const { field } = defineProps<{ field: Field }>()
 

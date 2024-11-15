@@ -16,28 +16,28 @@
           <NButton :disabled="!currentSelection" :type="isState('bold') ? 'primary' : 'default'"
             @click="execCommand('bold')">
             <NIcon>
-              <DataIcon value="bold" />
+              <IconBold />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('italic') ? 'primary' : 'default'"
             @click="execCommand('italic')">
             <NIcon>
-              <DataIcon value="italic" />
+              <IconItalic />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('underline') ? 'primary' : 'default'"
             @click="execCommand('underline')">
             <NIcon>
-              <DataIcon value="underline" />
+              <IconUnderline />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!currentSelection" :type="isState('strikeThrough') ? 'primary' : 'default'"
             @click="execCommand('strikeThrough')">
             <NIcon>
-              <DataIcon value="strikethrough" />
+              <IconStrikethrough />
             </NIcon>
           </NButton>
 
@@ -46,7 +46,7 @@
             @update:value="(value: string) => execCommand('formatBlock', value)" :options="headingOptions">
             <NButton :disabled="!isFocused" :type="isState('heading') ? 'primary' : 'default'">
               <NIcon>
-                <DataIcon value="heading" />
+                <IconHeading />
               </NIcon>
             </NButton>
           </NPopselect>
@@ -55,7 +55,7 @@
             <NButton :style="{ color: foreColor }"
               @click="(execCommand('foreColor', foreColor), showForeColorPicker = false)" :disabled="!currentSelection">
               <NIcon>
-                <DataIcon value="color-picker" />
+                <IconColorPicker />
               </NIcon>
             </NButton>
             <LazyFieldHtmlColorPicker :modelValue="foreColor"
@@ -66,7 +66,7 @@
             <NButton :style="{ backgroundColor: backColor }"
               @click="(execCommand('backColor', foreColor), showBackColorPicker = false)" :disabled="!currentSelection">
               <NIcon>
-                <DataIcon value="highlight" />
+                <IconHighlight />
               </NIcon>
             </NButton>
             <LazyFieldHtmlColorPicker :modelValue="backColor"
@@ -77,7 +77,7 @@
             @update:value="(value: string) => execCommand('fontSize', value)" :options="fontSizeOptions">
             <NButton :disabled="!isFocused" :type="isState('fontSize') ? 'primary' : 'default'">
               <NIcon>
-                <DataIcon value="resize" />
+                <IconTextResize />
               </NIcon>
             </NButton>
           </NPopselect>
@@ -87,7 +87,7 @@
           <NButton :disabled="!isFocused" :type="isState('img') ? 'primary' : 'default'"
             @click="showAssetsModal = true">
             <NIcon>
-              <DataIcon value="upload" />
+              <IconUpload />
             </NIcon>
           </NButton>
 
@@ -96,7 +96,7 @@
             <template #trigger>
               <NButton :disabled="!isFocused" :type="isState('a') ? 'primary' : 'default'">
                 <NIcon>
-                  <DataIcon value="link" />
+                  <IconLink />
                 </NIcon>
               </NButton>
             </template>
@@ -105,7 +105,7 @@
               <NButton type="primary"
                 @click="(restoreSelection(), execCommand('createLink', aHref), aHref = undefined)">
                 <NIcon>
-                  <DataIcon value="arrow-right" />
+                  <IconArrowRight />
                 </NIcon>
               </NButton>
             </NInputGroup>
@@ -114,14 +114,14 @@
           <NButton :disabled="!isFocused" :type="isState('insertOrderedList') ? 'primary' : 'default'"
             @click="execCommand('insertOrderedList')">
             <NIcon>
-              <DataIcon value="list-numbers" />
+              <IconListNumbers />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('insertUnorderedList') ? 'primary' : 'default'"
             @click="execCommand('insertUnorderedList')">
             <NIcon>
-              <DataIcon value="list" />
+              <IconList />
             </NIcon>
           </NButton>
         </NButtonGroup>
@@ -132,21 +132,21 @@
           <NButton :disabled="!isFocused" :type="isState('justifyLeft') ? 'primary' : 'default'"
             @click="execCommand('justifyLeft')">
             <NIcon>
-              <DataIcon value="align-left" />
+              <IconAlignLeft />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('justifyCenter') ? 'primary' : 'default'"
             @click="execCommand('justifyCenter')">
             <NIcon>
-              <DataIcon value="align-center" />
+              <IconAlignCenter />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isFocused" :type="isState('justifyRight') ? 'primary' : 'default'"
             @click="execCommand('justifyRight')">
             <NIcon>
-              <DataIcon value="align-right" />
+              <IconAlignRight />
             </NIcon>
           </NButton>
         </NButtonGroup>
@@ -156,13 +156,13 @@
         <NButtonGroup size="small">
           <NButton :disabled="!isSupported('undo')" @click="execCommand('undo')">
             <NIcon>
-              <DataIcon value="arrow-back-up" />
+              <IconArrowBackUp />
             </NIcon>
           </NButton>
 
           <NButton :disabled="!isSupported('redo')" @click="execCommand('redo')">
             <NIcon>
-              <DataIcon value="arrow-forward-up" />
+              <IconArrowForwardUp />
             </NIcon>
           </NButton>
         </NButtonGroup>
@@ -197,7 +197,32 @@ import {
   NInputGroup,
   NInput,
 } from "naive-ui";
-import { DataIcon } from "#components";
+import {
+  IconBold,
+  IconItalic,
+  IconUnderline,
+  IconStrikethrough,
+  IconHeading,
+  IconColorPicker,
+  IconHighlight,
+  IconListNumbers,
+  IconList,
+  IconH1,
+  IconH2,
+  IconH3,
+  IconH4,
+  IconH5,
+  IconH6,
+  IconTextResize,
+  IconUpload,
+  IconLink,
+  IconArrowRight,
+  IconAlignLeft,
+  IconAlignCenter,
+  IconAlignRight,
+  IconArrowBackUp,
+  IconArrowForwardUp
+} from "@tabler/icons-vue";
 
 const modelValue = defineModel<string>();
 const id = randomID()
@@ -227,32 +252,32 @@ const headingOptions = [
   {
     label: () => h("h1", { style: { margin: 0 } }, "Heading 1"),
     value: "h1",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h1" })),
+    icon: () => h(NIcon, () => h(IconH1)),
   },
   {
     label: () => h("h2", { style: { margin: 0 } }, "Heading 2"),
     value: "h2",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h2" })),
+    icon: () => h(NIcon, () => h(IconH2)),
   },
   {
     label: () => h("h3", { style: { margin: 0 } }, "Heading 3"),
     value: "h3",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h3" })),
+    icon: () => h(NIcon, () => h(IconH3)),
   },
   {
     label: () => h("h4", { style: { margin: 0 } }, "Heading 4"),
     value: "h4",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h4" })),
+    icon: () => h(NIcon, () => h(IconH4)),
   },
   {
     label: () => h("h5", { style: { margin: 0 } }, "Heading 5"),
     value: "h5",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h5" })),
+    icon: () => h(NIcon, () => h(IconH5)),
   },
   {
     label: () => h("h6", { style: { margin: 0 } }, "Heading 6"),
     value: "h6",
-    icon: () => h(NIcon, () => h(DataIcon, { value: "h6" })),
+    icon: () => h(NIcon, () => h(IconH6)),
   },
 ];
 

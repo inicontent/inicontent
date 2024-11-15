@@ -10,7 +10,7 @@
                         <NText type="primary">
                             {{ t(drawer.table) }}
                             <NIcon size="small">
-                                <DataIcon value="external-link" />
+                                <IconExternalLink />
                             </NIcon>
                         </NText>
                     </NuxtLink>
@@ -25,9 +25,8 @@
                     <NButton v-if="!isMobile" round secondary type="info" @click="toggleDrawerWidth()">
                         <template #icon>
                             <NIcon>
-                                <DataIcon value="chevron-right"
-                                    v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
-                                <DataIcon value="chevron-left" v-else />
+                                <IconChevronRight v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
+                                <IconChevronLeft v-else />
                             </NIcon>
                         </template>
                     </NButton>
@@ -36,7 +35,7 @@
                         @click="drawer.id ? updateDrawer() : createDrawer()">
                         <template #icon>
                             <NIcon>
-                                <DataIcon value="device-floppy" />
+                                <IconDeviceFloppy />
                             </NIcon>
                         </template>
                         {{ drawer.id ? t('update') : t('create') }}
@@ -52,6 +51,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+    IconChevronLeft,
+    IconChevronRight,
+    IconDeviceFloppy,
+    IconExternalLink,
+} from '@tabler/icons-vue';
 import {
     NButton,
     NDrawer,

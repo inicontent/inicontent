@@ -15,13 +15,13 @@
                     <template #prefix>
                         <NIcon>
                             <DataIcon v-if="modelValue && iconsList.includes(modelValue)" :value="modelValue" />
-                            <DataIcon value="question-mark" v-else />
+                            <IconQuestionMark v-else />
                         </NIcon>
                     </template>
 
                     <template #suffix>
                         <NIcon>
-                            <DataIcon value="icons" />
+                            <IconIcons />
                         </NIcon>
                     </template>
                 </NInput>
@@ -48,6 +48,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconIcons, IconQuestionMark } from "@tabler/icons-vue";
 import {
     NButton,
     NEmpty,

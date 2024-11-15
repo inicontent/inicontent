@@ -12,10 +12,10 @@
     <NCollapse v-else-if="field.isTable === false || field.children.filter(
         (f: any) => f.type === 'array' && isArrayOfObjects(f.children),
     ).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-        :default-expanded-names="field.expand ? field.id : undefined" accordion>
+        :expanded-names="field.expand || expandedNames ? field.id : undefined" accordion>
         <template #arrow>
             <NIcon>
-                <DataIcon value="chevron-right" v-if="modelValue && modelValue.length > 0" />
+                <IconChevronRight v-if="modelValue && modelValue.length > 0" />
             </NIcon>
         </template>
         <NCollapseItem style="margin: 0 0 20px;" display-directive="show" :title="t(field.key)" :name="field.id"
@@ -24,14 +24,14 @@
                 <NButton size="small" round @click="handleAddNewItem">
                     <template #icon>
                         <NIcon>
-                            <DataIcon value="plus" />
+                            <IconPlus />
                         </NIcon>
                     </template>
                 </NButton>
             </template>
             <NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames">
                 <NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
-                    :title="field.children[0].type === 'string' ? _item[field.children[0].key] ?? `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
+                    :title="field.children[0].type === 'string' ? _item[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
                     :name="`${field.id}.${index}`">
                     <template #header-extra>
                         <NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
@@ -39,7 +39,7 @@
                         )" @click="modelValue.splice(index, 1)">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="trash" />
+                                    <IconTrash />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -69,7 +69,7 @@
             <NButton size="small" round @click="handleAddNewItem">
                 <template #icon>
                     <NIcon>
-                        <DataIcon value="plus" />
+                        <IconPlus />
                     </NIcon>
                 </template>
             </NButton>
@@ -91,7 +91,8 @@ import {
     type DataTableColumns
 } from "naive-ui";
 import { isArrayOfObjects } from "inibase/utils";
-import { DataIcon, LazyField } from "#components";
+import { IconChevronRight, IconPlus, IconTrash } from "@tabler/icons-vue";
+import { LazyField } from "#components";
 
 useLanguage({
     ar: {
@@ -103,19 +104,28 @@ useLanguage({
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<any[]>({ default: () => reactive([]) });
+const modelValue = defineModel<any[]>();
 
 const expandedNames = ref()
 
 function handleAddNewItem() {
-    if (!modelValue.value) return
-    const oldLength = toRaw(modelValue.value).length;
-    modelValue.value?.push(field.onCreate
-        ? field.onCreate instanceof Function
-            ? field.onCreate(oldLength)
-            : field.onCreate
-        : {})
-    expandedNames.value = `${field.id}.${oldLength}`
+    let newElementIndex: number;
+    if (!modelValue.value) {
+        newElementIndex = 0
+        modelValue.value = [field.onCreate
+            ? field.onCreate instanceof Function
+                ? field.onCreate(newElementIndex)
+                : field.onCreate
+            : {}]
+    } else {
+        newElementIndex = toRaw(modelValue.value).length;
+        modelValue.value.push(field.onCreate
+            ? field.onCreate instanceof Function
+                ? field.onCreate(newElementIndex)
+                : field.onCreate
+            : {})
+    }
+    expandedNames.value = `${field.id}.${newElementIndex}`
 }
 
 function getTableWidth(): number {
@@ -197,7 +207,7 @@ function getTableColumns(): DataTableColumns {
                                         onClick: () => modelValue.value?.splice(index, 1),
                                     },
                                     {
-                                        icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
+                                        icon: () => h(NIcon, () => h(IconTrash)),
                                     },
                                 ),
                             default: () => t('delete'),

@@ -20,7 +20,7 @@
 			<template v-if="!field.isTable">
 				<NUploadDragger>
 					<NIcon size="48" depth="3">
-						<DataIcon value="upload" />
+						<IconUpload />
 					</NIcon>
 				</NUploadDragger>
 			</template>
@@ -59,6 +59,7 @@ import {
 	type UploadFileInfo,
 } from "naive-ui";
 import { isArrayOfObjects, isObject } from "inibase/utils";
+import { IconUpload } from "@tabler/icons-vue";
 
 const { field } = defineProps<{ field: Field }>()
 

@@ -8,7 +8,7 @@
                         <NTooltip v-if="!isDisabled(element.key)" :delay="500">
                             <template #trigger>
                                 <NIcon class="handle" :size="18">
-                                    <DataIcon value="menu-2" />
+                                    <IconMenu2 />
                                 </NIcon>
                             </template>
                             {{ t('dragToMove') }}
@@ -24,7 +24,7 @@
                                     <NButton :disabled="!element.key" circle size="small">
                                         <template #icon>
                                             <NIcon>
-                                                <DataIcon value="plus" />
+                                                <IconPlus />
                                             </NIcon>
                                         </template>
                                     </NButton>
@@ -36,7 +36,7 @@
                                     @click="schema[index].required = !schema[index].required">
                                     <template #icon>
                                         <NIcon>
-                                            <DataIcon value="asterisk" />
+                                            <IconAsterisk />
                                         </NIcon>
                                     </template>
                                     <template v-if="!isMobile" #default>
@@ -63,7 +63,7 @@
                                 @click="schema.splice(index, 1)">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="trash" />
+                                        <IconTrash />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -77,7 +77,7 @@
                     </NFormItem>
                     <template v-if="schema[index].table === 'assets'">
                         <NFormItem :label="t('allowedFiles')">
-                            <NSelect multiple :render-label="selectLabelWithIcon" :options="fileTypeSelectOptions"
+                            <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
                                 v-model:value="schema[index].accept" />
                         </NFormItem>
                     </template>
@@ -104,7 +104,7 @@
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'tags'">
                         <NFormItem :label="t('valuesType')">
                             <NSelect v-model:value="(schema[index].children as any)" filterable multiple
-                                :render-label="selectLabelWithIcon" :options="valuesTypeSelectOptions" />
+                                :render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
                         </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'table'">
@@ -133,6 +133,18 @@
 
 <script lang="ts" setup>
 import {
+    IconPlus,
+    IconMenu2,
+    IconAsterisk,
+    IconTrash,
+    IconFileDescription,
+    IconFileZip,
+    IconMusic,
+    IconPhoto,
+    IconVideo,
+    type Icon,
+} from "@tabler/icons-vue";
+import {
     NCollapse,
     NCollapseItem,
     NIcon,
@@ -150,7 +162,6 @@ import {
 } from "naive-ui";
 import draggable from "vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
-import { DataIcon } from "#components";
 
 useLanguage({
     ar: {
@@ -248,38 +259,38 @@ function changeFieldType(
     }
 }
 
-function renderIcon(icon: VNode) {
-    return () => h(NIcon, () => icon);
+function renderIcon(icon: Icon) {
+    return () => h(NIcon, () => h(icon));
 }
 
 const fileTypeSelectOptions = [
     {
         label: t("fileType.image"),
         value: "image",
-        icon: renderIcon(h(DataIcon, { value: "photo" })),
+        icon: renderIcon(IconPhoto),
     },
     {
         label: t("fileType.video"),
         value: "video",
-        icon: renderIcon(h(DataIcon, { value: "video" })),
+        icon: renderIcon(IconVideo),
     },
     {
         label: t("fileType.audio"),
         value: "audio",
-        icon: renderIcon(h(DataIcon, { value: "music" })),
+        icon: renderIcon(IconMusic),
     },
     {
         label: t("fileType.documents"),
         value: "document",
-        icon: renderIcon(h(DataIcon, { value: "file-description" })),
+        icon: renderIcon(IconFileDescription),
     },
     {
         label: t("fileType.archive"),
         value: "archive",
-        icon: renderIcon(h(DataIcon, { value: "file-zip" })),
+        icon: renderIcon(IconFileZip),
     },
 ];
-function selectLabelWithIcon(option: SelectOption & { icon: CallableFunction }) {
+function selectRenderLabelWithIcon(option: SelectOption & { icon: CallableFunction }) {
     return h(NFlex, { align: "center" }, () => [
         option.icon(),
         option.label as string,

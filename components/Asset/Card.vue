@@ -24,10 +24,10 @@
                                     <NButton round>
                                         <template #icon>
                                             <NIcon v-if="!UploadProgress">
-                                                <DataIcon value="plus" />
+                                                <IconPlus />
                                             </NIcon>
                                             <NIcon v-else-if="UploadProgress === 10000">
-                                                <DataIcon value="check" />
+                                                <IconCheck />
                                             </NIcon>
                                             <NSpin v-else-if="UploadProgress === 1000" :size="16" />
                                             <NProgress v-else type="circle" :show-indicator="false"
@@ -42,14 +42,14 @@
                                         :placeholder="t('folderName')">
                                         <template #suffix>
                                             <NIcon>
-                                                <DataIcon value="letter-case" />
+                                                <IconLetterCase />
                                             </NIcon>
                                         </template>
                                     </NInput>
                                     <NButton @click="createFolder">
                                         <template #icon>
                                             <NIcon>
-                                                <DataIcon value="folder-plus" />
+                                                <IconFolderPlus />
                                             </NIcon>
                                         </template>
                                     </NButton>
@@ -95,6 +95,7 @@ import {
     type UploadFileInfo,
     type UploadSettledFileInfo
 } from "naive-ui";
+import { IconCheck, IconFolderPlus, IconLetterCase, IconPlus } from "@tabler/icons-vue";
 import Inison from "inison";
 
 defineProps({

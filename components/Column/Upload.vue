@@ -6,7 +6,7 @@
                     :preview-src="singleValue.publicURL" :width="32" />
                 <NA v-else :href="singleValue.publicURL" target="_blank">
                     <NIcon>
-                        <DataIcon value="file-upload" />
+                        <IconFileUpload />
                     </NIcon>
                 </NA>
             </template>
@@ -15,6 +15,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconFileUpload } from "@tabler/icons-vue";
 import { NIcon, NImageGroup, NImage, NFlex, NA } from "naive-ui";
 
 defineProps<{ value: Asset | Asset[] }>()

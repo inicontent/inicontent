@@ -11,6 +11,7 @@
 	"dependencies": {
 		"@fontsource-variable/cairo": "^5.1.0",
 		"@nuxtjs/device": "3.2.2",
+		"@tabler/icons-vue": "^3.22.0",
 		"inibase": "1.0.0-rc.99",
 		"inidot": "1.0.0-rc.2",
 		"inison": "1.0.0-rc.4",

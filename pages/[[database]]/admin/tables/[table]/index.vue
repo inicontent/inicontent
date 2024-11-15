@@ -12,7 +12,7 @@
                                 <NButton round>
                                     <template #icon>
                                         <NIcon>
-                                            <DataIcon value="search" />
+                                            <IconSearch />
                                         </NIcon>
                                     </template>
                                 </NButton>
@@ -27,7 +27,7 @@
                                     :disabled="isSearchDisabled" @click="resetSearch">
                                     <template #icon>
                                         <NIcon>
-                                            <DataIcon value="x" />
+                                            <IconX />
                                         </NIcon>
                                     </template>
                                     {{ t("reset") }}
@@ -36,7 +36,7 @@
                                     :disabled="isSearchDisabled" @click="executeSearch">
                                     <template #icon>
                                         <NIcon>
-                                            <DataIcon value="search" />
+                                            <IconSearch />
                                         </NIcon>
                                     </template>
                                     {{ t("search") }}
@@ -52,7 +52,7 @@
                             <NButton round>
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="tools" />
+                                        <IconTools />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -80,7 +80,7 @@
                             }">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="plus" />
+                                    <IconPlus />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -97,6 +97,17 @@
 </template>
 
 <script setup lang="ts">
+import {
+    IconEye,
+    IconPencil,
+    IconPlus,
+    IconSearch,
+    IconTableExport,
+    IconTableImport,
+    IconTools,
+    IconTrash,
+    IconX,
+} from "@tabler/icons-vue";
 import Inison from "inison";
 import {
     NButton,
@@ -110,7 +121,7 @@ import {
     NPopover,
     NTooltip,
 } from "naive-ui";
-import { DataIcon, NuxtLink, Column } from "#components";
+import { NuxtLink, Column } from "#components";
 
 onBeforeRouteUpdate(() => {
     clearNuxtState("Drawer");
@@ -288,13 +299,13 @@ const DELETE = async (id: string) => {
 
 const toolsDropdownOptions = [
     {
-        icon: () => h(NIcon, () => h(DataIcon, { value: "table-import" })),
+        icon: () => h(NIcon, () => h(IconTableImport)),
         label: t("import"),
         disabled: true,
         key: "import",
     },
     {
-        icon: () => h(NIcon, () => h(DataIcon, { value: "table-export" })),
+        icon: () => h(NIcon, () => h(IconTableExport)),
         label: t("export"),
         key: "export",
         disabled: true,
@@ -344,7 +355,7 @@ const columns: any = computed(() => [
                                 label: t("delete"),
                                 key: "delete",
                                 disabled: checkedRowKeys.value.length === 0,
-                                icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
+                                icon: () => h(NIcon, () => h(IconTrash)),
                                 onSelect: async () => {
                                     Loading.value.data = true;
                                     await $fetch<apiResponse>(
@@ -355,7 +366,7 @@ const columns: any = computed(() => [
                                             body: checkedRowKeys.value,
                                         } as any,
                                     );
-                                    window.$message.success(t("deletedSuccessfully"));
+                                    window.$message.success("Deleted Successfully");
                                     await refresh();
                                 },
                             },
@@ -411,7 +422,7 @@ const columns: any = computed(() => [
                                         {
                                             to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
                                         },
-                                        () => h(NIcon, () => h(DataIcon, { value: "eye" })),
+                                        () => h(NIcon, () => h(IconEye)),
                                     ),
                             },
                         )
@@ -441,7 +452,7 @@ const columns: any = computed(() => [
                                 circle: true,
                                 type: "info",
                             },
-                            { icon: () => h(NIcon, () => h(DataIcon, { value: "pencil" })) },
+                            { icon: () => h(NIcon, () => h(IconPencil)) },
                         )
                         : null,
                     table.value.allowedMethods?.includes("d")
@@ -461,7 +472,7 @@ const columns: any = computed(() => [
                                             type: "error",
                                         },
                                         {
-                                            icon: () => h(NIcon, () => h(DataIcon, { value: "trash" })),
+                                            icon: () => h(NIcon, () => h(IconTrash)),
                                         },
                                     ),
                                 default: () => t("theFollowingActionIsIrreversible"),

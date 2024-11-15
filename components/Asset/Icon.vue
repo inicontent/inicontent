@@ -1,26 +1,41 @@
 <template>
-    <DataIcon :value="iconName" />
+    <IconFileText v-if="!type" />
+    <IconFolder v-else-if="type === 'dir'" />
+    <IconVideo v-else-if="type.startsWith('video/')" />
+    <IconFileMusic v-else-if="type.startsWith('audio/')" />
+    <IconFileTypography v-else-if="type.startsWith('font/')" />
+    <IconFileTypePdf v-else-if="type === 'application/pdf'" />
+    <IconFileTypeZip v-else-if="type === 'application/zip'" />
+    <IconFileZip v-else-if="type === 'application/x-7z-compressed'" />
+    <IconFileTypeDoc v-else-if="type === 'application/msword'" />
+    <IconFileTypeDocx v-else-if="type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'" />
+    <IconFileSpreadsheet
+        v-else-if="['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(type)" />
+    <IconFileTypeHtml v-else-if="type === 'text/html'" />
+    <IconFileTypeCss v-else-if="type === 'text/css'" />
+    <IconFileTypeJs v-else-if="type === 'text/js'" />
+    <IconFileTypeTxt v-else-if="type === 'text/plain'" />
+    <IconFileText v-else />
 </template>
 
 <script lang="ts" setup>
-const { type } = defineProps<{ type?: string }>()
-function getIconName(type?: string) {
-    if (!type) return 'text'
-    if (type === 'dir') return 'folder';
-    if (type.startsWith('video/')) return 'video'
-    if (type.startsWith('audio/')) return 'file-music'
-    if (type.startsWith('font/')) return 'file-typography'
-    if (type === 'application/pdf') return 'file-type-pdf';
-    if (type === 'application/zip') return 'file-type-zip';
-    if (type === 'application/x-7z-compressed') return 'file-zip';
-    if (type === 'application/msword') return 'file-type-doc';
-    if (type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'file-type-docx';
-    if (['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(type)) return 'file-type-spreadsheet';
-    if (type === 'text/html') return 'file-type-html';
-    if (type === 'text/css') return 'file-type-css';
-    if (type === 'text/js') return 'file-type-js';
-    if (type === 'text/plain') return 'file-type-txt';
-    return 'file-text'
-}
-const iconName = getIconName(type)
+import {
+    IconFileMusic,
+    IconFileSpreadsheet,
+    IconFileTypeDoc,
+    IconFileTypeDocx,
+    IconFileTypography,
+    IconFileTypeJs,
+    IconFileZip,
+    IconFileTypeTxt,
+    IconFileText,
+    IconFileTypeCss,
+    IconFileTypeHtml,
+    IconFileTypePdf,
+    IconFileTypeZip,
+    IconFolder,
+    IconVideo,
+} from "@tabler/icons-vue";
+
+defineProps<{ type?: string }>()
 </script>

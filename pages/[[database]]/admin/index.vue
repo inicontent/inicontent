@@ -4,7 +4,7 @@
             <NButton :circle="isMobile" :round="!isMobile" @click="DatabaseModal = {}, showDatabaseModal = true">
                 <template #icon>
                     <NIcon>
-                        <DataIcon value="plus" />
+                        <IconPlus />
                     </NIcon>
                 </template>
                 <template v-if="!isMobile">
@@ -20,7 +20,7 @@
                         <NButton round :loading="Loading.Database" @click="saveDatabase">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="device-floppy" />
+                                    <IconDeviceFloppy />
                                 </NIcon>
                             </template>
                             {{ t("create") }}
@@ -42,7 +42,7 @@
                             <template #icon>
                                 <NuxtLink :to="`/${database.slug}/admin/settings`">
                                     <NIcon>
-                                        <DataIcon value="settings" />
+                                        <IconSettings />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -51,7 +51,7 @@
                             <template #icon>
                                 <NuxtLink :to="`/${database.slug}/admin/tables`">
                                     <NIcon>
-                                        <DataIcon value="arrow-right" />
+                                        <IconArrowRight />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -66,6 +66,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+    IconArrowRight,
+    IconDeviceFloppy,
+    IconPlus,
+    IconSettings,
+} from "@tabler/icons-vue";
 import {
     type FormInst,
     NButton,

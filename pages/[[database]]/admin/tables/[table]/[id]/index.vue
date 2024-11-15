@@ -11,7 +11,7 @@
                         <NButton disabled round secondary>
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="settings" />
+                                    <IconSettings />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -26,7 +26,7 @@
                                 <NuxtLink
                                     :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
                                     <NIcon>
-                                        <DataIcon value="pencil" />
+                                        <IconPencil />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -40,7 +40,7 @@
                         <NButton type="primary" @click="PRINT" round secondary>
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="printer" />
+                                    <IconPrinter />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -54,7 +54,7 @@
                 <NButton disabled round secondary>
                     <template #icon>
                         <NIcon>
-                            <DataIcon value="settings" />
+                            <IconSettings />
                         </NIcon>
                     </template>
                     {{ t('settings') }}
@@ -65,7 +65,7 @@
                         <NuxtLink
                             :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
                             <NIcon>
-                                <DataIcon value="pencil" />
+                                <IconPencil />
                             </NIcon>
                         </NuxtLink>
                     </template>
@@ -76,7 +76,7 @@
                 <NButton type="primary" @click="PRINT" round secondary>
                     <template #icon>
                         <NIcon>
-                            <DataIcon value="printer" />
+                            <IconPrinter />
                         </NIcon>
                     </template>
                     {{ t('print') }}
@@ -96,6 +96,7 @@ import {
     NTooltip,
     NButtonGroup,
 } from "naive-ui";
+import { IconPencil, IconPrinter, IconSettings } from "@tabler/icons-vue";
 
 onBeforeRouteUpdate((route, currentRoute) => {
     if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)

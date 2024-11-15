@@ -13,7 +13,7 @@
                                     <NuxtLink
                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                         <NIcon>
-                                            <DataIcon value="eye" />
+                                            <IconEye />
                                         </NIcon>
                                     </NuxtLink>
                                 </template>
@@ -28,7 +28,7 @@
                                     <NButton secondary round type="error" :loading="Loading.DELETE">
                                         <template #icon>
                                             <NIcon>
-                                                <DataIcon value="trash" />
+                                                <IconTrash />
                                             </NIcon>
                                         </template>
                                     </NButton>
@@ -44,7 +44,7 @@
                             <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="device-floppy" />
+                                        <IconDeviceFloppy />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -61,7 +61,7 @@
                                 <NuxtLink
                                     :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                     <NIcon>
-                                        <DataIcon value="eye" />
+                                        <IconEye />
                                     </NIcon>
                                 </NuxtLink>
                             </template>
@@ -72,7 +72,7 @@
                                 <NButton secondary round type="error" :loading="Loading.DELETE">
                                     <template #icon>
                                         <NIcon>
-                                            <DataIcon value="trash" />
+                                            <IconTrash />
                                         </NIcon>
                                     </template>
                                     {{ t('delete') }}
@@ -84,7 +84,7 @@
                         <NButton secondary round type="primary" @click="UPDATE" :loading="Loading.UPDATE">
                             <template #icon>
                                 <NIcon>
-                                    <DataIcon value="device-floppy" />
+                                    <IconDeviceFloppy />
                                 </NIcon>
                             </template>
                             {{ t('update') }}
@@ -113,6 +113,7 @@ import {
     NFlex,
     type FormInst
 } from "naive-ui";
+import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 
 onBeforeRouteUpdate((route, currentRoute) => {
     if (route.fullPath !== currentRoute.fullPath.slice(0, -5))

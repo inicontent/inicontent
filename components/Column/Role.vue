@@ -3,7 +3,7 @@
         <template #icon>
             <span v-if="role" style="padding: 0 5px;">{{ t(role).charAt(0).toUpperCase() }}</span>
             <NIcon v-else>
-                <DataIcon value="question-mark" />
+                <IconQuestionMark />
             </NIcon>
         </template>
         {{ role ? t(role) : "--" }}
@@ -11,6 +11,7 @@
 </template>
 
 <script lang="ts" setup>
+import { IconQuestionMark } from "@tabler/icons-vue"
 import { NIcon, NTag } from 'naive-ui';
 
 const { value } = defineProps<{ value: string }>()
