@@ -48,7 +48,7 @@
                                 :placeholder="t('tableSlug')">
                                 <template #suffix>
                                     <NIcon>
-                                        <DataIcon value="leter-case" />
+                                        <DataIcon value="letter-case" />
                                     </NIcon>
                                 </template>
                             </NInput>
