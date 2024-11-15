@@ -128,8 +128,9 @@
                                                         firstValue,
                                                         false,
                                                         true,
-                                                    )" :multiple="['[]', '![]'].includes(secondValue as string)"
-                                                    max-tag-count="responsive" :value="String(flow[index][2])"
+                                                    )" :multiple="['[]', '![]'].includes(secondValue)"
+                                                    max-tag-count="responsive"
+                                                    :value="['[]', '![]'].includes(secondValue) ? flow[index][2] : flow[index][2]"
                                                     @update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
                                             </template>
                                         </NInputGroup>
