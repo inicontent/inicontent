@@ -26,6 +26,18 @@
 
 <script setup lang="ts">
 import {
+    IconAppWindow,
+    IconEye,
+    IconFingerprint,
+    IconFolders,
+    IconLanguage,
+    IconPlus,
+    IconSettings,
+    IconTournament,
+    IconUsers,
+    IconWebhook,
+} from "@tabler/icons-vue";
+import {
     NIcon,
     NLayout,
     NLayoutContent,
@@ -76,78 +88,59 @@ const defaultValue = computed(() => {
     return decodeURI(lastPathInRoute?.toString() ?? "");
 });
 
-const getTableIcon = (slug: string) => {
-    switch (slug) {
-        case "assets":
-            return h(DataIcon, { value: "folders" });
-        case "translations":
-            return h(DataIcon, { value: "language" });
-        case "users":
-            return h(DataIcon, { value: "users" });
-        case "sessions":
-            return h(DataIcon, { value: "fingerprint" });
-        case "pages":
-            return h(DataIcon, { value: "app-window" });
-        case "components":
-            return h(DataIcon, { value: "tournament" });
-        default:
-            return t(slug).charAt(0).toUpperCase();
-    }
-};
-
-const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
+const renderSingleItem = (table: Table): MenuOption => {
     const itemChildren = [
         {
             label: () =>
                 h(
                     NuxtLink,
                     {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}`,
+                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
                     },
                     { default: () => t("showAll") },
                 ),
-            key: slug,
-            show: slug !== "assets",
-            icon: () => h(NIcon, () => h(DataIcon, { value: "eye" })),
+            key: table.slug,
+            show: table.slug !== "assets",
+            icon: () => h(NIcon, () => h(IconEye)),
         },
         {
             label: () =>
                 h(
                     NuxtLink,
                     {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}/new`,
+                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/new`,
                     },
                     { default: () => t("newItem") },
                 ),
-            key: `${slug}-new`,
-            show: slug !== "assets" && allowedMethods?.includes("c"),
-            icon: () => h(NIcon, () => h(DataIcon, { value: "plus" })),
+            key: `${table.slug}-new`,
+            show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
+            icon: () => h(NIcon, () => h(IconPlus)),
         },
         {
             label: () =>
                 h(
                     NuxtLink,
                     {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}/settings`,
+                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/settings`,
                     },
                     { default: () => t("settings") },
                 ),
-            key: `${slug}-settings`,
-            icon: () => h(NIcon, () => h(DataIcon, { value: "settings" })),
-            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations", "assets"].includes(slug)
+            key: `${table.slug}-settings`,
+            icon: () => h(NIcon, () => h(IconSettings)),
+            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations", "assets"].includes(table.slug)
         },
         {
             label: () =>
                 h(
                     NuxtLink,
                     {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}/flows`,
+                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/flows`,
                     },
                     { default: () => t("flows") },
                 ),
-            key: `${slug}-flows`,
-            icon: () => h(NIcon, () => h(DataIcon, { value: "webhook" })),
-            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations"].includes(slug)
+            key: `${table.slug}-flows`,
+            icon: () => h(NIcon, () => h(IconWebhook)),
+            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations"].includes(table.slug)
         },
     ];
     return {
@@ -155,12 +148,13 @@ const renderSingleItem = ({ slug, allowedMethods }: Table): MenuOption => {
             h(
                 NuxtLink,
                 {
-                    to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}`,
+                    to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
                 },
-                { default: () => t(slug) },
+                { default: () => t(table.slug) },
             ),
-        key: itemChildren.length ? `${slug}Group` : slug,
-        icon: () => h(NIcon, () => getTableIcon(slug)),
+        key: itemChildren.length ? `${table.slug}Group` : table.slug,
+        icon: () =>
+            h(NIcon, () => getTableIcon(table)),
         children: itemChildren.length ? itemChildren : undefined,
     };
 };

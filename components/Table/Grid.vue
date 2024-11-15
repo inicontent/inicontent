@@ -7,7 +7,7 @@
                         <NFlex align="center">
                             <NIconWrapper :border-radius="50">
                                 <NIcon style="font-style: normal">
-                                    <component :is="getTableIcon(table.slug)" />
+                                    <component :is="getTableIcon(table)" />
                                 </NIcon>
                             </NIconWrapper>
                             <NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
@@ -18,9 +18,9 @@
                             <NButton circle @mouseover="Hover[table.slug] = true"
                                 @mouseleave="Hover[table.slug] = false">
                                 <NIcon>
-                                    <DataIcon value="arrow-right"
+                                    <IconArrowRight
                                         v-if="Hover[table.slug] || (table.slug === 'assets' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
-                                    <DataIcon value="dots" v-else />
+                                    <IconDots v-else />
                                 </NIcon>
                             </NButton>
                         </NDropdown>
@@ -38,7 +38,7 @@
                                 @click="showPopover = !showPopover">
                                 <NFlex justify="center" align="center">
                                     <NIcon size="36">
-                                        <DataIcon value="plus" />
+                                        <IconPlus />
                                     </NIcon>
                                 </NFlex>
                             </NCard>
@@ -48,14 +48,14 @@
                                 :placeholder="t('tableSlug')">
                                 <template #suffix>
                                     <NIcon>
-                                        <DataIcon value="letter-case" />
+                                        <IconLetterCase />
                                     </NIcon>
                                 </template>
                             </NInput>
                             <NButton @click="createTable" :loading="Loading.Table">
                                 <template #icon>
                                     <NIcon>
-                                        <DataIcon value="chevron-right" />
+                                        <IconChevronRight />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -69,6 +69,21 @@
 </template>
 
 <script lang="ts" setup>
+import {
+    IconAppWindow,
+    IconArrowRight,
+    IconChevronRight,
+    IconDots,
+    IconFingerprint,
+    IconFolders,
+    IconLanguage,
+    IconLetterCase,
+    IconPlus,
+    IconSettings,
+    IconTournament,
+    IconUsers,
+    IconWebhook,
+} from "@tabler/icons-vue";
 import {
     NButton,
     NCard,
@@ -84,7 +99,7 @@ import {
     NFlex,
     type DropdownOption
 } from "naive-ui";
-import { DataIcon, NuxtLink } from "#components";
+import { NuxtLink } from "#components";
 
 const modelValue = defineModel<Database>({ required: true })
 
@@ -145,42 +160,23 @@ const filteredTables = computed(() =>
         )
 );
 
-const getTableIcon = (slug: string) => {
-    switch (slug) {
-        case "assets":
-            return h(DataIcon, { value: "folders" });
-        case "translations":
-            return h(DataIcon, { value: "language" });
-        case "users":
-            return h(DataIcon, { value: "users" });
-        case "sessions":
-            return h(DataIcon, { value: "fingerprint" });
-        case "pages":
-            return h(DataIcon, { value: "app-window" });
-        case "components":
-            return h(DataIcon, { value: "tournament" });
-        default:
-            return () => t(slug).charAt(0).toUpperCase();
-    }
-};
-
 const getDropdownOptions = (table: Table) => [
     {
         key: `${getTableUrl(table.slug)}/new`,
         label: t("newItem"),
-        icon: () => h(NIcon, () => h(DataIcon, { value: "plus" })),
+        icon: () => h(NIcon, () => h(IconPlus)),
         show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
     },
     {
         key: `${getTableUrl(table.slug)}/settings`,
         label: t("tableSettings"),
-        icon: () => h(NIcon, () => h(DataIcon, { value: "settings" })),
+        icon: () => h(NIcon, () => h(IconSettings)),
         show: !["sessions", "translations", "assets"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
     },
     {
         key: `${getTableUrl(table.slug)}/flows`,
         label: t("tableFlows"),
-        icon: () => h(NIcon, () => h(DataIcon, { value: "webhook" })),
+        icon: () => h(NIcon, () => h(IconWebhook)),
         show: !["sessions", "translations"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
     },
 ];
