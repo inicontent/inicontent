@@ -1,11 +1,16 @@
 <template>
     <NPopover trigger="manual" v-model:show="showPopover">
         <template #trigger>
-            <NButton circle strong secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
-                <NIcon>
-                    <IconLink />
-                </NIcon>
-            </NButton>
+            <NTooltip :delay="500" placement="bottom">
+                <template #trigger>
+                    <NButton circle strong secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
+                        <NIcon>
+                            <IconLink />
+                        </NIcon>
+                    </NButton>
+                </template>
+                {{ t('import') }}
+            </NTooltip>
         </template>
         <NInputGroup>
             <NInput :input-props="{ type: 'url' }" v-model:value="assetURLs" :placeholder="t('assetLink')" clearable
@@ -26,7 +31,7 @@
                         </template>
                     </NButton>
                 </template>
-                {{ t('importAsset') }}
+                {{ t('import') }}
             </NTooltip>
         </NInputGroup>
     </NPopover>
@@ -83,6 +88,7 @@ async function importAsset() {
     if (data.result) {
         assetURLs.value = undefined
         callback(data.result)
+        showPopover.value = false
     } else window.$message.error(data.message);
     Loading.value.import = false
 };
