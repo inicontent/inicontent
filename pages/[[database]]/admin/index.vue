@@ -143,6 +143,7 @@ const databaseSchema: Schema = [
     {
         key: "primaryLanguage",
         type: "string",
+        subType: "select",
         options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
         required: true,
     },
@@ -150,12 +151,7 @@ const databaseSchema: Schema = [
         key: "primaryColor",
         type: "string",
         subType: "color",
-    },
-    {
-        key: "primaryDarkColor",
-        type: "string",
-        subType: "color",
-    },
+    }
 ]
 async function saveDatabase() {
     DatabaseRef.value?.validate(async (errors: any) => {
