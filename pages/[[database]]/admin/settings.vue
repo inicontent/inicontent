@@ -108,7 +108,7 @@ const { isMobile } = useDevice()
 const router = useRouter()
 const database = useState<Database>("database")
 const databaseRef = ref<FormInst | null>(null)
-const databaseCopy = ref(toRaw(database.value))
+const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)))
 
 const databaseSchema: Schema = [
 
