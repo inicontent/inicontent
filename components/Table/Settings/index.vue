@@ -182,18 +182,18 @@ async function updateTable() {
         if (!errors) {
             const bodyContent = JSON.parse(
                 JSON.stringify(
-                    (({ localLabel, onRequest, onResponse, ...rest }) => ({
+                    (({ onRequest, onResponse, ...rest }) => ({
                         ...rest
                     }))(tableCopy.value),
                 ),
             );
             Loading.value.updateTable = true;
-            if (bodyContent.localLabel) {
+
+            if (bodyContent.localLabel)
                 bodyContent.label = bodyContent.localLabel
                     .map(({ value }: { value: string }) => value)
                     .join(" ");
-                delete bodyContent.localLabel;
-            }
+
             const data = await $fetch<apiResponse<Table>>(
                 `${appConfig.apiBase}inicontent/databases/${database.value.slug
                 }/${route.params.table}`,

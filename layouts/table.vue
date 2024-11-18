@@ -26,15 +26,9 @@
 
 <script setup lang="ts">
 import {
-    IconAppWindow,
     IconEye,
-    IconFingerprint,
-    IconFolders,
-    IconLanguage,
     IconPlus,
     IconSettings,
-    IconTournament,
-    IconUsers,
     IconWebhook,
 } from "@tabler/icons-vue";
 import {
@@ -45,7 +39,7 @@ import {
     NMenu,
     type MenuOption,
 } from "naive-ui";
-import { DataIcon, NuxtLink } from "#components";
+import { NuxtLink } from "#components";
 
 const Language = useCookie<string>("Language");
 
@@ -158,7 +152,7 @@ const renderSingleItem = (table: Table): MenuOption => {
         children: itemChildren.length ? itemChildren : undefined,
     };
 };
-const menuOptions: MenuOption[] = database.value?.tables
+const menuOptions = computed<MenuOption[]>(() => database.value?.tables
     ? ([
         ...(database.value.tables
             .filter(
@@ -198,5 +192,5 @@ const menuOptions: MenuOption[] = database.value?.tables
             )
             .map(renderSingleItem) ?? []),
     ].filter((item) => item) as MenuOption[])
-    : [];
+    : []);
 </script>

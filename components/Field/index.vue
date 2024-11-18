@@ -54,7 +54,7 @@ if (
     modelValue.value
 )
     detectedFieldType = getField(
-        field.subType ?? field.type,
+        field,
         modelValue.value,
     ).key;
 
