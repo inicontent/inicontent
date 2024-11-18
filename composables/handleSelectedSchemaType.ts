@@ -10,12 +10,12 @@ export default function (type: string) {
 				type: "string",
 				subType: "role",
 			};
-		case "upload":
+		case "asset":
 			return {
 				type: "table",
 				table: "assets",
 			};
-		case "array-upload":
+		case "array-asset":
 			return {
 				type: "array",
 				children: "table",

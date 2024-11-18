@@ -7,7 +7,7 @@
 		<template #label>
 			<NFlex align="center">
 				{{ t(field.key) }}
-				<LazyFieldUploadActions v-model:showAssetsModal="showAssetsModal" :field
+				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 			</NFlex>
 		</template>
@@ -26,7 +26,7 @@
 			</template>
 			<template v-else>
 				<NFlex align="center" size="small">
-					<LazyFieldUploadActions v-model:showAssetsModal="showAssetsModal" :field
+					<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 						:callback="importAssetCallback" />
 				</Nflex>
 			</template>

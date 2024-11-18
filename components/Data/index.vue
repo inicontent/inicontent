@@ -47,7 +47,7 @@ const { field, value } = defineProps<{ field: Field, value: any }>()
 let detectedFieldType = field.subType ?? field.type;
 if (Array.isArray(detectedFieldType))
     detectedFieldType = getField(
-        field.subType ?? field.type,
+        field,
         value,
     ).key;
 detectedFieldType = detectedFieldType as FieldType | CMS_FieldType

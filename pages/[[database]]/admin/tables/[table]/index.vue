@@ -148,7 +148,9 @@ const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const { isMobile } = useDevice();
 
-const whereQuery = ref<string | undefined>(route.query.search as string | undefined);
+const whereQuery = ref<string | undefined>(
+    route.query.search as string | undefined,
+);
 const searchArray = ref<{
     and?: [string | null, string, any][];
     or?: [string | null, string, any][];
@@ -169,7 +171,7 @@ function resetSearch() {
 }
 function executeSearch() {
     whereQuery.value = Inison.stringify(generateSearchInput(searchArray.value));
-    pagination.onUpdatePage(1)
+    pagination.onUpdatePage(1);
 }
 
 watch(whereQuery, (v) => {
@@ -248,7 +250,7 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
     {
         query: {
             options: queryOptions,
-            where: whereQuery
+            where: whereQuery,
         },
         onRequest() {
             Loading.value.data = true;
@@ -378,12 +380,7 @@ const columns: any = computed(() => [
     ...(table.value.schema ?? []).map((field) => ({
         title: () =>
             h(NFlex, { align: "center", justify: "start" }, () => [
-                getField(
-                    Array.isArray(field.subType ?? field.type) &&
-                        (field.subType ?? field.type).includes("table")
-                        ? "table"
-                        : (field.subType ?? field.type),
-                ).icon(),
+                getField(field).icon(),
                 t(field.key),
             ]),
         width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,

@@ -46,7 +46,8 @@ export default function fieldsList(): SelectMixedOption[] {
 				link: "رابط",
 				email: "بريد",
 				color: "لون",
-				upload: "ملحق",
+				asset: "ملحق",
+				assets: "ملحقات",
 				tags: "وسوم",
 				date: "تاريخ",
 				toggle: "سحب",
@@ -154,8 +155,8 @@ export default function fieldsList(): SelectMixedOption[] {
 			icon: renderIcon(IconToggleLeft),
 		},
 		{
-			label: t("fields.upload"),
-			key: "upload",
+			label: t("fields.asset"),
+			key: "asset",
 			icon: renderIcon(IconUpload),
 		},
 		{
@@ -179,8 +180,8 @@ export default function fieldsList(): SelectMixedOption[] {
 					icon: renderIcon(IconListCheck),
 				},
 				{
-					label: t("fields.upload"),
-					key: "array-upload",
+					label: t("fields.assets"),
+					key: "array-asset",
 					icon: renderIcon(IconUpload),
 				},
 				// https://www.naiveui.com/en-US/dark/components/slider
@@ -227,7 +228,12 @@ export function flatFieldsList() {
 		...((children as any) ?? []),
 	]);
 }
-export function getField(fieldType?: string | string[], value?: any) {
+export function getField(field: Field, value?: any) {
+	if (field.table === "assets")
+		return flatFieldsList().find(
+			({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
+		);
+	let fieldType = field.subType ?? (field.type as any);
 	if (Array.isArray(fieldType))
 		fieldType = detectFieldType(
 			value && typeof value === "object"
@@ -235,7 +241,7 @@ export function getField(fieldType?: string | string[], value?: any) {
 					? value.id
 					: Inison.stringify(value)
 				: value,
-			fieldType as any,
+			fieldType,
 		);
 	if (!fieldType) return defaultUnfoundField;
 	return (

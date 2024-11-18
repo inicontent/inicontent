@@ -26,6 +26,7 @@ declare global {
 	type Field = {
 		id?: string | number;
 		key: string;
+		unique?: boolean;
 		children?: FieldType | FieldType[] | Schema;
 		required?: boolean;
 		table?: string;

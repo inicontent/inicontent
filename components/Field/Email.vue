@@ -10,8 +10,7 @@
                 : { ...field.inputProps, type: 'email', autocomplete: 'disabled' }
             : { type: 'email', autocomplete: 'disabled' }">
             <template #suffix>
-                <component :is="getField(
-                    field.subType ?? field.type,
+                <component :is="getField(field,
                     modelValue,
                 ).icon" />
             </template>

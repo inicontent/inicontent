@@ -10,8 +10,7 @@
                 : { ...field.inputProps, type: 'url' }
             : { type: 'url' }">
             <template #suffix>
-                <component :is="getField(
-                    field.subType ?? field.type,
+                <component :is="getField(field,
                     modelValue,
                 ).icon" />
             </template>

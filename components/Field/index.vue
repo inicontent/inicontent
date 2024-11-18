@@ -10,7 +10,7 @@
     <LazyFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field="field" />
     <LazyFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field="field" />
     <LazyFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field="field" />
-    <LazyFieldUpload v-else-if="field.table === 'assets'" v-model="modelValue" :field="field" />
+    <LazyFieldAsset v-else-if="field.table === 'assets'" v-model="modelValue" :field="field" />
     <LazyFieldTable v-else-if="detectedFieldType === 'table'" v-model="modelValue" :field="field" />
     <LazyFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :field="field" />
     <LazyFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :field="field" />

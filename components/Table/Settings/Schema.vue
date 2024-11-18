@@ -50,11 +50,11 @@
                                 <NButton round strong secondary size="small" type="primary"
                                     :disabled="isDisabled(element.key)">
                                     <template #icon>
-                                        <component :is="getField(element.subType ?? element.type).icon" />
+                                        <component :is="getField(element).icon" />
                                     </template>
                                     <template v-if="!isMobile" #default>
                                         {{ getField(
-                                            element.subType ?? element.type,
+                                            element,
                                         ).label }}
                                     </template>
                                 </NButton>
@@ -95,6 +95,10 @@
                             <NInputNumber :value="schema[index].min"
                                 @update:value="(value) => { if (value) schema[index].min = value; else delete schema[index].min }" />
                         </NFormItem>
+                        <NFormItem v-if="schema[index].type === 'array'" :label="t('maximumItems')">
+                            <NInputNumber :value="schema[index].max"
+                                @update:value="(value) => { if (value) schema[index].max = value; else delete schema[index].max }" />
+                        </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'object'">
                         <NFormItem :label="t('expandByDefault')" label-placement="left">
@@ -122,6 +126,10 @@
                             </NFormItem>
                         </NFormItem>
                     </template>
+                    <NFormItem :label="t('unique')" label-placement="left"
+                        v-if="!['table', 'array', 'object'].includes((schema[index].subType ?? schema[index].type) as string)">
+                        <NSwitch v-model:value="schema[index].unique" />
+                    </NFormItem>
                     <LazyTableSettingsSchema
                         v-if="['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
                         v-model="element.children" v-model:expanded-names="expandedChildNames" />
@@ -188,7 +196,7 @@ useLanguage({
         email: "البريد الإلكتروني",
         password: "كلمة المرور",
         role: "الصلاحية",
-        createdBy: "أُنشأ من قبل"
+        createdBy: "أُنشأ من قبل",
     },
     en: {},
 });
@@ -198,7 +206,13 @@ function isDisabled(key?: string) {
         const defaultFields: string[] = ["id", "createdAt", "updatedAt"];
         switch (table.value.slug) {
             case "users":
-                defaultFields.push("username", "email", "password", "role", "createdBy");
+                defaultFields.push(
+                    "username",
+                    "email",
+                    "password",
+                    "role",
+                    "createdBy",
+                );
                 break;
             case "pages":
                 defaultFields.push("slug", "content", "seo");
@@ -209,7 +223,7 @@ function isDisabled(key?: string) {
             default:
                 break;
         }
-        return defaultFields.includes(key)
+        return defaultFields.includes(key);
     }
     return false;
 }
@@ -290,7 +304,9 @@ const fileTypeSelectOptions = [
         icon: renderIcon(IconFileZip),
     },
 ];
-function selectRenderLabelWithIcon(option: SelectOption & { icon: CallableFunction }) {
+function selectRenderLabelWithIcon(
+    option: SelectOption & { icon: CallableFunction },
+) {
     return h(NFlex, { align: "center" }, () => [
         option.icon(),
         option.label as string,
@@ -307,20 +323,18 @@ const valuesTypeSelectOptions = flatFieldsList()
         icon: field.icon,
     }));
 
-const tableSelectOptions = computed(() => database.value.tables
-    ?.map(({ slug }) => ({
+const tableSelectOptions = computed(() =>
+    database.value.tables?.map(({ slug }) => ({
         label: t(slug),
         value: slug,
-    })));
+    })),
+);
 
 function searchInSelectOptions(field: Field) {
-    return field.key
-        ? (database.value.tables
-            ?.find(({ slug }) => slug === field.table)
-            ?.schema?.map((_item, _index: number, schema) =>
-                generateSearchInOptions(schema),
-            )
-            .flat(Number.POSITIVE_INFINITY) ?? [])
+    return field.table
+        ? generateSearchInOptions(
+            database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
+        )
         : [];
 }
 </script>
