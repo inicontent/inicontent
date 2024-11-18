@@ -52,23 +52,29 @@
           </NPopselect>
 
           <NPopover v-if="currentSelection" v-model:show="showForeColorPicker">
-            <NButton :style="{ color: foreColor }"
-              @click="(execCommand('foreColor', foreColor), showForeColorPicker = false)" :disabled="!currentSelection">
-              <NIcon>
-                <IconColorPicker />
-              </NIcon>
-            </NButton>
+            <template #trigger>
+              <NButton :style="{ color: foreColor }"
+                @click="(execCommand('foreColor', foreColor), showForeColorPicker = false)"
+                :disabled="!currentSelection">
+                <NIcon>
+                  <IconColorPicker />
+                </NIcon>
+              </NButton>
+            </template>
             <LazyFieldHtmlColorPicker :modelValue="foreColor"
               @update:modelValue="(value) => execCommand('foreColor', value)" />
           </NPopover>
 
           <NPopover v-if="currentSelection" v-model:show="showBackColorPicker">
-            <NButton :style="{ backgroundColor: backColor }"
-              @click="(execCommand('backColor', foreColor), showBackColorPicker = false)" :disabled="!currentSelection">
-              <NIcon>
-                <IconHighlight />
-              </NIcon>
-            </NButton>
+            <template #trigger>
+              <NButton :style="{ backgroundColor: backColor }"
+                @click="(execCommand('backColor', foreColor), showBackColorPicker = false)"
+                :disabled="!currentSelection">
+                <NIcon>
+                  <IconHighlight />
+                </NIcon>
+              </NButton>
+            </template>
             <LazyFieldHtmlColorPicker :modelValue="backColor"
               @update:modelValue="(value) => execCommand('backColor', value)" />
           </NPopover>
@@ -172,8 +178,8 @@
 
     <NScrollbar class="ExternalRicheditor">
       <!-- @vue-ignore -->
-      <div :id class="internalRichEditor" contenteditable spellcheck="false" ref="editorDiv" @input="updateContent"
-        @focusin="isFocused = true" @focusout="isFocused = false" :innerHTML="modelValue"></div>
+      <div :id class="internalRichEditor" contenteditable spellcheck="false" ref="editorDiv" @focusin="isFocused = true"
+        @focusout="isFocused = false; updateContent()" :innerHTML="modelValue"></div>
     </NScrollbar>
   </NFlex>
 </template>
@@ -370,12 +376,12 @@ const restoreSelection = () => {
   }
 };
 
-const updateContent = (event: InputEvent) => {
-  modelValue.value = (event.target as HTMLElement).innerHTML;
+function updateContent() {
+  modelValue.value = document.getElementById(id)?.innerHTML;
 };
 </script>
 
-<style scoped>
+<style>
 .ExternalRicheditor {
   max-height: 250px;
 }
