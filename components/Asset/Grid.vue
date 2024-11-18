@@ -3,10 +3,10 @@
         <NDrawer v-model:show="showDrawer" :placement="Language === 'ar' ? 'left' : 'right'" class="assetDrawer">
             <NDrawerContent :native-scrollbar="false" v-if="CurrentAsset">
                 <NFlex vertical>
-                    <NImage v-if="CurrentAsset?.type.startsWith('image/')" class="assets"
+                    <NImage v-if="CurrentAsset?.type.startsWith('image/')" class="asset"
                         :src="`${CurrentAsset.publicURL}?fit=200&q=1`" :preview-src="CurrentAsset.publicURL"
                         :img-props="{ class: 'image' }" />
-                    <NIcon v-else class="assets">
+                    <NIcon v-else class="asset">
                         <NA :href="CurrentAsset.publicURL" target="_blank">
                             <LazyAssetIcon :type="CurrentAsset.type" class="icon" />
                         </NA>
@@ -35,7 +35,7 @@
         <NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
             <template v-if="modelValue === undefined || Loading.AssetData" #default>
                 <NGridItem v-for="(_) in [...Array(22).keys()]">
-                    <NSkeleton class="assets"></NSkeleton>
+                    <NSkeleton class="asset"></NSkeleton>
                 </NGridItem>
             </template>
             <template v-else #default>
@@ -46,11 +46,11 @@
                             <NFlex class="assetActions">
                                 <slot :asset></slot>
                             </NFlex>
-                            <NImage v-if="asset.type.startsWith('image/')" class="assets"
+                            <NImage v-if="asset.type.startsWith('image/')" class="asset"
                                 :src="`${asset.publicURL}?fit=100&q=1`" preview-disabled :intersection-observer-options="{
                                     root: `#${targetId ?? 'container'}`
                                 }" lazy :preview-src="asset.publicURL" @click="handleOnClickAsset($event, asset)" />
-                            <NIcon v-else class="assets" @click="handleOnClickAsset($event, asset)">
+                            <NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
                                 <LazyAssetIcon :type="asset.type" class="icon" />
                             </NIcon>
                             <NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
