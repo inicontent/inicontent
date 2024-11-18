@@ -80,6 +80,12 @@
                             <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
                                 v-model:value="schema[index].accept" />
                         </NFormItem>
+                        <NFormItem :label="t('defaultParams')">
+                            <NInput v-model:value="schema[index].params" />
+                            <template #feedback>
+                                ie: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
+                            </template>
+                        </NFormItem>
                     </template>
                     <template v-else-if="(schema[index].subType ?? schema[index].type) === 'select'">
                         <NFormItem :label="t('options')">
