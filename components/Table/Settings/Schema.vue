@@ -53,9 +53,7 @@
                                         <component :is="getField(element).icon" />
                                     </template>
                                     <template v-if="!isMobile" #default>
-                                        {{ getField(
-                                            element,
-                                        ).label }}
+                                        {{ getField(element).label }}
                                     </template>
                                 </NButton>
                             </NDropdown>
@@ -75,15 +73,20 @@
                         </template>
                         <NInput v-model:value="schema[index].key" />
                     </NFormItem>
+                    <NFormItem
+                        v-if="!['array', 'object'].includes((schema[index].subType ?? schema[index].type) as string)"
+                        :label="t('fieldDescription')">
+                        <NInput v-model:value="schema[index].description" />
+                    </NFormItem>
                     <template v-if="schema[index].table === 'assets'">
                         <NFormItem :label="t('allowedFiles')">
                             <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
                                 v-model:value="schema[index].accept" />
                         </NFormItem>
-                        <NFormItem :label="t('defaultParams')">
+                        <NFormItem :label="t('uploadParams')">
                             <NInput v-model:value="schema[index].params" />
                             <template #feedback>
-                                ie: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
+                                {{ t('ie') }}: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
                             </template>
                         </NFormItem>
                     </template>
@@ -180,6 +183,7 @@ import { isArrayOfObjects } from "inibase/utils";
 useLanguage({
     ar: {
         fieldName: "إسم الحقل",
+        fieldDescription: "",
         allowedFiles: "الملفات المسموح بها",
         options: "الخيارات",
         valuesType: "نوع القيم",
@@ -203,6 +207,11 @@ useLanguage({
         password: "كلمة المرور",
         role: "الصلاحية",
         createdBy: "أُنشأ من قبل",
+        unique: "فريد",
+        uploadParams: "إعدادات الرفع",
+        minimumItems: "الحد الأدنى للعناصر",
+        maximumItems: "الحد الأقصى للعناصر",
+        ie: "على سبيل المثال"
     },
     en: {},
 });

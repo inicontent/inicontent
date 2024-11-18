@@ -55,11 +55,12 @@
                         </NCard>
                         <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
                             <template #header-extra>
-                                <NFlex>
+                                <NButtonGroup>
                                     <NTooltip :delay="500">
                                         <template #trigger>
-                                            <NButton round :type="showDraggable ? 'primary' : 'default'" @click="showDraggable =
-                                                !showDraggable">
+                                            <NButton secondary round :type="showDraggable ? 'primary' : 'default'"
+                                                @click="showDraggable =
+                                                    !showDraggable">
                                                 <template #icon>
                                                     <NIcon>
                                                         <IconArrowsSort />
@@ -71,7 +72,7 @@
                                     </NTooltip>
                                     <NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable
                                         @select="pushToSchema">
-                                        <NButton round>
+                                        <NButton secondary type="primary" round>
                                             <template #icon>
                                                 <NIcon>
                                                     <IconPlus />
@@ -79,7 +80,7 @@
                                             </template>
                                         </NButton>
                                     </NDropdown>
-                                </NFlex>
+                                </NButtonGroup>
                             </template>
                             <NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
                             <NForm :class="{ notSortable: !showDraggable }" size="small">
@@ -123,6 +124,7 @@ import {
     NFormItem,
     NSelect,
     NTag,
+    NButtonGroup,
 } from "naive-ui";
 
 onMounted(() => {

@@ -1,5 +1,5 @@
 <template>
-    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
+    <NFormItem :rule :path="field.id" v-bind="(field.labelProps
         ? typeof field.labelProps === 'function'
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
@@ -15,11 +15,30 @@
                 ).icon" />
             </template>
         </NInput>
+        <template #label>
+            <NFlex v-if="field.description" align="center" :size="0">
+                {{ t(field.key) }}
+                <NTooltip>
+                    <template #trigger>
+                        <NButton circle text size="tiny">
+                            <template #icon>
+                                <NIcon>
+                                    <IconQuestionMark />
+                                </NIcon>
+                            </template>
+                        </NButton>
+                    </template>
+                    {{ field.description }}
+                </NTooltip>
+            </NFlex>
+            <template v-else>{{ t(field.key) }}</template>
+        </template>
     </NFormItem>
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NInput, type FormItemRule } from "naive-ui";
+import { IconQuestionMark } from "@tabler/icons-vue";
+import { NButton, NFlex, NFormItem, NIcon, NInput, NTooltip, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>()
 

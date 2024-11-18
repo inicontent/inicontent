@@ -1,9 +1,21 @@
 <template>
+    <NTooltip :delay="500">
+        <template #trigger>
+            <NButton circle secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
+                <template #icon>
+                    <NIcon>
+                        <IconBooks />
+                    </NIcon>
+                </template>
+            </NButton>
+        </template>
+        {{ t('gallery') }}
+    </NTooltip>
     <NPopover trigger="manual" v-model:show="showPopover">
         <template #trigger>
             <NTooltip :delay="500" placement="bottom">
                 <template #trigger>
-                    <NButton circle strong secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
+                    <NButton circle secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
                         <NIcon>
                             <IconLink />
                         </NIcon>
@@ -35,19 +47,6 @@
             </NTooltip>
         </NInputGroup>
     </NPopover>
-
-    <NTooltip :delay="500">
-        <template #trigger>
-            <NButton circle strong secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
-                <template #icon>
-                    <NIcon>
-                        <IconBooks />
-                    </NIcon>
-                </template>
-            </NButton>
-        </template>
-        {{ t('gallery') }}
-    </NTooltip>
 </template>
 
 <script lang="ts" setup>
@@ -65,6 +64,12 @@ import {
     NTooltip,
 } from "naive-ui";
 
+useLanguage({
+    ar: {
+        import: "إستيراد",
+        gallery: "قائمة الملفات"
+    }
+})
 
 const { field, callback } = defineProps<{ field: Field, callback: CallableFunction }>()
 

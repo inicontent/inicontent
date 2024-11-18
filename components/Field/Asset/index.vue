@@ -5,8 +5,23 @@
 			: field.labelProps
 		: {})">
 		<template #label>
-			<NFlex align="center">
-				{{ t(field.key) }}
+			<NFlex align="center" size="small">
+				<NFlex v-if="field.description" align="center" :size="0">
+					{{ t(field.key) }}
+					<NTooltip>
+						<template #trigger>
+							<NButton circle text size="tiny">
+								<template #icon>
+									<NIcon>
+										<IconQuestionMark />
+									</NIcon>
+								</template>
+							</NButton>
+						</template>
+						{{ field.description }}
+					</NTooltip>
+				</NFlex>
+				<template v-else>{{ t(field.key) }}</template>
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 			</NFlex>
@@ -55,11 +70,13 @@ import {
 	NFlex,
 	NUpload,
 	NUploadDragger,
+	NTooltip,
+	NButton,
 	type FormItemRule,
 	type UploadFileInfo,
 } from "naive-ui";
 import { isArrayOfObjects, isObject } from "inibase/utils";
-import { IconUpload } from "@tabler/icons-vue";
+import { IconQuestionMark, IconUpload } from "@tabler/icons-vue";
 
 const { field } = defineProps<{ field: Field }>()
 

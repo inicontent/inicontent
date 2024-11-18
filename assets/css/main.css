@@ -64,7 +64,8 @@ body {
 .rtl .tabler-icon-arrow-right,
 .rtl .tabler-icon-chevron-left,
 .rtl .tabler-icon-chevron-right,
-.rtl .tabler-icon-send {
+.rtl .tabler-icon-send,
+.rtl .tabler-icon-question-mark {
 	transform: scaleX(-1) !important;
 }
 

@@ -61,6 +61,7 @@ declare global {
 			| "week";
 		expand?: boolean;
 		params?: string;
+		description?: string;
 	};
 	type Schema = Field[];
 	type FlowType = (
