@@ -193,19 +193,21 @@ function getFileList() {
 const fileList = ref<undefined | UploadFileInfo[]>(getFileList())
 function setModelValue(value?: UploadFileInfo[]) {
 	fileList.value = value
-	if (value) {
-		const finalFileList = value.filter(({ status }) => status === "finished").map(({ id, url, type, file }) => ({
-			id,
-			type,
-			publicURL: url,
-			size: file?.size ?? 0,
-			createdAt: file?.lastModified ?? 0,
-		})) as Asset[];
 
-		if (finalFileList.length)
-			modelValue.value = field.isArray ? finalFileList : finalFileList[0];
-		else
-			modelValue.value = undefined
+	if (value) {
+		if (value.length && value.length === value.filter(({ status }) => status === "finished").length) {
+			const finalFileList = value.filter(({ status }) => status === "finished").map(({ name, url, type, file }) => ({
+				id: name,
+				type,
+				publicURL: url,
+				size: file?.size ?? 0,
+				createdAt: file?.lastModified ?? 0,
+			})) as Asset[];
+			if (finalFileList.length)
+				modelValue.value = field.isArray ? finalFileList : finalFileList[0];
+			else
+				modelValue.value = undefined
+		}
 	} else
 		modelValue.value = undefined;
 }
@@ -221,6 +223,7 @@ function onFinish({
 	file.url = result.publicURL;
 	file.type = result.type;
 	file.name = result.id as string;
+	// file.id = result.id as string;
 	return file;
 }
 

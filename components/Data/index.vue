@@ -14,7 +14,7 @@
         <div v-else>
             <LazyColumnRole v-if="detectedFieldType === 'role'" :value />
             <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
-                <LazyColumnUpload v-if="detectedFieldType === 'table' && field.table === 'assets'" :value />
+                <LazyColumnAsset v-if="detectedFieldType === 'table' && field.table === 'assets'" :value />
                 <LazyColumnTable v-else-if="detectedFieldType === 'table'" :value :field="field" />
                 <LazyColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :value />
             </NScrollbar>

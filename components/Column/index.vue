@@ -7,7 +7,7 @@
         <ColumnRole v-if="detectedFieldType === 'role'" :value />
         <ColumnId v-else-if="detectedFieldType === 'id'" :value />
         <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
-            <ColumnUpload v-if="detectedFieldType === 'table' && field.table === 'assets'" :value />
+            <ColumnAsset v-if="field.table === 'assets'" :value />
             <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field="field" />
             <ColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :value />
         </NScrollbar>
