@@ -41,7 +41,7 @@ import {
 } from "naive-ui";
 import { NuxtLink } from "#components";
 
-const Language = useCookie<string>("Language");
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 defineTranslation({
     ar: {

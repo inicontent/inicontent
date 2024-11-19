@@ -191,7 +191,7 @@ defineTranslation({
 });
 
 // onBeforeUpdate(() => {
-//     clearNuxtState("LanguageMessages");
+//     clearNuxtState("translations");
 // })
 
 onMounted(() => {

@@ -97,7 +97,7 @@ const { isAssetRoute, table } = defineProps<{
     table: Table;
 }>();
 
-const Language = useCookie("Language");
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 defineTranslation({
     ar: {

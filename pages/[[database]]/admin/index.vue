@@ -94,7 +94,7 @@ definePageMeta({
 const route = useRoute();
 const database = useState<Database>("database");
 
-const Language = useCookie("Language");
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 onBeforeRouteLeave((route) => {
     if (route.params.database)
