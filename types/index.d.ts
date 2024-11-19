@@ -4,9 +4,13 @@ import type {
 	ComparisonOperator,
 } from "inibase";
 import type { useMessage } from "naive-ui";
+import type languages from "./languages";
 
 type onCreateCallback = (index: number) => onCreateType;
 type onCreateType = string | number | boolean | null | Record<any, any>;
+type singleLanguageTranslations = {
+	[key: string]: string | singleLanguageTranslations;
+};
 declare global {
 	interface Window {
 		$message: useMessage;
@@ -133,6 +137,10 @@ declare global {
 		primaryColorSuppl: string;
 		revert?: boolean;
 	};
+
+	type LanguagesType = (typeof languages)[number];
+
+	type TranslationsType = Record<LanguagesType, singleLanguageTranslations>;
 }
 declare module "nuxt/schema" {
 	interface PublicRuntimeConfig {
@@ -152,4 +160,6 @@ export type {
 	Asset,
 	apiResponse,
 	ThemeConfig,
+	LanguagesType,
+	TranslationsType,
 };

@@ -94,7 +94,7 @@ import {
     NButtonGroup,
 } from "naive-ui";
 
-useLanguage({
+defineTranslation({
     ar: {
         andGroup: "مجموعة و",
         orGroup: "مجموعة أو",

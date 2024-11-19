@@ -1,5 +1,5 @@
 export default () => {
-	useLanguage({
+	defineTranslation({
 		ar: {
 			ComparisonOperator: {
 				equalTo: "يساوي",

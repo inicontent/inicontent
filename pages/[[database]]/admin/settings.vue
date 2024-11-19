@@ -90,7 +90,7 @@ onMounted(() => {
     };
 });
 
-useLanguage({
+defineTranslation({
     ar: {
         save: "حِفظ",
         generalSettings: "إعدادات عامة",
@@ -98,8 +98,7 @@ useLanguage({
         emailSettings: "إعدادات البريد",
         deleteDatabase: "حذف قاعدة البيانات",
         soon: "قريباً"
-    },
-    en: {},
+    }
 });
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -161,7 +160,7 @@ const translationSchema: Schema = [
         key: "primaryLanguage",
         type: "string",
         subType: "select",
-        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+        options: translationLanguages.map((language) => ({ label: t(`languages.${language}`), value: language })),
         required: true,
     },
     {
@@ -169,7 +168,7 @@ const translationSchema: Schema = [
         type: "array",
         children: "string",
         subType: "select",
-        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+        options: translationLanguages.map((language) => ({ label: t(`languages.${language}`), value: language })),
     }
 ]
 async function updateDatabase() {

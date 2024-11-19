@@ -67,8 +67,8 @@ const rtlStyles: any = [
     unstableDataTableRtl,
     unstableDialogRtl
 ];
-const Language = useCookie<string>("Language", { sameSite: true });
-const Theme = useCookie<string>("Theme", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
 
 const osThemeRef = useOsTheme();
 if (!Theme.value) Theme.value = osThemeRef.value ?? "light";

@@ -15,7 +15,7 @@ function adjustColor(hex: string, factor: number) {
 
 export default function () {
 	const database = useState<Database>("database");
-	const Theme = useCookie<string>("Theme", { sameSite: true });
+	const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
 	const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 
 	const mainColor =

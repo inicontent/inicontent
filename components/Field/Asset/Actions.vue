@@ -64,7 +64,7 @@ import {
     NTooltip,
 } from "naive-ui";
 
-useLanguage({
+defineTranslation({
     ar: {
         import: "إستيراد",
         gallery: "قائمة الملفات"

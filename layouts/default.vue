@@ -141,8 +141,8 @@ import {
     useMessage,
 } from "naive-ui";
 
-const Language = useCookie<string>("Language", { sameSite: true });
-useLanguage({
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+defineTranslation({
     ar: {
         settings: "الإعدادات",
         toggleTheme: "تغيير الوضع",
@@ -187,8 +187,7 @@ useLanguage({
             GB: "ج.ب",
             TB: "ت.ب",
         },
-    },
-    en: {},
+    }
 });
 
 // onBeforeUpdate(() => {
@@ -202,7 +201,7 @@ onMounted(() => {
 const appConfig = useAppConfig();
 const route = useRoute();
 const user = useState<User | null>("users");
-const Theme = useCookie<string>("Theme", { sameSite: true })
+const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
 const database = useState<Database>("database")
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 

@@ -14,7 +14,7 @@ const { error } = defineProps({
 const code = ref<errorCodes>()
 const message = ref()
 
-useLanguage({
+defineTranslation({
     ar: {
         notFound: "غير موجودة",
         accessDenied: "ليست لديك الصلاحية",

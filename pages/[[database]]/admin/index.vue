@@ -101,13 +101,12 @@ onBeforeRouteLeave((route) => {
         clearNuxtState(['database', 'table', 'user'])
 })
 
-useLanguage({
+defineTranslation({
     ar: {
         newItem: "عنصر جديد",
         databases: "قواعد البيانات",
         createDatabase: "إنشاء قاعدة بيانات جديدة",
-    },
-    en: {},
+    }
 });
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -144,7 +143,7 @@ const databaseSchema: Schema = [
         key: "primaryLanguage",
         type: "string",
         subType: "select",
-        options: Languages.map((language) => ({ label: t(`languages.${language}`), value: language })),
+        options: translationLanguages.map((language) => ({ label: t(`languages.${language}`), value: language })),
         required: true,
     },
     {

@@ -135,7 +135,7 @@ onMounted(() => {
     };
 });
 
-useLanguage({
+defineTranslation({
     ar: {
         generalSettings: "إعدادات عامة",
         schemaSettings: "إعدادات الأعمدة",

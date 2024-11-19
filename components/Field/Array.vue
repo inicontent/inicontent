@@ -94,12 +94,11 @@ import { isArrayOfObjects } from "inibase/utils";
 import { IconChevronRight, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { LazyField } from "#components";
 
-useLanguage({
+defineTranslation({
     ar: {
         delete: "حذف",
         actions: "أوامر",
-    },
-    en: {},
+    }
 });
 
 const { field } = defineProps<{ field: Field }>();

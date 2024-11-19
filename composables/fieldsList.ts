@@ -34,7 +34,7 @@ function renderIcon(icon: Icon) {
 }
 
 export default function fieldsList(): SelectMixedOption[] {
-	useLanguage({
+	defineTranslation({
 		ar: {
 			fields: {
 				string: "نص",

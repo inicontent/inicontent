@@ -132,7 +132,7 @@ definePageMeta({
     layout: "table",
 });
 
-useLanguage({
+defineTranslation({
     ar: {
         search: "بحث",
         reset: "إفراغ",

@@ -103,14 +103,13 @@ import { NuxtLink } from "#components";
 
 const modelValue = defineModel<Database>({ required: true })
 
-useLanguage({
+defineTranslation({
     ar: {
         newTable: "جدول جديد",
         newItem: "عنصر جديد",
         tableFlows: "تدفقات الجدول",
         tableSlug: "إسم الجدول"
-    },
-    en: {},
+    }
 });
 
 const showPopover = ref(false)

@@ -1,7 +1,7 @@
 import { FormatObjectCriteriaValue } from "inibase/utils";
 import { isArrayOfObjects } from "inibase/utils";
 
-function generateSearchInOption(
+function _generateSearchInOption(
 	schema: Schema,
 	{ key, type, children }: Field,
 	path?: string,
@@ -17,7 +17,7 @@ function generateSearchInOption(
 						: !["table", "array", "object"].includes(type),
 				)
 				.map((field) =>
-					generateSearchInOption(schema, field, `${(path ?? "") + key}.`),
+					_generateSearchInOption(schema, field, `${(path ?? "") + key}.`),
 				),
 		};
 
@@ -33,7 +33,7 @@ export function generateSearchInOptions(
 ) {
 	if (!schema) return [];
 	const RETURN = schema
-		?.map((_item) => generateSearchInOption(schema, _item))
+		?.map((_item) => _generateSearchInOption(schema, _item))
 		.flat(Number.POSITIVE_INFINITY);
 	if (excludedKeys)
 		return RETURN.filter(({ value }) => !excludedKeys.includes(value));

@@ -180,7 +180,7 @@ import {
 import draggable from "vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
 
-useLanguage({
+defineTranslation({
     ar: {
         fieldName: "إسم الحقل",
         fieldDescription: "",
@@ -212,8 +212,7 @@ useLanguage({
         minimumItems: "الحد الأدنى للعناصر",
         maximumItems: "الحد الأقصى للعناصر",
         ie: "على سبيل المثال"
-    },
-    en: {},
+    }
 });
 
 function isDisabled(key?: string) {

@@ -32,12 +32,11 @@ import {
     type TabsInst,
 } from "naive-ui";
 
-useLanguage({
+defineTranslation({
     ar: {
         signin: "تسجيل الدخول",
         signup: "إنشاء حساب",
-    },
-    en: {},
+    }
 });
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));

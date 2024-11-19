@@ -43,7 +43,7 @@ import { NuxtLink } from "#components";
 
 const Language = useCookie<string>("Language");
 
-useLanguage({
+defineTranslation({
     ar: {
         clickToCopy: "نسخ",
         textCopied: "تم نسخ النص",
@@ -60,8 +60,7 @@ useLanguage({
         new: "جديد",
         id: "معرف",
         publish: "نشر",
-    },
-    en: {},
+    }
 });
 
 const route = useRoute();

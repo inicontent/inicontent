@@ -108,11 +108,10 @@ definePageMeta({
     layout: "table",
 });
 
-useLanguage({
+defineTranslation({
     ar: {
         print: "طباعة",
-    },
-    en: {},
+    }
 });
 
 const { isMobile } = useDevice()

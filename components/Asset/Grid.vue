@@ -99,14 +99,15 @@ const { isAssetRoute, table } = defineProps<{
 
 const Language = useCookie("Language");
 
-useLanguage({
+defineTranslation({
     ar: {
         name: "الإسم",
         size: "الحجم",
         type: "النوع",
         link: "الرابط",
-    },
-    en: {},
+        rename: "تغيير الإسم",
+        replace: "إستبدال"
+    }
 });
 
 const modelValue = defineModel<Asset[] | null>();
@@ -165,7 +166,7 @@ function dropdownOnSelect(key: string) {
             {
                 const d = dialog.create({
                     showIcon: false,
-                    title: `${t("deleteAsset")}: ${(CurrentAsset.value as Asset).id}`,
+                    title: `${t("delete")}: ${(CurrentAsset.value as Asset).id}`,
                     content: t("theFollowingActionIsIrreversible"),
                     positiveText: t("delete"),
                     async onPositiveClick() {

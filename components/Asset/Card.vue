@@ -98,6 +98,12 @@ import {
 import { IconCheck, IconFolderPlus, IconLetterCase, IconPlus } from "@tabler/icons-vue";
 import Inison from "inison";
 
+defineTranslation({
+    ar: {
+        folderName: "إسم المجلد",
+    }
+})
+
 defineProps({
     targetId: {
         type: String,
