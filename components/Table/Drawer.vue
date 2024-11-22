@@ -31,7 +31,7 @@
                         </template>
                     </NButton>
 
-                    <NButton round secondary type="primary" :loading="Loading.drawerContent"
+                    <NButton round secondary type="primary" :loading="Loading.drawer"
                         @click="drawer.id ? updateDrawer() : createDrawer()">
                         <template #icon>
                             <NIcon>
@@ -46,7 +46,7 @@
             <NForm ref="drawerFormRef" :model="drawer.data">
                 <FieldS v-model="drawer.data" :schema="filteredSchema" />
             </NForm>
-        </NDrawerContent>
+        </NdrawerContent>
     </NDrawer>
 </template>
 
@@ -110,7 +110,7 @@ const updateDrawer = async () => {
     drawerFormRef.value?.validate(async (errors: any) => {
         if (!errors) {
             const bodyContent = JSON.parse(JSON.stringify(drawer.value));
-            Loading.value.DrawerContent = true;
+            Loading.value.drawer = true;
             const data = await $fetch<apiResponse>(
                 `${appConfig.apiBase}${database.value.slug}/${bodyContent.table}/${bodyContent.id}`,
                 {
@@ -121,12 +121,12 @@ const updateDrawer = async () => {
             if (!data) return window.$message.error(t('error'));
             if (data.result?.id) {
                 window.$message.success(data.message);
-                Loading.value.DrawerContent = false;
+                Loading.value.drawer = false;
                 Object.assign(drawer.value, { id: null, data: {}, table: null, show: false });
                 await refreshNuxtData();
             } else
                 window.$message.error(data.message);
-            Loading.value.DrawerContent = false;
+            Loading.value.drawer = false;
         } else
             window.$message.error(t('inputsAreInvalid'));
     });
@@ -136,7 +136,7 @@ const createDrawer = async () => {
     drawerFormRef.value?.validate(async (errors: any) => {
         if (!errors) {
             const bodyContent = JSON.parse(JSON.stringify(drawer.value));
-            Loading.value.DrawerContent = true;
+            Loading.value.drawer = true;
             const data = await $fetch<apiResponse>(
                 `${appConfig.apiBase}${database.value.slug}/${bodyContent.table}`,
                 {
@@ -147,12 +147,12 @@ const createDrawer = async () => {
             if (!data) return window.$message.error(t('error'));
             if (data.result?.id) {
                 window.$message.success(data.message);
-                Loading.value.DrawerContent = false;
+                Loading.value.drawer = false;
                 Object.assign(drawer.value, { id: null, data: {}, table: null, show: false });
                 await refreshNuxtData();
             } else
                 window.$message.error(data.message);
-            Loading.value.DrawerContent = false;
+            Loading.value.drawer = false;
         } else
             window.$message.error(t('inputsAreInvalid'));
     });

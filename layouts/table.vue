@@ -15,7 +15,7 @@
                         ? '24px 88px 24px 24px'
                         : '24px 24px 24px 88px',
             }" :native-scrollbar="false">
-                <div v-if="isMenuOpen"
+                <div v-if="isMenuOpen" @click="isMenuOpen = false"
                     style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
                 </div>
                 <slot></slot>
@@ -60,7 +60,11 @@ defineTranslation({
         new: "جديد",
         id: "معرف",
         publish: "نشر",
-    }
+    },
+});
+
+onBeforeRouteUpdate(() => {
+    clearNuxtState("isMenuOpen");
 });
 
 const route = useRoute();
@@ -120,7 +124,9 @@ const renderSingleItem = (table: Table): MenuOption => {
                 ),
             key: `${table.slug}-settings`,
             icon: () => h(NIcon, () => h(IconSettings)),
-            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations", "assets"].includes(table.slug)
+            show:
+                user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" &&
+                !["sessions", "translations", "assets"].includes(table.slug),
         },
         {
             label: () =>
@@ -133,7 +139,9 @@ const renderSingleItem = (table: Table): MenuOption => {
                 ),
             key: `${table.slug}-flows`,
             icon: () => h(NIcon, () => h(IconWebhook)),
-            show: user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" && !["sessions", "translations"].includes(table.slug)
+            show:
+                user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" &&
+                !["sessions", "translations"].includes(table.slug),
         },
     ];
     return {
@@ -146,17 +154,29 @@ const renderSingleItem = (table: Table): MenuOption => {
                 { default: () => t(table.slug) },
             ),
         key: itemChildren.length ? `${table.slug}Group` : table.slug,
-        icon: () =>
-            h(NIcon, () => getTableIcon(table)),
+        icon: () => h(NIcon, () => getTableIcon(table)),
         children: itemChildren.length ? itemChildren : undefined,
     };
 };
-const menuOptions = computed<MenuOption[]>(() => database.value?.tables
-    ? ([
-        ...(database.value.tables
-            .filter(
+const menuOptions = computed<MenuOption[]>(() =>
+    database.value?.tables
+        ? ([
+            ...(database.value.tables
+                .filter(
+                    ({ slug, allowedMethods }) =>
+                        ![
+                            "users",
+                            "sessions",
+                            "assets",
+                            "translations",
+                            "pages",
+                            "components",
+                        ].includes(slug) && allowedMethods?.includes("r"),
+                )
+                .map(renderSingleItem) ?? []),
+            database.value.tables.filter(
                 ({ slug, allowedMethods }) =>
-                    ![
+                    [
                         "users",
                         "sessions",
                         "assets",
@@ -164,32 +184,21 @@ const menuOptions = computed<MenuOption[]>(() => database.value?.tables
                         "pages",
                         "components",
                     ].includes(slug) && allowedMethods?.includes("r"),
-            )
-            .map(renderSingleItem) ?? []),
-        database.value.tables.filter(
-            ({ slug, allowedMethods }) =>
-                [
-                    "users",
-                    "sessions",
-                    "assets",
-                    "translations",
-                    "pages",
-                    "components",
-                ].includes(slug) && allowedMethods?.includes("r"),
-        ).length
-            ? {
-                key: "divider-1",
-                type: "divider",
-            }
-            : undefined,
-        ...(database.value.tables
-            ?.filter(
-                ({ slug, allowedMethods }) =>
-                    ["users", "sessions", "assets", "pages", "components"].includes(
-                        slug,
-                    ) && allowedMethods?.includes("r"),
-            )
-            .map(renderSingleItem) ?? []),
-    ].filter((item) => item) as MenuOption[])
-    : []);
+            ).length
+                ? {
+                    key: "divider-1",
+                    type: "divider",
+                }
+                : undefined,
+            ...(database.value.tables
+                ?.filter(
+                    ({ slug, allowedMethods }) =>
+                        ["users", "sessions", "assets", "pages", "components"].includes(
+                            slug,
+                        ) && allowedMethods?.includes("r"),
+                )
+                .map(renderSingleItem) ?? []),
+        ].filter((item) => item) as MenuOption[])
+        : [],
+);
 </script>

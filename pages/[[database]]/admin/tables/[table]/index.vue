@@ -91,8 +91,7 @@
         </template>
         <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
             :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-            :row-key="(row) => row.id" :checked-row-keys="checkedRowKeys"
-            @update-checked-row-keys="(keys) => checkedRowKeys = keys" @update:sorter="handleSorterChange" />
+            :row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" />
     </NCard>
 </template>
 
@@ -104,6 +103,7 @@ import {
     IconSearch,
     IconTableExport,
     IconTableImport,
+    IconTableMinus,
     IconTools,
     IconTrash,
     IconX,
@@ -200,7 +200,7 @@ const Drawer = useState<{
     data: {},
 }));
 const dataRef = ref(null);
-const checkedRowKeys = ref<any>([]);
+const checkedRowKeys = ref<string[]>([]);
 const pagination = reactive({
     page: route.query.page ? Number(route.query.page) : 1,
     pageCount: 1,
@@ -282,21 +282,24 @@ const dataTablePagination = computed(() => ({
     ...pagination,
 }));
 
-const DELETE = async (id: string) => {
+async function DELETE(id?: string | string[]) {
+    if (!data.value) return;
     Loading.value.data = true;
     const deleteResponse = await $fetch<apiResponse>(
-        `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/${id}`,
+        `${appConfig.apiBase}${database.value.slug}/${table.value.slug}${!id || Array.isArray(id) ? '' : `/${id}`}`,
         {
             method: "DELETE",
+            query: id && Array.isArray(id) ? { where: Inison.stringify(id) } : undefined,
+
         },
     );
-    if (data.value)
-        data.value.result = data.value.result.filter(
-            (item) => item.id && item.id !== id,
-        );
-    pagination.itemCount--;
-    window.$message.success(deleteResponse?.message ?? t("error"));
-    Loading.value.data = false;
+    if (deleteResponse.result) {
+        window.$message.success(deleteResponse.message);
+        await refresh()
+    } else {
+        window.$message.error(deleteResponse.message)
+        Loading.value.data = false;
+    }
 };
 
 const toolsDropdownOptions = [
@@ -350,30 +353,28 @@ const columns: any = computed(() => [
             {
                 type: "selection",
                 fixed: "left",
-                options:
-                    checkedRowKeys.value.length > 0
-                        ? [
-                            {
-                                label: t("delete"),
-                                key: "delete",
-                                disabled: checkedRowKeys.value.length === 0,
-                                icon: () => h(NIcon, () => h(IconTrash)),
-                                onSelect: async () => {
-                                    Loading.value.data = true;
-                                    await $fetch<apiResponse>(
-                                        `${appConfig.apiBase}${database.value.slug
-                                        }/${table.value.slug}`,
-                                        {
-                                            method: "DELETE",
-                                            body: checkedRowKeys.value,
-                                        } as any,
-                                    );
-                                    window.$message.success("Deleted Successfully");
-                                    await refresh();
-                                },
-                            },
-                        ]
-                        : undefined,
+                options: [
+                    {
+                        label: t("delete"),
+                        key: "delete",
+                        disabled: checkedRowKeys.value.length === 0,
+                        icon: () => h(NIcon, () => h(IconTrash)),
+                        onSelect: async () => {
+                            await DELETE(checkedRowKeys.value)
+                            checkedRowKeys.value = []
+                        },
+                    },
+                    {
+                        label: t("clearTable"),
+                        key: "clear",
+                        disabled: checkedRowKeys.value.length != data.value?.result.length,
+                        icon: () => h(NIcon, () => h(IconTableMinus)),
+                        onSelect: async () => {
+                            await DELETE()
+                            checkedRowKeys.value = []
+                        },
+                    },
+                ],
             },
         ]
         : []),
