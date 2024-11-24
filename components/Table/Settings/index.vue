@@ -1,6 +1,6 @@
 <template>
     <NGrid x-gap="12" cols="12" layout-shift-disabled>
-        <NGridItem :span="!isMobile ? 10 : 12">
+        <NGridItem :span="!$device.isMobile ? 10 : 12">
             <NSpin :show="!!Loading.updateTable">
                 <NCard :title="t('tableSettings')" hoverable>
                     <template #header-extra>
@@ -29,7 +29,7 @@
                                         <IconDeviceFloppy />
                                     </NIcon>
                                 </template>
-                                <template v-if="!isMobile" #default>
+                                <template v-if="!$device.isMobile" #default>
                                     {{ t('save') }}
                                 </template>
                             </NButton>
@@ -92,7 +92,7 @@
                 </NCard>
             </NSpin>
         </NGridItem>
-        <NGridItem v-if="!isMobile" span="2">
+        <NGridItem v-if="!$device.isMobile" span="2">
             <NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
                 <NAnchorLink :title="t('generalSettings')" href="#generalSettings" />
                 <NAnchorLink :title="t('schemaSettings')" href="#schemaSettings" />
@@ -174,7 +174,6 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
 const router = useRouter();
 const showDraggable = ref(false);
-const { isMobile } = useDevice();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const tableRef = ref<FormInst | null>(null);

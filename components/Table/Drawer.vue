@@ -1,5 +1,5 @@
 <template>
-    <NDrawer v-if="drawer" v-model:show="drawer.show" :width="isMobile ? '100%' : drawerWidth" resizable
+    <NDrawer v-if="drawer" v-model:show="drawer.show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
         :placement="language === 'ar' ? 'left' : 'right'" @update:width="val => (drawerWidth = val)">
         <NDrawerContent closable>
             <template #header>
@@ -21,8 +21,8 @@
             </template>
 
             <template #footer>
-                <NFlex :style="{ width: '100%' }" :justify="!isMobile ? 'space-between' : 'end'">
-                    <NButton v-if="!isMobile" round secondary type="info" @click="toggleDrawerWidth()">
+                <NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
+                    <NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth()">
                         <template #icon>
                             <NIcon>
                                 <IconChevronRight v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
@@ -74,7 +74,6 @@ const drawerWidth = useCookie<number | string>('drawerWidth', { sameSite: true }
 const Loading = useState<Record<string, boolean>>('Loading', () => ({}));
 const database = useState<Database>('database');
 const drawerFormRef = ref<FormInst>();
-const { isMobile } = useDevice();
 const drawer = useState<{
     show: boolean;
     id: null | string;

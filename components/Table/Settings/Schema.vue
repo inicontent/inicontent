@@ -31,15 +31,15 @@
                                 </NDropdown>
                             </template>
                             <template v-else-if="!isDisabled(element.key)">
-                                <NButton :round="!isMobile" :circle="isMobile" strong secondary size="small"
-                                    :type="element.required ? 'error' : 'tertiary'"
+                                <NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
+                                    size="small" :type="element.required ? 'error' : 'tertiary'"
                                     @click="schema[index].required = !schema[index].required">
                                     <template #icon>
                                         <NIcon>
                                             <IconAsterisk />
                                         </NIcon>
                                     </template>
-                                    <template v-if="!isMobile" #default>
+                                    <template v-if="!$device.isMobile" #default>
                                         {{ t('required') }}
                                     </template>
                                 </NButton>
@@ -52,7 +52,7 @@
                                     <template #icon>
                                         <component :is="getField(element).icon" />
                                     </template>
-                                    <template v-if="!isMobile" #default>
+                                    <template v-if="!$device.isMobile" #default>
                                         {{ getField(element).label }}
                                     </template>
                                 </NButton>
@@ -269,7 +269,6 @@ const schema = defineModel<Schema>({
 });
 const database = useState<Database>("database");
 const table = useState<Table>("table");
-const { isMobile } = useDevice();
 
 function changeFieldType(
     { id, key, required, children }: any,

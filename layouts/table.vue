@@ -3,13 +3,13 @@
         <NLayout position="absolute" has-sider>
             <NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
                 isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
-                :collapsed-width="isMobile ? 0 : 64" width="240" :native-scrollbar="false">
-                <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="isMobile ? 0 : 64"
+                :collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
+                <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
                     @mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
                     :defaultValue :watch-props="['defaultValue']" accordion />
             </NLayoutSider>
             <NLayoutContent id="pageContent" position="absolute" :content-style="{
-                padding: isMobile
+                padding: $device.isMobile
                     ? '24px 0'
                     : Language === 'ar'
                         ? '24px 88px 24px 24px'
@@ -63,12 +63,11 @@ defineTranslation({
     },
 });
 
-onBeforeRouteUpdate(() => {
+onBeforeUpdate(() => {
     clearNuxtState("isMenuOpen");
 });
 
 const route = useRoute();
-const { isMobile } = useDevice();
 const user = useState<User>("users");
 const table = useState<Table>("table");
 const isMenuOpen = useState("isMenuOpen", () => false);

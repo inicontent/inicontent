@@ -67,9 +67,10 @@
                     <slot v-bind="slotProps"></slot>
                 </template>
             </AssetGrid>
-            <NPagination v-if="itemCount && pageCount > 1" :simple="!!isMobile" :page-sizes="[15, 30, 60, 100, 500]"
-                :show-size-picker="showSizePicker" style="margin-top: 25px;" @update:page-size="onUpdatePageSize"
-                @update:page="onUpdatePage" :page="page" :page-size="pageSize" :item-count="itemCount" />
+            <NPagination v-if="itemCount && pageCount > 1" :simple="!!$device.isMobile"
+                :page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
+                @update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="page" :page-size="pageSize"
+                :item-count="itemCount" />
         </NFlex>
     </NCard>
 </template>
@@ -121,7 +122,6 @@ const table = ref<Table>(parentTable.value)
 if (!parentTable.value || parentTable.value.slug !== 'assets')
     table.value = (await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`)).result
 
-const { isMobile } = useDevice();
 const router = useRouter();
 const page = ref(route.query.page ? Number(route.query.page) : 1);
 const pageSize = ref(route.query.perPage ? Number(route.query.perPage) : 22);

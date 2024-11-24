@@ -1,5 +1,5 @@
 <template>
-    <LazyTableDrawer v-if="!isMobile" />
+    <LazyTableDrawer v-if="!$device.isMobile" />
     <NCard style="height: fit-content">
         <template #header>
             <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>
@@ -114,7 +114,6 @@ defineTranslation({
     }
 });
 
-const { isMobile } = useDevice()
 const appConfig = useAppConfig()
 const route = useRoute()
 const database = useState<Database>("database")

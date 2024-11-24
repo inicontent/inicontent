@@ -1,19 +1,20 @@
 <template>
     <NCard :title="t('databases')" style="background: none" :bordered="false">
         <template #header-extra>
-            <NButton :circle="isMobile" :round="!isMobile" @click="DatabaseModal = {}, showDatabaseModal = true">
+            <NButton :circle="$device.isMobile" :round="!$device.isMobile"
+                @click="DatabaseModal = {}, showDatabaseModal = true">
                 <template #icon>
                     <NIcon>
                         <IconPlus />
                     </NIcon>
                 </template>
-                <template v-if="!isMobile">
+                <template v-if="!$device.isMobile">
                     {{ t('addNewDatabase') }}
                 </template>
             </NButton>
         </template>
         <NDrawer v-model:show="showDatabaseModal" :placement="Language === 'ar' ? 'left' : 'right'"
-            :width="isMobile ? '100%' : 350">
+            :width="$device.isMobile ? '100%' : 350">
             <NDrawerContent :title="t('createDatabase')" closable>
                 <template #footer>
                     <NFlex justify="end">
@@ -111,7 +112,6 @@ defineTranslation({
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-const { isMobile } = useDevice();
 const { data: databases, execute } = await useFetch<apiResponse<Database[]>>(
     `${appConfig.apiBase}inicontent/databases`,
     {

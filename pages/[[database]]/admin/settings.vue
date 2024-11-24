@@ -49,7 +49,7 @@
                 </n-flex>
             </n-card>
         </n-grid-item>
-        <n-grid-item v-if="!isMobile" span="0 l:1">
+        <n-grid-item v-if="!$device.isMobile" span="0 l:1">
             <n-anchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
                 <n-anchor-link :title="t('generalSettings')" href="#general" />
                 <n-anchor-link :title="t('translationSettings')" href="#translation" />
@@ -103,7 +103,6 @@ defineTranslation({
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute()
-const { isMobile } = useDevice()
 const router = useRouter()
 const database = useState<Database>("database")
 const databaseRef = ref<FormInst | null>(null)
