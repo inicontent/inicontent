@@ -245,7 +245,7 @@ const queryOptions = ref(
     }),
 );
 
-const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
+const { data } = await useLazyFetch<apiResponse<Item[]>>(
     `${appConfig.apiBase}${database.value.slug}/${table.value.slug}`,
     {
         query: {
@@ -295,7 +295,7 @@ async function DELETE(id?: string | string[]) {
     );
     if (deleteResponse.result) {
         window.$message.success(deleteResponse.message);
-        await refresh()
+        pagination.onUpdatePage(1);
     } else {
         window.$message.error(deleteResponse.message)
         Loading.value.data = false;
@@ -386,7 +386,7 @@ const columns: any = computed(() => [
             ]),
         width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
         key: field.key,
-        sorter: !!data.value?.result,
+        sorter: !!data?.value?.result,
         ellipsis: {
             tooltip: true,
         },
