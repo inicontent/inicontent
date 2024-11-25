@@ -28,7 +28,7 @@
                             </template>
                         </NButton>
                     </template>
-                    {{ field.description }}
+                    {{ t(field.description) }}
                 </NTooltip>
             </NFlex>
             <template v-else>{{ t(field.key) }}</template>
@@ -38,20 +38,31 @@
 
 <script lang="ts" setup>
 import { isNumber } from "inibase/utils";
-import { NFormItem, NInputNumber, type FormItemRule } from "naive-ui";
+import { IconQuestionMark } from "@tabler/icons-vue";
+import {
+	NButton,
+	NFlex,
+	NIcon,
+	NTooltip,
+	NFormItem,
+	NInputNumber,
+	type FormItemRule,
+} from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<number>()
+const modelValue = defineModel<number>();
 
 const rule: FormItemRule = {
-    required: field.required,
-    trigger: ['blur', 'input'],
-    validator() {
-        if (!modelValue.value)
-            return field.required ? new Error(`${t(field.key)} ${t('isRequired')}`) : true
-        if (!isNumber(modelValue.value))
-            return new Error(`${t(field.key)} ${t("isNotValid")}`);
-    }
-}
+	required: field.required,
+	trigger: ["blur", "input"],
+	validator() {
+		if (!modelValue.value)
+			return field.required
+				? new Error(`${t(field.key)} ${t("isRequired")}`)
+				: true;
+		if (!isNumber(modelValue.value))
+			return new Error(`${t(field.key)} ${t("isNotValid")}`);
+	},
+};
 </script>

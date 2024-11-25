@@ -170,13 +170,13 @@ const getDropdownOptions = (table: Table) => [
         key: `${getTableUrl(table.slug)}/settings`,
         label: t("tableSettings"),
         icon: () => h(NIcon, () => h(IconSettings)),
-        show: !["sessions", "translations", "assets"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
+        show: !["sessions", "translations", "assets"].includes(table.slug) && user.value?.role === appConfig.idOne,
     },
     {
         key: `${getTableUrl(table.slug)}/flows`,
         label: t("tableFlows"),
         icon: () => h(NIcon, () => h(IconWebhook)),
-        show: !["sessions", "translations"].includes(table.slug) && user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55",
+        show: !["sessions", "translations"].includes(table.slug) && user.value?.role === appConfig.idOne,
     },
 ];
 

@@ -28,7 +28,7 @@
                             </template>
                         </NButton>
                     </template>
-                    {{ field.description }}
+                    {{ t(field.description) }}
                 </NTooltip>
             </NFlex>
             <template v-else>{{ t(field.key) }}</template>
@@ -38,32 +38,50 @@
 
 <script lang="ts" setup>
 import { isEmail } from "inibase/utils";
-import { NFormItem, NAutoComplete, type FormItemRule } from "naive-ui";
+import { IconQuestionMark } from "@tabler/icons-vue";
+import {
+	NButton,
+	NFlex,
+	NIcon,
+	NTooltip,
+	NFormItem,
+	NAutoComplete,
+	type FormItemRule,
+} from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<string>()
+const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
-    type: "email",
-    required: field.required,
-    validator() {
-        if (!modelValue.value)
-            return field.required ? new Error(`${t(field.key)} ${t('isRequired')}`) : true
-        if (!isEmail(modelValue.value))
-            return new Error(`${t(field.key)} ${t("isNotValid")}`);
-    }
-}
+	type: "email",
+	required: field.required,
+	validator() {
+		if (!modelValue.value)
+			return field.required
+				? new Error(`${t(field.key)} ${t("isRequired")}`)
+				: true;
+		if (!isEmail(modelValue.value))
+			return new Error(`${t(field.key)} ${t("isNotValid")}`);
+	},
+};
 const emailProviders = [
-    "@gmail.com",
-    "@outlook.com",
-    "@yahoo.com",
-    "@hotmail.com",
-    "@protonmail.com",
-    "@qq.com",
+	"@gmail.com",
+	"@outlook.com",
+	"@yahoo.com",
+	"@hotmail.com",
+	"@protonmail.com",
+	"@qq.com",
 ];
-const options = computed(() => emailProviders.map((suffix) => ({
-    label: modelValue.value + suffix,
-    value: modelValue.value + suffix,
-})))
+
+const options = computed(() => {
+	return emailProviders.map((suffix) => {
+		const value = modelValue.value === null ? "" : modelValue.value;
+		const prefix = value?.split("@")[0];
+		return {
+			label: prefix + suffix,
+			value: prefix + suffix,
+		};
+	});
+});
 </script>

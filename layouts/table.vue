@@ -67,6 +67,7 @@ onBeforeUpdate(() => {
     clearNuxtState("isMenuOpen");
 });
 
+const appConfig = useAppConfig()
 const route = useRoute();
 const user = useState<User>("users");
 const table = useState<Table>("table");
@@ -124,7 +125,7 @@ const renderSingleItem = (table: Table): MenuOption => {
             key: `${table.slug}-settings`,
             icon: () => h(NIcon, () => h(IconSettings)),
             show:
-                user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" &&
+                user.value?.role === appConfig.idOne &&
                 !["sessions", "translations", "assets"].includes(table.slug),
         },
         {
@@ -139,7 +140,7 @@ const renderSingleItem = (table: Table): MenuOption => {
             key: `${table.slug}-flows`,
             icon: () => h(NIcon, () => h(IconWebhook)),
             show:
-                user.value?.role === "d7b3d61a582e53ee29b5a1d02a436d55" &&
+                user.value?.role === appConfig.idOne &&
                 !["sessions", "translations"].includes(table.slug),
         },
     ];

@@ -102,71 +102,74 @@
 </template>
 
 <script lang="ts" setup>
-import { IconArrowsSort, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-vue";
+import {
+	IconArrowsSort,
+	IconDeviceFloppy,
+	IconPlus,
+	IconTrash,
+} from "@tabler/icons-vue";
 import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 import {
-    type FormInst,
-    NAnchor,
-    NAnchorLink,
-    NButton,
-    NCard,
-    NDropdown,
-    NEmpty,
-    NFlex,
-    NForm,
-    NGridItem,
-    NGrid,
-    NIcon,
-    NPopconfirm,
-    NTooltip,
-    NSpin,
-    NDynamicTags,
-    NFormItem,
-    NSelect,
-    NTag,
-    NButtonGroup,
+	type FormInst,
+	NAnchor,
+	NAnchorLink,
+	NButton,
+	NCard,
+	NDropdown,
+	NEmpty,
+	NFlex,
+	NForm,
+	NGridItem,
+	NGrid,
+	NIcon,
+	NPopconfirm,
+	NTooltip,
+	NSpin,
+	NDynamicTags,
+	NFormItem,
+	NSelect,
+	NTag,
+	NButtonGroup,
 } from "naive-ui";
 
 onMounted(() => {
-    document.onkeydown = (e) => {
-        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
-        e.preventDefault();
-        updateTable();
-    };
+	document.onkeydown = (e) => {
+		if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+		e.preventDefault();
+		updateTable();
+	};
 });
 
 defineTranslation({
-    ar: {
-        generalSettings: "إعدادات عامة",
-        schemaSettings: "إعدادات الأعمدة",
-        save: "حِفظ",
-        required: "إلزامي",
-        changeOrder: "تغيير الترتيب",
-        label: "الإسم الظاهري",
-        deleteTable: "حذف الجدول",
-        compression: "ضغط البيانات",
-        prepend: "العناصر الحديثة تظهر في الأعلى",
-        cache: "التخزين المؤقت",
-    },
-    en: {
-        prepend: "Recent items appear at the top",
-    },
+	ar: {
+		generalSettings: "إعدادات عامة",
+		schemaSettings: "إعدادات الأعمدة",
+		save: "حِفظ",
+		required: "إلزامي",
+		changeOrder: "تغيير الترتيب",
+		label: "الإسم الظاهري",
+		deleteTable: "حذف الجدول",
+		compression: "ضغط البيانات",
+		prepend: "إضافة مقدمة",
+		recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
+		cache: "التخزين المؤقت",
+	},
 });
 
 const expandedNames = ref<string[]>();
 function pushToSchema(type: string) {
-    tableCopy.value.schema.splice(-2, 0, {
-        id: `temp-${randomID()}`,
-        key: null,
-        required: false,
-        ...handleSelectedSchemaType(type),
-    });
-    const newElementId = tableCopy.value.schema.at(-3).id;
-    expandedNames.value = [newElementId];
-    setTimeout(
-        () => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
-        300,
-    );
+	tableCopy.value.schema.splice(-2, 0, {
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	});
+	const newElementId = tableCopy.value.schema.at(-3).id;
+	expandedNames.value = [newElementId];
+	setTimeout(
+		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
+		300,
+	);
 }
 
 const appConfig = useAppConfig();
@@ -179,217 +182,220 @@ const table = useState<Table>("table");
 const tableRef = ref<FormInst | null>(null);
 const tableCopy = ref(JSON.parse(JSON.stringify(table.value)));
 async function updateTable() {
-    tableRef.value?.validate(async (errors) => {
-        if (!errors) {
-            const bodyContent = JSON.parse(
-                JSON.stringify(
-                    (({ onRequest, onResponse, ...rest }) => ({
-                        ...rest
-                    }))(tableCopy.value),
-                ),
-            );
-            Loading.value.updateTable = true;
+	tableRef.value?.validate(async (errors) => {
+		if (!errors) {
+			const bodyContent = JSON.parse(
+				JSON.stringify(
+					(({ onRequest, onResponse, ...rest }) => ({
+						...rest,
+					}))(tableCopy.value),
+				),
+			);
+			Loading.value.updateTable = true;
 
-            if (bodyContent.localLabel)
-                bodyContent.label = bodyContent.localLabel
-                    .map(({ value }: { value: string }) => value)
-                    .join(" ");
+			if (bodyContent.localLabel)
+				bodyContent.label = bodyContent.localLabel
+					.map(({ value }: { value: string }) => value)
+					.join(" ");
 
-            const data = await $fetch<apiResponse<Table>>(
-                `${appConfig.apiBase}inicontent/databases/${database.value.slug
-                }/${route.params.table}`,
-                {
-                    method: "PUT",
-                    body: bodyContent,
-                },
-            );
-            const tableIndex = database.value.tables?.findIndex(
-                ({ slug }) => slug === route.params.table,
-            );
-            if (
-                tableIndex !== undefined &&
-                tableIndex !== -1 &&
-                database.value.tables &&
-                data?.result
-            ) {
-                database.value.tables[tableIndex] = data.result;
-                table.value = data.result;
-                tableCopy.value = data.result;
+			const data = await $fetch<apiResponse<Table>>(
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
+				}/${route.params.table}`,
+				{
+					method: "PUT",
+					body: bodyContent,
+				},
+			);
+			const tableIndex = database.value.tables?.findIndex(
+				({ slug }) => slug === route.params.table,
+			);
+			if (
+				tableIndex !== undefined &&
+				tableIndex !== -1 &&
+				database.value.tables &&
+				data?.result
+			) {
+				database.value.tables[tableIndex] = data.result;
+				table.value = data.result;
+				tableCopy.value = data.result;
 
-                if (route.params.table !== data.result.slug)
-                    router.replace({
-                        params: { table: data.result.slug },
-                    });
-                window.$message.success(data?.message ?? t("success"));
-            } else window.$message.error(data?.message ?? t("error"));
+				if (route.params.table !== data.result.slug)
+					router.replace({
+						params: { table: data.result.slug },
+					});
+				window.$message.success(data?.message ?? t("success"));
+			} else window.$message.error(data?.message ?? t("error"));
 
-            Loading.value.updateTable = false;
-        } else window.$message.error(t("inputsAreInvalid"));
-    });
+			Loading.value.updateTable = false;
+		} else window.$message.error(t("inputsAreInvalid"));
+	});
 }
 const isUnDeletable = computed(() =>
-    ["users", "pages", "components"].includes(table.value?.slug),
+	["users", "pages", "components"].includes(table.value?.slug),
 );
 async function deleteTable() {
-    Loading.value.deleteTable = true;
-    const data = await $fetch<apiResponse>(
-        `${appConfig.apiBase}inicontent/databases/${database.value.slug
-        }/${route.params.table}`,
-        {
-            method: "DELETE",
-        },
-    );
-    if (data?.result) {
-        const tableIndex = database.value.tables?.findIndex(
-            ({ slug }) => slug === route.params.table,
-        );
-        if (tableIndex !== undefined && tableIndex !== -1)
-            database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
-        Loading.value.deleteTable = false;
-        window.$message.success(data?.message ?? t("success"));
-        setTimeout(
-            async () =>
-                await navigateTo(
-                    `${route.params.database ? `/${database.value.slug}` : ""}/admin/tables`,
-                ),
-            800,
-        );
-    } else window.$message.error(data?.message ?? t("error"));
-    Loading.value.deleteTable = false;
+	Loading.value.deleteTable = true;
+	const data = await $fetch<apiResponse>(
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
+		}/${route.params.table}`,
+		{
+			method: "DELETE",
+		},
+	);
+	if (data?.result) {
+		const tableIndex = database.value.tables?.findIndex(
+			({ slug }) => slug === route.params.table,
+		);
+		if (tableIndex !== undefined && tableIndex !== -1)
+			database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
+		Loading.value.deleteTable = false;
+		window.$message.success(data?.message ?? t("success"));
+		setTimeout(
+			async () =>
+				await navigateTo(
+					`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables`,
+				),
+			800,
+		);
+	} else window.$message.error(data?.message ?? t("error"));
+	Loading.value.deleteTable = false;
 }
 
 const flattenCopySchema = flattenSchema(tableCopy.value.schema);
 tableCopy.value.localLabel = tableCopy.value.label
-    ?.split(/(@\w+)/g)
-    .filter((value: string) => value != "")
-    .map((label: string) => {
-        if (label.startsWith("@"))
-            return {
-                label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
-                value: label,
-            };
-        return {
-            label,
-            value: label,
-        };
-    });
+	?.split(/(@\w+)/g)
+	.filter((value: string) => value != "")
+	.map((label: string) => {
+		if (label.startsWith("@"))
+			return {
+				label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
+				value: label,
+			};
+		return {
+			label,
+			value: label,
+		};
+	});
 function onAppendToLabel(label: string) {
-    if (label.startsWith("@") && isValidID(label.slice(1)))
-        return {
-            label:
-                flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ??
-                "undefined",
-            value: label,
-        };
+	if (label.startsWith("@") && isValidID(label.slice(1)))
+		return {
+			label:
+				flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ??
+				"undefined",
+			value: label,
+		};
 
-    return {
-        label: label,
-        value: label,
-    };
+	return {
+		label: label,
+		value: label,
+	};
 }
 function renderSingleLabel(
-    labelObject: { label: string; value: string },
-    index: number,
+	labelObject: { label: string; value: string },
+	index: number,
 ) {
-    return h(
-        NTag,
-        {
-            type:
-                labelObject.value.startsWith("@") &&
-                    isValidID(labelObject.value.slice(1))
-                    ? "primary"
-                    : "default",
-            closable: true,
-            onClose: () => {
-                tableCopy.value.localLabel.splice(index, 1);
-            },
-        },
-        {
-            default: () => labelObject.label,
-        },
-    );
+	return h(
+		NTag,
+		{
+			type:
+				labelObject.value.startsWith("@") &&
+				isValidID(labelObject.value.slice(1))
+					? "primary"
+					: "default",
+			closable: true,
+			onClose: () => {
+				tableCopy.value.localLabel.splice(index, 1);
+			},
+		},
+		{
+			default: () => labelObject.label,
+		},
+	);
 }
 function generateLabelOptions(schema?: Schema, prefix?: string) {
-    let RETURN: {
-        label: string;
-        value: string | number;
-    }[] = [];
-    if (!schema) return RETURN;
-    for (const field of schema) {
-        if (field.id?.toString().startsWith("temp-")) continue;
-        if (
-            (Array.isArray(field.type) && field.subType !== "tags") ||
-            (field.type === "array" &&
-                field.children &&
-                isArrayOfObjects(field.children)) ||
-            field.type === "table"
-        )
-            continue;
-        if (field.children && isArrayOfObjects(field.children))
-            RETURN = [...RETURN, ...generateLabelOptions(field.children, field.key)];
-        else
-            RETURN.push({
-                label: (prefix ? `${prefix}/` : "") + field.key,
-                value: `@${field.id}`,
-            });
-    }
-    return RETURN;
+	let RETURN: {
+		label: string;
+		value: string | number;
+	}[] = [];
+	if (!schema) return RETURN;
+	for (const field of schema) {
+		if (field.id?.toString().startsWith("temp-")) continue;
+		if (
+			(Array.isArray(field.type) && field.subType !== "tags") ||
+			(field.type === "array" &&
+				field.children &&
+				isArrayOfObjects(field.children)) ||
+			field.type === "table"
+		)
+			continue;
+		if (field.children && isArrayOfObjects(field.children))
+			RETURN = [...RETURN, ...generateLabelOptions(field.children, field.key)];
+		else
+			RETURN.push({
+				label: (prefix ? `${prefix}/` : "") + field.key,
+				value: `@${field.id}`,
+			});
+	}
+	return RETURN;
 }
 
 const generalSettingsSchema = reactive<Schema>([
-    {
-        key: "slug",
-        type: "string",
-        required: true,
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
-            ? {
-                disabled: true,
-            }
-            : {},
-    },
-    {
-        key: "icon",
-        type: "string",
-        subType: "icon",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
-            ? {
-                disabled: true,
-            }
-            : {},
-    },
-    {
-        key: "compression",
-        type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
-            ? {
-                disabled: true,
-            }
-            : {},
-    },
-    {
-        key: "cache",
-        type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
-            ? {
-                disabled: true,
-            }
-            : {},
-    },
-    {
-        key: "prepend",
-        type: "boolean",
-        inputProps: ["users", "pages", "components"].includes(table.value?.slug)
-            ? {
-                disabled: true,
-            }
-            : {},
-    },
+	{
+		key: "slug",
+		type: "string",
+		required: true,
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+	},
+	{
+		key: "icon",
+		type: "string",
+		subType: "icon",
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+	},
+	{
+		key: "compression",
+		type: "boolean",
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+	},
+	{
+		key: "cache",
+		type: "boolean",
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+	},
+	{
+		key: "prepend",
+		type: "boolean",
+		description: "recentItemsAppearAtTheTop",
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+	},
 ]);
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
+	title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>

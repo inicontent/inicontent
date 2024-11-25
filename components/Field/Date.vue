@@ -24,7 +24,7 @@
                             </template>
                         </NButton>
                     </template>
-                    {{ field.description }}
+                    {{ t(field.description) }}
                 </NTooltip>
             </NFlex>
             <template v-else>{{ t(field.key) }}</template>
@@ -33,19 +33,28 @@
 </template>
 
 <script lang="ts" setup>
-import { NFormItem, NDatePicker, type FormItemRule } from "naive-ui";
+import { IconQuestionMark } from "@tabler/icons-vue";
+import {
+	NButton,
+	NFlex,
+	NIcon,
+	NTooltip,
+	NFormItem,
+	NDatePicker,
+	type FormItemRule,
+} from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<number>()
+const modelValue = defineModel<number>();
 
 const rule: FormItemRule = {
-    type: "number",
-    required: field.required,
-    trigger: ["blur", "change"],
-    validator() {
-        if (!modelValue.value && field.required)
-            return new Error(`${t(field.key)} ${t('isRequired')}`)
-    }
-}
+	type: "number",
+	required: field.required,
+	trigger: ["blur", "change"],
+	validator() {
+		if (!modelValue.value && field.required)
+			return new Error(`${t(field.key)} ${t("isRequired")}`);
+	},
+};
 </script>
