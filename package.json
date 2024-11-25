@@ -12,13 +12,12 @@
 		"@fontsource-variable/cairo": "^5.1.0",
 		"@nuxtjs/device": "3.2.2",
 		"@tabler/icons-vue": "^3.22.0",
-		"inibase": "1.0.0-rc.105",
-		"inidot": "1.0.0-rc.2",
-		"inison": "1.0.0-rc.4",
+		"inibase": "latest",
+		"inidot": "latest",
+		"inison": "latest",
 		"naive-ui": "2.40.1",
-		"nuxt": "3.13.2",
+		"nuxt": "3.14.1592",
 		"nuxtjs-naive-ui": "^1.0.2",
 		"vuedraggable": "4.1.0"
-	},
-	"packageManager": "pnpm@9.12.2"
+	}
 }
