@@ -143,8 +143,10 @@ declare global {
 	type TranslationsType = Record<LanguagesType, singleLanguageTranslations>;
 }
 declare module "nuxt/schema" {
-	interface PublicRuntimeConfig {
+	interface appConfig {
 		apiBase: string;
+		idOne: string;
+		database?: string;
 	}
 }
 
