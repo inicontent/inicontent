@@ -12,8 +12,8 @@
 <script setup lang="ts">
 import { NCollapse, NCollapseItem } from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<Record<string | number, any>>()
-if (!modelValue.value) modelValue.value = {}
+const modelValue = defineModel<Record<string | number, any>>();
+if (!modelValue.value) modelValue.value = {};
 </script>
