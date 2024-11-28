@@ -73,41 +73,41 @@
 <script lang="ts" setup>
 import { IconPencil, IconTrash, IconUpload } from "@tabler/icons-vue";
 import {
-    NDropdown,
-    NFlex,
-    NGrid,
-    NGridItem,
-    NIcon,
-    NImage,
-    NSkeleton,
-    NPerformantEllipsis,
-    useDialog,
-    NEmpty,
-    NA,
-    NDrawer,
-    NDrawerContent,
-    NText,
-    NTime,
+	NDropdown,
+	NFlex,
+	NGrid,
+	NGridItem,
+	NIcon,
+	NImage,
+	NSkeleton,
+	NPerformantEllipsis,
+	useDialog,
+	NEmpty,
+	NA,
+	NDrawer,
+	NDrawerContent,
+	NText,
+	NTime,
 } from "naive-ui";
 
 const path = defineModel<string>("path");
 const { isAssetRoute, table } = defineProps<{
-    targetId?: string;
-    isAssetRoute?: boolean;
-    table: Table;
+	targetId?: string;
+	isAssetRoute?: boolean;
+	table: Table;
 }>();
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 defineTranslation({
-    ar: {
-        name: "الإسم",
-        size: "الحجم",
-        type: "النوع",
-        link: "الرابط",
-        rename: "تغيير الإسم",
-        replace: "إستبدال"
-    }
+	ar: {
+		name: "الإسم",
+		size: "الحجم",
+		type: "النوع",
+		link: "الرابط",
+		rename: "تغيير الإسم",
+		replace: "إستبدال",
+	},
 });
 
 const modelValue = defineModel<Asset[] | null>();
@@ -117,69 +117,68 @@ const database = useState<Database>("database");
 const CurrentAsset = ref<Asset>();
 
 async function deleteAsset(asset: Asset) {
-    Loading.value[`deleteAsset${asset.id}`] = true;
-    const data = await $fetch<apiResponse>(
-        `${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-        {
-            method: "DELETE",
-        },
-    ),
-        singleAsset = modelValue.value?.find((value) => value.id === asset.id);
-    if (data?.result) {
-        modelValue.value = modelValue.value?.filter(
-            (value) => value.id !== asset.id,
-        );
+	Loading.value[`deleteAsset${asset.id}`] = true;
+	const data = await $fetch<apiResponse>(
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			{
+				method: "DELETE",
+			},
+		),
+		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
+	if (data?.result) {
+		modelValue.value = modelValue.value?.filter(
+			(value) => value.id !== asset.id,
+		);
 
-        if (database.value.size) database.value.size -= singleAsset?.size ?? 0;
-        window.$message.success(data?.message ?? t("success"));
-    } else window.$message.error(data?.message ?? t("error"));
-    Loading.value[`deleteAsset${asset.id}`] = false;
+		if (database.value.size) database.value.size -= singleAsset?.size ?? 0;
+		window.$message.success(data?.message ?? t("success"));
+	} else window.$message.error(data?.message ?? t("error"));
+	Loading.value[`deleteAsset${asset.id}`] = false;
 }
 const dropdownOptions = [
-    {
-        label: t("delete"),
-        key: "delete",
-        show: table.allowedMethods?.includes("d"),
-        icon: () => h(NIcon, () => h(IconTrash)),
-    },
-    {
-        label: t("rename"),
-        key: "rename",
-        disabled: true,
-        show:
-            table.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
-        icon: () => h(NIcon, () => h(IconPencil)),
-    },
-    {
-        label: t("replace"),
-        key: "replace",
-        disabled: true,
-        show: table.allowedMethods?.includes("u"),
-        icon: () => h(NIcon, () => h(IconUpload)),
-    },
+	{
+		label: t("delete"),
+		key: "delete",
+		show: table.allowedMethods?.includes("d"),
+		icon: () => h(NIcon, () => h(IconTrash)),
+	},
+	{
+		label: t("rename"),
+		key: "rename",
+		disabled: true,
+		show:
+			table.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
+		icon: () => h(NIcon, () => h(IconPencil)),
+	},
+	{
+		label: t("replace"),
+		key: "replace",
+		disabled: true,
+		show: table.allowedMethods?.includes("u"),
+		icon: () => h(NIcon, () => h(IconUpload)),
+	},
 ];
 
-const dialog = useDialog();
 function dropdownOnSelect(key: string) {
-    switch (key) {
-        case "delete":
-            {
-                const d = dialog.create({
-                    showIcon: false,
-                    title: `${t("delete")}: ${(CurrentAsset.value as Asset).id}`,
-                    content: t("theFollowingActionIsIrreversible"),
-                    positiveText: t("delete"),
-                    async onPositiveClick() {
-                        d.loading = true;
-                        await deleteAsset(CurrentAsset.value as Asset);
-                        return true;
-                    },
-                });
-            }
-            break;
-        default:
-            break;
-    }
+	switch (key) {
+		case "delete":
+			{
+				const d = window.$dialog.create({
+					showIcon: false,
+					title: `${t("delete")}: ${(CurrentAsset.value as Asset).id}`,
+					content: t("theFollowingActionIsIrreversible"),
+					positiveText: t("delete"),
+					async onPositiveClick() {
+						d.loading = true;
+						await deleteAsset(CurrentAsset.value as Asset);
+						return true;
+					},
+				});
+			}
+			break;
+		default:
+			break;
+	}
 }
 
 const showDrawer = ref(false);
@@ -187,32 +186,32 @@ const showDropdown = ref(false);
 const xRef = ref(0);
 const yRef = ref(0);
 function handleContextMenu(e: MouseEvent, asset: Asset) {
-    e.preventDefault();
-    showDropdown.value = false;
-    nextTick().then(() => {
-        CurrentAsset.value = asset;
-        showDropdown.value = true;
-        xRef.value = e.clientX + 8;
-        yRef.value = e.clientY + 8;
-    });
+	e.preventDefault();
+	showDropdown.value = false;
+	nextTick().then(() => {
+		CurrentAsset.value = asset;
+		showDropdown.value = true;
+		xRef.value = e.clientX + 8;
+		yRef.value = e.clientY + 8;
+	});
 }
 function dropdownOnClickOutside(e: MouseEvent) {
-    const isRightClick = e.button === 2;
-    if (!isRightClick) showDropdown.value = false;
+	const isRightClick = e.button === 2;
+	if (!isRightClick) showDropdown.value = false;
 }
 async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
-    if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        window.open(asset.publicURL);
-        return;
-    }
-    if (asset.type === "folder") {
-        if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`);
-        path.value = `${path.value}/${asset.name}`;
-        return;
-    }
-    CurrentAsset.value = asset;
-    showDrawer.value = true;
+	if (e.ctrlKey || e.metaKey) {
+		e.preventDefault();
+		window.open(asset.publicURL);
+		return;
+	}
+	if (asset.type === "folder") {
+		if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`);
+		path.value = `${path.value}/${asset.name}`;
+		return;
+	}
+	CurrentAsset.value = asset;
+	showDrawer.value = true;
 }
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 </script>

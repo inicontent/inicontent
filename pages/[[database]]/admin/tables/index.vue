@@ -7,12 +7,15 @@
 <script setup lang="ts">
 import { NCard } from "naive-ui";
 definePageMeta({
-    middleware: ["database", "user", "dashboard"],
+	layout: "dashboard",
+	middleware: ["database", "user", "dashboard"],
 });
 
 const database = useState<Database>("database");
 useHead({
-    title: `${t(database.value.slug)} | ${t("tables")}`,
-    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
+	title: `${t(database.value.slug)} | ${t("tables")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>

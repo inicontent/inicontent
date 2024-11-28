@@ -3,7 +3,7 @@ import type {
 	pageInfo,
 	ComparisonOperator,
 } from "inibase";
-import type { useMessage } from "naive-ui";
+import type { useMessage, useDialog } from "naive-ui";
 import type languages from "./languages";
 
 type onCreateCallback = (index: number) => onCreateType;
@@ -14,6 +14,7 @@ type singleLanguageTranslations = {
 declare global {
 	interface Window {
 		$message: useMessage;
+		$dialog: useDialog;
 	}
 	type CMS_FieldType =
 		| "text"

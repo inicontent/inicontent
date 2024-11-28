@@ -1,5 +1,5 @@
 <template>
-    <NuxtLayout name="default">
+    <NuxtLayout name="dashboard">
         <NLayout position="absolute" has-sider>
             <NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
                 isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
@@ -26,179 +26,179 @@
 
 <script setup lang="ts">
 import {
-    IconEye,
-    IconPlus,
-    IconSettings,
-    IconWebhook,
+	IconEye,
+	IconPlus,
+	IconSettings,
+	IconWebhook,
 } from "@tabler/icons-vue";
 import {
-    NIcon,
-    NLayout,
-    NLayoutContent,
-    NLayoutSider,
-    NMenu,
-    type MenuOption,
+	NIcon,
+	NLayout,
+	NLayoutContent,
+	NLayoutSider,
+	NMenu,
+	type MenuOption,
 } from "naive-ui";
 import { NuxtLink } from "#components";
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 defineTranslation({
-    ar: {
-        clickToCopy: "نسخ",
-        textCopied: "تم نسخ النص",
-        viewTheItem: "مُعاينة العنصر",
-        createdAt: "تاريخ الإنشاء",
-        updatedAt: "تاريخ التعديل",
-        update: "تحديث",
-        create: "إنشاء",
-        delete: "حذف",
-        actions: "الأوامر",
-        showAll: "أظهر الكل",
-        flows: "تدفقات",
-        newItem: "عنصر جديد",
-        new: "جديد",
-        id: "معرف",
-        publish: "نشر",
-    },
+	ar: {
+		clickToCopy: "نسخ",
+		textCopied: "تم نسخ النص",
+		viewTheItem: "مُعاينة العنصر",
+		createdAt: "تاريخ الإنشاء",
+		updatedAt: "تاريخ التعديل",
+		update: "تحديث",
+		create: "إنشاء",
+		delete: "حذف",
+		actions: "الأوامر",
+		showAll: "أظهر الكل",
+		flows: "تدفقات",
+		newItem: "عنصر جديد",
+		new: "جديد",
+		id: "معرف",
+		publish: "نشر",
+	},
 });
 
 onBeforeUpdate(() => {
-    clearNuxtState("isMenuOpen");
+	clearNuxtState("isMenuOpen");
 });
 
-const appConfig = useAppConfig()
+const appConfig = useAppConfig();
 const route = useRoute();
 const user = useState<User>("users");
 const table = useState<Table>("table");
 const isMenuOpen = useState("isMenuOpen", () => false);
 const database = useState<Database>("database");
 const defaultValue = computed(() => {
-    const lastPathInRoute = decodeURIComponent(
-        route.path.split("/").filter(Boolean).at(-1) ?? "",
-    );
-    if (table.value?.slug) {
-        if (lastPathInRoute && lastPathInRoute !== table.value.slug)
-            return `${table.value.slug}-${lastPathInRoute}`;
-        return table.value.slug;
-    }
-    return decodeURI(lastPathInRoute?.toString() ?? "");
+	const lastPathInRoute = decodeURIComponent(
+		route.path.split("/").filter(Boolean).at(-1) ?? "",
+	);
+	if (table.value?.slug) {
+		if (lastPathInRoute && lastPathInRoute !== table.value.slug)
+			return `${table.value.slug}-${lastPathInRoute}`;
+		return table.value.slug;
+	}
+	return decodeURI(lastPathInRoute?.toString() ?? "");
 });
 
 const renderSingleItem = (table: Table): MenuOption => {
-    const itemChildren = [
-        {
-            label: () =>
-                h(
-                    NuxtLink,
-                    {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
-                    },
-                    { default: () => t("showAll") },
-                ),
-            key: table.slug,
-            show: table.slug !== "assets",
-            icon: () => h(NIcon, () => h(IconEye)),
-        },
-        {
-            label: () =>
-                h(
-                    NuxtLink,
-                    {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/new`,
-                    },
-                    { default: () => t("newItem") },
-                ),
-            key: `${table.slug}-new`,
-            show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
-            icon: () => h(NIcon, () => h(IconPlus)),
-        },
-        {
-            label: () =>
-                h(
-                    NuxtLink,
-                    {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/settings`,
-                    },
-                    { default: () => t("settings") },
-                ),
-            key: `${table.slug}-settings`,
-            icon: () => h(NIcon, () => h(IconSettings)),
-            show:
-                user.value?.role === appConfig.idOne &&
-                !["sessions", "translations", "assets"].includes(table.slug),
-        },
-        {
-            label: () =>
-                h(
-                    NuxtLink,
-                    {
-                        to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/flows`,
-                    },
-                    { default: () => t("flows") },
-                ),
-            key: `${table.slug}-flows`,
-            icon: () => h(NIcon, () => h(IconWebhook)),
-            show:
-                user.value?.role === appConfig.idOne &&
-                !["sessions", "translations"].includes(table.slug),
-        },
-    ];
-    return {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
-                },
-                { default: () => t(table.slug) },
-            ),
-        key: itemChildren.length ? `${table.slug}Group` : table.slug,
-        icon: () => h(NIcon, () => getTableIcon(table)),
-        children: itemChildren.length ? itemChildren : undefined,
-    };
+	const itemChildren = [
+		{
+			label: () =>
+				h(
+					NuxtLink,
+					{
+						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
+					},
+					{ default: () => t("showAll") },
+				),
+			key: table.slug,
+			show: table.slug !== "assets",
+			icon: () => h(NIcon, () => h(IconEye)),
+		},
+		{
+			label: () =>
+				h(
+					NuxtLink,
+					{
+						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/new`,
+					},
+					{ default: () => t("newItem") },
+				),
+			key: `${table.slug}-new`,
+			show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
+			icon: () => h(NIcon, () => h(IconPlus)),
+		},
+		{
+			label: () =>
+				h(
+					NuxtLink,
+					{
+						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/settings`,
+					},
+					{ default: () => t("settings") },
+				),
+			key: `${table.slug}-settings`,
+			icon: () => h(NIcon, () => h(IconSettings)),
+			show:
+				user.value?.role === appConfig.idOne &&
+				!["sessions", "translations", "assets"].includes(table.slug),
+		},
+		{
+			label: () =>
+				h(
+					NuxtLink,
+					{
+						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/flows`,
+					},
+					{ default: () => t("flows") },
+				),
+			key: `${table.slug}-flows`,
+			icon: () => h(NIcon, () => h(IconWebhook)),
+			show:
+				user.value?.role === appConfig.idOne &&
+				!["sessions", "translations"].includes(table.slug),
+		},
+	];
+	return {
+		label: () =>
+			h(
+				NuxtLink,
+				{
+					to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
+				},
+				{ default: () => t(table.slug) },
+			),
+		key: itemChildren.length ? `${table.slug}Group` : table.slug,
+		icon: () => h(NIcon, () => getTableIcon(table)),
+		children: itemChildren.length ? itemChildren : undefined,
+	};
 };
 const menuOptions = computed<MenuOption[]>(() =>
-    database.value?.tables
-        ? ([
-            ...(database.value.tables
-                .filter(
-                    ({ slug, allowedMethods }) =>
-                        ![
-                            "users",
-                            "sessions",
-                            "assets",
-                            "translations",
-                            "pages",
-                            "components",
-                        ].includes(slug) && allowedMethods?.includes("r"),
-                )
-                .map(renderSingleItem) ?? []),
-            database.value.tables.filter(
-                ({ slug, allowedMethods }) =>
-                    [
-                        "users",
-                        "sessions",
-                        "assets",
-                        "translations",
-                        "pages",
-                        "components",
-                    ].includes(slug) && allowedMethods?.includes("r"),
-            ).length
-                ? {
-                    key: "divider-1",
-                    type: "divider",
-                }
-                : undefined,
-            ...(database.value.tables
-                ?.filter(
-                    ({ slug, allowedMethods }) =>
-                        ["users", "sessions", "assets", "pages", "components"].includes(
-                            slug,
-                        ) && allowedMethods?.includes("r"),
-                )
-                .map(renderSingleItem) ?? []),
-        ].filter((item) => item) as MenuOption[])
-        : [],
+	database.value?.tables
+		? ([
+				...(database.value.tables
+					.filter(
+						({ slug, allowedMethods }) =>
+							![
+								"users",
+								"sessions",
+								"assets",
+								"translations",
+								"pages",
+								"components",
+							].includes(slug) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+				database.value.tables.filter(
+					({ slug, allowedMethods }) =>
+						[
+							"users",
+							"sessions",
+							"assets",
+							"translations",
+							"pages",
+							"components",
+						].includes(slug) && allowedMethods?.includes("r"),
+				).length
+					? {
+							key: "divider-1",
+							type: "divider",
+						}
+					: undefined,
+				...(database.value.tables
+					?.filter(
+						({ slug, allowedMethods }) =>
+							["users", "sessions", "assets", "pages", "components"].includes(
+								slug,
+							) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+			].filter((item) => item) as MenuOption[])
+		: [],
 );
 </script>

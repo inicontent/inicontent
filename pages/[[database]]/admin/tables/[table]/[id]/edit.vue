@@ -101,111 +101,119 @@
 
 <script lang="ts" setup>
 import {
-    NButton,
-    NCard,
-    NPerformantEllipsis,
-    NForm,
-    NIcon,
-    NTooltip,
-    NPopconfirm,
-    NButtonGroup,
-    NSpin,
-    NFlex,
-    type FormInst
+	NButton,
+	NCard,
+	NPerformantEllipsis,
+	NForm,
+	NIcon,
+	NTooltip,
+	NPopconfirm,
+	NButtonGroup,
+	NSpin,
+	NFlex,
+	type FormInst,
 } from "naive-ui";
 import { IconDeviceFloppy, IconEye, IconTrash } from "@tabler/icons-vue";
 
 onBeforeRouteUpdate((route, currentRoute) => {
-    if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
-        clearNuxtState("itemLabel");
+	if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
+		clearNuxtState("itemLabel");
 });
 
 definePageMeta({
-    middleware: ["database", "user", "dashboard", "table"],
-    layout: "table",
+	middleware: ["database", "user", "dashboard", "table"],
+	layout: "table",
 });
 
 onMounted(() => {
-    document.onkeydown = (e) => {
-        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
-        e.preventDefault();
-        UPDATE();
-    };
+	document.onkeydown = (e) => {
+		if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+		e.preventDefault();
+		UPDATE();
+	};
 });
 
-const appConfig = useAppConfig()
+const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const route = useRoute()
-const database = useState<Database>("database")
-const table = useState<Table>("table")
+const route = useRoute();
+const database = useState<Database>("database");
+const table = useState<Table>("table");
 const schema = table.value.schema?.filter(
-    (field) =>
-        !["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(field.key),
-)
+	(field) =>
+		!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
+			field.key,
+		),
+);
 const { data: itemObject } = await useFetch<Item>(
-    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-    }/${route.params.id}`,
-    {
-
-        transform: (input) => input.result
-    }
-)
+	`${appConfig.apiBase}${database.value.slug}/${
+		table.value.slug
+	}/${route.params.id}`,
+	{
+		transform: (input) => input.result,
+	},
+);
 
 if (!itemObject.value?.id)
-    throw createError({
-        statusCode: 404,
-        statusMessage: "item",
-        fatal: true
-    });
+	throw createError({
+		statusCode: 404,
+		statusMessage: "item",
+		fatal: true,
+	});
 
-const formRef = ref<FormInst>()
+const formRef = ref<FormInst>();
 
 async function UPDATE() {
-    formRef.value?.validate(async (errors) => {
-        if (!errors) {
-            const bodyContent = toRaw(itemObject.value);
-            Loading.value.UPDATE = true;
-            const data = await $fetch<apiResponse<Item>>(
-                `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-                }/${itemObject.value?.id}`,
-                {
-                    method: "PUT",
-                    body: bodyContent,
-                },
-            );
-            if (data.result?.id) {
-                itemObject.value = data.result;
-                window.$message.success(data.message);
-            } else window.$message.error(data.message);
-            Loading.value.UPDATE = false;
-        } else window.$message.error(t("inputsAreInvalid"));
-    });
-};
+	formRef.value?.validate(async (errors) => {
+		if (!errors) {
+			const bodyContent = toRaw(itemObject.value);
+			Loading.value.UPDATE = true;
+			const data = await $fetch<apiResponse<Item>>(
+				`${appConfig.apiBase}${database.value.slug}/${
+					table.value.slug
+				}/${itemObject.value?.id}`,
+				{
+					method: "PUT",
+					body: bodyContent,
+				},
+			);
+			if (data.result?.id) {
+				itemObject.value = data.result;
+				window.$message.success(data.message);
+			} else window.$message.error(data.message);
+			Loading.value.UPDATE = false;
+		} else window.$message.error(t("inputsAreInvalid"));
+	});
+}
 
 async function DELETE() {
-    Loading.value.DELETE = true;
-    const data = await $fetch<apiResponse<Item>>(
-        `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-        }/${itemObject.value?.id}`,
-        {
-            method: "DELETE",
-        },
-    );
-    if (data.result) {
-        window.$message.success(data.message);
-        Loading.value.DELETE = false;
-        return navigateTo(
-            `${route.params.database ? `/${route.params.database}` : ''}/admin/tables/${table.value.slug}`,
-        );
-    }
-    window.$message.error(data.message);
-    Loading.value.DELETE = false;
-};
+	Loading.value.DELETE = true;
+	const data = await $fetch<apiResponse<Item>>(
+		`${appConfig.apiBase}${database.value.slug}/${
+			table.value.slug
+		}/${itemObject.value?.id}`,
+		{
+			method: "DELETE",
+		},
+	);
+	if (data.result) {
+		window.$message.success(data.message);
+		Loading.value.DELETE = false;
+		return navigateTo(
+			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}`,
+		);
+	}
+	window.$message.error(data.message);
+	Loading.value.DELETE = false;
+}
 
-const itemLabel = useState("itemLabel", () => renderLabel(table.value.label, table.value.schema, itemObject.value))
+const itemLabel = useState("itemLabel", () =>
+	renderLabel(table.value.label, table.value.schema, itemObject.value),
+);
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
-    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>

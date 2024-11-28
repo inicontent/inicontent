@@ -62,163 +62,168 @@
 <script lang="ts" setup>
 import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
 import {
-    type FormInst,
-    NAnchor,
-    NAnchorLink,
-    NButton,
-    NCard,
-    NEmpty,
-    NForm,
-    NGridItem,
-    NGrid,
-    NIcon,
-    NPopconfirm,
-    NFlex,
-    NTooltip,
+	type FormInst,
+	NAnchor,
+	NAnchorLink,
+	NButton,
+	NCard,
+	NEmpty,
+	NForm,
+	NGridItem,
+	NGrid,
+	NIcon,
+	NPopconfirm,
+	NFlex,
+	NTooltip,
 } from "naive-ui";
 
 definePageMeta({
-    middleware: ["database", "user", "dashboard"],
-    layout: "table",
+	middleware: ["database", "user", "dashboard"],
+	layout: "table",
 });
 
 onMounted(() => {
-    document.onkeydown = (e) => {
-        if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
-        e.preventDefault();
-        updateDatabase();
-    };
+	document.onkeydown = (e) => {
+		if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+		e.preventDefault();
+		updateDatabase();
+	};
 });
 
 defineTranslation({
-    ar: {
-        save: "حِفظ",
-        generalSettings: "إعدادات عامة",
-        translationSettings: "إعدادات الترجمة",
-        emailSettings: "إعدادات البريد",
-        deleteDatabase: "حذف قاعدة البيانات",
-        soon: "قريباً"
-    }
+	ar: {
+		save: "حِفظ",
+		generalSettings: "إعدادات عامة",
+		translationSettings: "إعدادات الترجمة",
+		emailSettings: "إعدادات البريد",
+		deleteDatabase: "حذف قاعدة البيانات",
+		soon: "قريباً",
+	},
 });
-const appConfig = useAppConfig()
+const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const route = useRoute()
-const router = useRouter()
-const database = useState<Database>("database")
-const databaseRef = ref<FormInst | null>(null)
-const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)))
+const route = useRoute();
+const router = useRouter();
+const database = useState<Database>("database");
+const databaseRef = ref<FormInst | null>(null);
+const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)));
 
 const databaseSchema: Schema = [
-
-    {
-        key: "slug",
-        type: "string",
-        required: true,
-    },
-    {
-        key: "icon",
-        type: "table",
-        table: "assets",
-        accept: ["image"],
-        params: "format=avif&fit=94",
-    },
-    {
-        key: "primaryColor",
-        type: "string",
-        subType: "color",
-    },
-    {
-        key: "primaryDarkColor",
-        type: "string",
-        subType: "color",
-    },
-    {
-        key: "roles",
-        type: "array",
-        children: [
-            {
-                key: "id",
-                type: "id",
-                inputProps: {
-                    disabled: true,
-                },
-            },
-            {
-                key: "name",
-                type: "string",
-            },
-        ],
-        onCreate: { id: `temp-${randomID()}` },
-        disabledItems: [0, 1, 2],
-        required: false,
-    }
-]
+	{
+		key: "slug",
+		type: "string",
+		required: true,
+	},
+	{
+		key: "icon",
+		type: "table",
+		table: "assets",
+		accept: ["image"],
+		params: "format=avif&fit=94",
+	},
+	{
+		key: "primaryColor",
+		type: "string",
+		subType: "color",
+	},
+	{
+		key: "primaryDarkColor",
+		type: "string",
+		subType: "color",
+	},
+	{
+		key: "roles",
+		type: "array",
+		children: [
+			{
+				key: "id",
+				type: "id",
+				inputProps: {
+					disabled: true,
+				},
+			},
+			{
+				key: "name",
+				type: "string",
+			},
+		],
+		onCreate: { id: `temp-${randomID()}` },
+		disabledItems: [0, 1, 2],
+		required: false,
+	},
+];
 
 const translationSchema: Schema = [
-    {
-        key: "primaryLanguage",
-        type: "string",
-        subType: "select",
-        options: translationLanguages.map((language) => ({ label: t(`languages.${language}`), value: language })),
-        required: true,
-    },
-    {
-        key: "secondaryLanguages",
-        type: "array",
-        children: "string",
-        subType: "select",
-        options: translationLanguages.map((language) => ({ label: t(`languages.${language}`), value: language })),
-    }
-]
+	{
+		key: "primaryLanguage",
+		type: "string",
+		subType: "select",
+		options: translationLanguages.map((language) => ({
+			label: t(`languages.${language}`),
+			value: language,
+		})),
+		required: true,
+	},
+	{
+		key: "secondaryLanguages",
+		type: "array",
+		children: "string",
+		subType: "select",
+		options: translationLanguages.map((language) => ({
+			label: t(`languages.${language}`),
+			value: language,
+		})),
+	},
+];
 async function updateDatabase() {
-    databaseRef.value?.validate(async (errors) => {
-        if (!errors) {
-            const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
-            Loading.value.updateDatabase = true;
-            const data = await $fetch<apiResponse>(
-                `${appConfig.apiBase}inicontent/databases/${database.value.slug
-                }`,
-                {
-                    method: "PUT",
-                    body: bodyContent,
-                },
-            );
-            if (data.result) {
-                database.value = { ...database.value, ...data.result };
-                if (route.params.database !== database.value.slug)
-                    router.replace({
-                        params: { database: database.value.slug },
-                    });
-                setThemeConfig()
-                Loading.value.updateDatabase = false;
-                window.$message.success(data.message);
-            } else window.$message.error(data.message);
-            Loading.value.updateDatabase = false;
-        } else window.$message.error(t('inputsAreInvalid'));
-    });
+	databaseRef.value?.validate(async (errors) => {
+		if (!errors) {
+			const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
+			Loading.value.updateDatabase = true;
+			const data = await $fetch<apiResponse>(
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+				{
+					method: "PUT",
+					body: bodyContent,
+				},
+			);
+			if (data.result) {
+				database.value = { ...database.value, ...data.result };
+				if (route.params.database !== database.value.slug)
+					router.replace({
+						params: { database: database.value.slug },
+					});
+				setThemeConfig();
+				Loading.value.updateDatabase = false;
+				window.$message.success(data.message);
+			} else window.$message.error(data.message);
+			Loading.value.updateDatabase = false;
+		} else window.$message.error(t("inputsAreInvalid"));
+	});
 }
 async function deleteDatabase() {
-    Loading.value.deleteDatabase = true;
-    const data = await $fetch<apiResponse>(
-        `${appConfig.apiBase}inicontent/databases/${database.value.slug
-        }`,
-        {
-            method: "DELETE",
-        },
-    );
-    if (data.result) {
-        Loading.value.deleteDatabase = false;
-        window.$message.success(data.message);
-        setTimeout(async () => {
-            clearNuxtState("database");
-            await navigateTo("/admin");
-        }, 800);
-    } else window.$message.error(data.message);
-    Loading.value.deleteDatabase = false;
-};
+	Loading.value.deleteDatabase = true;
+	const data = await $fetch<apiResponse>(
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+		{
+			method: "DELETE",
+		},
+	);
+	if (data.result) {
+		Loading.value.deleteDatabase = false;
+		window.$message.success(data.message);
+		setTimeout(async () => {
+			clearNuxtState("database");
+			await navigateTo("/admin");
+		}, 800);
+	} else window.$message.error(data.message);
+	Loading.value.deleteDatabase = false;
+}
 
 useHead({
-    title: `${t(database.value.slug)} | ${t("settings")}`,
-    link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
+	title: `${t(database.value.slug)} | ${t("settings")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>
