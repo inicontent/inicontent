@@ -1,8 +1,10 @@
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
 	const table = useState<Table>("table");
-	const currentTableInPath =
-		to.params.table || to.path.split("/admin/tables/")[1]?.split("/")[0];
+	const currentTableInPath = decodeURIComponent(
+		(to.params.table as string) ||
+			to.path.split("/admin/tables/")[1]?.split("/")[0],
+	);
 
 	if (
 		!database.value.tables ||
