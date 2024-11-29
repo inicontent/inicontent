@@ -201,7 +201,13 @@ const appConfig = useAppConfig();
 const route = useRoute();
 const user = useState<User | null>("users");
 const database = useState<Database>("database");
-const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
+
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
+	primaryColor: "#FF9800",
+	primaryColorHover: "#F7A42A",
+	primaryColorPressed: "#E19421",
+	primaryColorSuppl: "#CB7900",
+}));
 
 const showBreadcrumb =
 	database.value?.slug &&
