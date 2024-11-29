@@ -368,7 +368,7 @@ const columns: any = computed(() => [
 							label: t("clearTable"),
 							key: "clear",
 							disabled:
-								checkedRowKeys.value.length != data.value?.result.length,
+								checkedRowKeys.value.length !== data.value?.result?.length,
 							icon: () => h(NIcon, () => h(IconTableMinus)),
 							onSelect: async () => {
 								await DELETE();
@@ -387,7 +387,7 @@ const columns: any = computed(() => [
 			]),
 		width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
 		key: field.key,
-		sorter: !!data?.value?.result,
+		sorter: !!data.value?.result,
 		ellipsis: {
 			tooltip: true,
 		},
