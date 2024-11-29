@@ -36,6 +36,7 @@
 import Inison from "inison";
 import { IconQuestionMark } from "@tabler/icons-vue";
 import { NButton, NFlex, NIcon, NTooltip, NFormItem, NSelect } from "naive-ui";
+import { isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -44,8 +45,12 @@ const modelValue = defineModel<Item | Item[]>();
 const selectValue = computed<undefined | string | string[]>(() =>
 	modelValue.value
 		? field.isArray && Array.isArray(modelValue.value)
-			? modelValue.value.map(({ id }) => id as string)
-			: ((modelValue.value as Item).id as string)
+			? isArrayOfObjects(modelValue.value)
+				? modelValue.value.map(({ id }) => id as string)
+				: modelValue.value
+			: isObject(modelValue.value)
+				? ((modelValue.value as Item).id as string)
+				: modelValue.value
 		: undefined,
 );
 
@@ -88,7 +93,7 @@ function onUpdateSelectValue(
 	modelValue.value = Array.isArray(option)
 		? option.map(({ raw }) => raw)
 		: option.raw;
-	if (modelValue.value.length === options.value?.length)
+	if (modelValue.value && modelValue.value.length === options.value?.length)
 		options.value = options.value?.filter(({ value }) =>
 			Array.isArray(_id) ? _id.includes(value) : _id === value,
 		);
@@ -142,6 +147,29 @@ async function onSearch(query: string) {
 	if (query.length > 1) await loadOptions(query);
 }
 
-if (modelValue.value)
-	options.value = ([] as Item[]).concat(modelValue.value).map(singleOption);
+if (modelValue.value) {
+	if (
+		typeof modelValue.value === "string" ||
+		(Array.isArray(modelValue.value) &&
+			modelValue.value.every((value) => typeof value === "string"))
+	) {
+		Loading.value[`options_${field.key}`] = true;
+		await useLazyFetch<apiResponse<Item[]>>(
+			`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+			{
+				query: {
+					where: Inison.stringify({
+						id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
+					}),
+				},
+				onResponse: ({ response }) => {
+					options.value = response._data.result.map(singleOption);
+					Loading.value[`options_${field.key}`] = false;
+				},
+				cache: "force-cache",
+			},
+		);
+	} else
+		options.value = ([] as Item[]).concat(modelValue.value).map(singleOption);
+}
 </script>
