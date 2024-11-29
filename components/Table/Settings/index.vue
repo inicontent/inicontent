@@ -263,7 +263,7 @@ async function deleteTable() {
 	Loading.value.deleteTable = false;
 }
 
-const flattenCopySchema = flattenSchema(tableCopy.value.schema);
+const flattenCopySchema: Schema = flattenSchema(tableCopy.value.schema);
 tableCopy.value.localLabel = tableCopy.value.label
 	?.split(/(@\w+)/g)
 	.filter((value: string) => value != "")
@@ -320,7 +320,8 @@ function generateLabelOptions(schema?: Schema, prefix?: string) {
 		value: string | number;
 	}[] = [];
 	if (!schema) return RETURN;
-	for (const field of schema) {
+
+	for (const field of flattenCopySchema) {
 		if (field.id?.toString().startsWith("temp-")) continue;
 		if (
 			(Array.isArray(field.type) && field.subType !== "tags") ||
@@ -330,13 +331,10 @@ function generateLabelOptions(schema?: Schema, prefix?: string) {
 			field.type === "table"
 		)
 			continue;
-		if (field.children && isArrayOfObjects(field.children))
-			RETURN = [...RETURN, ...generateLabelOptions(field.children, field.key)];
-		else
-			RETURN.push({
-				label: (prefix ? `${prefix}/` : "") + field.key,
-				value: `@${field.id}`,
-			});
+		RETURN.push({
+			label: (prefix ? `${prefix}/` : "") + field.key,
+			value: `@${field.id}`,
+		});
 	}
 	return RETURN;
 }
