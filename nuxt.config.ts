@@ -7,7 +7,10 @@ export default defineNuxtConfig({
 		database: undefined, // use it to overwrite database name
 	},
 	sourcemap: false,
-	modules: ["@nuxtjs/device", "nuxtjs-naive-ui"],
+	modules: ["@nuxtjs/device", "nuxtjs-naive-ui", "nuxt-tiptap-editor"],
+	tiptap: {
+		prefix: "Tiptap",
+	},
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},

@@ -1,115 +1,132 @@
 <template>
-  <NDrawer v-model:show="showAssetsModal" default-height="50%" placement="bottom" resizable>
-    <NDrawerContent id="assetsModal" :native-scrollbar="false" body-content-style="padding: 0">
-      <LazyAssetCard targetID="assetsModal">
+  <NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
+    <NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+      <AssetCard targetID="assetsModal">
         <template v-slot="{ asset }">
-          <NRadio v-if="asset.type !== 'dir'" @update:checked="execCommand('InsertImage', asset.publicURL)" />
+          <NRadio v-if="asset.type !== 'dir'"
+            @update:checked="editor?.chain().focus().setImage({ src: asset.publicURL }).run()" />
         </template>
-      </LazyAssetCard>
+      </AssetCard>
     </NDrawerContent>
   </NDrawer>
 
-  <NFlex vertical style="width: 100%">
+  <NFlex class="richEditorWrapper" vertical style="width: 100%">
     <NScrollbar x-scrollable>
-      <NFlex :wrap="false">
+      <NFlex :wrap="false" align="center">
         <NButtonGroup size="small">
-          <NButton :disabled="!currentSelection" :type="isState('bold') ? 'primary' : 'default'"
-            @click="execCommand('bold')">
+          <NButton @click="editor?.chain().focus().toggleBold().run()"
+            :disabled="!editor?.can().chain().focus().toggleBold().run()"
+            :type="editor?.isActive('bold') ? 'primary' : 'default'">
             <NIcon>
               <IconBold />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!currentSelection" :type="isState('italic') ? 'primary' : 'default'"
-            @click="execCommand('italic')">
+          <NButton @click="editor?.chain().focus().toggleItalic().run()"
+            :disabled="!editor?.can().chain().focus().toggleItalic().run()"
+            :type="editor?.isActive('italic') ? 'primary' : 'default'">
             <NIcon>
               <IconItalic />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!currentSelection" :type="isState('underline') ? 'primary' : 'default'"
-            @click="execCommand('underline')">
+          <NButton @click="editor?.chain().focus().toggleUnderline().run()"
+            :disabled="!editor?.can().chain().focus().toggleUnderline().run()"
+            :type="editor?.isActive('underline') ? 'primary' : 'default'">
             <NIcon>
               <IconUnderline />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!currentSelection" :type="isState('strikeThrough') ? 'primary' : 'default'"
-            @click="execCommand('strikeThrough')">
+          <NButton :type="editor?.isActive('strike') ? 'primary' : 'default'"
+            @click="editor?.chain().focus().toggleStrike().run()"
+            :disabled="!editor?.can().chain().focus().toggleStrike().run()">
             <NIcon>
               <IconStrikethrough />
             </NIcon>
           </NButton>
 
-          <NPopselect :disabled="!isFocused" size="small"
-            :value="currentSelection?.commonAncestorContainer.parentElement?.tagName.toLowerCase() ?? null"
-            @update:value="(value: string) => execCommand('formatBlock', value)" :options="headingOptions">
-            <NButton :disabled="!isFocused" :type="isState('heading') ? 'primary' : 'default'">
+          <NPopselect :disabled="!editor?.can().chain().focus().toggleHeading({ level: 1 }).run()" size="small"
+            :render-label="renderHeadingOption" :value="editor?.getAttributes('heading').level"
+            @update:value="(value) => editor?.chain().focus().toggleHeading({ level: value }).run()"
+            :options="headingOptions">
+            <NButton :type="editor?.isActive('heading') ? 'primary' : 'default'">
               <NIcon>
                 <IconHeading />
               </NIcon>
             </NButton>
           </NPopselect>
 
-          <NPopover v-if="currentSelection" v-model:show="showForeColorPicker">
+          <NPopselect size="small" scrollable :render-label="renderFontSizeOption"
+            :value="editor?.getAttributes('font-size').size?.replace('px', '')"
+            @update:value="(value: string) => editor?.chain().focus().setFontSize(value).run()"
+            :options="fontSizeOptions">
+            <NButton @click="editor?.chain().focus().unsetFontSize().run()">
+              <NIcon>
+                <IconTextSize />
+              </NIcon>
+            </NButton>
+          </NPopselect>
+
+          <NPopover>
             <template #trigger>
-              <NButton :style="{ color: foreColor }"
-                @click="(execCommand('foreColor', foreColor), showForeColorPicker = false)"
-                :disabled="!currentSelection">
+              <NButton :style="{ color: fontColor }"
+                :disabled="!editor?.can().chain().focus().setColor('#ff9800').run()">
                 <NIcon>
                   <IconColorPicker />
                 </NIcon>
               </NButton>
             </template>
-            <LazyFieldHtmlColorPicker :modelValue="foreColor"
-              @update:modelValue="(value) => execCommand('foreColor', value)" />
+            <LazyFieldHtmlColorPicker :modelValue="fontColor"
+              @update:modelValue="(value) => (fontColor = value, editor?.chain().focus().setColor(value).run())" />
           </NPopover>
 
-          <NPopover v-if="currentSelection" v-model:show="showBackColorPicker">
+          <NPopover>
             <template #trigger>
-              <NButton :style="{ backgroundColor: backColor }"
-                @click="(execCommand('backColor', foreColor), showBackColorPicker = false)"
-                :disabled="!currentSelection">
+              <NButton @click="editor?.chain().focus().toggleHighlight().run()" :style="{ color: fontBgColor }">
                 <NIcon>
                   <IconHighlight />
                 </NIcon>
               </NButton>
             </template>
-            <LazyFieldHtmlColorPicker :modelValue="backColor"
-              @update:modelValue="(value) => execCommand('backColor', value)" />
+            <LazyFieldHtmlColorPicker :modelValue="fontBgColor"
+              @update:modelValue="(value) => (fontBgColor = value, editor?.chain().focus().toggleHighlight({ color: value }).run())" />
           </NPopover>
 
-          <NPopselect :disabled="!isFocused" size="small" scrollable :value="currentFontSize"
-            @update:value="(value: string) => execCommand('fontSize', value)" :options="fontSizeOptions">
-            <NButton :disabled="!isFocused" :type="isState('fontSize') ? 'primary' : 'default'">
-              <NIcon>
-                <IconTextResize />
-              </NIcon>
-            </NButton>
-          </NPopselect>
         </NButtonGroup>
+
+
         <NDivider vertical />
+
+
         <NButtonGroup size="small">
-          <NButton :disabled="!isFocused" :type="isState('img') ? 'primary' : 'default'"
-            @click="showAssetsModal = true">
+
+          <NButton @click="showAssetsModal = true">
             <NIcon>
               <IconUpload />
             </NIcon>
           </NButton>
 
-          <NPopover :disabled="!isFocused"
-            @update:show="(show: boolean) => { if (show) saveSelection(); else restoreSelection(); }">
+          <NPopover @update:show="(show: boolean) => {
+            if (show) url = editor?.getAttributes('link').href
+            else url = undefined
+          }">
             <template #trigger>
-              <NButton :disabled="!isFocused" :type="isState('a') ? 'primary' : 'default'">
+              <NButton :type="editor?.isActive('link') ? 'primary' : 'default'">
                 <NIcon>
                   <IconLink />
                 </NIcon>
               </NButton>
             </template>
             <NInputGroup>
-              <NInput :input-props="{ type: 'url' }" size="small" v-model="aHref" />
-              <NButton type="primary"
-                @click="(restoreSelection(), execCommand('createLink', aHref), aHref = undefined)">
+              <NInput :input-props="{ type: 'url' }" size="small" v-model="url" />
+              <NButton :type="editor?.isActive('link') ? 'error' : 'default'"
+                @click="editor?.chain().focus().unsetLink().run()" :disabled="!editor?.isActive('link')">
+                <NIcon>
+                  <IconLinkOff />
+                </NIcon>
+              </NButton>
+              <NButton type="primary" @click="setLink">
                 <NIcon>
                   <IconArrowRight />
                 </NIcon>
@@ -117,56 +134,81 @@
             </NInputGroup>
           </NPopover>
 
-          <NButton :disabled="!isFocused" :type="isState('insertOrderedList') ? 'primary' : 'default'"
-            @click="execCommand('insertOrderedList')">
+          <NButton :type="editor?.isActive('bulletList') ? 'primary' : 'default'"
+            @click="editor?.chain().focus().toggleBulletList().run()">
             <NIcon>
               <IconListNumbers />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!isFocused" :type="isState('insertUnorderedList') ? 'primary' : 'default'"
-            @click="execCommand('insertUnorderedList')">
+          <NButton :type="editor?.isActive('orderedList') ? 'primary' : 'default'"
+            @click="editor?.chain().focus().toggleOrderedList().run()">
             <NIcon>
               <IconList />
             </NIcon>
           </NButton>
+
         </NButtonGroup>
+
 
         <NDivider vertical />
 
+
         <NButtonGroup size="small">
-          <NButton :disabled="!isFocused" :type="isState('justifyLeft') ? 'primary' : 'default'"
-            @click="execCommand('justifyLeft')">
+
+          <NButton :type="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'default'"
+            @click="editor?.chain().focus().setTextAlign('left').run()">
             <NIcon>
               <IconAlignLeft />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!isFocused" :type="isState('justifyCenter') ? 'primary' : 'default'"
-            @click="execCommand('justifyCenter')">
+          <NButton :type="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'default'"
+            @click="editor?.chain().focus().setTextAlign('center').run()">
             <NIcon>
               <IconAlignCenter />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!isFocused" :type="isState('justifyRight') ? 'primary' : 'default'"
-            @click="execCommand('justifyRight')">
+          <NButton :type="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'default'"
+            @click="editor?.chain().focus().setTextAlign('right').run()">
             <NIcon>
               <IconAlignRight />
             </NIcon>
           </NButton>
+
+
+          <NButton :type="editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
+            @click="editor?.chain().focus().setTextAlign('justify').run()">
+            <NIcon>
+              <IconAlignJustified />
+            </NIcon>
+          </NButton>
+
+
+
+          <NButton
+            :type="editor?.isActive({ textAlign: 'left' }) || editor?.isActive({ textAlign: 'center' }) || editor?.isActive({ textAlign: 'right' }) || editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
+            @click="editor?.chain().focus().unsetTextAlign().run()">
+            <NIcon>
+              <IconTextWrap />
+            </NIcon>
+          </NButton>
+
         </NButtonGroup>
 
         <NDivider vertical />
 
         <NButtonGroup size="small">
-          <NButton :disabled="!isSupported('undo')" @click="execCommand('undo')">
+          <NButton @click="editor?.chain().focus().undo().run()"
+            :disabled="!editor?.can().chain().focus().undo().run()">
             <NIcon>
               <IconArrowBackUp />
             </NIcon>
           </NButton>
 
-          <NButton :disabled="!isSupported('redo')" @click="execCommand('redo')">
+          <NButton @click="editor?.chain().focus().redo().run()"
+            :disabled="!editor?.can().chain().focus().redo().run()">
             <NIcon>
               <IconArrowForwardUp />
             </NIcon>
@@ -176,226 +218,274 @@
       </NFlex>
     </NScrollbar>
 
-    <NScrollbar class="ExternalRicheditor">
-      <!-- @vue-ignore -->
-      <div :id class="internalRichEditor" contenteditable spellcheck="false" ref="editorDiv" @focusin="isFocused = true"
-        @focusout="isFocused = false; updateContent()" :innerHTML="modelValue"></div>
+    <NScrollbar class="externalRichEditor">
+      <TiptapEditorContent class="internalRichEditor" :editor="editor" />
     </NScrollbar>
   </NFlex>
 </template>
 
 <script setup lang="ts">
-// TO-DO:
-// replacement of execCommand: https://github.com/cihad/yaz
-// using markdown instead https://github.com/jefago/tiny-markdown-editor
 import {
-  NButton,
-  NButtonGroup,
-  NRadio,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-  NPopselect,
-  NScrollbar,
-  NFlex,
-  NPopover,
-  NDivider,
-  NInputGroup,
-  NInput,
+	NButton,
+	NButtonGroup,
+	NRadio,
+	NDrawer,
+	NDrawerContent,
+	NIcon,
+	NPopselect,
+	NScrollbar,
+	NFlex,
+	NPopover,
+	NDivider,
+	NInputGroup,
+	NInput,
 } from "naive-ui";
 import {
-  IconBold,
-  IconItalic,
-  IconUnderline,
-  IconStrikethrough,
-  IconHeading,
-  IconColorPicker,
-  IconHighlight,
-  IconListNumbers,
-  IconList,
-  IconH1,
-  IconH2,
-  IconH3,
-  IconH4,
-  IconH5,
-  IconH6,
-  IconTextResize,
-  IconUpload,
-  IconLink,
-  IconArrowRight,
-  IconAlignLeft,
-  IconAlignCenter,
-  IconAlignRight,
-  IconArrowBackUp,
-  IconArrowForwardUp
+	IconBold,
+	IconItalic,
+	IconUnderline,
+	IconStrikethrough,
+	IconHeading,
+	IconColorPicker,
+	IconHighlight,
+	IconListNumbers,
+	IconList,
+	IconH1,
+	IconH2,
+	IconH3,
+	IconH4,
+	IconH5,
+	IconH6,
+	IconTextSize,
+	IconUpload,
+	IconLink,
+	IconArrowRight,
+	IconAlignLeft,
+	IconAlignCenter,
+	IconAlignRight,
+	IconArrowBackUp,
+	IconArrowForwardUp,
+	IconLinkOff,
+	IconAlignJustified,
+	IconTextWrap,
 } from "@tabler/icons-vue";
+import TiptapTextStyle from "@tiptap/extension-text-style";
+import { Color as TiptapColor } from "@tiptap/extension-color";
+import TiptapHighlight from "@tiptap/extension-highlight";
+import TiptapUnderline from "@tiptap/extension-underline";
+import TiptapTextAlign from "@tiptap/extension-text-align";
 
 const modelValue = defineModel<string>();
-const id = randomID()
-
-onMounted(() => {
-  document.execCommand("enableObjectResizing", false, "true");
-  for (const event of ["mouseup", "keyup", "selectionchange"]) {
-    document.getElementById(id)?.addEventListener(event, () => {
-      if (window?.getSelection()?.anchorNode?.textContent?.length !== 0)
-        saveSelection();
-      else currentSelection.value = undefined;
-    });
-  }
-});
 
 const showAssetsModal = ref(false);
-const currentSelection = ref<Range>();
-const isFocused = ref(false);
-const foreColor = ref();
-const backColor = ref();
-const showForeColorPicker = ref(false);
-const showBackColorPicker = ref(false);
-const aHref = ref();
-const currentHeading = ref<string>("p");
+const fontColor = ref();
+const fontBgColor = ref();
+const url = ref();
+
+function renderHeadingOption({ value }: { value: number }) {
+	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
+}
 
 const headingOptions = [
-  {
-    label: () => h("h1", { style: { margin: 0 } }, "Heading 1"),
-    value: "h1",
-    icon: () => h(NIcon, () => h(IconH1)),
-  },
-  {
-    label: () => h("h2", { style: { margin: 0 } }, "Heading 2"),
-    value: "h2",
-    icon: () => h(NIcon, () => h(IconH2)),
-  },
-  {
-    label: () => h("h3", { style: { margin: 0 } }, "Heading 3"),
-    value: "h3",
-    icon: () => h(NIcon, () => h(IconH3)),
-  },
-  {
-    label: () => h("h4", { style: { margin: 0 } }, "Heading 4"),
-    value: "h4",
-    icon: () => h(NIcon, () => h(IconH4)),
-  },
-  {
-    label: () => h("h5", { style: { margin: 0 } }, "Heading 5"),
-    value: "h5",
-    icon: () => h(NIcon, () => h(IconH5)),
-  },
-  {
-    label: () => h("h6", { style: { margin: 0 } }, "Heading 6"),
-    value: "h6",
-    icon: () => h(NIcon, () => h(IconH6)),
-  },
+	{
+		value: 1,
+	},
+	{
+		value: 2,
+	},
+	{
+		value: 3,
+	},
+	{
+		value: 4,
+	},
+	{
+		value: 5,
+	},
+	{
+		value: 6,
+	},
 ];
+
+function renderFontSizeOption({ value }: { value: number }) {
+	return h("span", { style: { fontSize: `${value}px` } }, "Paragraph");
+}
 
 const fontSizeOptions = [
-  {
-    label: () => h("span", { style: { fontSize: "xxx-large" } }, "Paragraph"),
-    value: 7,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "xx-large" } }, "Paragraph"),
-    value: 6,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "x-large" } }, "Paragraph"),
-    value: 5,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "large" } }, "Paragraph"),
-    value: 4,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "medium" } }, "Paragraph"),
-    value: 3,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "small" } }, "Paragraph"),
-    value: 2,
-  },
-  {
-    label: () => h("span", { style: { fontSize: "x-small" } }, "Paragraph"),
-    value: 1,
-  },
+	{
+		value: 8,
+	},
+	{
+		value: 10,
+	},
+	{
+		value: 12,
+	},
+	{
+		value: 14,
+	},
+	{
+		value: 16,
+	},
+	{
+		value: 18,
+	},
+	{
+		value: 20,
+	},
+	{
+		value: 24,
+	},
+	{
+		value: 30,
+	},
+	{
+		value: 48,
+	},
+	{
+		value: 60,
+	},
+	{
+		value: 72,
+	},
 ];
-const currentFontSize = computed(() =>
-  currentSelection.value
-    ? {
-      "xxx-large": 7,
-      "xx-large": 6,
-      "x-large": 5,
-      large: 4,
-      medium: 3,
-      small: 2,
-      "x-small": 1,
-    }[
-    currentSelection.value.commonAncestorContainer.parentElement?.style
-      .fontSize ?? "medium"
-    ]
-    : null,
-);
 
-function isState(state: string) {
-  switch (state) {
-    case "heading":
-      return (
-        currentSelection.value?.commonAncestorContainer.parentElement?.tagName
-          .toLowerCase()
-          .charAt(0) === "h"
-      );
-    case "a":
-    case "img":
-      return (
-        currentSelection.value?.commonAncestorContainer.parentElement?.tagName.toLowerCase() ===
-        state
-      );
-    default:
-      return document.queryCommandState(state);
-  }
+function setLink() {
+	// cancelled
+	if (url.value === null) {
+		return;
+	}
+
+	// empty
+	if (url.value === "") {
+		editor.value?.chain().focus().extendMarkRange("link").unsetLink().run();
+
+		return;
+	}
+
+	// update link
+	editor.value
+		?.chain()
+		.focus()
+		.extendMarkRange("link")
+		.setLink({ href: url.value })
+		.run();
 }
 
-function isSupported(command: string) {
-  return document.queryCommandEnabled(command)
+declare module "@tiptap/core" {
+	interface Commands<ReturnType> {
+		fontSize: {
+			/**
+			 * Set the font size
+			 */
+			setFontSize: (size: string) => ReturnType;
+			/**
+			 * Unset the font size
+			 */
+			unsetFontSize: () => ReturnType;
+		};
+	}
 }
 
-function execCommand(name: string, value?: string) {
-  if (value) document.execCommand(name, false, value);
-  else document.execCommand(name);
-}
+const TextStyleExtended = TiptapTextStyle.extend({
+	addAttributes() {
+		return {
+			...this.parent?.(),
+			fontSize: {
+				default: null,
+				parseHTML: (element) => element.style.fontSize.replace("px", ""),
+				renderHTML: (attributes) => {
+					if (!attributes.fontSize) {
+						return {};
+					}
+					return {
+						style: `font-size: ${attributes.fontSize}px`,
+					};
+				},
+			},
+		};
+	},
 
-const saveSelection = () => {
-  const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0) {
-    currentSelection.value = selection.getRangeAt(0);
-  }
-};
+	addCommands() {
+		return {
+			...this.parent?.(),
+			setFontSize:
+				(fontSize) =>
+				({ commands }) => {
+					return commands.setMark(this.name, { fontSize: fontSize });
+				},
+			unsetFontSize:
+				() =>
+				({ chain }) => {
+					return chain()
+						.setMark(this.name, { fontSize: null })
+						.removeEmptyTextStyle()
+						.run();
+				},
+		};
+	},
+});
 
-const restoreSelection = () => {
-  if (currentSelection.value) {
-    if (window.getSelection) window?.getSelection()?.removeAllRanges();
-    window?.getSelection()?.addRange(currentSelection.value);
-  }
-};
+const editor = useEditor({
+	content: modelValue.value,
+	extensions: [
+		TiptapStarterKit,
+		TiptapImage,
+		TiptapColor,
+		TextStyleExtended,
+		TiptapHighlight,
+		TiptapUnderline,
+		TiptapTextAlign,
+	],
+	onUpdate: ({ editor }) => {
+		const content = editor.getHTML();
+		modelValue.value = content;
+	},
+});
 
-function updateContent() {
-  modelValue.value = document.getElementById(id)?.innerHTML;
-};
+onBeforeUnmount(() => {
+	unref(editor)?.destroy();
+});
+
+const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
 </script>
 
 <style>
-.ExternalRicheditor {
+.ProseMirror-focused {
+  outline: none;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.externalRichEditor {
   max-height: 250px;
+  border-radius: 3px;
+  background-color: transparent;
+  border: 1px solid rgb(224, 224, 230);
+  transition: all .3s cubic-bezier(.4, 0, .2, 1);
+
+}
+
+.ProseMirror,
+.internalRichEditor {
+  min-height: 100px;
 }
 
 .internalRichEditor {
   min-height: 100px;
-  outline: 0px solid transparent;
-  border: 1px solid #efeff2;
-  border-radius: 10px;
   padding: 15px;
-  width: calc(100% - 32px);
+  width: 100%;
 }
 
-.dark .internalRichEditor {
-  border-color: #2d2d31;
+.externalRichEditor:hover,
+.externalRichEditor:focus {
+  border-color: v-bind(primaryColor);
+}
+
+.dark .externalRichEditor {
+  border-color: transparent;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 </style>
