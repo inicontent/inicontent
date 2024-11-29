@@ -4,7 +4,7 @@
             ? field.labelProps(modelValue) ?? {}
             : field.labelProps
         : {})">
-        <NSelect :value="selectValue" @update:value="onUpdateSelectValue" :options remote clearable filterable
+        <NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote clearable filterable
             :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray" :consistent-menu-width="false"
             max-tag-count="responsive" :onFocus :onSearch v-bind="field.inputProps
                 ? typeof field.inputProps === 'function'
