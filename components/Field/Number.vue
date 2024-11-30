@@ -57,7 +57,7 @@ const rule: FormItemRule = {
 	required: field.required,
 	trigger: ["blur", "input"],
 	validator() {
-		if (!modelValue.value)
+		if (modelValue.value === null || modelValue.value === undefined)
 			return field.required
 				? new Error(`${t(field.key)} ${t("isRequired")}`)
 				: true;
