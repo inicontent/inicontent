@@ -1,5 +1,5 @@
 <template>
-    <NIconWrapper :color="value === true ? 'green' : 'red'" :border-radius="50" :size="18">
+    <NIconWrapper :color="value === true ? undefined : '#D32F2F'" :border-radius="50" :size="18">
         <NIcon :size="16">
             <IconCheck v-if="value === true" />
             <IconX v-else />
