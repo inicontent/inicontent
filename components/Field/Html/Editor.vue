@@ -4,7 +4,7 @@
       <AssetCard targetID="assetsModal">
         <template v-slot="{ asset }">
           <NRadio v-if="asset.type !== 'dir'"
-            @update:checked="(editor?.chain().focus().setImage({ src: asset.publicURL }).run(),showAssetsModal = false)" />
+            @update:checked="(editor?.chain().focus().setImage({ src: asset.publicURL }).run(), showAssetsModal = false)" />
         </template>
       </AssetCard>
     </NDrawerContent>
@@ -445,10 +445,7 @@ const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
 </script>
 
 <style>
-.ProseMirror-focused {
-  outline: none;
-}
-
+.ProseMirror-focused,
 .ProseMirror:focus {
   outline: none;
 }
