@@ -1,4 +1,3 @@
-import { FormatObjectCriteriaValue } from "inibase/utils";
 import { isArrayOfObjects } from "inibase/utils";
 
 function _generateSearchInOption(
@@ -39,29 +38,3 @@ export function generateSearchInOptions(
 		return RETURN.filter(({ value }) => !excludedKeys.includes(value));
 	return RETURN;
 }
-
-export const generateSearchArray = (searchQuery: any) => {
-	const RETURN: any = {};
-	for (const [condition, items] of Object.entries(searchQuery)) {
-		if (!RETURN[condition]) RETURN[condition] = [];
-		for (const [key, value] of Object.entries(items)) {
-			if (["and", "or"].includes(key))
-				RETURN[condition].push({ [key]: generateSearchArray(value) });
-			else RETURN[condition].push([key, ...FormatObjectCriteriaValue(value)]);
-		}
-	}
-	return RETURN;
-};
-
-export const generateSearchInput = (searchArray: any) => {
-	const RETURN: Record<string, any> = {};
-	for (const condition in searchArray) {
-		for (const item of searchArray[condition]) {
-			if (!RETURN[condition]) RETURN[condition] = {};
-			if (Array.isArray(item) && item[0])
-				RETURN[condition][item[0]] = `${item[1]}${item[2]}`;
-			else RETURN[condition] = generateSearchInput(item);
-		}
-	}
-	return RETURN;
-};

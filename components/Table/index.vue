@@ -93,8 +93,11 @@
 				</NButtonGroup>
 			</NFlex>
 		</template>
-		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
-			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+		<template v-if="hasSlot('default')">
+			<slot :data></slot>
+		</template>
+		<NDataTable v-else :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
+			:columns :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" />
 	</NCard>
 </template>
@@ -126,15 +129,20 @@ import {
 	NTooltip,
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
+import { FormatObjectCriteriaValue } from "inibase/utils";
 
-definePageMeta({
-	middleware: ["database", "user", "dashboard", "table"],
-	layout: "table",
+defineExpose({
+	search: { execute: executeSearch, reset: resetSearch },
+	delete: DELETE,
 });
 
-defineExpose({ search: { execute: executeSearch, reset: resetSearch } });
+defineSlots<{
+	default(props: { data: apiResponse<Item[]> | null }): any;
+	actions(): any;
+}>();
 
-defineSlots<{ actions(): any }>();
+const slots = useSlots();
+const hasSlot = (name: string) => !!slots[name];
 
 onBeforeRouteUpdate(() => {
 	clearNuxtState("Drawer");
@@ -166,6 +174,32 @@ const searchArray = ref<SearchType>(
 		: { and: [[null, "=", null]] },
 );
 
+function generateSearchArray(searchQuery: any) {
+	const RETURN: any = {};
+	for (const [condition, items] of Object.entries(searchQuery)) {
+		if (!RETURN[condition]) RETURN[condition] = [];
+		for (const [key, value] of Object.entries(items)) {
+			if (["and", "or"].includes(key))
+				RETURN[condition].push({ [key]: generateSearchArray(value) });
+			else RETURN[condition].push([key, ...FormatObjectCriteriaValue(value)]);
+		}
+	}
+	return RETURN;
+}
+
+function generateSearchInput(searchArray: any) {
+	const RETURN: Record<string, any> = {};
+	for (const condition in searchArray) {
+		for (const item of searchArray[condition]) {
+			if (!RETURN[condition]) RETURN[condition] = {};
+			if (Array.isArray(item) && item[0])
+				RETURN[condition][item[0]] = `${item[1]}${item[2]}`;
+			else RETURN[condition] = generateSearchInput(item);
+		}
+	}
+	return RETURN;
+}
+
 function resetSearch() {
 	searchArray.value = {
 		and: [[null, "=", null]],
@@ -173,9 +207,8 @@ function resetSearch() {
 	if (whereQuery.value) whereQuery.value = undefined;
 }
 function executeSearch(search?: SearchType) {
-	whereQuery.value = Inison.stringify(
-		generateSearchInput(search ?? searchArray.value),
-	);
+	if (search) searchArray.value = search;
+	whereQuery.value = Inison.stringify(generateSearchInput(searchArray.value));
 	pagination.onUpdatePage(1);
 }
 
