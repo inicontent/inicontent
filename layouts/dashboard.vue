@@ -219,9 +219,8 @@ const breadcrumbArray = computed(() =>
 	route.path
 		.split("/")
 		.filter(Boolean)
-		.filter(
-			(_path, index) =>
-				!String(route.matched[0].name)?.startsWith("database") || index !== 0,
+		.slice(
+			!["database", "admin"].includes(route.matched[0].name as string) ? 1 : 0,
 		),
 );
 function breadCrumbItemLink(index: number) {
@@ -232,7 +231,7 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(String(route.matched[0].name)?.startsWith("database") ? 3 : 2),
+						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
 				.join("/") + (database.value.slug === "inicontent" ? "" : "/tables")
 		);

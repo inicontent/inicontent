@@ -1,87 +1,81 @@
 <template>
-    <NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
-        <NGridItem v-for="table in filteredTables" :key="table.slug">
-            <NuxtLink :to="getTableUrl(table.slug)">
-                <NCard hoverable>
-                    <template #header>
-                        <NFlex align="center">
-                            <NIconWrapper :border-radius="50">
-                                <NIcon style="font-style: normal">
-                                    <component :is="getTableIcon(table)" />
-                                </NIcon>
-                            </NIconWrapper>
-                            <NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
-                        </NFlex>
-                    </template>
-                    <template #header-extra>
-                        <NDropdown :options="getDropdownOptions(table)" :renderLabel>
-                            <NButton circle @mouseover="Hover[table.slug] = true"
-                                @mouseleave="Hover[table.slug] = false">
-                                <NIcon>
-                                    <IconArrowRight
-                                        v-if="Hover[table.slug] || (table.slug === 'assets' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
-                                    <IconDots v-else />
-                                </NIcon>
-                            </NButton>
-                        </NDropdown>
-                    </template>
-                </NCard>
-            </NuxtLink>
-        </NGridItem>
+	<NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
+		<NGridItem v-for="table in filteredTables" :key="table.slug">
+			<NuxtLink :to="getTableUrl(table.slug)">
+				<NCard hoverable>
+					<template #header>
+						<NFlex align="center">
+							<NIconWrapper :border-radius="50">
+								<NIcon style="font-style: normal">
+									<component :is="getTableIcon(table)" />
+								</NIcon>
+							</NIconWrapper>
+							<NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
+						</NFlex>
+					</template>
+					<template #header-extra>
+						<NDropdown :options="getDropdownOptions(table)" :renderLabel>
+							<NButton circle @mouseover="Hover[table.slug] = true"
+								@mouseleave="Hover[table.slug] = false">
+								<NIcon>
+									<IconArrowRight
+										v-if="Hover[table.slug] || (table.slug === 'assets' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
+									<IconDots v-else />
+								</NIcon>
+							</NButton>
+						</NDropdown>
+					</template>
+				</NCard>
+			</NuxtLink>
+		</NGridItem>
 
-        <NGridItem>
-            <NPopover placement="bottom">
-                <template #trigger>
-                    <NPopover trigger="click" v-model:show="showPopover">
-                        <template #trigger>
-                            <NCard style="cursor: pointer" content-style="padding: 18px 0" hoverable
-                                @click="showPopover = !showPopover">
-                                <NFlex justify="center" align="center">
-                                    <NIcon size="36">
-                                        <IconPlus />
-                                    </NIcon>
-                                </NFlex>
-                            </NCard>
-                        </template>
-                        <NInputGroup>
-                            <NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
-                                :placeholder="t('tableSlug')">
-                                <template #suffix>
-                                    <NIcon>
-                                        <IconLetterCase />
-                                    </NIcon>
-                                </template>
-                            </NInput>
-                            <NButton @click="createTable" :loading="Loading.Table">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconChevronRight />
-                                    </NIcon>
-                                </template>
-                            </NButton>
-                        </NInputGroup>
-                    </NPopover>
-                </template>
-                {{ t('newTable') }}
-            </NPopover>
-        </NGridItem>
-    </NGrid>
+		<NGridItem>
+			<NPopover placement="bottom">
+				<template #trigger>
+					<NPopover trigger="click" v-model:show="showPopover">
+						<template #trigger>
+							<NCard style="cursor: pointer" content-style="padding: 18px 0" hoverable
+								@click="showPopover = !showPopover">
+								<NFlex justify="center" align="center">
+									<NIcon size="36">
+										<IconPlus />
+									</NIcon>
+								</NFlex>
+							</NCard>
+						</template>
+						<NInputGroup>
+							<NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
+								:placeholder="t('tableSlug')">
+								<template #suffix>
+									<NIcon>
+										<IconLetterCase />
+									</NIcon>
+								</template>
+							</NInput>
+							<NButton @click="createTable" :loading="Loading.Table">
+								<template #icon>
+									<NIcon>
+										<IconChevronRight />
+									</NIcon>
+								</template>
+							</NButton>
+						</NInputGroup>
+					</NPopover>
+				</template>
+				{{ t('newTable') }}
+			</NPopover>
+		</NGridItem>
+	</NGrid>
 </template>
 
 <script lang="ts" setup>
 import {
-	IconAppWindow,
 	IconArrowRight,
 	IconChevronRight,
 	IconDots,
-	IconFingerprint,
-	IconFolders,
-	IconLanguage,
 	IconLetterCase,
 	IconPlus,
 	IconSettings,
-	IconTournament,
-	IconUsers,
 	IconWebhook,
 } from "@tabler/icons-vue";
 import {
@@ -120,13 +114,9 @@ const user = useState<User>("users");
 const Hover = ref<Record<string, boolean>>({});
 const newTableSlug = ref();
 const route = useRoute();
-const database = useState<Database>("database");
 
 function getTableUrl(slug: string) {
-	if (!route.params.database && database.value?.slug !== "inicontent")
-		return `/admin/tables/${slug}`;
-
-	return `/${modelValue.value.slug}/admin/tables/${slug}`;
+	return `/${route.params.database ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`;
 }
 
 const createTable = async () => {
