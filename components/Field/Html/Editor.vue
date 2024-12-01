@@ -4,7 +4,7 @@
       <AssetCard targetID="assetsModal">
         <template v-slot="{ asset }">
           <NRadio v-if="asset.type !== 'dir'"
-            @update:checked="editor?.chain().focus().setImage({ src: asset.publicURL }).run()" />
+            @update:checked="(editor?.chain().focus().setImage({ src: asset.publicURL }).run(),showAssetsModal = false)" />
         </template>
       </AssetCard>
     </NDrawerContent>
@@ -250,12 +250,6 @@ import {
 	IconHighlight,
 	IconListNumbers,
 	IconList,
-	IconH1,
-	IconH2,
-	IconH3,
-	IconH4,
-	IconH5,
-	IconH6,
 	IconTextSize,
 	IconUpload,
 	IconLink,
