@@ -1,102 +1,102 @@
 <template>
-    <LazyTableDrawer v-if="!isMobile" />
-    <NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
-        content-style="padding: 0" :bordered="false">
-        <template #header-extra>
-            <NFlex align="center">
-                <slot name="actions"></slot>
-                <NButtonGroup>
-                    <NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
-                        :style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click"
-                        scrollable>
-                        <template #trigger>
-                            <NTooltip :delay="500">
-                                <template #trigger>
-                                    <NButton round>
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconSearch />
-                                            </NIcon>
-                                        </template>
-                                    </NButton>
-                                </template>
-                                {{ t("search") }}
-                            </NTooltip>
-                        </template>
-                        <template #footer>
-                            <NFlex justify="end">
-                                <NButtonGroup>
-                                    <NButton round type="error" secondary :loading="Loading.data"
-                                        :disabled="isSearchDisabled" @click="resetSearch">
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconX />
-                                            </NIcon>
-                                        </template>
-                                        {{ t("reset") }}
-                                    </NButton>
-                                    <NButton round type="primary" secondary :loading="Loading.data"
-                                        :disabled="isSearchDisabled" @click="() => executeSearch()">
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconSearch />
-                                            </NIcon>
-                                        </template>
-                                        {{ t("search") }}
-                                    </NButton>
-                                </NButtonGroup>
-                            </NFlex>
-                        </template>
-                        <TableSearch v-model="searchArray" :callback="executeSearch" />
-                    </NPopover>
-                    <NDropdown :options="toolsDropdownOptions" trigger="click">
-                        <NTooltip :delay="500">
-                            <template #trigger>
-                                <NButton round>
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconTools />
-                                        </NIcon>
-                                    </template>
-                                </NButton>
-                            </template>
-                            {{ t("tools") }}
-                        </NTooltip>
-                    </NDropdown>
+	<LazyTableDrawer v-if="!isMobile" />
+	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
+		content-style="padding: 0" :bordered="false">
+		<template #header-extra>
+			<NFlex align="center">
+				<slot name="actions"></slot>
+				<NButtonGroup>
+					<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
+						:style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click"
+						scrollable>
+						<template #trigger>
+							<NTooltip :delay="500">
+								<template #trigger>
+									<NButton round>
+										<template #icon>
+											<NIcon>
+												<IconSearch />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ t("search") }}
+							</NTooltip>
+						</template>
+						<template #footer>
+							<NFlex justify="end">
+								<NButtonGroup>
+									<NButton round type="error" secondary :loading="Loading.data"
+										:disabled="isSearchDisabled" @click="resetSearch">
+										<template #icon>
+											<NIcon>
+												<IconX />
+											</NIcon>
+										</template>
+										{{ t("reset") }}
+									</NButton>
+									<NButton round type="primary" secondary :loading="Loading.data"
+										:disabled="isSearchDisabled" @click="() => executeSearch()">
+										<template #icon>
+											<NIcon>
+												<IconSearch />
+											</NIcon>
+										</template>
+										{{ t("search") }}
+									</NButton>
+								</NButtonGroup>
+							</NFlex>
+						</template>
+						<TableSearch v-model="searchArray" :callback="executeSearch" />
+					</NPopover>
+					<NDropdown :options="toolsDropdownOptions" trigger="click">
+						<NTooltip :delay="500">
+							<template #trigger>
+								<NButton round>
+									<template #icon>
+										<NIcon>
+											<IconTools />
+										</NIcon>
+									</template>
+								</NButton>
+							</template>
+							{{ t("tools") }}
+						</NTooltip>
+					</NDropdown>
 
-                    <NTooltip :delay="500">
-                        <template #trigger>
-                            <NButton round :disabled="!table.schema" tag="a"
-                                :href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-                                @click.prevent="() => {
-                                    if (!isMobile)
-                                        Drawer = {
-                                            ...Drawer,
-                                            table: table.slug,
-                                            id: null,
-                                            data: {},
-                                            show: true,
-                                        };
-                                    else
-                                        navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
-                                        );
-                                }">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconPlus />
-                                    </NIcon>
-                                </template>
-                            </NButton>
-                        </template>
-                        {{ t("newItem") }}
-                    </NTooltip>
-                </NButtonGroup>
-            </NFlex>
-        </template>
-        <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
-            :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-            :row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" />
-    </NCard>
+					<NTooltip :delay="500">
+						<template #trigger>
+							<NButton round :disabled="!table.schema" tag="a"
+								:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+								@click.prevent="() => {
+									if (!isMobile)
+										Drawer = {
+											...Drawer,
+											table: table.slug,
+											id: null,
+											data: {},
+											show: true,
+										};
+									else
+										navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
+										);
+								}">
+								<template #icon>
+									<NIcon>
+										<IconPlus />
+									</NIcon>
+								</template>
+							</NButton>
+						</template>
+						{{ t("newItem") }}
+					</NTooltip>
+				</NButtonGroup>
+			</NFlex>
+		</template>
+		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
+			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" />
+	</NCard>
 </template>
 
 <script setup lang="ts">
@@ -405,6 +405,9 @@ watchEffect(() => {
 			ellipsis: {
 				tooltip: true,
 			},
+			resizable:
+				(!Array.isArray(field.type) && field.type === "array") ||
+				(Array.isArray(field.type) && field.type.includes("array")),
 			sortOrder: sortObject.value[field.key]
 				? `${sortObject.value[field.key]}end`
 				: false,
