@@ -481,5 +481,6 @@ const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
 .dark .externalRichEditor {
   border-color: transparent;
   background-color: rgba(255, 255, 255, 0.1);
+  resize: vertical;
 }
 </style>
