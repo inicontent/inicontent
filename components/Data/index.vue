@@ -21,7 +21,7 @@
             <LazyColumnColor v-else-if="detectedFieldType === 'color'" :value />
             <LazyColumnUrl v-else-if="detectedFieldType === 'url'" :value />
             <LazyColumnEmail v-else-if="detectedFieldType === 'email'" :value />
-            <LazyColumnHtml v-else-if="detectedFieldType === 'html'" :value />
+            <LazyDataHtml v-else-if="detectedFieldType === 'html'" :value />
             <LazyColumnPassword v-else-if="detectedFieldType === 'password'" :value />
             <LazyColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
             <LazyColumnDate v-else-if="detectedFieldType === 'date'" :value />
