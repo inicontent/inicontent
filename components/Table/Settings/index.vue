@@ -314,6 +314,8 @@ function renderSingleLabel(
 		},
 	);
 }
+
+// TO-DO: Make it reactive
 function generateLabelOptions(schema?: Schema, prefix?: string) {
 	let RETURN: {
 		label: string;

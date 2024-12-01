@@ -4,7 +4,7 @@ import type {
 	ComparisonOperator,
 } from "inibase";
 import type { useMessage, useDialog } from "naive-ui";
-import type languages from "./languages";
+import type languages from "~/composables/Translation/languages";
 
 type onCreateCallback = (index: number) => onCreateType;
 type onCreateType = string | number | boolean | Data;

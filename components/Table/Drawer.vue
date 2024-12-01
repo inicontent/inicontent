@@ -1,6 +1,6 @@
 <template>
     <NDrawer v-if="drawer" v-model:show="drawer.show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
-        :placement="language === 'ar' ? 'left' : 'right'" @update:width="val => (drawerWidth = val)">
+        :placement="Language === 'ar' ? 'left' : 'right'" @update:width="val => (drawerWidth = val)">
         <NDrawerContent closable>
             <template #header>
                 <span v-if="drawer.id">
@@ -69,7 +69,7 @@ import {
 } from "naive-ui";
 
 const appConfig = useAppConfig();
-const language = useCookie("Language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const drawerWidth = useCookie<number | string>("drawerWidth", {
 	sameSite: true,
 });
