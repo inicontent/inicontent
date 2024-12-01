@@ -12,6 +12,10 @@
 		"@fontsource-variable/cairo": "^5.1.0",
 		"@nuxtjs/device": "3.2.2",
 		"@tabler/icons-vue": "^3.22.0",
+		"@tiptap/extension-color": "^2.10.3",
+		"@tiptap/extension-highlight": "^2.10.3",
+		"@tiptap/extension-text-align": "^2.10.3",
+		"@tiptap/extension-underline": "^2.10.3",
 		"inibase": "latest",
 		"inidot": "latest",
 		"inison": "latest",
@@ -19,11 +23,10 @@
 		"nuxt": "3.14.1592",
 		"nuxt-tiptap-editor": "2.1.1",
 		"nuxtjs-naive-ui": "^1.0.2",
-		"vuedraggable": "4.1.0",
-		"@tiptap/extension-color": "^2.10.3",
-		"@tiptap/extension-highlight": "^2.10.3",
-		"@tiptap/extension-text-align": "^2.10.3",
-		"@tiptap/extension-underline": "^2.10.3"
+		"vuedraggable": "4.1.0"
 	},
-	"packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"lefthook": "^1.8.4"
+	}
 }
