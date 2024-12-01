@@ -20,22 +20,22 @@
 
 <script lang="ts" setup>
 import {
-    IconFileMusic,
-    IconFileSpreadsheet,
-    IconFileTypeDoc,
-    IconFileTypeDocx,
-    IconFileTypography,
-    IconFileTypeJs,
-    IconFileZip,
-    IconFileTypeTxt,
-    IconFileText,
-    IconFileTypeCss,
-    IconFileTypeHtml,
-    IconFileTypePdf,
-    IconFileTypeZip,
-    IconFolder,
-    IconVideo,
+	IconFileMusic,
+	IconFileSpreadsheet,
+	IconFileTypeDoc,
+	IconFileTypeDocx,
+	IconFileTypography,
+	IconFileTypeJs,
+	IconFileZip,
+	IconFileTypeTxt,
+	IconFileText,
+	IconFileTypeCss,
+	IconFileTypeHtml,
+	IconFileTypePdf,
+	IconFileTypeZip,
+	IconFolder,
+	IconVideo,
 } from "@tabler/icons-vue";
 
-defineProps<{ type?: string }>()
+defineProps<{ type?: string }>();
 </script>

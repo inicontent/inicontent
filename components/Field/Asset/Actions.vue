@@ -50,51 +50,53 @@
 </template>
 
 <script lang="ts" setup>
+import { IconArrowRight, IconBooks, IconLink } from "@tabler/icons-vue";
 import {
-    IconArrowRight,
-    IconBooks,
-    IconLink,
-} from "@tabler/icons-vue";
-import {
-    NButton,
-    NIcon,
-    NInput,
-    NInputGroup,
-    NPopover,
-    NTooltip,
+	NButton,
+	NIcon,
+	NInput,
+	NInputGroup,
+	NPopover,
+	NTooltip,
 } from "naive-ui";
 
 defineTranslation({
-    ar: {
-        import: "إستيراد",
-        gallery: "قائمة الملفات"
-    }
-})
+	ar: {
+		import: "إستيراد",
+		gallery: "قائمة الملفات",
+	},
+});
 
-const { field, callback } = defineProps<{ field: Field, callback: CallableFunction }>()
+const { field, callback } = defineProps<{
+	field: Field;
+	callback: CallableFunction;
+}>();
 
-const showAssetsModal = defineModel<boolean>('showAssetsModal')
+const showAssetsModal = defineModel<boolean>("showAssetsModal");
 
-const showPopover = ref(false)
-const appConfig = useAppConfig()
-const assetURLs = ref()
+const showPopover = ref(false);
+const appConfig = useAppConfig();
+const assetURLs = ref();
 const database = useState<Database>("database");
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 async function importAsset() {
-    Loading.value.import = true
-    const data = await $fetch<apiResponse<Asset | Asset[]>>(`${appConfig.apiBase}${database.value.slug ?? 'inicontent'}/assets/import${field.params ? `?${field.params}` : ''}`, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'text/plain; charset=utf-8'
-        },
-        body: assetURLs.value
-    })
-    if (data.result) {
-        assetURLs.value = undefined
-        callback(data.result)
-        showPopover.value = false
-    } else window.$message.error(data.message);
-    Loading.value.import = false
-};
+	Loading.value.import = true;
+	const data = await $fetch<apiResponse<Asset | Asset[]>>(
+		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.params ? `?${field.params}` : ""}`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "text/plain; charset=utf-8",
+			},
+			body: assetURLs.value,
+		},
+	);
+	if (data.result) {
+		assetURLs.value = undefined;
+		callback(data.result);
+		showPopover.value = false;
+	} else window.$message.error(data.message);
+	Loading.value.import = false;
+}
 </script>

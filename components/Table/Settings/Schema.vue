@@ -152,205 +152,205 @@
 
 <script lang="ts" setup>
 import {
-    IconPlus,
-    IconMenu2,
-    IconAsterisk,
-    IconTrash,
-    IconFileDescription,
-    IconFileZip,
-    IconMusic,
-    IconPhoto,
-    IconVideo,
-    type Icon,
+	IconPlus,
+	IconMenu2,
+	IconAsterisk,
+	IconTrash,
+	IconFileDescription,
+	IconFileZip,
+	IconMusic,
+	IconPhoto,
+	IconVideo,
+	type Icon,
 } from "@tabler/icons-vue";
 import {
-    NCollapse,
-    NCollapseItem,
-    NIcon,
-    NFlex,
-    NDropdown,
-    NCascader,
-    NButton,
-    NFormItem,
-    NInput,
-    NSelect,
-    NSwitch,
-    NInputNumber,
-    NTooltip,
-    type SelectOption,
+	NCollapse,
+	NCollapseItem,
+	NIcon,
+	NFlex,
+	NDropdown,
+	NCascader,
+	NButton,
+	NFormItem,
+	NInput,
+	NSelect,
+	NSwitch,
+	NInputNumber,
+	NTooltip,
+	type SelectOption,
 } from "naive-ui";
 import draggable from "vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
 
 defineTranslation({
-    ar: {
-        fieldName: "إسم الحقل",
-        fieldDescription: "",
-        allowedFiles: "الملفات المسموح بها",
-        options: "الخيارات",
-        valuesType: "نوع القيم",
-        showAsTable: "إظهار كجدول",
-        labelText: "النص الظاهري",
-        searchIn: "بحث في",
-        tableName: "إسم الجدول",
-        labelImage: "الصورة", // TO-DO: support image in table field
-        expandByDefault: "توسيع بشكل افتراضي",
-        dragToMove: "اسحب للتحريك",
-        fileType: {
-            image: "صورة",
-            video: "فيديو",
-            audio: "صوت",
-            document: "نص",
-            archive: "أرشيف",
-        },
-        allowCustomValues: "السماح بإدخال قيم جديدة",
-        username: "إسم المستخدم",
-        email: "البريد الإلكتروني",
-        password: "كلمة المرور",
-        role: "الصلاحية",
-        createdBy: "أُنشأ من قبل",
-        unique: "فريد",
-        uploadParams: "إعدادات الرفع",
-        minimumItems: "الحد الأدنى للعناصر",
-        maximumItems: "الحد الأقصى للعناصر",
-        ie: "على سبيل المثال"
-    }
+	ar: {
+		fieldName: "إسم الحقل",
+		fieldDescription: "",
+		allowedFiles: "الملفات المسموح بها",
+		options: "الخيارات",
+		valuesType: "نوع القيم",
+		showAsTable: "إظهار كجدول",
+		labelText: "النص الظاهري",
+		searchIn: "بحث في",
+		tableName: "إسم الجدول",
+		labelImage: "الصورة", // TO-DO: support image in table field
+		expandByDefault: "توسيع بشكل افتراضي",
+		dragToMove: "اسحب للتحريك",
+		fileType: {
+			image: "صورة",
+			video: "فيديو",
+			audio: "صوت",
+			document: "نص",
+			archive: "أرشيف",
+		},
+		allowCustomValues: "السماح بإدخال قيم جديدة",
+		username: "إسم المستخدم",
+		email: "البريد الإلكتروني",
+		password: "كلمة المرور",
+		role: "الصلاحية",
+		createdBy: "أُنشأ من قبل",
+		unique: "فريد",
+		uploadParams: "إعدادات الرفع",
+		minimumItems: "الحد الأدنى للعناصر",
+		maximumItems: "الحد الأقصى للعناصر",
+		ie: "على سبيل المثال",
+	},
 });
 
 function isDisabled(key?: string) {
-    if (key) {
-        const defaultFields: string[] = ["id", "createdAt", "updatedAt"];
-        switch (table.value.slug) {
-            case "users":
-                defaultFields.push(
-                    "username",
-                    "email",
-                    "password",
-                    "role",
-                    "createdBy",
-                );
-                break;
-            case "pages":
-                defaultFields.push("slug", "content", "seo");
-                break;
-            case "components":
-                defaultFields.push("component", "config", "hideOn");
-                break;
-            default:
-                break;
-        }
-        return defaultFields.includes(key);
-    }
-    return false;
+	if (key) {
+		const defaultFields: string[] = ["id", "createdAt", "updatedAt"];
+		switch (table.value.slug) {
+			case "users":
+				defaultFields.push(
+					"username",
+					"email",
+					"password",
+					"role",
+					"createdBy",
+				);
+				break;
+			case "pages":
+				defaultFields.push("slug", "content", "seo");
+				break;
+			case "components":
+				defaultFields.push("component", "config", "hideOn");
+				break;
+			default:
+				break;
+		}
+		return defaultFields.includes(key);
+	}
+	return false;
 }
 const expandedNames = defineModel<string[]>("expandedNames");
 const expandedChildNames = ref<string[]>();
 function pushToChildrenSchema(type: string, index: number) {
-    if (!schema.value[index].children)
-        schema.value[index].children = [] as Schema;
-    (schema.value[index].children as Schema).push({
-        id: `temp-${randomID()}`,
-        key: null,
-        required: false,
-        ...handleSelectedSchemaType(type),
-    } as any);
-    expandedNames.value = [schema.value[index].id as string];
-    const newElementId = (
-        (schema.value[index].children as Schema).at(-1) as Field
-    ).id as string;
-    expandedChildNames.value = [newElementId];
-    setTimeout(
-        () => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
-        300,
-    );
+	if (!schema.value[index].children)
+		schema.value[index].children = [] as Schema;
+	(schema.value[index].children as Schema).push({
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	} as any);
+	expandedNames.value = [schema.value[index].id as string];
+	const newElementId = (
+		(schema.value[index].children as Schema).at(-1) as Field
+	).id as string;
+	expandedChildNames.value = [newElementId];
+	setTimeout(
+		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
+		300,
+	);
 }
 const schema = defineModel<Schema>({
-    default: () => reactive([]),
+	default: () => reactive([]),
 });
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
 function changeFieldType(
-    { id, key, required, children }: any,
-    newType: string,
+	{ id, key, required, children }: any,
+	newType: string,
 ): Field {
-    switch (newType) {
-        case "object":
-        case "array":
-            return { id, key, type: newType, required, children };
-        default:
-            return {
-                id,
-                key,
-                ...(handleSelectedSchemaType(newType) as any),
-                required,
-            };
-    }
+	switch (newType) {
+		case "object":
+		case "array":
+			return { id, key, type: newType, required, children };
+		default:
+			return {
+				id,
+				key,
+				...(handleSelectedSchemaType(newType) as any),
+				required,
+			};
+	}
 }
 
 function renderIcon(icon: Icon) {
-    return () => h(NIcon, () => h(icon));
+	return () => h(NIcon, () => h(icon));
 }
 
 const fileTypeSelectOptions = [
-    {
-        label: t("fileType.image"),
-        value: "image",
-        icon: renderIcon(IconPhoto),
-    },
-    {
-        label: t("fileType.video"),
-        value: "video",
-        icon: renderIcon(IconVideo),
-    },
-    {
-        label: t("fileType.audio"),
-        value: "audio",
-        icon: renderIcon(IconMusic),
-    },
-    {
-        label: t("fileType.documents"),
-        value: "document",
-        icon: renderIcon(IconFileDescription),
-    },
-    {
-        label: t("fileType.archive"),
-        value: "archive",
-        icon: renderIcon(IconFileZip),
-    },
+	{
+		label: t("fileType.image"),
+		value: "image",
+		icon: renderIcon(IconPhoto),
+	},
+	{
+		label: t("fileType.video"),
+		value: "video",
+		icon: renderIcon(IconVideo),
+	},
+	{
+		label: t("fileType.audio"),
+		value: "audio",
+		icon: renderIcon(IconMusic),
+	},
+	{
+		label: t("fileType.documents"),
+		value: "document",
+		icon: renderIcon(IconFileDescription),
+	},
+	{
+		label: t("fileType.archive"),
+		value: "archive",
+		icon: renderIcon(IconFileZip),
+	},
 ];
 function selectRenderLabelWithIcon(
-    option: SelectOption & { icon: CallableFunction },
+	option: SelectOption & { icon: CallableFunction },
 ) {
-    return h(NFlex, { align: "center" }, () => [
-        option.icon(),
-        option.label as string,
-    ]);
+	return h(NFlex, { align: "center" }, () => [
+		option.icon(),
+		option.label as string,
+	]);
 }
 
 const valuesTypeSelectOptions = flatFieldsList()
-    ?.filter(({ key }) =>
-        ["string", "number", "password", "email", "url", "id"].includes(key),
-    )
-    .map((field) => ({
-        label: field.label,
-        value: field.key,
-        icon: field.icon,
-    }));
+	?.filter(({ key }) =>
+		["string", "number", "password", "email", "url", "id"].includes(key),
+	)
+	.map((field) => ({
+		label: field.label,
+		value: field.key,
+		icon: field.icon,
+	}));
 
 const tableSelectOptions = computed(() =>
-    database.value.tables?.map(({ slug }) => ({
-        label: t(slug),
-        value: slug,
-    })),
+	database.value.tables?.map(({ slug }) => ({
+		label: t(slug),
+		value: slug,
+	})),
 );
 
 function searchInSelectOptions(field: Field) {
-    return field.table
-        ? generateSearchInOptions(
-            database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
-        )
-        : [];
+	return field.table
+		? generateSearchInOptions(
+				database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
+			)
+		: [];
 }
 </script>
 

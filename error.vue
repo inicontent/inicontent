@@ -30,8 +30,8 @@ defineTranslation({
 		database: "قاعدة البيانات",
 		table: "الجدول",
 		item: "العنصر",
+		page: "الصفحة",
 	},
-	en: {},
 });
 
 if (error) {

@@ -19,38 +19,38 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex, NButton, NIcon } from 'naive-ui';
+import { NFlex, NButton, NIcon } from "naive-ui";
 
-const { field, value } = defineProps<{ field: Field, value: Item | Item[] }>()
-const route = useRoute()
+const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>();
+const route = useRoute();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database")
+const database = useState<Database>("database");
 
-const { isMobile } = useDevice()
+const { isMobile } = useDevice();
 const Drawer = useState<{
-    show: boolean;
-    id: null | string;
-    table: null | string;
-    data: any;
+	show: boolean;
+	id: null | string;
+	table: null | string;
+	data: any;
 }>("Drawer", () => ({
-    show: false,
-    id: null,
-    table: null,
-    data: {},
-}))
+	show: false,
+	id: null,
+	table: null,
+	data: {},
+}));
 async function handleClick(item: Item) {
-    if (item.id && field.table) {
-        if (!isMobile)
-            Drawer.value = {
-                ...Drawer.value,
-                id: item.id,
-                table: field.table,
-                show: true,
-            };
-        else
-            await navigateTo(
-                `${route.params.database ? `/${database.value.slug}` : ''}/admin/tables/${field.table}/${item.id}/edit`,
-            );
-    }
+	if (item.id && field.table) {
+		if (!isMobile)
+			Drawer.value = {
+				...Drawer.value,
+				id: item.id,
+				table: field.table,
+				show: true,
+			};
+		else
+			await navigateTo(
+				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/${field.table}/${item.id}/edit`,
+			);
+	}
 }
 </script>

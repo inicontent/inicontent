@@ -58,12 +58,19 @@ const rule = {
 	type: !field.isArray ? "string" : "array",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
-	validator(_: any, value: string | string[]) {
-		if (!value || (Array.isArray(value) && value.length === 0))
+	validator() {
+		if (
+			!modelValue.value ||
+			(Array.isArray(modelValue.value) && modelValue.value.length === 0)
+		)
 			return field.required
 				? new Error(`${t(field.key)} ${t("isRequired")}`)
 				: true;
-		if (Array.isArray(value) && field.min && value.length < field.min)
+		if (
+			Array.isArray(modelValue.value) &&
+			((field.min && modelValue.value.length < field.min) ||
+				(field.max && modelValue.value.length > field.max))
+		)
 			return new Error(`${t(field.key)} ${t("isNotValid")}`);
 	},
 };

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NTag, NText } from 'naive-ui';
+import { NTag, NText } from "naive-ui";
 
-const { value } = defineProps<{ value?: string }>()
+const { value } = defineProps<{ value?: string }>();
 </script>

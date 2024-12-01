@@ -70,123 +70,133 @@
 
 <script lang="ts" setup>
 import {
-    IconAppWindow,
-    IconArrowRight,
-    IconChevronRight,
-    IconDots,
-    IconFingerprint,
-    IconFolders,
-    IconLanguage,
-    IconLetterCase,
-    IconPlus,
-    IconSettings,
-    IconTournament,
-    IconUsers,
-    IconWebhook,
+	IconAppWindow,
+	IconArrowRight,
+	IconChevronRight,
+	IconDots,
+	IconFingerprint,
+	IconFolders,
+	IconLanguage,
+	IconLetterCase,
+	IconPlus,
+	IconSettings,
+	IconTournament,
+	IconUsers,
+	IconWebhook,
 } from "@tabler/icons-vue";
 import {
-    NButton,
-    NCard,
-    NDropdown,
-    NGridItem,
-    NGrid,
-    NH4,
-    NIcon,
-    NIconWrapper,
-    NInput,
-    NInputGroup,
-    NPopover,
-    NFlex,
-    type DropdownOption
+	NButton,
+	NCard,
+	NDropdown,
+	NGridItem,
+	NGrid,
+	NH4,
+	NIcon,
+	NIconWrapper,
+	NInput,
+	NInputGroup,
+	NPopover,
+	NFlex,
+	type DropdownOption,
 } from "naive-ui";
 import { NuxtLink } from "#components";
 
-const modelValue = defineModel<Database>({ required: true })
+const modelValue = defineModel<Database>({ required: true });
 
 defineTranslation({
-    ar: {
-        newTable: "جدول جديد",
-        newItem: "عنصر جديد",
-        tableFlows: "تدفقات الجدول",
-        tableSlug: "إسم الجدول"
-    }
+	ar: {
+		newTable: "جدول جديد",
+		newItem: "عنصر جديد",
+		tableFlows: "تدفقات الجدول",
+		tableSlug: "إسم الجدول",
+	},
 });
 
-const showPopover = ref(false)
+const showPopover = ref(false);
 
-const appConfig = useAppConfig()
+const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const user = useState<User>("users");
 const Hover = ref<Record<string, boolean>>({});
 const newTableSlug = ref();
-const route = useRoute()
+const route = useRoute();
 const database = useState<Database>("database");
 
 function getTableUrl(slug: string) {
-    if (!route.params.database && database.value?.slug !== 'inicontent')
-        return `/admin/tables/${slug}`
+	if (!route.params.database && database.value?.slug !== "inicontent")
+		return `/admin/tables/${slug}`;
 
-    return `/${modelValue.value.slug}/admin/tables/${slug}`
+	return `/${modelValue.value.slug}/admin/tables/${slug}`;
 }
 
 const createTable = async () => {
-    if (newTableSlug.value) {
-        const bodyContent: string = toRaw(newTableSlug.value);
-        Loading.value.Table = true;
+	if (newTableSlug.value) {
+		const bodyContent: string = toRaw(newTableSlug.value);
+		Loading.value.Table = true;
 
-        const data = await $fetch<apiResponse<Table>>(`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`, {
-            method: "POST",
-        });
+		const data = await $fetch<apiResponse<Table>>(
+			`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
+			{
+				method: "POST",
+			},
+		);
 
-        if (data.result) {
-            modelValue.value.tables?.push(data.result);
-            window.$message.success(data.message);
-            newTableSlug.value = null;
-            showPopover.value = false
-        } else
-            window.$message.error(data.message ?? t("error"));
-        Loading.value.Table = false;
-    } else
-        window.$message.error(t("inputsAreInvalid"));
+		if (data.result) {
+			modelValue.value.tables?.push(data.result);
+			window.$message.success(data.message);
+			newTableSlug.value = null;
+			showPopover.value = false;
+		} else window.$message.error(data.message ?? t("error"));
+		Loading.value.Table = false;
+	} else window.$message.error(t("inputsAreInvalid"));
 };
 
 const filteredTables = computed(() =>
-    modelValue.value.tables
-        ?.filter(({ allowedMethods }) => allowedMethods?.includes("r"))
-        .sort((a, b) =>
-            Number(["users", "sessions", "translations", "assets"].includes(b.slug)) -
-            Number(["users", "sessions", "translations", "assets"].includes(a.slug))
-        )
+	modelValue.value.tables
+		?.filter(({ allowedMethods }) => allowedMethods?.includes("r"))
+		.sort(
+			(a, b) =>
+				Number(
+					["users", "sessions", "translations", "assets"].includes(b.slug),
+				) -
+				Number(
+					["users", "sessions", "translations", "assets"].includes(a.slug),
+				),
+		),
 );
 
 const getDropdownOptions = (table: Table) => [
-    {
-        key: `${getTableUrl(table.slug)}/new`,
-        label: t("newItem"),
-        icon: () => h(NIcon, () => h(IconPlus)),
-        show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
-    },
-    {
-        key: `${getTableUrl(table.slug)}/settings`,
-        label: t("tableSettings"),
-        icon: () => h(NIcon, () => h(IconSettings)),
-        show: !["sessions", "translations", "assets"].includes(table.slug) && user.value?.role === appConfig.idOne,
-    },
-    {
-        key: `${getTableUrl(table.slug)}/flows`,
-        label: t("tableFlows"),
-        icon: () => h(NIcon, () => h(IconWebhook)),
-        show: !["sessions", "translations"].includes(table.slug) && user.value?.role === appConfig.idOne,
-    },
+	{
+		key: `${getTableUrl(table.slug)}/new`,
+		label: t("newItem"),
+		icon: () => h(NIcon, () => h(IconPlus)),
+		show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
+	},
+	{
+		key: `${getTableUrl(table.slug)}/settings`,
+		label: t("tableSettings"),
+		icon: () => h(NIcon, () => h(IconSettings)),
+		show:
+			!["sessions", "translations", "assets"].includes(table.slug) &&
+			user.value?.role === appConfig.idOne,
+	},
+	{
+		key: `${getTableUrl(table.slug)}/flows`,
+		label: t("tableFlows"),
+		icon: () => h(NIcon, () => h(IconWebhook)),
+		show:
+			!["sessions", "translations"].includes(table.slug) &&
+			user.value?.role === appConfig.idOne,
+	},
 ];
 
 function renderLabel(option: DropdownOption) {
-    return h(
-        NuxtLink,
-        {
-            to: option.key as string
-        },
-        () => option.label,
-    )
+	return h(
+		NuxtLink,
+		{
+			to: option.key as string,
+		},
+		() => option.label,
+	);
 }
 </script>

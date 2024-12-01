@@ -54,11 +54,11 @@ export const generateSearchArray = (searchQuery: any) => {
 };
 
 export const generateSearchInput = (searchArray: any) => {
-	const RETURN: any = {};
-	for (const [condition, items] of Object.entries(searchArray)) {
-		for (const item of items) {
+	const RETURN: Record<string, any> = {};
+	for (const condition in searchArray) {
+		for (const item of searchArray[condition]) {
 			if (!RETURN[condition]) RETURN[condition] = {};
-			if (Array.isArray(item))
+			if (Array.isArray(item) && item[0])
 				RETURN[condition][item[0]] = `${item[1]}${item[2]}`;
 			else RETURN[condition] = generateSearchInput(item);
 		}

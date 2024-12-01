@@ -6,9 +6,9 @@
 // TO-DO:
 // Add fields: Mention, Range, Slider
 
-const { schema } = defineProps<{ schema?: Schema }>()
+const { schema } = defineProps<{ schema?: Schema }>();
 
 const modelValue = defineModel({
 	default: {},
-})
+});
 </script>

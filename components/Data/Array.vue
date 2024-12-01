@@ -13,8 +13,8 @@
 </template>
 
 <script lang="ts" setup>
-import { NButton, NFlex, NPopover, NCollapse, NCollapseItem, NListItem, NText } from 'naive-ui';
+import { NListItem, NText } from "naive-ui";
 import { isArrayOfObjects } from "inibase/utils";
 
-const { field, value } = defineProps<{ field: Field, value: any }>()
+const { field, value } = defineProps<{ field: Field; value: any }>();
 </script>

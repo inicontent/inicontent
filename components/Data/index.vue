@@ -35,20 +35,12 @@
 </template>
 
 <script lang="ts" setup>
-import {
-    NButton,
-    NText,
-    NListItem,
-    NScrollbar,
-} from "naive-ui";
+import { NButton, NText, NListItem, NScrollbar } from "naive-ui";
 
-const { field, value } = defineProps<{ field: Field, value: any }>()
+const { field, value } = defineProps<{ field: Field; value: any }>();
 
 let detectedFieldType = field.subType ?? field.type;
 if (Array.isArray(detectedFieldType))
-    detectedFieldType = getField(
-        field,
-        value,
-    ).key;
-detectedFieldType = detectedFieldType as FieldType | CMS_FieldType
+	detectedFieldType = getField(field, value).key;
+detectedFieldType = detectedFieldType as FieldType | CMS_FieldType;
 </script>

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex, NTag } from 'naive-ui';
+import { NFlex, NTag } from "naive-ui";
 
-defineProps<{ value: string | string[] }>()
+defineProps<{ value: string | string[] }>();
 </script>

@@ -6,9 +6,9 @@
 </template>
 
 <script lang="ts" setup>
-import { NTime } from 'naive-ui';
+import { NTime } from "naive-ui";
 
-const isRelative = useState("isRelative", () => false)
+const isRelative = useState("isRelative", () => false);
 
-const { value } = defineProps<{ value?: number }>()
+const { value } = defineProps<{ value?: number }>();
 </script>

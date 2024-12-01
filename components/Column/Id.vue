@@ -12,14 +12,14 @@
 </template>
 
 <script lang="ts" setup>
-import { IconCopy } from '@tabler/icons-vue';
-import { NTag, NIcon, NFlex, NPerformantEllipsis } from 'naive-ui';
+import { IconCopy } from "@tabler/icons-vue";
+import { NTag, NIcon, NFlex, NPerformantEllipsis } from "naive-ui";
 
-const { value } = defineProps<{ value?: string }>()
+const { value } = defineProps<{ value?: string }>();
 
 async function copyID() {
-    if (!value) return
-    await copyToClipboard(value);
-    window.$message.success(t("textCopied"));
+	if (!value) return;
+	await copyToClipboard(value);
+	window.$message.success(t("textCopied"));
 }
 </script>

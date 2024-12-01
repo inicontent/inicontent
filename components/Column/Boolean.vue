@@ -8,8 +8,8 @@
 </template>
 
 <script lang="ts" setup>
-import { IconCheck, IconX } from '@tabler/icons-vue';
-import { NIcon, NIconWrapper } from 'naive-ui';
+import { IconCheck, IconX } from "@tabler/icons-vue";
+import { NIcon, NIconWrapper } from "naive-ui";
 
-const { value } = defineProps<{ value?: boolean }>()
+const { value } = defineProps<{ value?: boolean }>();
 </script>

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex } from 'naive-ui';
+import { NFlex } from "naive-ui";
 
-const { field, value } = defineProps<{ field: Field, value: any }>()
+const { field, value } = defineProps<{ field: Field; value: any }>();
 </script>

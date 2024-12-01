@@ -7,7 +7,7 @@ import type { useMessage, useDialog } from "naive-ui";
 import type languages from "./languages";
 
 type onCreateCallback = (index: number) => onCreateType;
-type onCreateType = string | number | boolean | null | Record<any, any>;
+type onCreateType = string | number | boolean | Data;
 type singleLanguageTranslations = {
 	[key: string]: string | singleLanguageTranslations;
 };
@@ -142,6 +142,11 @@ declare global {
 	type LanguagesType = (typeof languages)[number];
 
 	type TranslationsType = Record<LanguagesType, singleLanguageTranslations>;
+
+	type SearchType = {
+		and?: [string | null, string, any][];
+		or?: [string | null, string, any][];
+	};
 }
 declare module "nuxt/schema" {
 	interface appConfig {
@@ -165,4 +170,5 @@ export type {
 	ThemeConfig,
 	LanguagesType,
 	TranslationsType,
+	SearchType,
 };
