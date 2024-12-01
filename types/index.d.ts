@@ -141,7 +141,7 @@ declare global {
 
 	type LanguagesType = (typeof languages)[number];
 
-	type TranslationsType = Record<LanguagesType, singleLanguageTranslations>;
+	type TranslationsType = { [LanguagesType]: singleLanguageTranslations };
 
 	type SearchType = {
 		and?: [string | null, string, any][];
