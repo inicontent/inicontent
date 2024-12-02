@@ -1,42 +1,42 @@
 <template>
-    <NSpin :show="!!Loading.CREATE">
-        <NCard style="height: fit-content">
-            <template #header>
-                <NPerformantEllipsis>{{ t('new') }} {{ t(table.slug) }}</NPerformantEllipsis>
-            </template>
-            <template v-if="schema && schema.length > 4" #header-extra>
-                <NFlex>
-                    <NTooltip :delay="500">
-                        <template #trigger>
-                            <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconSend />
-                                    </NIcon>
-                                </template>
-                            </NButton>
-                        </template>
-                        {{ t('publish') }}
-                    </NTooltip>
-                </NFlex>
-            </template>
-            <template #action>
-                <NFlex justify="end">
-                    <NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
-                        <template #icon>
-                            <NIcon>
-                                <IconSend />
-                            </NIcon>
-                        </template>
-                        {{ t('publish') }}
-                    </NButton>
-                </NFlex>
-            </template>
-            <NForm :model="newItemObject" ref="formRef">
-                <FieldS v-model="newItemObject" :schema />
-            </NForm>
-        </NCard>
-    </NSpin>
+	<NSpin :show="!!Loading.CREATE">
+		<NCard style="height: fit-content">
+			<template #header>
+				<NPerformantEllipsis>{{ t('new') }} {{ t(table.slug) }}</NPerformantEllipsis>
+			</template>
+			<template v-if="schema && schema.length > 4" #header-extra>
+				<NFlex>
+					<NTooltip :delay="500">
+						<template #trigger>
+							<NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
+								<template #icon>
+									<NIcon>
+										<IconSend />
+									</NIcon>
+								</template>
+							</NButton>
+						</template>
+						{{ t('publish') }}
+					</NTooltip>
+				</NFlex>
+			</template>
+			<template #action>
+				<NFlex justify="end">
+					<NButton secondary round type="primary" @click="CREATE" :loading="Loading.CREATE">
+						<template #icon>
+							<NIcon>
+								<IconSend />
+							</NIcon>
+						</template>
+						{{ t('publish') }}
+					</NButton>
+				</NFlex>
+			</template>
+			<NForm :model="newItemObject" ref="formRef">
+				<FieldS v-model="newItemObject" :schema />
+			</NForm>
+		</NCard>
+	</NSpin>
 </template>
 
 <script lang="ts" setup>
@@ -96,6 +96,7 @@ async function CREATE() {
 				return window.$message.error(data.message);
 
 			window.$message.success(data.message);
+			refreshNuxtData(`${database.value.slug}-${table.value.slug}`);
 			return navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${route.params.table}/${data.result.id}/edit`,
 			);

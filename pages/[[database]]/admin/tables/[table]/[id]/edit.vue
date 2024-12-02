@@ -179,6 +179,7 @@ async function UPDATE() {
 			if (data.result?.id) {
 				itemObject.value = data.result;
 				window.$message.success(data.message);
+				refreshNuxtData(`${database.value.slug}-${table.value.slug}`);
 			} else window.$message.error(data.message);
 			Loading.value.UPDATE = false;
 		} else window.$message.error(t("inputsAreInvalid"));

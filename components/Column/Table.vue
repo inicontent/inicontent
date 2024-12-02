@@ -1,21 +1,21 @@
 <template>
-    <NFlex :wrap="false">
-        <NButton v-for="singleValue in ([] as Item[]).concat(value)" tag="a"
-            :href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${field.table}/${singleValue.id}/edit`"
-            @click.prevent.stop="handleClick(singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
-            size="small" round>
-            <template #icon>
-                <NIcon>
-                    {{ field.table?.charAt(0).toUpperCase() }}
-                </NIcon>
-            </template>
-            {{
-                renderLabel(
-                    database.tables?.find(({ slug }) => slug === field.table)?.label,
-                    database.tables?.find(({ slug }) => slug === field.table)?.schema, singleValue)
-            }}
-        </NButton>
-    </NFlex>
+	<NFlex :wrap="false">
+		<NButton v-for="singleValue in ([] as Item[]).concat(value)" tag="a"
+			:href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${field.table}/${singleValue.id}/edit`"
+			@click.prevent.stop="handleClick(singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
+			size="small" round>
+			<template v-if="table" #icon>
+				<NIcon>
+					<component :is="getTableIcon(table)"></component>
+				</NIcon>
+			</template>
+			{{
+				renderLabel(
+					table?.label,
+					table?.schema, singleValue)
+			}}
+		</NButton>
+	</NFlex>
 </template>
 
 <script lang="ts" setup>
@@ -25,6 +25,9 @@ const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>();
 const route = useRoute();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
+const table = computed(() =>
+	database.value.tables?.find(({ slug }) => slug === field.table),
+);
 
 const { isMobile } = useDevice();
 const Drawer = useState<{

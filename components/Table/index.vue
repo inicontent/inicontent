@@ -127,9 +127,14 @@ import {
 	NPopconfirm,
 	NPopover,
 	NTooltip,
+	type DataTableColumns,
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
 import { FormatObjectCriteriaValue } from "inibase/utils";
+
+const extraColumns = defineModel<DataTableColumns>("extraColumns", {
+	default: [],
+});
 
 defineExpose({
 	search: { execute: executeSearch, reset: resetSearch },
@@ -286,6 +291,7 @@ const queryOptions = ref(
 const { data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}`,
 	{
+		key: `${database.value.slug}-${table.value.slug}`,
 		query: {
 			options: queryOptions,
 			where: whereQuery,
@@ -374,7 +380,7 @@ function handleSorterChange({
 			);
 }
 
-const columns = ref();
+const columns = ref<DataTableColumns>();
 const tableWidth = ref<number>(0);
 const dataTablePagination = ref();
 const isSearchDisabled = ref(false);
@@ -426,6 +432,7 @@ watchEffect(() => {
 					},
 				]
 			: []),
+		...extraColumns.value,
 		...(table.value.schema ?? []).map((field) => ({
 			title: () =>
 				h(NFlex, { align: "center", justify: "start" }, () => [
@@ -443,18 +450,16 @@ watchEffect(() => {
 				(Array.isArray(field.type) && field.type.includes("array")),
 			sortOrder: sortObject.value[field.key]
 				? `${sortObject.value[field.key]}end`
-				: false,
-			render: (row: { [x: string]: any }) =>
-				h(Column, { value: row[field.key], field }),
+				: undefined,
+			render: (row: any) => h(Column, { value: row[field.key], field }),
 		})),
 		{
 			title: t("actions"),
-			fixed: !isMobile ? "right" : false,
 			align: "center",
 			width: 150,
 			key: "actions",
-			render(row: { id: string }) {
-				return h(NButtonGroup, () =>
+			render: (row: any) =>
+				h(NButtonGroup, () =>
 					[
 						table.value.allowedMethods?.includes("r")
 							? h(
@@ -529,10 +534,9 @@ watchEffect(() => {
 								)
 							: null,
 					].filter((i) => i !== null),
-				);
-			},
+				),
 		},
-	];
+	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(
 		(accumulator: number, value: any) => accumulator + (value.width ?? 0),

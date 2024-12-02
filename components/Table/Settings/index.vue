@@ -1,104 +1,104 @@
 <template>
-    <NGrid x-gap="12" cols="12" layout-shift-disabled>
-        <NGridItem :span="!$device.isMobile ? 10 : 12">
-            <NSpin :show="!!Loading.updateTable">
-                <NCard :title="t('tableSettings')" hoverable>
-                    <template #header-extra>
-                        <NFlex>
-                            <NTooltip :delay="500">
-                                <template #trigger>
-                                    <NPopconfirm :show-icon="false" @positive-click="deleteTable">
-                                        <template #activator>
-                                            <NButton :disabled="isUnDeletable" type="error" tertiary round
-                                                :loading="Loading.deleteTable">
-                                                <template #icon>
-                                                    <NIcon>
-                                                        <IconTrash />
-                                                    </NIcon>
-                                                </template>
-                                            </NButton>
-                                        </template>
-                                        {{ t("theFollowingActionIsIrreversible") }}
-                                    </NPopconfirm>
-                                </template>
-                                {{ t("deleteTable") }}
-                            </NTooltip>
-                            <NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconDeviceFloppy />
-                                    </NIcon>
-                                </template>
-                                <template v-if="!$device.isMobile" #default>
-                                    {{ t('save') }}
-                                </template>
-                            </NButton>
-                        </NFlex>
-                    </template>
-                    <NFlex vertical>
-                        <NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-                            <NForm ref="tableRef" :model="tableCopy">
-                                <FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
-                                <NFormItem path="localLabel" :label="t('label')">
-                                    <NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
-                                        :render-tag="renderSingleLabel">
-                                        <template #input="{ submit, deactivate }">
-                                            <NSelect size="small" filterable tag show
-                                                :options="generateLabelOptions(tableCopy.schema)"
-                                                @update:value="submit($event)"
-                                                @update:show="(value) => value ? '' : deactivate()" />
-                                        </template>
-                                    </NDynamicTags>
-                                </NFormItem>
-                                <FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
-                            </NForm>
-                        </NCard>
-                        <NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
-                            <template #header-extra>
-                                <NButtonGroup>
-                                    <NTooltip :delay="500">
-                                        <template #trigger>
-                                            <NButton secondary round :type="showDraggable ? 'primary' : 'default'"
-                                                @click="showDraggable =
-                                                    !showDraggable">
-                                                <template #icon>
-                                                    <NIcon>
-                                                        <IconArrowsSort />
-                                                    </NIcon>
-                                                </template>
-                                            </NButton>
-                                        </template>
-                                        {{ t("changeOrder") }}
-                                    </NTooltip>
-                                    <NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable
-                                        @select="pushToSchema">
-                                        <NButton secondary type="primary" round>
-                                            <template #icon>
-                                                <NIcon>
-                                                    <IconPlus />
-                                                </NIcon>
-                                            </template>
-                                        </NButton>
-                                    </NDropdown>
-                                </NButtonGroup>
-                            </template>
-                            <NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-                            <NForm :class="{ notSortable: !showDraggable }" size="small">
-                                <TableSettingsSchema v-model="tableCopy.schema"
-                                    v-model:expanded-names="expandedNames" />
-                            </NForm>
-                        </NCard>
-                    </NFlex>
-                </NCard>
-            </NSpin>
-        </NGridItem>
-        <NGridItem v-if="!$device.isMobile" span="2">
-            <NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
-                <NAnchorLink :title="t('generalSettings')" href="#generalSettings" />
-                <NAnchorLink :title="t('schemaSettings')" href="#schemaSettings" />
-            </NAnchor>
-        </NGridItem>
-    </NGrid>
+	<NGrid x-gap="12" cols="12" layout-shift-disabled>
+		<NGridItem :span="!$device.isMobile ? 10 : 12">
+			<NSpin :show="!!Loading.updateTable">
+				<NCard :title="t('tableSettings')" hoverable>
+					<template #header-extra>
+						<NButtonGroup>
+							<NTooltip :delay="500">
+								<template #trigger>
+									<NPopconfirm :show-icon="false" @positive-click="deleteTable">
+										<template #activator>
+											<NButton :disabled="isUnDeletable" type="error" tertiary round
+												:loading="Loading.deleteTable">
+												<template #icon>
+													<NIcon>
+														<IconTrash />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										{{ t("theFollowingActionIsIrreversible") }}
+									</NPopconfirm>
+								</template>
+								{{ t("deleteTable") }}
+							</NTooltip>
+							<NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
+								<template #icon>
+									<NIcon>
+										<IconDeviceFloppy />
+									</NIcon>
+								</template>
+								<template v-if="!$device.isMobile" #default>
+									{{ t('save') }}
+								</template>
+							</NButton>
+						</NButtonGroup>
+					</template>
+					<NFlex vertical>
+						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
+							<NForm ref="tableRef" :model="tableCopy">
+								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
+								<NFormItem path="localLabel" :label="t('label')">
+									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+										:render-tag="renderSingleLabel">
+										<template #input="{ submit, deactivate }">
+											<NSelect size="small" filterable tag show
+												:options="generateLabelOptions(tableCopy.schema)"
+												@update:value="submit($event)"
+												@update:show="(value) => value ? '' : deactivate()" />
+										</template>
+									</NDynamicTags>
+								</NFormItem>
+								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
+							</NForm>
+						</NCard>
+						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
+							<template #header-extra>
+								<NButtonGroup>
+									<NTooltip :delay="500">
+										<template #trigger>
+											<NButton tertiary round :type="showDraggable ? 'primary' : 'default'"
+												@click="showDraggable =
+													!showDraggable">
+												<template #icon>
+													<NIcon>
+														<IconArrowsSort />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										{{ t("changeOrder") }}
+									</NTooltip>
+									<NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable
+										@select="pushToSchema">
+										<NButton secondary type="primary" round>
+											<template #icon>
+												<NIcon>
+													<IconPlus />
+												</NIcon>
+											</template>
+										</NButton>
+									</NDropdown>
+								</NButtonGroup>
+							</template>
+							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
+							<NForm :class="{ notSortable: !showDraggable }" size="small">
+								<TableSettingsSchema v-model="tableCopy.schema"
+									v-model:expanded-names="expandedNames" />
+							</NForm>
+						</NCard>
+					</NFlex>
+				</NCard>
+			</NSpin>
+		</NGridItem>
+		<NGridItem v-if="!$device.isMobile" span="2">
+			<NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
+				<NAnchorLink :title="t('generalSettings')" href="#generalSettings" />
+				<NAnchorLink :title="t('schemaSettings')" href="#schemaSettings" />
+			</NAnchor>
+		</NGridItem>
+	</NGrid>
 </template>
 
 <script lang="ts" setup>
