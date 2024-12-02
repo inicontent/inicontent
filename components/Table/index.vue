@@ -136,8 +136,15 @@ const extraColumns = defineModel<DataTableColumns>("extraColumns", {
 	default: [],
 });
 
+const route = useRoute();
+const searchArray = ref<SearchType>(
+	route.query.search
+		? generateSearchArray(Inison.unstringify(route.query.search as string))
+		: { and: [[null, "=", null]] },
+);
+
 defineExpose({
-	search: { execute: executeSearch, reset: resetSearch },
+	search: { data: searchArray, execute: executeSearch, reset: resetSearch },
 	delete: DELETE,
 });
 
@@ -161,7 +168,6 @@ defineTranslation({
 	},
 });
 
-const route = useRoute();
 const router = useRouter();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
@@ -171,12 +177,6 @@ const { isMobile } = useDevice();
 
 const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
-);
-
-const searchArray = ref<SearchType>(
-	route.query.search
-		? generateSearchArray(Inison.unstringify(route.query.search as string))
-		: { and: [[null, "=", null]] },
 );
 
 function generateSearchArray(searchQuery: any) {
