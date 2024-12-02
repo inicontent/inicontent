@@ -66,6 +66,7 @@ declare global {
 			| "week";
 		expand?: boolean;
 		params?: string;
+		query?: any;
 		description?: string;
 	};
 	type Schema = Field[];

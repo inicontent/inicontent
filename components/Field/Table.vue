@@ -1,35 +1,35 @@
 <template>
-    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-        ? typeof field.labelProps === 'function'
-            ? field.labelProps(modelValue) ?? {}
-            : field.labelProps
-        : {})">
-        <NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote clearable filterable
-            :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray" :consistent-menu-width="false"
-            max-tag-count="responsive" :onFocus :onSearch v-bind="field.inputProps
-                ? typeof field.inputProps === 'function'
-                    ? field.inputProps(modelValue) ?? {}
-                    : field.inputProps
-                : {}" />
-        <template #label>
-            <NFlex v-if="field.description" align="center" :size="0">
-                {{ t(field.key) }}
-                <NTooltip>
-                    <template #trigger>
-                        <NButton circle text size="tiny">
-                            <template #icon>
-                                <NIcon>
-                                    <IconQuestionMark />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t(field.description) }}
-                </NTooltip>
-            </NFlex>
-            <template v-else>{{ t(field.key) }}</template>
-        </template>
-    </NFormItem>
+	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
+		? typeof field.labelProps === 'function'
+			? field.labelProps(modelValue) ?? {}
+			: field.labelProps
+		: {})">
+		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
+			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
+			:consistent-menu-width="false" max-tag-count="responsive" :onFocus :onSearch v-bind="field.inputProps
+				? typeof field.inputProps === 'function'
+					? field.inputProps(modelValue) ?? {}
+					: field.inputProps
+				: {}" />
+		<template #label>
+			<NFlex v-if="field.description" align="center" :size="0">
+				{{ t(field.key) }}
+				<NTooltip>
+					<template #trigger>
+						<NButton circle text size="tiny">
+							<template #icon>
+								<NIcon>
+									<IconQuestionMark />
+								</NIcon>
+							</template>
+						</NButton>
+					</template>
+					{{ t(field.description) }}
+				</NTooltip>
+			</NFlex>
+			<template v-else>{{ t(field.key) }}</template>
+		</template>
+	</NFormItem>
 </template>
 
 <script lang="ts" setup>
@@ -107,22 +107,38 @@ function onUpdateSelectValue(
 }
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;
+	const searchOrObject = searchValue
+		? (field.searchIn?.reduce((result, searchKey) => {
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				});
+				return result;
+			}, {}) ?? false)
+		: false;
+
 	const data =
 		(
 			await $fetch<apiResponse<Item[]>>(
 				`${appConfig.apiBase}${database.value.slug}/${field.table}`,
-				searchValue
+				searchValue || field.query
 					? {
 							params: {
-								where: Inison.stringify({
-									or:
-										field.searchIn?.reduce((result, searchKey) => {
-											Object.assign(result, {
-												[searchKey]: `*%${searchValue}%`,
-											});
-											return result;
-										}, {}) ?? "",
-								}),
+								where: Inison.stringify(
+									field.query
+										? searchOrObject
+											? {
+													and: {
+														...field.query,
+														or: searchOrObject,
+													},
+												}
+											: field.query
+										: searchOrObject
+											? {
+													or: searchOrObject,
+												}
+											: {},
+								),
 							},
 						}
 					: undefined,
