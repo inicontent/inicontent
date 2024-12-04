@@ -23,6 +23,8 @@ import {
 	IconTimelineEvent,
 	IconParentheses,
 	IconMessage,
+	IconCopyCheck,
+	IconCircleCheck,
 	type Icon,
 } from "@tabler/icons-vue";
 import { detectFieldType } from "inibase/utils";
@@ -51,7 +53,9 @@ export default function fieldsList(): SelectMixedOption[] {
 				tags: "وسوم",
 				date: "تاريخ",
 				toggle: "سحب",
-				list: "قائمة",
+				select: "قائمة",
+				checkbox: "خانة اختيار",
+				radio: "زر اختيار",
 				array: "مصفوفة",
 				object: "كائن",
 				table: "جدول",
@@ -63,7 +67,6 @@ export default function fieldsList(): SelectMixedOption[] {
 		en: {
 			fields: {
 				html: "Rich Editor",
-				list: "Select",
 			},
 		},
 	});
@@ -160,7 +163,12 @@ export default function fieldsList(): SelectMixedOption[] {
 			icon: renderIcon(IconUpload),
 		},
 		{
-			label: t("fields.list"),
+			label: t("fields.radio"),
+			key: "radio",
+			icon: renderIcon(IconCircleCheck),
+		},
+		{
+			label: t("fields.select"),
 			key: "select",
 			icon: renderIcon(IconListCheck),
 		},
@@ -175,9 +183,14 @@ export default function fieldsList(): SelectMixedOption[] {
 					icon: renderIcon(IconTags),
 				},
 				{
-					label: t("fields.list"),
+					label: t("fields.select"),
 					key: "array-select",
 					icon: renderIcon(IconListCheck),
+				},
+				{
+					label: t("fields.checkbox"),
+					key: "checkbox",
+					icon: renderIcon(IconCopyCheck),
 				},
 				{
 					label: t("fields.assets"),

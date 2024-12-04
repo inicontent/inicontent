@@ -20,11 +20,7 @@
     <LazyFieldPassword v-else-if="detectedFieldType === 'password'" v-model="modelValue" :field />
     <LazyFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :field />
     <LazyFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :field />
-    <template v-else-if="detectedFieldType === 'select'">
-        <LazyFieldSelect v-if="!field.options || field.options.length > 3" v-model="modelValue" :field />
-        <LazyFieldCheckbox v-else-if="field.isArray" v-model="modelValue" :field />
-        <LazyFieldRadio v-else v-model="modelValue" :field />
-    </template>
+    <LazyFieldSelect v-else-if="detectedFieldType === 'select'" v-model="modelValue" :field />
     <LazyFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :field />
     <LazyFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field />
     <LazyFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field />
@@ -40,17 +36,17 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<any>();
 
 if (field.defaultValue && !modelValue.value)
-	modelValue.value = field.defaultValue;
+    modelValue.value = field.defaultValue;
 
 if (
-	(Array.isArray(field.type) && field.type.includes("array")) ||
-	(typeof field.type === "string" && field.type === "array")
+    (Array.isArray(field.type) && field.type.includes("array")) ||
+    (typeof field.type === "string" && field.type === "array")
 )
-	field.isArray = true;
+    field.isArray = true;
 
 let detectedFieldType = (field.subType ?? field.type) as string;
 if (Array.isArray(detectedFieldType) && modelValue.value)
-	detectedFieldType = getField(field, modelValue.value).key;
+    detectedFieldType = getField(field, modelValue.value).key;
 
 const database = useState<Database>("database");
 </script>
