@@ -6,7 +6,7 @@
 		: {})">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
-			:consistent-menu-width="false" max-tag-count="responsive" :onFocus :onSearch v-bind="field.inputProps
+			:consistent-menu-width="false" max-tag-count="responsive" :onFocus :onSearch="loadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
@@ -164,10 +164,6 @@ async function onFocus() {
 		} else if (options.value.length > 1) return;
 	}
 	await loadOptions();
-}
-
-async function onSearch(query: string) {
-	if (query.length > 1) await loadOptions(query);
 }
 
 if (modelValue.value) {
