@@ -89,6 +89,7 @@ declare global {
 		slug: string;
 		label?: string;
 		icon?: string;
+		defaultSearchableColumns?: string[];
 		allowedMethods?: string;
 		schema?: Schema;
 		onRequest?: FlowType[];

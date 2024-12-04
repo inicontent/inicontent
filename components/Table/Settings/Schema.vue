@@ -67,9 +67,9 @@
 							</NButton>
 						</NFlex>
 					</template>
-					<NFormItem :label="t('fieldName')">
-						<template v-if="getPath(table.schema ?? [], element.id, true)" #feedback>
-							{{ `#${getPath(table.schema ?? [], element.id, true)}` }}
+					<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
+						<template #feedback>
+							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }}
 						</template>
 						<NInput v-model:value="schema[index].key" />
 					</NFormItem>
@@ -116,11 +116,6 @@
 						v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
 						<NFormItem :label="t('tableName')">
 							<NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
-						</NFormItem>
-						<NFormItem :label="t('searchIn')" :disabled="!element.key">
-							<NCascader :disabled="!element.key" multiple clearable filterable expand-trigger="hover"
-								check-strategy="child" :cascard="false" v-model:value="schema[index].searchIn"
-								:options="searchInSelectOptions(element)" />
 						</NFormItem>
 					</template>
 					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
@@ -188,7 +183,6 @@ defineTranslation({
 		valuesType: "نوع القيم",
 		showAsTable: "إظهار كجدول",
 		labelText: "النص الظاهري",
-		searchIn: "بحث في",
 		tableName: "إسم الجدول",
 		labelImage: "الصورة", // TO-DO: support image in table field
 		expandByDefault: "توسيع بشكل افتراضي",
@@ -341,14 +335,6 @@ const tableSelectOptions = computed(() =>
 		value: slug,
 	})),
 );
-
-function searchInSelectOptions(field: Field) {
-	return field.table
-		? generateSearchInOptions(
-			database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
-		)
-		: [];
-}
 </script>
 
 <style lang="css" scoped>

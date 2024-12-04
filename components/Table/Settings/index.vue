@@ -39,6 +39,12 @@
 						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
 							<NForm ref="tableRef" :model="tableCopy">
 								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
+								<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
+									<NCascader multiple clearable filterable expand-trigger="hover"
+										check-strategy="child" :cascard="false"
+										v-model:value="tableCopy.defaultSearchableColumns"
+										:options="searchInSelectOptions" />
+								</NFormItem>
 								<NFormItem path="localLabel" :label="t('label')">
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
@@ -50,7 +56,7 @@
 										</template>
 									</NDynamicTags>
 								</NFormItem>
-								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
+								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
 							</NForm>
 						</NCard>
 						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -130,6 +136,7 @@ import {
 	NSelect,
 	NTag,
 	NButtonGroup,
+	NCascader,
 } from "naive-ui";
 
 onMounted(() => {
@@ -149,6 +156,7 @@ defineTranslation({
 		changeOrder: "تغيير الترتيب",
 		label: "الإسم الظاهري",
 		deleteTable: "حذف الجدول",
+		defaultSearchableColumns: "الأعمدة الإفتراضية للبحث",
 		compression: "ضغط البيانات",
 		prepend: "إضافة مقدمة",
 		recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
@@ -199,8 +207,7 @@ async function updateTable() {
 					.join(" ");
 
 			const data = await $fetch<apiResponse<Table>>(
-				`${appConfig.apiBase}inicontent/databases/${
-					database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -237,8 +244,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${
-			database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -301,7 +307,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-				isValidID(labelObject.value.slice(1))
+					isValidID(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -316,7 +322,7 @@ function renderSingleLabel(
 }
 
 // TO-DO: Make it reactive
-function generateLabelOptions(schema?: Schema, prefix?: string) {
+function generateLabelOptions(schema?: Schema) {
 	let RETURN: {
 		label: string;
 		value: string | number;
@@ -334,12 +340,14 @@ function generateLabelOptions(schema?: Schema, prefix?: string) {
 		)
 			continue;
 		RETURN.push({
-			label: (prefix ? `${prefix}/` : "") + field.key,
+			label: field.key,
 			value: `@${field.id}`,
 		});
 	}
 	return RETURN;
 }
+
+const searchInSelectOptions = computed(() => generateSearchInOptions(table.value?.schema?.slice(1, -2), undefined, true));
 
 const generalSettingsSchema = reactive<Schema>([
 	{
@@ -348,8 +356,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -358,8 +366,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -367,8 +375,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -376,8 +384,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -386,8 +394,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 ]);

@@ -58,7 +58,9 @@ export default function fieldsList(): SelectMixedOption[] {
 				radio: "زر اختيار",
 				array: "مصفوفة",
 				object: "كائن",
+				objects: "مجموعة كوائن",
 				table: "جدول",
+				tableItems: "عناصر من جدول",
 				role: "دور",
 				mention: "نصوص جاهزة",
 				id: "معرف",
@@ -205,13 +207,13 @@ export default function fieldsList(): SelectMixedOption[] {
 					disabled: true,
 				},
 				{
-					label: t("fields.table"),
+					label: t("fields.tableItems"),
 					key: "array-table",
 					icon: renderIcon(IconTable),
 				},
 				{
-					label: t("fields.object"),
-					key: "array",
+					label: t("fields.objects"),
+					key: "array-object",
 					icon: renderIcon(IconBraces),
 				},
 			],
@@ -246,6 +248,15 @@ export function getField(field: Field, value?: any) {
 		return flatFieldsList().find(
 			({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
 		);
+	if (field.type === "array") {
+		if (
+			!Array.isArray(field.children) &&
+			["table", "object"].includes(field.children as string)
+		)
+			return flatFieldsList().find(
+				({ key }) => key === [field.type, field.children].join("-"),
+			);
+	}
 	let fieldType = field.subType ?? (field.type as any);
 	if (Array.isArray(fieldType))
 		fieldType = detectFieldType(

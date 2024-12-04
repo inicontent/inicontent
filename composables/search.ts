@@ -2,13 +2,14 @@ import { isArrayOfObjects } from "inibase/utils";
 
 function _generateSearchInOption(
 	schema: Schema,
-	{ key, type, children }: Field,
+	{ id, key, type, children }: Field,
+	useIDasValue?: boolean,
 	path?: string,
 ): any {
 	if ((type === "object" || type === "array") && isArrayOfObjects(children))
 		return {
 			label: t(key),
-			value: (path ?? "") + key,
+			value: useIDasValue ? id : (path ?? "") + key,
 			children: (children as Schema)
 				.filter(({ type }) =>
 					Array.isArray(type)
@@ -16,23 +17,29 @@ function _generateSearchInOption(
 						: !["table", "array", "object"].includes(type),
 				)
 				.map((field) =>
-					_generateSearchInOption(schema, field, `${(path ?? "") + key}.`),
+					_generateSearchInOption(
+						schema,
+						field,
+						useIDasValue,
+						`${(path ?? "") + key}.`,
+					),
 				),
 		};
 
 	return {
 		label: t(key),
-		value: (path ?? "") + key,
+		value: useIDasValue ? id : (path ?? "") + key,
 	};
 }
 
 export function generateSearchInOptions(
 	schema?: Schema,
 	excludedKeys?: string[],
+	useIDasValue?: boolean,
 ) {
 	if (!schema) return [];
 	const RETURN = schema
-		?.map((_item) => _generateSearchInOption(schema, _item))
+		?.map((field) => _generateSearchInOption(schema, field, useIDasValue))
 		.flat(Number.POSITIVE_INFINITY);
 	if (excludedKeys)
 		return RETURN.filter(({ value }) => !excludedKeys.includes(value));

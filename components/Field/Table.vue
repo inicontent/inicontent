@@ -36,7 +36,7 @@
 import Inison from "inison";
 import { IconQuestionMark } from "@tabler/icons-vue";
 import { NButton, NFlex, NIcon, NTooltip, NFormItem, NSelect } from "naive-ui";
-import { isArrayOfObjects, isObject } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -105,16 +105,24 @@ function onUpdateSelectValue(
 			Array.isArray(_id) ? _id.includes(value) : _id === value,
 		);
 }
+
+const searchIn = table?.defaultSearchableColumns
+	? table.defaultSearchableColumns.map((columnID) =>
+		getPath(table.schema ?? [], columnID),
+	)
+	: field.searchIn;
+
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;
-	const searchOrObject = searchValue
-		? (field.searchIn?.reduce((result, searchKey) => {
+	const searchOrObject =
+		searchValue && searchIn
+			? (searchIn.reduce((result, searchKey) => {
 				Object.assign(result, {
 					[searchKey]: `*%${searchValue}%`,
 				});
 				return result;
 			}, {}) ?? false)
-		: false;
+			: false;
 
 	const data =
 		(
@@ -122,25 +130,23 @@ async function loadOptions(searchValue?: string | number) {
 				`${appConfig.apiBase}${database.value.slug}/${field.table}`,
 				searchValue || field.query
 					? {
-							params: {
-								where: Inison.stringify(
-									field.query
-										? searchOrObject
-											? {
-													and: {
-														...field.query,
-														or: searchOrObject,
-													},
-												}
-											: field.query
-										: searchOrObject
-											? {
-													or: searchOrObject,
-												}
-											: {},
-								),
-							},
-						}
+						params: {
+							where: Inison.stringify(
+								field.query
+									? searchOrObject
+										? {
+											...field.query,
+											or: searchOrObject,
+										}
+										: field.query
+									: searchOrObject
+										? {
+											or: searchOrObject,
+										}
+										: {},
+							),
+						},
+					}
 					: undefined,
 			)
 		).result?.map(singleOption) ?? [];
