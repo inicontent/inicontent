@@ -123,31 +123,27 @@ async function loadOptions(searchValue?: string | number) {
 				return result;
 			}, {}) ?? false)
 			: false;
-
+	let where: string | undefined;
+	if (field.where) {
+		if (searchOrObject)
+			where = Inison.stringify({
+				...Inison.unstringify(field.where),
+				or: searchOrObject,
+			});
+		else where = field.where;
+	} else if (searchOrObject)
+		where = Inison.stringify({
+			or: searchOrObject,
+		});
 	const data =
 		(
 			await $fetch<apiResponse<Item[]>>(
 				`${appConfig.apiBase}${database.value.slug}/${field.table}`,
-				searchValue || field.query
-					? {
-						params: {
-							where: Inison.stringify(
-								field.query
-									? searchOrObject
-										? {
-											...field.query,
-											or: searchOrObject,
-										}
-										: field.query
-									: searchOrObject
-										? {
-											or: searchOrObject,
-										}
-										: {},
-							),
-						},
-					}
-					: undefined,
+				{
+					params: {
+						where,
+					},
+				},
 			)
 		).result?.map(singleOption) ?? [];
 	if (modelValue.value) {

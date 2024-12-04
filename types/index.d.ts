@@ -26,7 +26,8 @@ declare global {
 		| "select"
 		| "role"
 		| "mention"
-		| "icon";
+		| "icon"
+		| "multiple";
 	type FieldType = dbFieldType;
 	type Field = {
 		id?: string | number;
@@ -67,6 +68,7 @@ declare global {
 		expand?: boolean;
 		params?: string;
 		query?: any;
+		where?: string;
 		description?: string;
 	};
 	type Schema = Field[];
