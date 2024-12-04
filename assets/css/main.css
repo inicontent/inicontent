@@ -124,3 +124,8 @@ body {
 .rtl .n-tabs-rail {
 	direction: ltr;
 }
+
+/* TO-DO: Improve padding of menu arrow */
+.n-menu .n-menu-item-content .n-menu-item-content__arrow {
+	padding: 12px;
+}
