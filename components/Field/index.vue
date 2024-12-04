@@ -1,5 +1,6 @@
 <template>
-    <LazyFieldText v-if="['string', 'text', 'id'].includes(detectedFieldType)" v-model="modelValue" :field />
+    <LazyFieldText v-if="['string', 'text', 'id', 'multiple'].includes(detectedFieldType)" v-model="modelValue"
+        :field />
     <LazyFieldSelect v-else-if="detectedFieldType === 'role'" v-model="modelValue" :field="{
         ...field, options: database.roles?.map(({ name, id }) => ({
             label: t(name),
@@ -44,9 +45,8 @@ if (
 )
     field.isArray = true;
 
-let detectedFieldType = (field.subType ?? field.type) as string;
-if (Array.isArray(detectedFieldType) && modelValue.value)
-    detectedFieldType = getField(field, modelValue.value).key;
+let detectedFieldType = (field.subType ?? field.type) as FieldType | CMS_FieldType;
+if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
 
 const database = useState<Database>("database");
 </script>

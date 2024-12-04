@@ -106,6 +106,12 @@
 							<NSwitch v-model:value="schema[index].expand" />
 						</NFormItem>
 					</template>
+					<template v-else-if="Array.isArray(element.type)">
+						<NFormItem :label="t('valuesType')">
+							<NSelect v-model:value="schema[index].type" filterable multiple :min="1"
+								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
+						</NFormItem>
+					</template>
 					<template v-else-if="element.subType === 'tags'">
 						<NFormItem :label="t('valuesType')">
 							<NSelect v-model:value="(schema[index].children as any)" filterable multiple
@@ -116,6 +122,13 @@
 						v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
 						<NFormItem :label="t('tableName')">
 							<NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
+						</NFormItem>
+						<NFormItem :label="t('extendWhere')">
+							<NInput v-model:value="schema[index].where" />
+							<template #feedback>
+								{{ t('useInison') }} / {{ t('ie') }}:
+								{<strong>subCategory</strong>:<strong>null</strong>}
+							</template>
 						</NFormItem>
 					</template>
 					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
@@ -204,6 +217,8 @@ defineTranslation({
 		minimumItems: "الحد الأدنى للعناصر",
 		maximumItems: "الحد الأقصى للعناصر",
 		ie: "على سبيل المثال",
+		useInison: "إستعمل Inison",
+		extendWhere: "توسيع البحث"
 	},
 });
 
@@ -320,7 +335,7 @@ function selectRenderLabelWithIcon(
 
 const valuesTypeSelectOptions = flatFieldsList()
 	?.filter(({ key }) =>
-		["string", "number", "password", "email", "url", "id"].includes(key),
+		["string", "number", "password", "email", "url"].includes(key),
 	)
 	.map((field) => ({
 		label: field.label,

@@ -28,7 +28,7 @@
             <LazyDataObject v-else-if="detectedFieldType === 'object'" :value :field="field" />
             <LazyColumnArray v-else-if="detectedFieldType === 'array'" :value :field="field" />
             <LazyColumnText
-                v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'id'].includes(detectedFieldType)"
+                v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'id', 'multiple'].includes(detectedFieldType)"
                 :value />
         </div>
     </NListItem>
@@ -39,8 +39,7 @@ import { NButton, NText, NListItem, NScrollbar } from "naive-ui";
 
 const { field, value } = defineProps<{ field: Field; value: any }>();
 
-let detectedFieldType = field.subType ?? field.type;
+let detectedFieldType = (field.subType ?? field.type) as FieldType | CMS_FieldType;
 if (Array.isArray(detectedFieldType))
-	detectedFieldType = getField(field, value).key;
-detectedFieldType = detectedFieldType as FieldType | CMS_FieldType;
+    detectedFieldType = getField(field).key;
 </script>

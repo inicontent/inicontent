@@ -20,7 +20,9 @@
         <ColumnDate v-else-if="detectedFieldType === 'date'" :value />
         <ColumnObject v-else-if="detectedFieldType === 'object'" :value :field="field" />
         <ColumnArray v-else-if="detectedFieldType === 'array'" :value :field="field" />
-        <ColumnText v-else-if="['string', 'text', 'textarea', 'number', 'radio'].includes(detectedFieldType)" :value />
+        <ColumnText
+            v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'multiple'].includes(detectedFieldType)"
+            :value />
     </div>
 </template>
 
@@ -29,8 +31,7 @@ import { NText, NScrollbar } from "naive-ui";
 
 const { field, value } = defineProps<{ field: Field; value?: any }>();
 
-let detectedFieldType = field.subType ?? field.type;
+let detectedFieldType = (field.subType ?? field.type) as FieldType | CMS_FieldType;
 if (Array.isArray(detectedFieldType))
-	detectedFieldType = getField(field, value).key;
-detectedFieldType = detectedFieldType as FieldType | CMS_FieldType;
+	detectedFieldType = getField(field).key;
 </script>

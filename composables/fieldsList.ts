@@ -26,6 +26,7 @@ import {
 	IconCopyCheck,
 	IconCircleCheck,
 	type Icon,
+	IconBoxMultiple,
 } from "@tabler/icons-vue";
 import { detectFieldType } from "inibase/utils";
 import Inison from "inison";
@@ -64,6 +65,7 @@ export default function fieldsList(): SelectMixedOption[] {
 				role: "دور",
 				mention: "نصوص جاهزة",
 				id: "معرف",
+				multiple: "متعدد",
 			},
 		},
 		en: {
@@ -78,6 +80,11 @@ export default function fieldsList(): SelectMixedOption[] {
 			key: "text",
 			icon: renderIcon(IconTypography),
 			children: [
+				{
+					label: t("fields.multiple"),
+					key: "multiple",
+					icon: renderIcon(IconBoxMultiple),
+				},
 				{
 					label: t("fields.shortText"),
 					key: "string",
@@ -243,7 +250,7 @@ export function flatFieldsList() {
 		...((children as any) ?? []),
 	]);
 }
-export function getField(field: Field, value?: any) {
+export function getField(field: Field) {
 	if (field.table === "assets")
 		return flatFieldsList().find(
 			({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
@@ -257,16 +264,8 @@ export function getField(field: Field, value?: any) {
 				({ key }) => key === [field.type, field.children].join("-"),
 			);
 	}
-	let fieldType = field.subType ?? (field.type as any);
-	if (Array.isArray(fieldType))
-		fieldType = detectFieldType(
-			value && typeof value === "object"
-				? value.id
-					? value.id
-					: Inison.stringify(value)
-				: value,
-			fieldType,
-		);
+	let fieldType = field.subType ?? field.type;
+	if (Array.isArray(fieldType)) fieldType = "multiple";
 	if (!fieldType) return defaultUnfoundField;
 	return (
 		flatFieldsList().find(({ key }) => key === fieldType) ?? defaultUnfoundField

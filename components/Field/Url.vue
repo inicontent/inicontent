@@ -10,9 +10,7 @@
                 : { ...field.inputProps, type: 'url' }
             : { type: 'url' }">
             <template #suffix>
-                <component :is="getField(field,
-                    modelValue,
-                ).icon" />
+                <component :is="getField(field).icon" />
             </template>
         </NInput>
         <template #label>

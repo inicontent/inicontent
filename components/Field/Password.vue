@@ -11,9 +11,7 @@
                     : field.inputProps
                 : {}">
             <template #suffix>
-                <component :is="getField(field,
-                    modelValue,
-                ).icon" />
+                <component :is="getField(field).icon" />
             </template>
         </NInput>
         <template #label>

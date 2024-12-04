@@ -37,6 +37,21 @@ export default function (type: string) {
 				type: ["string", "number"],
 				subType: "select",
 			};
+		case "multiple":
+			return {
+				type: ["string"],
+			};
+		case "radio":
+			return {
+				type: ["string", "number"],
+				subType: "radio",
+			};
+		case "checkbox":
+			return {
+				type: "array",
+				children: ["string", "number"],
+				subType: "checkbox",
+			};
 		case "array-select":
 			return {
 				type: "array",
