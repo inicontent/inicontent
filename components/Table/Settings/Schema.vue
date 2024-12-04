@@ -171,7 +171,7 @@ import {
 	NTooltip,
 	type SelectOption,
 } from "naive-ui";
-import draggable from "vuedraggable";
+import draggable from 'vuedraggable/src/vuedraggable'
 import { isArrayOfObjects } from "inibase/utils";
 
 defineTranslation({
