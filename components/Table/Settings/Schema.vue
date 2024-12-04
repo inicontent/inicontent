@@ -1,153 +1,150 @@
 <template>
-    <NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
-        v-model:expanded-names="expandedNames">
-        <draggable :list="schema" item-key="id" handle=".handle">
-            <template #item="{ element, index }: { element: Field, index: number }">
-                <NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)">
-                    <template #header>
-                        <NTooltip v-if="!isDisabled(element.key)" :delay="500">
-                            <template #trigger>
-                                <NIcon class="handle" :size="18">
-                                    <IconMenu2 />
-                                </NIcon>
-                            </template>
-                            {{ t('dragToMove') }}
-                        </NTooltip>
-                        {{ element.key ? t(element.key) : "--" }}
-                    </template>
-                    <template #header-extra>
-                        <NFlex>
-                            <template
-                                v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)">
-                                <NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable
-                                    @select="(type) => pushToChildrenSchema(type, index)">
-                                    <NButton :disabled="!element.key" circle size="small">
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconPlus />
-                                            </NIcon>
-                                        </template>
-                                    </NButton>
-                                </NDropdown>
-                            </template>
-                            <template v-else-if="!isDisabled(element.key)">
-                                <NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
-                                    size="small" :type="element.required ? 'error' : 'tertiary'"
-                                    @click="schema[index].required = !schema[index].required">
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconAsterisk />
-                                        </NIcon>
-                                    </template>
-                                    <template v-if="!$device.isMobile" #default>
-                                        {{ t('required') }}
-                                    </template>
-                                </NButton>
-                            </template>
-                            <NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
-                                style="max-height: 200px" trigger="click" scrollable
-                                @select="(type) => schema[index] = changeFieldType(element, type)">
-                                <NButton round strong secondary size="small" type="primary"
-                                    :disabled="isDisabled(element.key)">
-                                    <template #icon>
-                                        <component :is="getField(element).icon" />
-                                    </template>
-                                    <template v-if="!$device.isMobile" #default>
-                                        {{ getField(element).label }}
-                                    </template>
-                                </NButton>
-                            </NDropdown>
-                            <NButton v-if="!isDisabled(element.key)" circle secondary size="small" type="error"
-                                @click="schema.splice(index, 1)">
-                                <template #icon>
-                                    <NIcon>
-                                        <IconTrash />
-                                    </NIcon>
-                                </template>
-                            </NButton>
-                        </NFlex>
-                    </template>
-                    <NFormItem :label="t('fieldName')">
-                        <template v-if="getPath(table.schema ?? [], element.id, true)" #feedback>
-                            {{ `#${getPath(table.schema ?? [], element.id, true)}` }}
-                        </template>
-                        <NInput v-model:value="schema[index].key" />
-                    </NFormItem>
-                    <NFormItem
-                        v-if="element.table === 'assets' || Array.isArray(element.type) || !['array', 'object'].includes(element.type)"
-                        :label="t('fieldDescription')">
-                        <NInput v-model:value="schema[index].description" />
-                    </NFormItem>
-                    <template v-if="element.table === 'assets'">
-                        <NFormItem :label="t('allowedFiles')">
-                            <NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
-                                v-model:value="schema[index].accept" />
-                        </NFormItem>
-                        <NFormItem :label="t('uploadParams')">
-                            <NInput v-model:value="schema[index].params" />
-                            <template #feedback>
-                                {{ t('ie') }}: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
-                            </template>
-                        </NFormItem>
-                    </template>
-                    <template v-else-if="element.subType === 'select'">
-                        <NFormItem :label="t('options')">
-                            <NSelect
-                                :value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
-                                @update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
-                                filterable multiple tag :show-arrow="false" :show="false" />
-                        </NFormItem>
-                        <NFormItem :label="t('allowCustomValues')" label-placement="left">
-                            <NSwitch v-model:value="schema[index].custom" />
-                        </NFormItem>
-                        <template v-if="!Array.isArray(element.type) && element.type === 'array'">
-                            <NFormItem :label="t('minimumItems')">
-                                <NInputNumber :value="schema[index].min"
-                                    @update:value="(value) => { if (value) schema[index].min = value; else delete schema[index].min }" />
-                            </NFormItem>
-                            <NFormItem :label="t('maximumItems')">
-                                <NInputNumber :value="schema[index].max"
-                                    @update:value="(value) => { if (value) schema[index].max = value; else delete schema[index].max }" />
-                            </NFormItem>
-                        </template>
-                    </template>
-                    <template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
-                        <NFormItem :label="t('expandByDefault')" label-placement="left">
-                            <NSwitch v-model:value="schema[index].expand" />
-                        </NFormItem>
-                    </template>
-                    <template v-else-if="element.subType === 'tags'">
-                        <NFormItem :label="t('valuesType')">
-                            <NSelect v-model:value="(schema[index].children as any)" filterable multiple
-                                :render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
-                        </NFormItem>
-                    </template>
-                    <template
-                        v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
-                        <NFormItem :label="t('tableName')">
-                            <NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
-                        </NFormItem>
-                        <NFormItem :label="t('searchIn')" :disabled="!element.key">
-                            <NCascader :disabled="!element.key" multiple clearable filterable expand-trigger="hover"
-                                check-strategy="child" :cascard="false" v-model:value="schema[index].searchIn"
-                                :options="searchInSelectOptions(element)" />
-                            <NFormItem v-if="element.type === 'array'" :label="t('minimumItems')">
-                                <NInputNumber :value="element.min"
-                                    @update:value="(value) => { if (value) schema[index].min = value; else delete schema[index].min }" />
-                            </NFormItem>
-                        </NFormItem>
-                    </template>
-                    <NFormItem :label="t('unique')" label-placement="left"
-                        v-if="!['table', 'array', 'object'].includes((element.subType ?? element.type) as string)">
-                        <NSwitch v-model:value="schema[index].unique" />
-                    </NFormItem>
-                    <LazyTableSettingsSchema
-                        v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
-                        v-model="element.children" v-model:expanded-names="expandedChildNames" />
-                </NCollapseItem>
-            </template>
-        </draggable>
-    </NCollapse>
+	<NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
+		v-model:expanded-names="expandedNames">
+		<draggable :list="schema" item-key="id" handle=".handle">
+			<template #item="{ element, index }: { element: Field, index: number }">
+				<NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)">
+					<template #header>
+						<NTooltip v-if="!isDisabled(element.key)" :delay="500">
+							<template #trigger>
+								<NIcon class="handle" :size="18">
+									<IconMenu2 />
+								</NIcon>
+							</template>
+							{{ t('dragToMove') }}
+						</NTooltip>
+						{{ element.key ? t(element.key) : "--" }}
+					</template>
+					<template #header-extra>
+						<NFlex>
+							<template
+								v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)">
+								<NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable
+									@select="(type) => pushToChildrenSchema(type, index)">
+									<NButton :disabled="!element.key" circle size="small">
+										<template #icon>
+											<NIcon>
+												<IconPlus />
+											</NIcon>
+										</template>
+									</NButton>
+								</NDropdown>
+							</template>
+							<template v-else-if="!isDisabled(element.key)">
+								<NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
+									size="small" :type="element.required ? 'error' : 'tertiary'"
+									@click="schema[index].required = !schema[index].required">
+									<template #icon>
+										<NIcon>
+											<IconAsterisk />
+										</NIcon>
+									</template>
+									<template v-if="!$device.isMobile" #default>
+										{{ t('required') }}
+									</template>
+								</NButton>
+							</template>
+							<NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
+								style="max-height: 200px" trigger="click" scrollable
+								@select="(type) => schema[index] = changeFieldType(element, type)">
+								<NButton round strong secondary size="small" type="primary"
+									:disabled="isDisabled(element.key)">
+									<template #icon>
+										<component :is="getField(element).icon" />
+									</template>
+									<template v-if="!$device.isMobile" #default>
+										{{ getField(element).label }}
+									</template>
+								</NButton>
+							</NDropdown>
+							<NButton v-if="!isDisabled(element.key)" circle secondary size="small" type="error"
+								@click="schema.splice(index, 1)">
+								<template #icon>
+									<NIcon>
+										<IconTrash />
+									</NIcon>
+								</template>
+							</NButton>
+						</NFlex>
+					</template>
+					<NFormItem :label="t('fieldName')">
+						<template v-if="getPath(table.schema ?? [], element.id, true)" #feedback>
+							{{ `#${getPath(table.schema ?? [], element.id, true)}` }}
+						</template>
+						<NInput v-model:value="schema[index].key" />
+					</NFormItem>
+					<NFormItem
+						v-if="element.table === 'assets' || Array.isArray(element.type) || !['array', 'object'].includes(element.type)"
+						:label="t('fieldDescription')">
+						<NInput v-model:value="schema[index].description" />
+					</NFormItem>
+					<template v-if="element.table === 'assets'">
+						<NFormItem :label="t('allowedFiles')">
+							<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
+								v-model:value="schema[index].accept" />
+						</NFormItem>
+						<NFormItem :label="t('uploadParams')">
+							<NInput v-model:value="schema[index].params" />
+							<template #feedback>
+								{{ t('ie') }}: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
+							</template>
+						</NFormItem>
+					</template>
+					<template v-else-if="element.subType === 'select'">
+						<NFormItem :label="t('options')">
+							<NSelect
+								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
+								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
+								filterable multiple tag :show-arrow="false" :show="false" />
+						</NFormItem>
+						<NFormItem :label="t('allowCustomValues')" label-placement="left">
+							<NSwitch v-model:value="schema[index].custom" />
+						</NFormItem>
+					</template>
+					<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
+						<NFormItem :label="t('expandByDefault')" label-placement="left">
+							<NSwitch v-model:value="schema[index].expand" />
+						</NFormItem>
+					</template>
+					<template v-else-if="element.subType === 'tags'">
+						<NFormItem :label="t('valuesType')">
+							<NSelect v-model:value="(schema[index].children as any)" filterable multiple
+								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
+						</NFormItem>
+					</template>
+					<template
+						v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
+						<NFormItem :label="t('tableName')">
+							<NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
+						</NFormItem>
+						<NFormItem :label="t('searchIn')" :disabled="!element.key">
+							<NCascader :disabled="!element.key" multiple clearable filterable expand-trigger="hover"
+								check-strategy="child" :cascard="false" v-model:value="schema[index].searchIn"
+								:options="searchInSelectOptions(element)" />
+						</NFormItem>
+					</template>
+					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
+						<NFormItem :label="t('minimumItems')">
+							<NInputNumber :value="schema[index].min"
+								@update:value="(value) => { if (value) schema[index].min = value; else delete schema[index].min }" />
+						</NFormItem>
+						<NFormItem :label="t('maximumItems')">
+							<NInputNumber :value="schema[index].max"
+								@update:value="(value) => { if (value) schema[index].max = value; else delete schema[index].max }" />
+						</NFormItem>
+					</template>
+
+					<NFormItem :label="t('unique')" label-placement="left"
+						v-if="!['table', 'array', 'object'].includes((element.subType ?? element.type) as string)">
+						<NSwitch v-model:value="schema[index].unique" />
+					</NFormItem>
+					<LazyTableSettingsSchema
+						v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
+						v-model="element.children" v-model:expanded-names="expandedChildNames" />
+				</NCollapseItem>
+			</template>
+		</draggable>
+	</NCollapse>
 </template>
 
 <script lang="ts" setup>
@@ -185,7 +182,7 @@ import { isArrayOfObjects } from "inibase/utils";
 defineTranslation({
 	ar: {
 		fieldName: "إسم الحقل",
-		fieldDescription: "",
+		fieldDescription: "وصف الحقل",
 		allowedFiles: "الملفات المسموح بها",
 		options: "الخيارات",
 		valuesType: "نوع القيم",
@@ -348,22 +345,22 @@ const tableSelectOptions = computed(() =>
 function searchInSelectOptions(field: Field) {
 	return field.table
 		? generateSearchInOptions(
-				database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
-			)
+			database.value.tables?.find(({ slug }) => slug === field.table)?.schema,
+		)
 		: [];
 }
 </script>
 
 <style lang="css" scoped>
 .rtl .handle {
-    margin-left: 10px
+	margin-left: 10px
 }
 
 .ltr .handle {
-    margin-right: 10px
+	margin-right: 10px
 }
 
 .notSortable .handle {
-    display: none;
+	display: none;
 }
 </style>

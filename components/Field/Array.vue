@@ -1,81 +1,83 @@
 <template>
-    <LazyField v-if="field.subType" :field="{
-        ...field,
-        type: field.subType,
-        isArray: true,
-    }" v-model="modelValue" />
-    <LazyField v-else-if="!isArrayOfObjects(field.children)" :field="{
-        ...field,
-        subType: field.children === 'table' ? 'table' : 'tags',
-        isArray: true,
-    }" v-model="modelValue" />
-    <NCollapse v-else-if="field.isTable === false || field.children.filter(
-        (f: any) => f.type === 'array' && isArrayOfObjects(f.children),
-    ).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-        :expanded-names="field.expand || expandedNames ? field.id : undefined" accordion>
-        <template #arrow>
-            <NIcon>
-                <IconChevronRight v-if="modelValue && modelValue.length > 0" />
-            </NIcon>
-        </template>
-        <NCollapseItem style="margin: 0 0 20px;" display-directive="show" :title="t(field.key)" :name="field.id"
-            :disabled="!modelValue?.length">
-            <template #header-extra>
-                <NButton size="small" round @click="handleAddNewItem">
-                    <template #icon>
-                        <NIcon>
-                            <IconPlus />
-                        </NIcon>
-                    </template>
-                </NButton>
-            </template>
-            <NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames">
-                <NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
-                    :title="field.children[0].type === 'string' ? (_item as Data)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
-                    :name="`${field.id}.${index}`">
-                    <template #header-extra>
-                        <NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
-                            index,
-                        )" @click="modelValue.splice(index, 1)">
-                            <template #icon>
-                                <NIcon>
-                                    <IconTrash />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    <div class="collapseContentPadding">
-                        <LazyFieldS v-model="(modelValue[index] as Data)" :schema="field.children.map((child) => ({
-                            ...child,
-                            ...(field.disabledItems
-                                ? {
-                                    inputProps: {
-                                        disabled:
-                                            field.disabledItems?.includes(
-                                                index,
-                                            ),
-                                    },
-                                }
-                                : {}),
-                        }))" />
-                    </div>
-                </NCollapseItem>
-            </NCollapse>
-        </NCollapseItem>
-    </NCollapse>
-    <NCard v-else :title="t(field.key)" :bordered="false" content-style="padding-left: 0; padding-right: 0;"
-        header-style="padding-top: 0; padding-left: 0; padding-right: 0;">
-        <template #header-extra v-if="!field.disableActions">
-            <NButton size="small" round @click="handleAddNewItem">
-                <template #icon>
-                    <NIcon>
-                        <IconPlus />
-                    </NIcon>
-                </template>
-            </NButton>
-        </template>
-        <NDataTable v-if="field.children" :columns="tableColumns" :data="(modelValue as Data[])" :scroll-x="tableWidth" />
-    </NCard>
+	<LazyField v-if="field.subType" :field="{
+		...field,
+		type: field.subType,
+		isArray: true,
+	}" v-model="modelValue" />
+	<LazyField v-else-if="!isArrayOfObjects(field.children)" :field="{
+		...field,
+		subType: field.children === 'table' ? 'table' : 'tags',
+		isArray: true,
+	}" v-model="modelValue" />
+	<NCollapse v-else-if="field.isTable === false || field.children.filter(
+		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
+	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
+		:expanded-names="field.expand || expandedNames ? field.id : undefined" accordion>
+		<template #arrow>
+			<NIcon>
+				<IconChevronRight v-if="modelValue && modelValue.length > 0" />
+			</NIcon>
+		</template>
+		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :title="t(field.key)" :name="field.id"
+			:disabled="!modelValue?.length">
+			<template #header-extra>
+				<NButton size="small" round @click="handleAddNewItem">
+					<template #icon>
+						<NIcon>
+							<IconPlus />
+						</NIcon>
+					</template>
+				</NButton>
+			</template>
+			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
+				:trigger-areas="['main', 'arrow']">
+				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
+					:title="field.children[0].type === 'string' ? (_item as Data)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
+					:name="`${field.id}.${index}`">
+					<template #header-extra>
+						<NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
+							index,
+						)" @click="modelValue.splice(index, 1)">
+							<template #icon>
+								<NIcon>
+									<IconTrash />
+								</NIcon>
+							</template>
+						</NButton>
+					</template>
+					<div class="collapseContentPadding">
+						<LazyFieldS v-model="(modelValue[index] as Data)" :schema="field.children.map((child) => ({
+							...child,
+							...(field.disabledItems
+								? {
+									inputProps: {
+										disabled:
+											field.disabledItems?.includes(
+												index,
+											),
+									},
+								}
+								: {}),
+						}))" />
+					</div>
+				</NCollapseItem>
+			</NCollapse>
+		</NCollapseItem>
+	</NCollapse>
+	<NCard v-else :title="t(field.key)" :bordered="false" content-style="padding-left: 0; padding-right: 0;"
+		header-style="padding-top: 0; padding-left: 0; padding-right: 0;">
+		<template #header-extra v-if="!field.disableActions">
+			<NButton size="small" round @click="handleAddNewItem">
+				<template #icon>
+					<NIcon>
+						<IconPlus />
+					</NIcon>
+				</template>
+			</NButton>
+		</template>
+		<NDataTable v-if="field.children" :columns="tableColumns" :data="(modelValue as Data[])"
+			:scroll-x="tableWidth" />
+	</NCard>
 </template>
 
 <script setup lang="ts">
@@ -149,12 +151,12 @@ const tableColumns: DataTableColumns = [
 			t(child.key),
 			child.required
 				? h(
-						NText,
-						{
-							type: "error",
-						},
-						() => " *",
-					)
+					NText,
+					{
+						type: "error",
+					},
+					() => " *",
+				)
 				: null,
 		],
 		key: child.id,
@@ -164,10 +166,10 @@ const tableColumns: DataTableColumns = [
 					...child,
 					...(field.disabledItems?.includes(index)
 						? {
-								inputProps: {
-									disabled: true,
-								},
-							}
+							inputProps: {
+								disabled: true,
+							},
+						}
 						: {}),
 					labelProps: {
 						style: {
@@ -186,35 +188,35 @@ const tableColumns: DataTableColumns = [
 	field.disableActions === true
 		? {}
 		: {
-				title: t("actions"),
-				fixed: "right",
-				align: "center",
-				width: 100,
-				key: "actions",
-				render(_row: any, index: number) {
-					return h(
-						NTooltip,
-						{ delay: 500 },
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										disabled: field.disabledItems?.includes(index),
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-										onClick: () => modelValue.value?.splice(index, 1),
-									},
-									{
-										icon: () => h(NIcon, () => h(IconTrash)),
-									},
-								),
-							default: () => t("delete"),
-						},
-					);
-				},
+			title: t("actions"),
+			fixed: "right",
+			align: "center",
+			width: 100,
+			key: "actions",
+			render(_row: any, index: number) {
+				return h(
+					NTooltip,
+					{ delay: 500 },
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									disabled: field.disabledItems?.includes(index),
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+									onClick: () => modelValue.value?.splice(index, 1),
+								},
+								{
+									icon: () => h(NIcon, () => h(IconTrash)),
+								},
+							),
+						default: () => t("delete"),
+					},
+				);
 			},
+		},
 ];
 </script>
