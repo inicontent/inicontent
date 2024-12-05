@@ -1,27 +1,27 @@
 <template>
-    <NuxtLayout name="dashboard">
-        <NLayout position="absolute" has-sider>
-            <NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
-                isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
-                :collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
-                <NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
-                    @mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
-                    :defaultValue :watch-props="['defaultValue']" accordion />
-            </NLayoutSider>
-            <NLayoutContent id="pageContent" position="absolute" :content-style="{
-                padding: $device.isMobile
-                    ? '24px 0'
-                    : Language === 'ar'
-                        ? '24px 88px 24px 24px'
-                        : '24px 24px 24px 88px',
-            }" :native-scrollbar="false">
-                <div v-if="isMenuOpen" @click="isMenuOpen = false"
-                    style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
-                </div>
-                <slot></slot>
-            </NLayoutContent>
-        </NLayout>
-    </NuxtLayout>
+	<NuxtLayout name="dashboard">
+		<NLayout position="absolute" has-sider>
+			<NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
+				isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
+				:collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
+				<NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
+					@mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
+					:defaultValue :watch-props="['defaultValue']" accordion />
+			</NLayoutSider>
+			<NLayoutContent id="pageContent" position="absolute" :content-style="{
+				padding: $device.isMobile
+					? '24px 0'
+					: Language === 'ar'
+						? '24px 88px 24px 24px'
+						: '24px 24px 24px 88px',
+			}" :native-scrollbar="false">
+				<div v-if="isMenuOpen" @click="isMenuOpen = false"
+					style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
+				</div>
+				<slot></slot>
+			</NLayoutContent>
+		</NLayout>
+	</NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -85,7 +85,7 @@ const defaultValue = computed(() => {
 	return decodeURI(lastPathInRoute?.toString() ?? "");
 });
 
-const renderSingleItem = (table: Table): MenuOption => {
+function renderSingleItem(table: Table): MenuOption {
 	const itemChildren = [
 		{
 			label: () =>
@@ -157,26 +157,14 @@ const renderSingleItem = (table: Table): MenuOption => {
 		icon: () => h(NIcon, () => getTableIcon(table)),
 		children: itemChildren.length ? itemChildren : undefined,
 	};
-};
-const menuOptions = computed<MenuOption[]>(() =>
-	database.value?.tables
-		? ([
-				...(database.value.tables
-					.filter(
-						({ slug, allowedMethods }) =>
-							![
-								"users",
-								"sessions",
-								"assets",
-								"translations",
-								"pages",
-								"components",
-							].includes(slug) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-				database.value.tables.filter(
+}
+
+const menuOptions = database.value?.tables
+	? ([
+			...(database.value.tables
+				.filter(
 					({ slug, allowedMethods }) =>
-						[
+						![
 							"users",
 							"sessions",
 							"assets",
@@ -184,21 +172,32 @@ const menuOptions = computed<MenuOption[]>(() =>
 							"pages",
 							"components",
 						].includes(slug) && allowedMethods?.includes("r"),
-				).length
-					? {
-							key: "divider-1",
-							type: "divider",
-						}
-					: undefined,
-				...(database.value.tables
-					?.filter(
-						({ slug, allowedMethods }) =>
-							["users", "sessions", "assets", "pages", "components"].includes(
-								slug,
-							) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-			].filter((item) => item) as MenuOption[])
-		: [],
-);
+				)
+				.map(renderSingleItem) ?? []),
+			database.value.tables.filter(
+				({ slug, allowedMethods }) =>
+					[
+						"users",
+						"sessions",
+						"assets",
+						"translations",
+						"pages",
+						"components",
+					].includes(slug) && allowedMethods?.includes("r"),
+			).length
+				? {
+						key: "divider-1",
+						type: "divider",
+					}
+				: undefined,
+			...(database.value.tables
+				?.filter(
+					({ slug, allowedMethods }) =>
+						["users", "sessions", "assets", "pages", "components"].includes(
+							slug,
+						) && allowedMethods?.includes("r"),
+				)
+				.map(renderSingleItem) ?? []),
+		].filter((item) => item) as MenuOption[])
+	: [];
 </script>
