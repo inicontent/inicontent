@@ -56,7 +56,7 @@
 										</template>
 									</NDynamicTags>
 								</NFormItem>
-								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
+								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
 							</NForm>
 						</NCard>
 						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -189,6 +189,7 @@ const database = useState<Database>("database");
 const table = useState<Table>("table");
 const tableRef = ref<FormInst | null>(null);
 const tableCopy = ref(JSON.parse(JSON.stringify(table.value)));
+
 async function updateTable() {
 	tableRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -238,9 +239,11 @@ async function updateTable() {
 		} else window.$message.error(t("inputsAreInvalid"));
 	});
 }
+
 const isUnDeletable = computed(() =>
 	["users", "pages", "components"].includes(table.value?.slug),
 );
+
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
