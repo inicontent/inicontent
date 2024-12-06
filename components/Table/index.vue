@@ -145,7 +145,7 @@ const searchArray = ref<SearchType>(
 
 defineExpose({
 	search: {
-		data: searchArray.value,
+		data: searchArray,
 		execute: executeSearch,
 		reset: resetSearch,
 	},
@@ -390,7 +390,11 @@ const dataTablePagination = ref();
 const isSearchDisabled = ref(false);
 watchEffect(() => {
 	isSearchDisabled.value =
-		searchArray.value.and?.length === 1 && searchArray.value.and[0][0] === null;
+		searchArray.value &&
+		Object.keys(searchArray.value).length === 1 &&
+		searchArray.value[
+			Object.keys(searchArray.value)[0] as "and" | "or"
+		]?.[0][0] === null;
 
 	dataTablePagination.value = {
 		disabled: !data.value?.options.total,

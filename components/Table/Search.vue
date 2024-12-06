@@ -44,12 +44,13 @@
                 <template v-for="(item, index) in formatItems(items)">
                     <NInputGroup v-if="Array.isArray(item)">
                         <NSelect size="small" :consistent-menu-width="false" tag filterable :value="item[0]"
-                            @update:value="(v) => item[0] = v" :options="generateSearchInOptions(
-                                table.schema, formatItems(items).toSpliced(index, 1).map(([value1]) => value1))"
+                            @update:value="(v) => item[0] = v"
+                            :options="generateSearchInOptions(
+                                table.schema, formatItems(items).toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
                             :style="`width:${item[3] ? 33.33 : 100}%`" />
                         <template v-if="item[3]">
                             <NSelect size="small" :consistent-menu-width="false" tag filterable :value="item[1]"
-                                @update:value="(v) => item[1] = v" :options="searchSelectOptions(item[3])"
+                                @update:value="(v) => item[1] = v" :options="getAvailableComparisonOperator(item[3])"
                                 style="width:33.33%" />
                             <Field :model-value="item[2]" @update:modelValue="(v) => {
                                 if (v !== undefined) {
@@ -79,109 +80,126 @@
 
 <script lang="ts" setup>
 import {
-	IconPlus,
-	IconTrash,
-	IconSwitchHorizontal,
-	IconMinus,
-	IconArrowMerge,
-	IconArrowFork,
+    IconPlus,
+    IconTrash,
+    IconSwitchHorizontal,
+    IconMinus,
+    IconArrowMerge,
+    IconArrowFork,
 } from "@tabler/icons-vue";
 import {
-	getField as getFieldFromSchema,
-	isArrayOfObjects,
-	isObject,
+    getField as getFieldFromSchema,
+    isArrayOfObjects,
+    isObject,
 } from "inibase/utils";
 import {
-	NButton,
-	NTooltip,
-	NCollapse,
-	NCollapseItem,
-	NDropdown,
-	NFlex,
-	NIcon,
-	NInputGroup,
-	NSelect,
-	NButtonGroup,
+    NButton,
+    NTooltip,
+    NCollapse,
+    NCollapseItem,
+    NDropdown,
+    NFlex,
+    NIcon,
+    NInputGroup,
+    NSelect,
+    NButtonGroup,
 } from "naive-ui";
 
 defineTranslation({
-	ar: {
-		andGroup: "مجموعة و",
-		orGroup: "مجموعة أو",
-	},
+    ar: {
+        andGroup: "مجموعة و",
+        orGroup: "مجموعة أو",
+    },
 });
 
 const { callback } = defineProps<{ callback: CallableFunction }>();
 
 type searchArrayValueItem =
-	| [string | null, string, any]
-	| [string | null, string, any, any];
+    | [string | null, string, any]
+    | [string | null, string, any, any];
 type searchArrayValue = (searchArrayValueItem | searchArray)[];
 type searchArray = {
-	and?: searchArrayValue;
-	or?: searchArrayValue;
+    and?: searchArrayValue;
+    or?: searchArrayValue;
 };
 const modeValue = defineModel<searchArray>({
-	default: () => reactive({ and: [[null, "=", null]] }),
+    default: { and: [[null, "=", null]] },
 });
 
 const table = useState<Table>("table");
 
 const conditionDropdownOptions = [
-	{
-		key: "and",
-		label: t("andGroup"),
-		icon: () => h(NIcon, () => h(IconArrowMerge)),
-	},
-	{
-		key: "or",
-		label: t("orGroup"),
-		icon: () => h(NIcon, () => h(IconArrowFork)),
-	},
+    {
+        key: "and",
+        label: t("andGroup"),
+        icon: () => h(NIcon, () => h(IconArrowMerge)),
+    },
+    {
+        key: "or",
+        label: t("orGroup"),
+        icon: () => h(NIcon, () => h(IconArrowFork)),
+    },
 ];
 function toggleCondition(oldCondition: "and" | "or") {
-	modeValue.value[oldCondition === "and" ? "or" : "and"] =
-		modeValue.value[oldCondition];
-	delete modeValue.value[oldCondition];
+    modeValue.value[oldCondition === "and" ? "or" : "and"] =
+        modeValue.value[oldCondition];
+    delete modeValue.value[oldCondition];
 }
 
 function formatItems(items: searchArrayValue) {
-	return items.map((item) => {
-		if (Array.isArray(item) && item[0])
-			item[3] = getFieldFromSchema(item[0], table.value.schema as any);
-		return item;
-	});
+    return items.map((item) => {
+        if (Array.isArray(item) && item[0])
+            item[3] = getFieldFromSchema(item[0], table.value.schema as any);
+        return item;
+    });
 }
 function getFieldFromItem(item: searchArrayValueItem) {
-	return {
-		...item[3],
-		subType: ["radio", "checkbox"].includes(item[3].subType)
-			? "select"
-			: item[3].subType,
-		required: false,
-		labelProps: {
-			showLabel: false,
-			style: "margin-top: -3px;width:33.33%",
-			showFeedback: false,
-		},
-		inputProps: {
-			size: "small",
-			onKeydown: ({ key }: KeyboardEvent) => {
-				if (key === "Enter") callback();
-			},
-		},
-	};
+    return {
+        ...item[3],
+        subType: ["radio", "checkbox"].includes(item[3].subType)
+            ? "select"
+            : item[3].subType,
+        required: false,
+        labelProps: {
+            showLabel: false,
+            style: "margin-top: -3px;width:33.33%",
+            showFeedback: false,
+        },
+        inputProps: {
+            size: "small",
+            onKeydown: ({ key }: KeyboardEvent) => {
+                if (key === "Enter") callback();
+            },
+        },
+    };
 }
-function searchSelectOptions(field: any): any {
-	return comparisonOperatorOptions().filter(({ value }) => {
-		if (checkFieldType(field.type, ["number", "date"]))
-			return ["=", "!=", ">", ">=", "<", "<="].includes(value);
-		if (
-			checkFieldType(field.type, "array") ||
-			checkFieldType(field.type, "table")
-		)
-			return ![">", ">=", "<", "<="].includes(value);
-		return ![">", ">=", "<", "<=", "[]", "![]"].includes(value);
-	});
+function getAvailableComparisonOperator(field: Field): {
+    label: string;
+    value: string;
+}[] {
+    return comparisonOperatorOptions().filter(({ value }) => {
+        if (Array.isArray(field.type))
+            return [
+                "=",
+                "!=",
+                ...(field.type.some((type: string) =>
+                    ["string", "email", "url"].includes(type),
+                )
+                    ? ["*", "!*"]
+                    : []),
+                ...(field.type.some((type: string) => ["number", "date"].includes(type))
+                    ? [">", ">=", "<", "<="]
+                    : []),
+            ].includes(value);
+
+        if (checkFieldType(field.type, ["number", "date"]))
+            return ["=", "!=", ">", ">=", "<", "<="].includes(value);
+        if (
+            checkFieldType(field.type, "array") ||
+            checkFieldType(field.type, "table")
+        )
+            return ![">", ">=", "<", "<="].includes(value);
+        return ![">", ">=", "<", "<=", "[]", "![]"].includes(value);
+    });
 }
 </script>

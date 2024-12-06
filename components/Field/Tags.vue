@@ -90,7 +90,7 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string[]>();
 
 const fieldChildrenLabels = field.children
-	? flatFieldsList()
+	? flatFieldsList
 			.filter(({ key }) =>
 				([] as string[])
 					.concat(field.children as string | string[])

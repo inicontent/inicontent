@@ -90,14 +90,15 @@
 							</template>
 						</NFormItem>
 					</template>
-					<template v-else-if="element.subType === 'select'">
+					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
 						<NFormItem :label="t('options')">
 							<NSelect
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
 								filterable multiple tag :show-arrow="false" :show="false" />
 						</NFormItem>
-						<NFormItem :label="t('allowCustomValues')" label-placement="left">
+						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
+							label-placement="left">
 							<NSwitch v-model:value="schema[index].custom" />
 						</NFormItem>
 					</template>
@@ -106,7 +107,7 @@
 							<NSwitch v-model:value="schema[index].expand" />
 						</NFormItem>
 					</template>
-					<template v-else-if="Array.isArray(element.type)">
+					<template v-else-if="Array.isArray(element.type) && !element.subType">
 						<NFormItem :label="t('valuesType')">
 							<NSelect v-model:value="schema[index].type" filterable multiple :min="1"
 								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
@@ -143,7 +144,7 @@
 					</template>
 
 					<NFormItem :label="t('unique')" label-placement="left"
-						v-if="!['table', 'array', 'object'].includes((element.subType ?? element.type) as string)">
+						v-if="!['table', 'array', 'object', 'select', 'radio', 'checkbox', 'tags'].includes((element.subType ?? element.type) as string)">
 						<NSwitch v-model:value="schema[index].unique" />
 					</NFormItem>
 					<LazyTableSettingsSchema
@@ -183,7 +184,7 @@ import {
 	NTooltip,
 	type SelectOption,
 } from "naive-ui";
-import draggable from 'vuedraggable/src/vuedraggable'
+import draggable from "vuedraggable/src/vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
 
 defineTranslation({
@@ -218,7 +219,7 @@ defineTranslation({
 		maximumItems: "الحد الأقصى للعناصر",
 		ie: "على سبيل المثال",
 		useInison: "إستعمل Inison",
-		extendWhere: "توسيع البحث"
+		extendWhere: "توسيع البحث",
 	},
 });
 
@@ -333,7 +334,7 @@ function selectRenderLabelWithIcon(
 	]);
 }
 
-const valuesTypeSelectOptions = flatFieldsList()
+const valuesTypeSelectOptions = flatFieldsList
 	?.filter(({ key }) =>
 		["string", "number", "password", "email", "url"].includes(key),
 	)

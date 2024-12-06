@@ -108,8 +108,8 @@ function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-		getPath(table.schema ?? [], columnID),
-	)
+			getPath(table.schema ?? [], columnID),
+		)
 	: field.searchIn;
 
 async function loadOptions(searchValue?: string | number) {
@@ -117,20 +117,26 @@ async function loadOptions(searchValue?: string | number) {
 	const searchOrObject =
 		searchValue && searchIn
 			? (searchIn.reduce((result, searchKey) => {
-				Object.assign(result, {
-					[searchKey]: `*%${searchValue}%`,
-				});
-				return result;
-			}, {}) ?? false)
+					Object.assign(result, {
+						[searchKey]: `*%${searchValue}%`,
+					});
+					return result;
+				}, {}) ?? false)
 			: false;
 	let where: string | undefined;
 	if (field.where) {
 		if (searchOrObject)
 			where = Inison.stringify({
-				...Inison.unstringify(field.where),
+				...(typeof field.where === "string"
+					? Inison.unstringify(field.where)
+					: field.where),
 				or: searchOrObject,
 			});
-		else where = field.where;
+		else
+			where =
+				typeof field.where === "string"
+					? field.where
+					: Inison.stringify(field.where);
 	} else if (searchOrObject)
 		where = Inison.stringify({
 			or: searchOrObject,

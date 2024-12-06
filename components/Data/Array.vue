@@ -8,7 +8,7 @@
                 {{ index + 1 }}
             </NText>
         </template>
-        <Data v-for="child in (field.children as Schema)" :field="child" :value="value[index][field.key]" />
+        <Data v-for="child in (field.children as Schema)" :field="child" :value="value[index][child.key]" />
     </NListItem>
 </template>
 

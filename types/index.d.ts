@@ -27,7 +27,14 @@ declare global {
 		| "role"
 		| "mention"
 		| "icon"
-		| "multiple";
+		| "multiple"
+		| "slider"
+		| "asset"
+		| "range"
+		| "array-select"
+		| "array-asset"
+		| "array-table"
+		| "custom";
 	type FieldType = dbFieldType;
 	type Field = {
 		id?: string | number;
@@ -37,7 +44,7 @@ declare global {
 		required?: boolean;
 		table?: string;
 		type: CMS_FieldType | FieldType | FieldType[];
-		subType?: CMS_FieldType | FieldType | FieldType[];
+		subType?: CMS_FieldType;
 		accept?: string[];
 		isArray?: boolean;
 		searchIn?: string[];

@@ -27,16 +27,25 @@ import {
 	IconCircleCheck,
 	type Icon,
 	IconBoxMultiple,
+	IconObjectScan,
+	IconBrandAirtable,
 } from "@tabler/icons-vue";
-import { detectFieldType } from "inibase/utils";
-import Inison from "inison";
-import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
+import type { VNodeChild } from "vue";
 
 function renderIcon(icon: Icon) {
 	return () => h(NIcon, () => h(icon));
 }
 
-export default function fieldsList(): SelectMixedOption[] {
+type fieldListOptionType = {
+	type?: string;
+	key: CMS_FieldType | FieldType;
+	label: string;
+	icon: () => VNodeChild;
+	disabled?: boolean;
+	children?: fieldListOptionType[];
+};
+
+export default function fieldsList(): fieldListOptionType[] {
 	defineTranslation({
 		ar: {
 			fields: {
@@ -216,12 +225,12 @@ export default function fieldsList(): SelectMixedOption[] {
 				{
 					label: t("fields.tableItems"),
 					key: "array-table",
-					icon: renderIcon(IconTable),
+					icon: renderIcon(IconBrandAirtable),
 				},
 				{
 					label: t("fields.objects"),
-					key: "array-object",
-					icon: renderIcon(IconBraces),
+					key: "array",
+					icon: renderIcon(IconObjectScan),
 				},
 			],
 		},
@@ -238,36 +247,38 @@ export default function fieldsList(): SelectMixedOption[] {
 	];
 }
 
-const defaultUnfoundField = {
+const defaultUnfoundField: fieldListOptionType = {
 	key: "custom",
 	label: "custom",
 	icon: renderIcon(IconQuestionMark),
 };
 
-export function flatFieldsList() {
-	return fieldsList().flatMap(({ label, key, icon, children }) => [
-		{ label, key, icon },
-		...((children as any) ?? []),
-	]);
-}
+export const flatFieldsList = fieldsList().flatMap(
+	(field) => field.children || field,
+);
+
 export function getField(field: Field) {
 	if (field.table === "assets")
-		return flatFieldsList().find(
-			({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
+		return (
+			flatFieldsList.find(
+				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
+			) ?? defaultUnfoundField
 		);
 	if (field.type === "array") {
 		if (
 			!Array.isArray(field.children) &&
 			["table", "object"].includes(field.children as string)
 		)
-			return flatFieldsList().find(
-				({ key }) => key === [field.type, field.children].join("-"),
+			return (
+				flatFieldsList.find(
+					({ key }) => key === [field.type, field.children].join("-"),
+				) ?? defaultUnfoundField
 			);
 	}
 	let fieldType = field.subType ?? field.type;
 	if (Array.isArray(fieldType)) fieldType = "multiple";
 	if (!fieldType) return defaultUnfoundField;
 	return (
-		flatFieldsList().find(({ key }) => key === fieldType) ?? defaultUnfoundField
+		flatFieldsList.find(({ key }) => key === fieldType) ?? defaultUnfoundField
 	);
 }
