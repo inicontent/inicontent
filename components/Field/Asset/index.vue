@@ -180,8 +180,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-						(value) => value.id === asset.id,
-					)
+					(value) => value.id === asset.id,
+				)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
@@ -195,27 +195,27 @@ function getFileList() {
 		.map((asset) =>
 			typeof asset === "string"
 				? {
-						id: asset,
-						name: asset.split("/").pop(),
-						status: "finished",
-						url: asset,
-						type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-						thumbnailUrl:
-							field.accept?.includes("image") && !field.params?.includes("fit")
-								? `${asset}?fit=94`
-								: undefined,
-					}
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+					thumbnailUrl:
+						field.accept?.includes("image") && !field.params?.includes("fit")
+							? `${asset}`
+							: undefined,
+				}
 				: {
-						id: asset.id,
-						name: asset.id,
-						status: "finished",
-						url: (asset as Asset).publicURL,
-						type: asset.type,
-						thumbnailUrl:
-							asset.type?.startsWith("image/") && !field.params?.includes("fit")
-								? `${(asset as Asset).publicURL}?fit=94`
-								: undefined,
-					},
+					id: asset.id,
+					name: asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+					thumbnailUrl:
+						asset.type?.startsWith("image/") && !field.params?.includes("fit")
+							? `${(asset as Asset).publicURL}`
+							: undefined,
+				},
 		) as UploadFileInfo[];
 }
 
@@ -227,7 +227,7 @@ function setModelValue(value?: UploadFileInfo[]) {
 		if (
 			value.length &&
 			value.length ===
-				value.filter(({ status }) => status === "finished").length
+			value.filter(({ status }) => status === "finished").length
 		) {
 			const finalFileList = value
 				.filter(({ status }) => status === "finished")

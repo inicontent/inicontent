@@ -2,7 +2,7 @@
     <NImageGroup>
         <NFlex :wrap="false">
             <template v-for="singleValue in ([] as Asset[]).concat(value)">
-                <NImage v-if="singleValue.type.startsWith('image/')" lazy :src="`${singleValue.publicURL}?fit=32`"
+                <NImage v-if="singleValue.type.startsWith('image/')" lazy :src="`${singleValue.publicURL}`"
                     :preview-src="singleValue.publicURL" :width="32" :height="32" />
                 <NA v-else :href="singleValue.publicURL" target="_blank">
                     <NIcon>
