@@ -73,11 +73,13 @@
 						</template>
 						<NInput v-model:value="schema[index].key" />
 					</NFormItem>
+
 					<NFormItem
 						v-if="element.table === 'assets' || Array.isArray(element.type) || !['array', 'object'].includes(element.type)"
 						:label="t('fieldDescription')">
 						<NInput v-model:value="schema[index].description" />
 					</NFormItem>
+
 					<template v-if="element.table === 'assets'">
 						<NFormItem :label="t('allowedFiles')">
 							<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
@@ -132,6 +134,7 @@
 							</template>
 						</NFormItem>
 					</template>
+
 					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
 						<NFormItem :label="t('minimumItems')">
 							<NInputNumber :value="schema[index].min"
@@ -145,8 +148,21 @@
 
 					<NFormItem :label="t('unique')" label-placement="left"
 						v-if="!['table', 'array', 'object', 'select', 'radio', 'checkbox', 'tags'].includes((element.subType ?? element.type) as string)">
-						<NSwitch v-model:value="schema[index].unique" />
+						<NSwitch :value="schema[index].unique ? true : false"
+							@update:value="(value) => schema[index].unique = value" :checked-value="true"
+							:unchecked-value="false" />
 					</NFormItem>
+					<NFormItem v-if="schema[index].unique" :label="t('uniqueGroup')">
+						<NSelect :value="typeof schema[index].unique === 'boolean' ? undefined : schema[index].unique"
+							@update:value="(value) => schema[index].unique = value" :options="uniqueGroupOptions" tag
+							filterable clearable />
+					</NFormItem>
+
+					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+						:label="t('regex')">
+						<NInput v-model:value="schema[index].regex" />
+					</NFormItem>
+
 					<LazyTableSettingsSchema
 						v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
 						v-model="element.children" v-model:expanded-names="expandedChildNames" />
@@ -350,6 +366,17 @@ const tableSelectOptions = computed(() =>
 		value: slug,
 	})),
 );
+
+const uniqueGroupOptions = computed(() => {
+	// Extract all unique group names from the schema
+	const groups = schema.value
+		.map((field) => (typeof field.unique === "string" ? field.unique : null))
+		.filter((group) => group !== null);
+	return [...new Set(groups)].map((group) => ({
+		label: group,
+		value: group,
+	}));
+});
 </script>
 
 <style lang="css" scoped>

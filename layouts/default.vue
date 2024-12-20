@@ -37,7 +37,7 @@ import {
 	type ConfigProviderProps,
 } from "naive-ui";
 
-import "~/assets/css/main.css";
+import "~/assets/main.css";
 import "@fontsource-variable/cairo";
 
 const rtlStyles: any = [

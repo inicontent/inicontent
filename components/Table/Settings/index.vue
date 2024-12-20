@@ -37,7 +37,7 @@
 					</template>
 					<NFlex vertical>
 						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-							<NForm ref="tableRef" :model="tableCopy">
+							<NForm ref="settingsFormRef" :model="tableCopy">
 								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
 								<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
 									<NCascader multiple clearable filterable expand-trigger="hover"
@@ -49,8 +49,7 @@
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
 										<template #input="{ submit, deactivate }">
-											<NSelect size="small" filterable tag show
-												:options="generateLabelOptions(tableCopy.schema)"
+											<NSelect size="small" filterable tag show :options="generateLabelOptions"
 												@update:value="submit($event)"
 												@update:show="(value) => value ? '' : deactivate()" />
 										</template>
@@ -76,7 +75,7 @@
 										</template>
 										{{ t("changeOrder") }}
 									</NTooltip>
-									<NDropdown :options="fieldsList()" stlye="max-height: 200px" scrollable
+									<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
 										@select="pushToSchema">
 										<NButton secondary type="primary" round>
 											<template #icon>
@@ -141,7 +140,7 @@ import {
 
 onMounted(() => {
 	document.onkeydown = (e) => {
-		if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
+		if (!((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "s" || e.key === "س"))) return;
 		e.preventDefault();
 		updateTable();
 	};
@@ -187,11 +186,11 @@ const router = useRouter();
 const showDraggable = ref(false);
 const database = useState<Database>("database");
 const table = useState<Table>("table");
-const tableRef = ref<FormInst | null>(null);
+const settingsFormRef = ref<FormInst | null>(null);
 const tableCopy = ref(JSON.parse(JSON.stringify(table.value)));
 
 async function updateTable() {
-	tableRef.value?.validate(async (errors) => {
+	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
 			const bodyContent = JSON.parse(
 				JSON.stringify(
@@ -272,14 +271,17 @@ async function deleteTable() {
 	Loading.value.deleteTable = false;
 }
 
-const flattenCopySchema: Schema = flattenSchema(tableCopy.value.schema);
+const flattenCopySchema = computed<Schema>(() =>
+	flattenSchema(tableCopy.value.schema),
+);
 tableCopy.value.localLabel = tableCopy.value.label
 	?.split(/(@\w+)/g)
 	.filter((value: string) => value != "")
 	.map((label: string) => {
 		if (label.startsWith("@"))
 			return {
-				label: flattenCopySchema.find(({ id }) => id === label.slice(1))?.key,
+				label: flattenCopySchema.value.find(({ id }) => id === label.slice(1))
+					?.key,
 				value: label,
 			};
 		return {
@@ -291,7 +293,7 @@ function onAppendToLabel(label: string) {
 	if (label.startsWith("@") && isValidID(label.slice(1)))
 		return {
 			label:
-				flattenCopySchema.find(({ id }) => id === label.slice(1))?.key ??
+				flattenCopySchema.value.find(({ id }) => id === label.slice(1))?.key ??
 				"undefined",
 			value: label,
 		};
@@ -325,14 +327,14 @@ function renderSingleLabel(
 }
 
 // TO-DO: Make it reactive
-function generateLabelOptions(schema?: Schema) {
+const generateLabelOptions = computed(() => {
 	let RETURN: {
 		label: string;
 		value: string | number;
 	}[] = [];
-	if (!schema) return RETURN;
+	if (!flattenCopySchema.value) return RETURN;
 
-	for (const field of flattenCopySchema) {
+	for (const field of flattenCopySchema.value) {
 		if (field.id?.toString().startsWith("temp-")) continue;
 		if (
 			(Array.isArray(field.type) && field.subType !== "tags") ||
@@ -348,9 +350,11 @@ function generateLabelOptions(schema?: Schema) {
 		});
 	}
 	return RETURN;
-}
+});
 
-const searchInSelectOptions = computed(() => generateSearchInOptions(table.value?.schema?.slice(1, -2), undefined, true));
+const searchInSelectOptions = computed(() =>
+	generateSearchInOptions(table.value?.schema?.slice(1, -2), undefined, true),
+);
 
 const generalSettingsSchema = reactive<Schema>([
 	{

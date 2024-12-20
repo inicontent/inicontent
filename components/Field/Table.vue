@@ -36,7 +36,7 @@
 import Inison from "inison";
 import { IconQuestionMark } from "@tabler/icons-vue";
 import { NButton, NFlex, NIcon, NTooltip, NFormItem, NSelect } from "naive-ui";
-import { flattenSchema, isArrayOfObjects, isObject } from "inibase/utils";
+import { isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
 

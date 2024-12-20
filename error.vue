@@ -1,7 +1,7 @@
 <template>
-    <NuxtLayout name="dashboard">
-        <NResult :status="code" :title="message" />
-    </NuxtLayout>
+	<NuxtLayout name="dashboard">
+		<NResult :status="code" :title="message" />
+	</NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -48,6 +48,7 @@ if (error) {
 		default:
 			code.value = "error";
 			message.value = t("internalServerError");
+			console.error(error);
 			break;
 	}
 } else {

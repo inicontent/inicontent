@@ -16,7 +16,7 @@
 		"@tiptap/extension-highlight": "^2.10.3",
 		"@tiptap/extension-text-align": "^2.10.3",
 		"@tiptap/extension-underline": "^2.10.3",
-		"inibase": "latest",
+		"inibase": "1.0.0-rc.125",
 		"inidot": "latest",
 		"inison": "latest",
 		"naive-ui": "2.40.1",

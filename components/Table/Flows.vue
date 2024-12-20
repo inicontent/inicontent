@@ -1,7 +1,7 @@
 <template>
     <div>
-        <NButton v-if="JSON.stringify(tableCopy) !== JSON.stringify(table)"
-            style="bottom: 15px;right: 18px;z-index: 9999997;position: fixed" circle secondary
+        <NButton :disabled="JSON.stringify(tableCopy) === JSON.stringify(table)"
+            style="bottom: 10px;right: 10px;z-index: 9999997;position: fixed" round secondary
             :loading="Loading.updateTable" type="primary" size="large" @click="saveFlow">
             <template #icon>
                 <NIcon>
@@ -15,7 +15,13 @@
                     <div v-for="(flow, index) of tableCopy[flowName]"
                         @mouseover="() => Hover[`${currentFlow}-${index}`] = true"
                         @mouseleave="() => Hover[`${currentFlow}-${index}`] = false">
-                        <NButtonGroup vertical size="small" style="position:absolute;top:0;right:0;z-index:999999"
+                        <NDropdown v-bind="flowDropdownProps(flowName, index)">
+                            <NButton secondary type="primary"
+                                style="position:absolute;top:0;left:0;z-index:9;border-radius: 0 0 50px 0" size="small">
+                                {{ index + 1 }}
+                            </NButton>
+                        </NDropdown>
+                        <NButtonGroup vertical size="small" style="position:absolute;top:0;right:0;z-index:9"
                             :style="Hover[`${currentFlow}-${index}`] ? '' : 'visibility:hidden'">
                             <NButton secondary type="primary" @click="currentFlowCard =
                                 currentFlowCard ===
@@ -45,7 +51,7 @@
                                         <NInputGroup v-for="([firstValue, secondValue, thirdValue], index) of flow"
                                             :key="firstValue">
                                             <template v-if="firstValue === 'set'">
-                                                <NDropdown v-bind="DropdownProps(flow, index)">
+                                                <NDropdown v-bind="ruleDropdownProps(flow, index)">
                                                     <NButton size="small" type="success" secondary
                                                         style="border-radius: 50px 0 0 50px;width: 47px;">
                                                         {{ t('set') }}
@@ -65,7 +71,7 @@
                                                     @update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
                                             </template>
                                             <template v-else-if="firstValue === 'error'">
-                                                <NDropdown v-bind="DropdownProps(flow, index)">
+                                                <NDropdown v-bind="ruleDropdownProps(flow, index)">
                                                     <NButton size="small" type="error" secondary
                                                         style="border-radius: 50px 0 0 50px;width: 96px;">
                                                         {{ t('throwError') }}
@@ -78,7 +84,7 @@
                                                     v-model:value="flow[index][1]" />
                                             </template>
                                             <template v-else-if="firstValue === 'unset'">
-                                                <NDropdown v-bind="DropdownProps(flow, index)">
+                                                <NDropdown v-bind="ruleDropdownProps(flow, index)">
                                                     <NButton size="small" type="warning" secondary
                                                         style="border-radius: 50px 0 0 50px;width: 96px;">
                                                         {{ t('unset') }}
@@ -91,7 +97,7 @@
                                                     v-model:value="flow[index][1]" multiple :max-tag-count="1" />
                                             </template>
                                             <template v-else>
-                                                <NDropdown v-bind="DropdownProps(flow, index)">
+                                                <NDropdown v-bind="ruleDropdownProps(flow, index)">
                                                     <NButton size="small" type="info" secondary
                                                         style="border-radius: 50px 0 0 50px;width: 37px;">
                                                         {{ t('if') }}
@@ -304,340 +310,365 @@
 
 <script lang="ts" setup>
 import {
-	IconDeviceFloppy,
-	IconEye,
-	IconArrowDown,
-	IconArrowUp,
-	IconPencil,
-	IconPlus,
-	IconTrash,
+    IconDeviceFloppy,
+    IconEye,
+    IconArrowDown,
+    IconArrowUp,
+    IconPencil,
+    IconPlus,
+    IconTrash,
 } from "@tabler/icons-vue";
 import {
-	NButton,
-	NButtonGroup,
-	NCard,
-	NCascader,
-	NDropdown,
-	NEmpty,
-	NFlex,
-	NIcon,
-	NInputGroup,
-	NPopover,
-	NScrollbar,
-	NSelect,
-	NTabPane,
-	NTabs,
-	NTag,
-	type CascaderOption,
-	type SelectOption,
-	type SelectGroupOption,
-	NTooltip,
+    NButton,
+    NButtonGroup,
+    NCard,
+    NCascader,
+    NDropdown,
+    NEmpty,
+    NFlex,
+    NIcon,
+    NInputGroup,
+    NPopover,
+    NScrollbar,
+    NSelect,
+    NTabPane,
+    NTabs,
+    NTag,
+    type CascaderOption,
+    type SelectOption,
+    type SelectGroupOption,
+    NTooltip,
 } from "naive-ui";
-import { isArrayOfObjects, isValidID } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 onMounted(() => {
-	document.onkeydown = (e) => {
-		if (!(e.key === "s" && (e.ctrlKey || e.metaKey))) return;
-		e.preventDefault();
-		saveFlow();
-	};
+    document.onkeydown = (e) => {
+        if (
+            !(
+                (e.ctrlKey || e.metaKey) &&
+                (e.key.toLowerCase() === "s" || e.key === "س")
+            )
+        )
+            return;
+        e.preventDefault();
+        saveFlow();
+    };
 });
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database"),
-	table = useState<Table>("table"),
-	tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
-	currentFlow = ref<string>("onRequest"),
-	currentFlowCard = ref<string>(),
-	Hover = useState<Record<string | number, boolean>>("Hover", () => ({})),
-	saveFlow = async () => {
-		Loading.value.updateTable = true;
-		const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
-		const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}inicontent/databases/${
-				database.value.slug
-			}/${table.value.slug}`,
-			{
-				method: "PUT",
-				body: (({ onResponse, onRequest }) => ({
-					onResponse,
-					onRequest,
-				}))(bodyContent),
-			},
-		);
+    table = useState<Table>("table"),
+    tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
+    currentFlow = ref<string>("onRequest"),
+    currentFlowCard = ref<string>(),
+    Hover = useState<Record<string | number, boolean>>("Hover", () => ({})),
+    saveFlow = async () => {
+        Loading.value.updateTable = true;
+        const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
+        const data = await $fetch<apiResponse>(
+            `${appConfig.apiBase}inicontent/databases/${database.value.slug
+            }/${table.value.slug}`,
+            {
+                method: "PUT",
+                body: (({ onResponse, onRequest }) => ({
+                    onResponse,
+                    onRequest,
+                }))(bodyContent),
+            },
+        );
 
-		if (data.result) {
-			tableCopy.value = data.result;
-			window.$message.success(data.message);
-		} else window.$message.error(data.message);
-		Loading.value.updateTable = false;
-	},
-	flattenSchema = (schema: Schema, keepParents = false) => {
-		const result: Schema = [];
+        if (data.result) {
+            tableCopy.value = data.result;
+            window.$message.success(data.message);
+        } else window.$message.error(data.message);
+        Loading.value.updateTable = false;
+    };
 
-		function flattenHelper(item: Field, parentKey: string) {
-			if (item.children && isArrayOfObjects(item.children)) {
-				if (keepParents) result.push((({ children, ...rest }) => rest)(item));
-				for (const child of item.children) flattenHelper(child, item.key);
-			} else
-				result.push({
-					...item,
-					key: parentKey ? `${parentKey}.${item.key}` : item.key,
-				});
-		}
-		for (const item of schema) flattenHelper(item, "");
-
-		return result;
-	};
 function schemaToOptions(schema: Schema, prefix = "@data") {
-	const options: CascaderOption[] = [];
-	for (const field of schema) {
-		let option: CascaderOption = {
-			label: field.key,
-			value: `${prefix}.${field.id}`,
-		};
-		if (isArrayOfObjects(field.children))
-			option.children = schemaToOptions(field.children);
-		options.push(option);
-	}
-	return options;
+    const options: CascaderOption[] = [];
+    for (const field of schema) {
+        let option: CascaderOption = {
+            label: field.key,
+            value: `${prefix}.${field.id}`,
+        };
+        if (isArrayOfObjects(field.children))
+            option.children = schemaToOptions(field.children);
+        options.push(option);
+    }
+    return options;
 }
 function generateFlowCascaderOptions(
-	withWhere?: boolean,
-	withWhereOr?: boolean,
-	withUser?: boolean,
+    withWhere?: boolean,
+    withWhereOr?: boolean,
+    withUser?: boolean,
 ) {
-	const result: CascaderOption[] = [];
-	if (withUser) {
-		let userSchema = database.value.tables?.find(
-			({ slug }) => slug === "users",
-		)?.schema;
-		if (userSchema) {
-			userSchema = flattenSchema(userSchema);
-			result.push({
-				label: "@user",
-				value: "@user",
-				children: userSchema.map(({ id, key }) => ({
-					label: key,
-					value: `@user.${id}`,
-				})),
-			});
-		}
-	}
-	if (table.value.schema) {
-		if (withWhere)
-			result.push({
-				label: "@where",
-				value: "@where",
-				children: [
-					...(withWhereOr
-						? [
-								{
-									label: "or",
-									value: "@where.or",
-									children: schemaToOptions(table.value.schema, "@where.or"),
-								},
-							]
-						: []),
-					...schemaToOptions(table.value.schema, "@where"),
-				],
-			});
-		result.push({
-			label: "@data",
-			value: "@data",
-			children: schemaToOptions(table.value.schema),
-		});
-	}
-	return result;
+    const result: CascaderOption[] = [];
+    if (withUser) {
+        let userSchema = database.value.tables?.find(
+            ({ slug }) => slug === "users",
+        )?.schema;
+        if (userSchema) {
+            userSchema = flattenSchema(userSchema);
+            result.push({
+                label: "@user",
+                value: "@user",
+                children: userSchema.map(({ id, key }) => ({
+                    label: key,
+                    value: `@user.${id}`,
+                })),
+            });
+        }
+    }
+    if (table.value.schema) {
+        if (withWhere)
+            result.push({
+                label: "@where",
+                value: "@where",
+                children: [
+                    ...(withWhereOr
+                        ? [
+                            {
+                                label: "or",
+                                value: "@where.or",
+                                children: schemaToOptions(table.value.schema, "@where.or"),
+                            },
+                        ]
+                        : []),
+                    ...schemaToOptions(table.value.schema, "@where"),
+                ],
+            });
+        result.push({
+            label: "@data",
+            value: "@data",
+            children: schemaToOptions(table.value.schema),
+        });
+    }
+    return result;
 }
 function generateFlowSelectOptions(
-	value: string,
-	withWhereOr = true,
-	withUser?: boolean,
+    value: string,
+    withWhereOr = true,
+    withUser?: boolean,
 ) {
-	const result: (SelectOption | SelectGroupOption)[] = [];
-	if (value === "@method")
-		return ["get", "post", "put", "delete"].map((method) => ({
-			label: method.toUpperCase(),
-			value: method.toUpperCase(),
-		}));
+    const result: (SelectOption | SelectGroupOption)[] = [];
+    if (value === "@method")
+        return ["get", "post", "put", "delete"].map((method) => ({
+            label: method.toUpperCase(),
+            value: method.toUpperCase(),
+        }));
 
-	result.push({
-		label: "@null",
-		value: "null",
-	});
+    result.push({
+        label: "@null",
+        value: "null",
+    });
 
-	if (
-		value &&
-		(value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-			(table.value.slug === "users" &&
-				value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
-	)
-		// @user.role
-		result.push({
-			key: "@role",
-			label: "@role",
-			type: "group",
-			children: database.value.roles?.map(({ name, id }) => ({
-				label: name,
-				value: id,
-			})),
-		});
-	if (withUser) {
-		let userSchema = database.value.tables?.find(
-			({ slug }) => slug === "users",
-		)?.schema;
-		if (userSchema) {
-			userSchema = flattenSchema(userSchema);
-			result.push({
-				key: "@user",
-				label: "@user",
-				type: "group",
-				children: userSchema.map(({ id, key }) => ({
-					label: `@user.${key}`,
-					value: `@user.${id}`,
-				})),
-			});
-		}
-	}
-	if (table.value.schema) {
-		const schema = flattenSchema(table.value.schema);
-		result.push({
-			key: "@where",
-			label: "@where",
-			type: "group",
-			children: [
-				...(withWhereOr
-					? [
-							{
-								key: "@where.or",
-								label: "or",
-								type: "group",
-								children: schema.map(({ id, key }) => ({
-									label: `@where.or.${key}`,
-									value: `@where.or.${id}`,
-								})),
-							},
-						]
-					: []),
-				...schema.map(({ id, key }) => ({
-					label: `@where.${key}`,
-					value: `@where.${id}`,
-				})),
-			],
-		});
-		result.push({
-			key: "@data",
-			label: "@data",
-			type: "group",
-			children: schema.map(({ id, key }) => ({
-				label: `@data.${key}`,
-				value: `@data.${id}`,
-			})),
-		});
-	}
-	return result;
+    if (
+        value &&
+        (value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
+            (table.value.slug === "users" &&
+                value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
+    )
+        // @user.role
+        result.push({
+            key: "@role",
+            label: "@role",
+            type: "group",
+            children: database.value.roles?.map(({ name, id }) => ({
+                label: name,
+                value: id,
+            })),
+        });
+    if (withUser) {
+        let userSchema = database.value.tables?.find(
+            ({ slug }) => slug === "users",
+        )?.schema;
+        if (userSchema) {
+            userSchema = flattenSchema(userSchema);
+            result.push({
+                key: "@user",
+                label: "@user",
+                type: "group",
+                children: userSchema.map(({ id, key }) => ({
+                    label: `@user.${key}`,
+                    value: `@user.${id}`,
+                })),
+            });
+        }
+    }
+    if (table.value.schema) {
+        const schema = flattenSchema(table.value.schema);
+        result.push({
+            key: "@where",
+            label: "@where",
+            type: "group",
+            children: [
+                ...(withWhereOr
+                    ? [
+                        {
+                            key: "@where.or",
+                            label: "or",
+                            type: "group",
+                            children: schema.map(({ id, key }) => ({
+                                label: `@where.or.${key}`,
+                                value: `@where.or.${id}`,
+                            })),
+                        },
+                    ]
+                    : []),
+                ...schema.map(({ id, key }) => ({
+                    label: `@where.${key}`,
+                    value: `@where.${id}`,
+                })),
+            ],
+        });
+        result.push({
+            key: "@data",
+            label: "@data",
+            type: "group",
+            children: schema.map(({ id, key }) => ({
+                label: `@data.${key}`,
+                value: `@data.${id}`,
+            })),
+        });
+    }
+    return result;
 }
 
 function formatValue(
-	value?: string | number | boolean | null,
-	property: keyof Field = "key",
-	defaultValue?: string,
+    value?: string | number | boolean | null,
+    property: keyof Field = "key",
+    defaultValue?: string,
 ) {
-	if (
-		value &&
-		typeof value === "string" &&
-		(value.startsWith("@user.") ||
-			value.startsWith("@data.") ||
-			value.startsWith("@where."))
-	) {
-		const splitedValue = value.split("."),
-			lastItem = splitedValue.pop();
-		let schema =
-			splitedValue[0] === "@user"
-				? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
-				: table.value.schema;
-		if (schema) {
-			schema = flattenSchema(schema, true);
-			const item = schema.find(({ id }) => id === lastItem);
+    if (
+        value &&
+        typeof value === "string" &&
+        (value.startsWith("@user.") ||
+            value.startsWith("@data.") ||
+            value.startsWith("@where."))
+    ) {
+        const splitedValue = value.split("."),
+            lastItem = splitedValue.pop();
+        let schema =
+            splitedValue[0] === "@user"
+                ? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
+                : table.value.schema;
+        if (schema) {
+            schema = flattenSchema(schema, true);
+            const item = schema.find(({ id }) => id === lastItem);
 
-			if (!item) return undefined;
+            if (!item) return undefined;
 
-			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
+            if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
 
-			return item[property] ?? defaultValue;
-		}
-	}
-	return value || defaultValue;
+            return item[property] ?? defaultValue;
+        }
+    }
+    return value || defaultValue;
 }
-function DropdownProps(flow: FlowType, index: number) {
-	return {
-		options: [
-			{
-				label: t("delete"),
-				key: "delete",
-				icon: () => h(NIcon, () => h(IconTrash)),
-			},
-			{
-				label: t("moveUp"),
-				key: "moveUp",
-				icon: () => h(NIcon, () => h(IconArrowUp)),
-				disabled: index === 0,
-			},
-			{
-				label: t("moveDown"),
-				key: "moveDown",
-				icon: () => h(NIcon, () => h(IconArrowDown)),
-				disabled: index + 1 === flow.length,
-			},
-		],
-		onSelect(key: string) {
-			switch (key) {
-				case "delete":
-					flow.splice(index, 1);
-					break;
-				case "moveUp": {
-					const element = flow[index];
-					flow.splice(index, 1);
-					flow.splice(index - 1, 0, element);
-					break;
-				}
-				case "moveDown": {
-					const element = flow[index];
-					flow.splice(index, 1);
-					flow.splice(index + 1, 0, element);
-					break;
-				}
-			}
-		},
-	};
+
+function flowDropdownProps(flowName: string, index: number) {
+    return {
+        options: [
+            {
+                label: t("moveUp"),
+                key: "moveUp",
+                icon: () => h(NIcon, () => h(IconArrowUp)),
+                disabled: index === 0,
+            },
+            {
+                label: t("moveDown"),
+                key: "moveDown",
+                icon: () => h(NIcon, () => h(IconArrowDown)),
+                disabled: index + 1 === tableCopy.value[flowName].length,
+            },
+        ],
+        onSelect(key: string) {
+            switch (key) {
+                case "moveUp": {
+                    const element = tableCopy.value[flowName][index];
+                    tableCopy.value[flowName].splice(index, 1);
+                    tableCopy.value[flowName].splice(index - 1, 0, element);
+                    break;
+                }
+                case "moveDown": {
+                    const element = tableCopy.value[flowName][index];
+                    tableCopy.value[flowName].splice(index, 1);
+                    tableCopy.value[flowName].splice(index + 1, 0, element);
+                    break;
+                }
+            }
+        },
+    };
+}
+
+function ruleDropdownProps(flow: FlowType, index: number) {
+    return {
+        options: [
+            {
+                label: t("delete"),
+                key: "delete",
+                icon: () => h(NIcon, () => h(IconTrash)),
+            },
+            {
+                label: t("moveUp"),
+                key: "moveUp",
+                icon: () => h(NIcon, () => h(IconArrowUp)),
+                disabled: index === 0,
+            },
+            {
+                label: t("moveDown"),
+                key: "moveDown",
+                icon: () => h(NIcon, () => h(IconArrowDown)),
+                disabled: index + 1 === flow.length,
+            },
+        ],
+        onSelect(key: string) {
+            switch (key) {
+                case "delete":
+                    flow.splice(index, 1);
+                    break;
+                case "moveUp": {
+                    const element = flow[index];
+                    flow.splice(index, 1);
+                    flow.splice(index - 1, 0, element);
+                    break;
+                }
+                case "moveDown": {
+                    const element = flow[index];
+                    flow.splice(index, 1);
+                    flow.splice(index + 1, 0, element);
+                    break;
+                }
+            }
+        },
+    };
 }
 
 const addNewRuleDropdownOptions = [
-	{
-		key: "if",
-		label: t("condition"),
-	},
-	{
-		key: "set",
-		label: t("set"),
-		show: table.value.slug !== "assets",
-	},
-	{
-		key: "unset",
-		label: t("unset"),
-		show: table.value.slug !== "assets",
-	},
-	{
-		key: "error",
-		label: t("throwError"),
-	},
+    {
+        key: "if",
+        label: t("condition"),
+    },
+    {
+        key: "set",
+        label: t("set"),
+        show: table.value.slug !== "assets",
+    },
+    {
+        key: "unset",
+        label: t("unset"),
+        show: table.value.slug !== "assets",
+    },
+    {
+        key: "error",
+        label: t("throwError"),
+    },
 ];
 
 useHead({
-	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("flows")}`,
-	link: [
-		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-	],
+    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("flows")}`,
+    link: [
+        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+    ],
 });
 </script>
 

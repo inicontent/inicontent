@@ -1,9 +1,10 @@
 <template>
-	<LazyTableDrawer v-if="!isMobile" />
+	<LazyFieldFormDrawer v-if="!isMobile" />
 	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
 		content-style="padding: 0" :bordered="false">
 		<template #header-extra>
 			<NFlex align="center">
+				<slot name="navbarActions"></slot>
 				<slot name="actions"></slot>
 				<NButtonGroup>
 					<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
@@ -143,7 +144,7 @@ const searchArray = ref<SearchType>(
 		: { and: [[null, "=", null]] },
 );
 
-defineExpose({
+defineExpose<TableRef>({
 	search: {
 		data: searchArray.value,
 		execute: executeSearch,
@@ -155,12 +156,14 @@ defineExpose({
 defineSlots<{
 	default(props: { data: apiResponse<Item[]> | null }): any;
 	actions(): any;
+	navbarActions(): any;
+	extraActions(props: { data: Item }): any;
 }>();
 
 const slots = useSlots();
 const hasSlot = (name: string) => !!slots[name];
 
-onBeforeRouteUpdate(() => {
+onBeforeRouteLeave(() => {
 	clearNuxtState("Drawer");
 });
 
@@ -253,7 +256,7 @@ const pagination = reactive({
 	pageCount: 1,
 	pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
 	itemCount: 0,
-	onUpdatePage(currentPage: number) {
+	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
 		let { page, ...Query }: any = route.query;
 		Query = {
@@ -265,8 +268,9 @@ const pagination = reactive({
 			...Inison.unstringify(queryOptions.value),
 			page: pagination.page,
 		});
+		await refresh();
 	},
-	onUpdatePageSize(pageSize: number) {
+	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = JSON.parse(JSON.stringify(pagination.pageSize));
 		pagination.pageSize = pageSize;
 		let { perPage, page, ...Query }: any = route.query;
@@ -281,6 +285,7 @@ const pagination = reactive({
 				perPage: pageSize,
 				page: pagination.page === 1 ? undefined : pagination.page,
 			};
+			await refresh();
 		}
 	},
 });
@@ -292,10 +297,9 @@ const queryOptions = ref(
 	}),
 );
 
-const { data } = await useLazyFetch<apiResponse<Item[]>>(
+const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}`,
 	{
-		key: `${database.value.slug}-${table.value.slug}`,
 		query: {
 			options: queryOptions,
 			where: whereQuery,

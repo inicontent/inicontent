@@ -1,4 +1,5 @@
 import type {
+	Field as dbField,
 	FieldType as dbFieldType,
 	pageInfo,
 	ComparisonOperator,
@@ -36,14 +37,9 @@ declare global {
 		| "array-table"
 		| "custom";
 	type FieldType = dbFieldType;
-	type Field = {
-		id?: string | number;
-		key: string;
-		unique?: boolean;
-		children?: FieldType | FieldType[] | Schema;
-		required?: boolean;
-		table?: string;
+	type Field = dbField & {
 		type: CMS_FieldType | FieldType | FieldType[];
+		children?: CMS_FieldType | FieldType | FieldType[] | Schema;
 		subType?: CMS_FieldType;
 		accept?: string[];
 		isArray?: boolean;
@@ -158,6 +154,22 @@ declare global {
 		and?: [string | null, string, any][];
 		or?: [string | null, string, any][];
 	};
+
+	type TableRef = {
+		search: {
+			data: SearchType;
+			execute: (search?: SearchType) => void;
+			reset: () => void;
+		};
+		delete: (id?: string | string[]) => Promise<void>;
+	};
+
+	type FormRef = {
+		create: () => Promise<void>;
+		update: () => Promise<void>;
+		delete: () => Promise<void>;
+		schema: Schema;
+	};
 }
 declare module "nuxt/schema" {
 	interface appConfig {
@@ -182,4 +194,6 @@ export type {
 	LanguagesType,
 	TranslationsType,
 	SearchType,
+	TableRef,
+	FormRef,
 };

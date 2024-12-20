@@ -1,5 +1,5 @@
 <template>
-	<DashboardWrapper>
+	<NuxtLayout name="default">
 		<NLayout position="absolute">
 			<NScrollbar style="max-height: 65px" xScrollable trigger="none">
 				<NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
@@ -110,7 +110,7 @@
 				<slot></slot>
 			</NLayoutContent>
 		</NLayout>
-	</DashboardWrapper>
+	</NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -231,7 +231,7 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
+					(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
 				.join("/") + (database.value.slug === "inicontent" ? "" : "/tables")
 		);
@@ -273,7 +273,7 @@ const userDropdownOptions = [
 						() =>
 							user.value?.username
 								? user.value.username.charAt(0).toUpperCase() +
-									user.value.username.slice(1)
+								user.value.username.slice(1)
 								: "--",
 					),
 			),
@@ -300,15 +300,13 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
-					(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
 				}/edit`,
 			);
 			break;
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${
-					database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{},
 			);
