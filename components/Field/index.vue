@@ -36,17 +36,23 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<any>();
 
-if (field.defaultValue && !modelValue.value)
-    modelValue.value = field.defaultValue;
-
-if (
-    (Array.isArray(field.type) && field.type.includes("array")) ||
-    (typeof field.type === "string" && field.type === "array")
-)
-    field.isArray = true;
-
-let detectedFieldType = (field.subType ?? field.type) as FieldType | CMS_FieldType;
-if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
-
 const database = useState<Database>("database");
+
+const detectedFieldType = ref<FieldType | CMS_FieldType>(
+	(field.subType ?? field.type) as FieldType | CMS_FieldType,
+);
+
+watchEffect(() => {
+	if (field.defaultValue && !modelValue.value)
+		modelValue.value = field.defaultValue;
+
+	if (
+		(Array.isArray(field.type) && field.type.includes("array")) ||
+		(typeof field.type === "string" && field.type === "array")
+	)
+		field.isArray = true;
+
+	if (Array.isArray(detectedFieldType.value))
+		detectedFieldType.value = getField(field).key;
+});
 </script>
