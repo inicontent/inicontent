@@ -1,105 +1,109 @@
 <template>
-	<LazyFieldFormDrawer v-if="!isMobile" />
+	<LazyFieldFormDrawer v-if="!isMobile" v-bind="$props">
+		<slot name="form" :data="Drawer.data" :schema="table?.schema"></slot>
+	</LazyFieldFormDrawer>
 	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
 		content-style="padding: 0" :bordered="false">
 		<template #header-extra>
 			<NFlex align="center">
-				<slot name="navbarActions"></slot>
-				<slot name="actions"></slot>
-				<NButtonGroup>
-					<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
-						:style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click"
-						scrollable>
-						<template #trigger>
+				<slot name="navbarExtraActions"></slot>
+				<slot name="navbarActions">
+					<NButtonGroup>
+						<slot name="navbarExtraButtons"></slot>
+						<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)"
+							style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
+							placement="bottom-end" trigger="click" scrollable>
+							<template #trigger>
+								<NTooltip :delay="500">
+									<template #trigger>
+										<NButton round>
+											<template #icon>
+												<NIcon>
+													<IconSearch />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("search") }}
+								</NTooltip>
+							</template>
+							<template #footer>
+								<NFlex justify="end">
+									<NButtonGroup>
+										<NButton round type="error" secondary :loading="Loading.data"
+											:disabled="isSearchDisabled" @click="resetSearch">
+											<template #icon>
+												<NIcon>
+													<IconX />
+												</NIcon>
+											</template>
+											{{ t("reset") }}
+										</NButton>
+										<NButton round type="primary" secondary :loading="Loading.data"
+											:disabled="isSearchDisabled" @click="() => executeSearch()">
+											<template #icon>
+												<NIcon>
+													<IconSearch />
+												</NIcon>
+											</template>
+											{{ t("search") }}
+										</NButton>
+									</NButtonGroup>
+								</NFlex>
+							</template>
+							<TableSearch v-model="searchArray" :callback="executeSearch" />
+						</NPopover>
+						<NDropdown :options="toolsDropdownOptions" trigger="click">
 							<NTooltip :delay="500">
 								<template #trigger>
 									<NButton round>
 										<template #icon>
 											<NIcon>
-												<IconSearch />
+												<IconTools />
 											</NIcon>
 										</template>
 									</NButton>
 								</template>
-								{{ t("search") }}
+								{{ t("tools") }}
 							</NTooltip>
-						</template>
-						<template #footer>
-							<NFlex justify="end">
-								<NButtonGroup>
-									<NButton round type="error" secondary :loading="Loading.data"
-										:disabled="isSearchDisabled" @click="resetSearch">
-										<template #icon>
-											<NIcon>
-												<IconX />
-											</NIcon>
-										</template>
-										{{ t("reset") }}
-									</NButton>
-									<NButton round type="primary" secondary :loading="Loading.data"
-										:disabled="isSearchDisabled" @click="() => executeSearch()">
-										<template #icon>
-											<NIcon>
-												<IconSearch />
-											</NIcon>
-										</template>
-										{{ t("search") }}
-									</NButton>
-								</NButtonGroup>
-							</NFlex>
-						</template>
-						<TableSearch v-model="searchArray" :callback="executeSearch" />
-					</NPopover>
-					<NDropdown :options="toolsDropdownOptions" trigger="click">
+						</NDropdown>
+
 						<NTooltip :delay="500">
 							<template #trigger>
-								<NButton round>
+								<NButton round :disabled="!table.schema" tag="a"
+									:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+									@click.prevent="() => {
+										if (!isMobile)
+											Drawer = {
+												...Drawer,
+												table: table.slug,
+												id: null,
+												data: {},
+												show: true,
+											};
+										else
+											navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
+											);
+									}">
 									<template #icon>
 										<NIcon>
-											<IconTools />
+											<IconPlus />
 										</NIcon>
 									</template>
 								</NButton>
 							</template>
-							{{ t("tools") }}
+							{{ t("newItem") }}
 						</NTooltip>
-					</NDropdown>
-
-					<NTooltip :delay="500">
-						<template #trigger>
-							<NButton round :disabled="!table.schema" tag="a"
-								:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-								@click.prevent="() => {
-									if (!isMobile)
-										Drawer = {
-											...Drawer,
-											table: table.slug,
-											id: null,
-											data: {},
-											show: true,
-										};
-									else
-										navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
-										);
-								}">
-								<template #icon>
-									<NIcon>
-										<IconPlus />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						{{ t("newItem") }}
-					</NTooltip>
-				</NButtonGroup>
+					</NButtonGroup>
+				</slot>
 			</NFlex>
 		</template>
-		<template v-if="hasSlot('default')">
-			<slot :data></slot>
-		</template>
-		<NDataTable v-else :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
-			:columns :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" />
+		<slot name="default" :data>
+			<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
+				:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys"
+				@update:sorter="handleSorterChange" />
+		</slot>
 	</NCard>
 </template>
 
@@ -155,13 +159,14 @@ defineExpose<TableRef>({
 
 defineSlots<{
 	default(props: { data: apiResponse<Item[]> | null }): any;
-	actions(): any;
+	form(props: { data?: Item; schema?: Schema }): any;
 	navbarActions(): any;
-	extraActions(props: { data: Item }): any;
+	navbarExtraActions(): any;
+	navbarExtraButtons(): any;
+	itemActions(props: { data: Item }): any;
+	itemExtraActions(props: { data: Item }): any;
+	itemExtraButtons(props: { data: Item }): any;
 }>();
-
-const slots = useSlots();
-const hasSlot = (name: string) => !!slots[name];
 
 onBeforeRouteLeave(() => {
 	clearNuxtState("Drawer");
@@ -458,8 +463,8 @@ watchEffect(() => {
 				tooltip: true,
 			},
 			resizable:
-				(!Array.isArray(field.type) && field.type === "array") ||
-				(Array.isArray(field.type) && field.type.includes("array")),
+				(!Array.isArray(field.type) && field.type !== "array") ||
+				(Array.isArray(field.type) && !field.type.includes("array")),
 			sortOrder: sortObject.value[field.key]
 				? `${sortObject.value[field.key]}end`
 				: undefined,

@@ -1,6 +1,8 @@
 <template>
 	<NForm v-if="modelValue" :model="modelValue" ref="formRef">
-		<FieldS v-model="modelValue" v-model:schema="schema" />
+		<slot name="default" :data="modelValue" :schema>
+			<FieldS v-model="modelValue" v-model:schema="schema" />
+		</slot>
 	</NForm>
 </template>
 
@@ -16,7 +18,11 @@ const props = defineProps<{
 	onAfterDelete?: (data?: Item) => void;
 }>();
 
-const schema = ref<Schema>([]);
+const schema = defineModel<Schema>("schema", { default: reactive([]) });
+
+defineSlots<{
+	default(props: { data?: Item; schema: Schema }): any;
+}>();
 
 defineExpose<FormRef>({
 	create: CREATE,
@@ -24,10 +30,6 @@ defineExpose<FormRef>({
 	delete: DELETE,
 	schema: schema.value,
 });
-
-defineSlots<{
-	extraActions(): any;
-}>();
 
 const modelValue = defineModel<Item>();
 
@@ -124,8 +126,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					table.value.slug
+				`${appConfig.apiBase}${database.value.slug}/${table.value.slug
 				}/${modelValue.value?.id}`,
 				{
 					method: "PUT",
@@ -150,8 +151,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			table.value.slug
+		`${appConfig.apiBase}${database.value.slug}/${table.value.slug
 		}/${modelValue.value?.id}`,
 		{
 			method: "DELETE",

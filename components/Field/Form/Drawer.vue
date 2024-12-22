@@ -45,7 +45,9 @@
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
 				<FieldForm ref="formRef" v-model="drawer.data" @after-create="onAfterUpdateCreate"
-					@after-update="onAfterUpdateCreate" v-bind="$props" />
+					@after-update="onAfterUpdateCreate" v-bind="$props">
+					<slot></slot>
+				</FieldForm>
 			</NSpin>
 		</NDrawerContent>
 	</NDrawer>
