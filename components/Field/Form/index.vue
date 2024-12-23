@@ -1,6 +1,6 @@
 <template>
 	<NForm :model="modelValue" ref="formRef">
-		<slot name="default" :data="modelValue" :schema="schema || []">
+		<slot name="default" :data="modelValue" :schema="schema">
 			<FieldS v-model="modelValue" v-model:schema="schema" />
 		</slot>
 	</NForm>
@@ -22,8 +22,12 @@ const props = defineProps<{
 const schema = defineModel<Schema>("schema");
 
 const slots = defineSlots<{
-	default(props: { data?: Item; schema: Schema }): any;
+	default(data?: Item, schema?: Schema): any;
 }>();
+
+const isDefaultSlotSet = computed(
+	() => !!slots.default(modelValue.value, schema.value)?.[0]?.children?.length,
+);
 
 defineExpose<FormRef>({
 	create: CREATE,
@@ -91,14 +95,14 @@ const debouncedFetchSchemaAndData = debounce(async () => {
 watch(
 	() => modelValue.value,
 	async () => {
-		if (!slots.default) debouncedFetchSchemaAndData();
+		if (!isDefaultSlotSet.value) debouncedFetchSchemaAndData();
 	},
 	{ deep: true },
 );
 
 onMounted(() => {
 	// Fetch initial schema and data
-	if (!slots.default) fetchSchemaAndData();
+	if (!isDefaultSlotSet.value) fetchSchemaAndData();
 
 	// Save on Ctrl+S or Command+S
 	document.onkeydown = (e) => {
@@ -127,7 +131,8 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${
+					props.table ?? table.value?.slug ?? route.params.table
 				}/${modelValue.value?.id}`,
 				{
 					method: "PUT",
@@ -152,7 +157,8 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${
+			props.table ?? table.value?.slug ?? route.params.table
 		}/${modelValue.value?.id}`,
 		{
 			method: "DELETE",
