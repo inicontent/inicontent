@@ -71,7 +71,7 @@ declare global {
 		expand?: boolean;
 		params?: string;
 		query?: any;
-		where?: string;
+		where?: string | Record<string, any>;
 		description?: string;
 	};
 	type Schema = Field[];
