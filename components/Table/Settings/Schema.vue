@@ -147,7 +147,7 @@
 					</template>
 
 					<NFormItem :label="t('unique')" label-placement="left"
-						v-if="!['table', 'array', 'object', 'select', 'radio', 'checkbox', 'tags'].includes((element.subType ?? element.type) as string)">
+						v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
 						<NSwitch :value="schema[index].unique ? true : false"
 							@update:value="(value) => schema[index].unique = value" :checked-value="true"
 							:unchecked-value="false" />
@@ -230,6 +230,8 @@ defineTranslation({
 		role: "الصلاحية",
 		createdBy: "أُنشأ من قبل",
 		unique: "فريد",
+		uniqueGroup: "مجموعة فريدة",
+		regex: "التعبير النمطي",
 		uploadParams: "إعدادات الرفع",
 		minimumItems: "الحد الأدنى للعناصر",
 		maximumItems: "الحد الأقصى للعناصر",

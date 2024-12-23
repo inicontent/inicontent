@@ -97,9 +97,11 @@ function onUpdateSelectValue(
 	_id: string | string[],
 	option: tableOption | tableOption[],
 ) {
-	modelValue.value = Array.isArray(option)
-		? option.map(({ raw }) => raw)
-		: option.raw;
+	modelValue.value = option
+		? Array.isArray(option)
+			? option.map(({ raw }) => raw)
+			: option.raw
+		: undefined;
 	if (modelValue.value && modelValue.value.length === options.value?.length)
 		options.value = options.value?.filter(({ value }) =>
 			Array.isArray(_id) ? _id.includes(value) : _id === value,
@@ -149,6 +151,7 @@ async function loadOptions(searchValue?: string | number) {
 					params: {
 						where,
 					},
+					cache: "no-cache",
 				},
 			)
 		).result?.map(singleOption) ?? [];
@@ -165,12 +168,6 @@ async function loadOptions(searchValue?: string | number) {
 }
 
 async function onFocus() {
-	if (options.value) {
-		if (field.isArray) {
-			if (!modelValue.value || options.value.length !== modelValue.value.length)
-				return;
-		} else if (options.value.length > 1) return;
-	}
 	await loadOptions();
 }
 
@@ -184,6 +181,7 @@ if (modelValue.value) {
 		await useLazyFetch<apiResponse<Item[]>>(
 			`${appConfig.apiBase}${database.value.slug}/${field.table}`,
 			{
+				cache: "no-cache",
 				query: {
 					where: Inison.stringify({
 						id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
@@ -193,7 +191,6 @@ if (modelValue.value) {
 					options.value = response._data.result.map(singleOption);
 					Loading.value[`options_${field.key}`] = false;
 				},
-				cache: "force-cache",
 			},
 		);
 	} else

@@ -32,27 +32,27 @@
 <script lang="ts" setup>
 import { NEmpty } from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>();
+const field = defineModel<Field>("field", { required: true })
 
 const modelValue = defineModel<any>();
 
 const database = useState<Database>("database");
 
 const detectedFieldType = ref<FieldType | CMS_FieldType>(
-	(field.subType ?? field.type) as FieldType | CMS_FieldType,
+    (field.value.subType ?? field.value.type) as FieldType | CMS_FieldType,
 );
 
 watchEffect(() => {
-	if (field.defaultValue && !modelValue.value)
-		modelValue.value = field.defaultValue;
+    if (field.value.defaultValue && !modelValue.value)
+        modelValue.value = field.value.defaultValue;
 
-	if (
-		(Array.isArray(field.type) && field.type.includes("array")) ||
-		(typeof field.type === "string" && field.type === "array")
-	)
-		field.isArray = true;
+    if (
+        (Array.isArray(field.value.type) && field.value.type.includes("array")) ||
+        (typeof field.value.type === "string" && field.value.type === "array")
+    )
+        field.value.isArray = true;
 
-	if (Array.isArray(detectedFieldType.value))
-		detectedFieldType.value = getField(field).key;
+    if (Array.isArray(detectedFieldType.value))
+        detectedFieldType.value = getField(field.value).key;
 });
 </script>

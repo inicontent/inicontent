@@ -157,15 +157,15 @@ defineExpose<TableRef>({
 	delete: DELETE,
 });
 
-defineSlots<{
+const slots = defineSlots<{
 	default(props: { data: apiResponse<Item[]> | null }): any;
 	form(props: { data?: Item; schema?: Schema }): any;
 	navbarActions(): any;
 	navbarExtraActions(): any;
 	navbarExtraButtons(): any;
-	itemActions(props: { data: Item }): any;
-	itemExtraActions(props: { data: Item }): any;
-	itemExtraButtons(props: { data: Item }): any;
+	itemActions(props: Item): any;
+	itemExtraActions(props: Item): any;
+	itemExtraButtons(props: Item): any;
 }>();
 
 onBeforeRouteLeave(() => {
@@ -477,82 +477,88 @@ watchEffect(() => {
 			key: "actions",
 			fixed: "right",
 			render: (row: any) =>
-				h(NButtonGroup, () =>
-					[
-						table.value.allowedMethods?.includes("r")
-							? h(
-								NButton,
-								{
-									secondary: true,
-									circle: true,
-									type: "primary",
-								},
-								{
-									icon: () =>
-										h(
-											NuxtLink,
-											{
-												to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+				slots.itemActions
+					? slots.itemActions(row)
+					: [
+						slots.itemExtraActions ? slots.itemExtraActions(row) : undefined,
+						h(NButtonGroup, () =>
+							[
+								slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
+								table.value.allowedMethods?.includes("r")
+									? h(
+										NButton,
+										{
+											secondary: true,
+											circle: true,
+											type: "primary",
+										},
+										{
+											icon: () =>
+												h(
+													NuxtLink,
+													{
+														to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+													},
+													() => h(NIcon, () => h(IconEye)),
+												),
+										},
+									)
+									: null,
+								table.value.allowedMethods?.includes("u")
+									? h(
+										NButton,
+										{
+											tag: "a",
+											href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+											onClick: (e) => {
+												e.preventDefault();
+												if (!isMobile)
+													Drawer.value = {
+														...Drawer.value,
+														id: row.id,
+														table: table.value.slug as string,
+														data: JSON.parse(JSON.stringify(row)),
+														show: true,
+													};
+												else
+													navigateTo(
+														`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+													);
 											},
-											() => h(NIcon, () => h(IconEye)),
-										),
-								},
-							)
-							: null,
-						table.value.allowedMethods?.includes("u")
-							? h(
-								NButton,
-								{
-									tag: "a",
-									href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-									onClick: (e) => {
-										e.preventDefault();
-										if (!isMobile)
-											Drawer.value = {
-												...Drawer.value,
-												id: row.id,
-												table: table.value.slug as string,
-												data: JSON.parse(JSON.stringify(row)),
-												show: true,
-											};
-										else
-											navigateTo(
-												`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-											);
-									},
-									secondary: true,
-									circle: true,
-									type: "info",
-								},
-								{ icon: () => h(NIcon, () => h(IconPencil)) },
-							)
-							: null,
-						table.value.allowedMethods?.includes("d")
-							? h(
-								NPopconfirm,
-								{
-									onPositiveClick: () => DELETE(row.id),
-								},
-								{
-									trigger: () =>
-										h(
-											NButton,
-											{
-												strong: true,
-												secondary: true,
-												circle: true,
-												type: "error",
-											},
-											{
-												icon: () => h(NIcon, () => h(IconTrash)),
-											},
-										),
-									default: () => t("theFollowingActionIsIrreversible"),
-								},
-							)
-							: null,
-					].filter((i) => i !== null),
-				),
+											secondary: true,
+											circle: true,
+											type: "info",
+										},
+										{ icon: () => h(NIcon, () => h(IconPencil)) },
+									)
+									: null,
+								table.value.allowedMethods?.includes("d")
+									? h(
+										NPopconfirm,
+										{
+											onPositiveClick: () => DELETE(row.id),
+										},
+										{
+											trigger: () =>
+												h(
+													NButton,
+													{
+														strong: true,
+														secondary: true,
+														circle: true,
+														type: "error",
+													},
+													{
+														icon: () => h(NIcon, () => h(IconTrash)),
+													},
+												),
+											default: () => t("theFollowingActionIsIrreversible"),
+										},
+									)
+									: null,
+							].filter((i) => i !== null),
+						),
+					],
 		},
 	] as DataTableColumns;
 

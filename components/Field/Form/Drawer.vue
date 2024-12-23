@@ -44,7 +44,7 @@
 				</NFlex>
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
-				<FieldForm ref="formRef" v-model="drawer.data" @after-create="onAfterUpdateCreate"
+				<FieldForm ref="formRef" v-model="drawer.data" :table="drawer.table" @after-create="onAfterUpdateCreate"
 					@after-update="onAfterUpdateCreate" v-bind="$props">
 					<slot></slot>
 				</FieldForm>
@@ -85,13 +85,13 @@ const table = computed<Table | undefined>(() =>
 
 const drawer = useState<{
 	show: boolean;
-	id: null | string;
-	table: null | string;
+	id?: string;
+	table?: string;
 	data: any;
 }>("Drawer", () => ({
 	show: false,
-	id: null,
-	table: null,
+	id: undefined,
+	table: undefined,
 	data: {},
 }));
 

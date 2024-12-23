@@ -126,26 +126,26 @@
 
 <script lang="ts" setup>
 import {
-    NButton,
-    NCard,
-    NPerformantEllipsis,
-    NIcon,
-    NTooltip,
-    NPopconfirm,
-    NButtonGroup,
-    NSpin,
-    NFlex,
+	NButton,
+	NCard,
+	NPerformantEllipsis,
+	NIcon,
+	NTooltip,
+	NPopconfirm,
+	NButtonGroup,
+	NSpin,
+	NFlex,
 } from "naive-ui";
 import {
-    IconDeviceFloppy,
-    IconEye,
-    IconSend,
-    IconTrash,
+	IconDeviceFloppy,
+	IconEye,
+	IconSend,
+	IconTrash,
 } from "@tabler/icons-vue";
 
 onBeforeRouteUpdate((route, currentRoute) => {
-    if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
-        clearNuxtState("itemLabel");
+	if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
+		clearNuxtState("itemLabel");
 });
 
 const modelValue = defineModel<Item>();
@@ -155,19 +155,22 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const table = useState<Table>("table");
 const database = useState<Database>("database");
 const formRef = ref<FormRef>();
+
+// defineExpose({ formRef })
+
 const itemLabel = useState("itemLabel");
 watchEffect(() => {
-    itemLabel.value = renderLabel(
-        table.value.label,
-        table.value.schema,
-        modelValue.value,
-    );
+	itemLabel.value = renderLabel(
+		table.value.label,
+		table.value.schema,
+		modelValue.value,
+	);
 });
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${isEdit ? itemLabel.value : t("new")}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${isEdit ? itemLabel.value : t("new")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>

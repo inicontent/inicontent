@@ -1,6 +1,6 @@
 <template>
-	<NForm v-if="modelValue" :model="modelValue" ref="formRef">
-		<slot name="default" :data="modelValue" :schema>
+	<NForm :model="modelValue" ref="formRef">
+		<slot name="default" :data="modelValue" :schema="schema || []">
 			<FieldS v-model="modelValue" v-model:schema="schema" />
 		</slot>
 	</NForm>
@@ -10,6 +10,7 @@
 import { NForm, type FormInst } from "naive-ui";
 
 const props = defineProps<{
+	table?: string;
 	onBeforeCreate?: (data?: Item) => Item;
 	onAfterCreate?: (data?: Item) => Item;
 	onBeforeUpdate?: (data?: Item) => Item;
@@ -18,9 +19,9 @@ const props = defineProps<{
 	onAfterDelete?: (data?: Item) => void;
 }>();
 
-const schema = defineModel<Schema>("schema", { default: reactive([]) });
+const schema = defineModel<Schema>("schema");
 
-defineSlots<{
+const slots = defineSlots<{
 	default(props: { data?: Item; schema: Schema }): any;
 }>();
 
@@ -28,7 +29,7 @@ defineExpose<FormRef>({
 	create: CREATE,
 	update: UPDATE,
 	delete: DELETE,
-	schema: schema.value,
+	schema: schema.value ?? [],
 });
 
 const modelValue = defineModel<Item>();
@@ -44,7 +45,7 @@ async function fetchSchemaAndData() {
 	Loading.value.SCHEMA = true;
 	try {
 		const response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
-			`${appConfig.apiBase}${database.value.slug}/${route.params.table}/schema`,
+			`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
 			{
 				method: modelValue.value?.id ? "PUT" : "POST",
 				body: modelValue.value, // Send the current form data
@@ -90,14 +91,14 @@ const debouncedFetchSchemaAndData = debounce(async () => {
 watch(
 	() => modelValue.value,
 	async () => {
-		debouncedFetchSchemaAndData();
+		if (!slots.default) debouncedFetchSchemaAndData();
 	},
 	{ deep: true },
 );
 
 onMounted(() => {
 	// Fetch initial schema and data
-	fetchSchemaAndData();
+	if (!slots.default) fetchSchemaAndData();
 
 	// Save on Ctrl+S or Command+S
 	document.onkeydown = (e) => {
@@ -126,7 +127,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
-				`${appConfig.apiBase}${database.value.slug}/${table.value.slug
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${modelValue.value?.id}`,
 				{
 					method: "PUT",
@@ -151,7 +152,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value.slug
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${modelValue.value?.id}`,
 		{
 			method: "DELETE",
@@ -166,7 +167,7 @@ async function DELETE() {
 		if (props.onAfterDelete) return props.onAfterDelete(data.result);
 
 		await navigateTo(
-			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}`,
+			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
 		);
 		return;
 	}
@@ -184,7 +185,7 @@ async function CREATE() {
 
 			Loading.value.CREATE = true;
 			const data = await $fetch<apiResponse>(
-				`${appConfig.apiBase}${database.value.slug}/${route.params.table}`,
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 				{
 					method: "POST",
 					body: bodyContent,
@@ -201,7 +202,7 @@ async function CREATE() {
 			if (props.onAfterCreate) return props.onAfterCreate(data.result);
 
 			return navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${route.params.table}/${data.result.id}/edit`,
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}/${data.result.id}/edit`,
 			);
 		}
 		window.$message.error(t("inputsAreInvalid"));
