@@ -42,17 +42,15 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<Item | Item[]>();
 
-const selectValue = computed<undefined | string | string[]>(() =>
-	modelValue.value
-		? field.isArray && Array.isArray(modelValue.value)
-			? isArrayOfObjects(modelValue.value)
-				? modelValue.value.map(({ id }) => id as string)
-				: modelValue.value
-			: isObject(modelValue.value)
-				? ((modelValue.value as Item).id as string)
-				: modelValue.value
-		: undefined,
-);
+const selectValue = computed<null | string | string[]>(() => modelValue.value
+	? field.isArray && Array.isArray(modelValue.value)
+		? isArrayOfObjects(modelValue.value)
+			? modelValue.value.map(({ id }) => id as string)
+			: modelValue.value
+		: isObject(modelValue.value)
+			? ((modelValue.value as Item).id as string)
+			: modelValue.value
+	: null);
 
 const rule = {
 	type: !field.isArray ? "string" : "array",
@@ -110,8 +108,8 @@ function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
+		getPath(table.schema ?? [], columnID),
+	)
 	: field.searchIn;
 
 async function loadOptions(searchValue?: string | number) {
@@ -119,11 +117,11 @@ async function loadOptions(searchValue?: string | number) {
 	const searchOrObject =
 		searchValue && searchIn
 			? (searchIn.reduce((result, searchKey) => {
-					Object.assign(result, {
-						[searchKey]: `*%${searchValue}%`,
-					});
-					return result;
-				}, {}) ?? false)
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				});
+				return result;
+			}, {}) ?? false)
 			: false;
 	let where: string | undefined;
 	if (field.where) {
