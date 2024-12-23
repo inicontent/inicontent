@@ -8,6 +8,22 @@
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare"
 	},
+	"files": [
+		"app",
+		"assets",
+		"components",
+		"composables",
+		"layouts",
+		"middleware",
+		"pages",
+		"public",
+		"types",
+		"biome.json",
+		"error.vue",
+		"error.vue",
+		"app.config.ts",
+		"nuxt.config.ts"
+	],
 	"dependencies": {
 		"@fontsource-variable/cairo": "^5.1.0",
 		"@nuxtjs/device": "3.2.2",
