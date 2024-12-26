@@ -72,7 +72,9 @@ body {
 .rtl .tabler-icon-chevron-left,
 .rtl .tabler-icon-chevron-right,
 .rtl .tabler-icon-send,
-.rtl .tabler-icon-question-mark {
+.rtl .tabler-icon-question-mark,
+.rtl .tabler-icon-arrow-back-up,
+.rtl .tabler-icon-arrow-forward-up {
 	transform: scaleX(-1) !important;
 }
 
