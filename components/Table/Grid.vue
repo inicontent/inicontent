@@ -14,7 +14,7 @@
 						</NFlex>
 					</template>
 					<template #header-extra>
-						<NDropdown :options="getDropdownOptions(table)" :renderLabel>
+						<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
 							<NButton circle @mouseover="Hover[table.slug] = true"
 								@mouseleave="Hover[table.slug] = false">
 								<NIcon>
@@ -180,7 +180,7 @@ const getDropdownOptions = (table: Table) => [
 	},
 ];
 
-function renderLabel(option: DropdownOption) {
+function renderDropdownLabel(option: DropdownOption) {
 	return h(
 		NuxtLink,
 		{

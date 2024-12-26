@@ -160,11 +160,7 @@ const formRef = ref<FormRef>();
 
 const itemLabel = useState("itemLabel");
 watchEffect(() => {
-	itemLabel.value = renderLabel(
-		table.value.label,
-		table.value.schema,
-		modelValue.value,
-	);
+	itemLabel.value = renderLabel(table.value, modelValue.value);
 });
 
 useHead({

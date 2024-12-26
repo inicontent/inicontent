@@ -141,10 +141,6 @@ const toggleDrawerWidth = () => {
 const itemLabel = useState("itemLabel");
 watchEffect(() => {
 	if (table.value && drawer.value)
-		itemLabel.value = renderLabel(
-			table.value.label,
-			table.value.schema,
-			drawer.value.data,
-		);
+		itemLabel.value = renderLabel(table.value, drawer.value.data);
 });
 </script>

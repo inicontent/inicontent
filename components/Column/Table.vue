@@ -9,11 +9,7 @@
 					<component :is="getTableIcon(table)"></component>
 				</NIcon>
 			</template>
-			{{
-				renderLabel(
-					table?.label,
-					table?.schema, singleValue)
-			}}
+			{{ renderLabel(table, singleValue) }}
 		</NButton>
 	</NFlex>
 </template>

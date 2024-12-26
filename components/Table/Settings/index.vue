@@ -49,9 +49,13 @@
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
 										<template #input="{ submit, deactivate }">
-											<NSelect size="small" filterable tag show :options="generateLabelOptions"
+											<NCascader size="small" clearable filterable show expand-trigger="hover"
+												check-strategy="child" :cascard="false" :options="searchInSelectOptions"
 												@update:value="submit($event)"
 												@update:show="(value) => value ? '' : deactivate()" />
+											<!-- <NSelect size="small" filterable tag show :options="generateLabelOptions"
+												@update:value="submit($event)"
+												@update:show="(value) => value ? '' : deactivate()" /> -->
 										</template>
 									</NDynamicTags>
 								</NFormItem>
@@ -140,7 +144,13 @@ import {
 
 onMounted(() => {
 	document.onkeydown = (e) => {
-		if (!((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "s" || e.key === "س"))) return;
+		if (
+			!(
+				(e.ctrlKey || e.metaKey) &&
+				(e.key.toLowerCase() === "s" || e.key === "س")
+			)
+		)
+			return;
 		e.preventDefault();
 		updateTable();
 	};
@@ -207,7 +217,8 @@ async function updateTable() {
 					.join(" ");
 
 			const data = await $fetch<apiResponse<Table>>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -246,7 +257,8 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -290,6 +302,7 @@ tableCopy.value.localLabel = tableCopy.value.label
 		};
 	});
 function onAppendToLabel(label: string) {
+	if (!label.startsWith("@") && isValidID(label)) label = `@${label}`;
 	if (label.startsWith("@") && isValidID(label.slice(1)))
 		return {
 			label:
@@ -312,7 +325,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isValidID(labelObject.value.slice(1))
+				isValidID(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -336,8 +349,11 @@ const generateLabelOptions = computed(() => {
 
 	for (const field of flattenCopySchema.value) {
 		if (field.id?.toString().startsWith("temp-")) continue;
-		if (
-			(Array.isArray(field.type) && field.subType !== "tags") ||
+		if (Array.isArray(field.type)) {
+			if (field.type.includes("array")) continue;
+		} else if (
+			(Array.isArray(field.type) &&
+				(field.type.includes("array") || field.type.includes("object"))) ||
 			(field.type === "array" &&
 				field.children &&
 				isArrayOfObjects(field.children)) ||
@@ -363,8 +379,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -373,8 +389,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -382,8 +398,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -391,8 +407,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -401,8 +417,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 ]);
