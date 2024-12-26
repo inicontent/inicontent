@@ -4,7 +4,8 @@ import type {
 	pageInfo,
 	ComparisonOperator,
 } from "inibase";
-import type { useMessage, useDialog } from "naive-ui";
+import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
+import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import type languages from "~/composables/Translation/languages";
 
 type onCreateCallback = (index: number) => onCreateType;
@@ -14,8 +15,8 @@ type singleLanguageTranslations = {
 };
 declare global {
 	interface Window {
-		$message: useMessage;
-		$dialog: useDialog;
+		$message: MessageApiInjection;
+		$dialog: DialogApiInjection;
 	}
 	type CMS_FieldType =
 		| "text"
@@ -148,7 +149,9 @@ declare global {
 
 	type LanguagesType = (typeof languages)[number];
 
-	type TranslationsType = { [LanguagesType]: singleLanguageTranslations };
+	type TranslationsType = {
+		[localeName: LanguagesType]: singleLanguageTranslations;
+	};
 
 	type SearchType = {
 		and?: [string | null, string, any][];
