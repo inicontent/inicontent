@@ -1,6 +1,6 @@
 <template>
-	<NForm :model="modelValue" ref="formRef">
-		<slot name="default" :data="modelValue" :schema="schema">
+	<NForm :model="modelValue" ref="formValidationRef">
+		<slot :data="modelValue" :schema>
 			<FieldS v-model="modelValue" v-model:schema="schema" />
 		</slot>
 	</NForm>
@@ -19,24 +19,21 @@ const props = defineProps<{
 	onAfterDelete?: (data?: Item) => void;
 }>();
 
-const schema = defineModel<Schema>("schema");
+const schema = defineModel<Schema>("schema", { default: reactive([]) });
 
-const slots = defineSlots<{
+defineSlots<{
 	default(data?: Item, schema?: Schema): any;
 }>();
 
-const isDefaultSlotSet = computed(
-	() => !!slots.default(modelValue.value, schema.value)?.[0]?.children?.length,
-);
+const modelValue = defineModel<Item>({ default: () => reactive({}) });
 
 defineExpose<FormRef>({
 	create: CREATE,
 	update: UPDATE,
 	delete: DELETE,
-	schema: schema.value ?? [],
+	schema: schema as unknown as Schema,
+	data: modelValue.value,
 });
-
-const modelValue = defineModel<Item>();
 
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -95,14 +92,14 @@ const debouncedFetchSchemaAndData = debounce(async () => {
 watch(
 	() => modelValue.value,
 	async () => {
-		if (!isDefaultSlotSet.value) debouncedFetchSchemaAndData();
+		debouncedFetchSchemaAndData();
 	},
 	{ deep: true },
 );
 
-onMounted(() => {
+onMounted(async () => {
 	// Fetch initial schema and data
-	if (!isDefaultSlotSet.value) fetchSchemaAndData();
+	await fetchSchemaAndData();
 
 	// Save on Ctrl+S or Command+S
 	document.onkeydown = (e) => {
@@ -119,10 +116,10 @@ onMounted(() => {
 	};
 });
 
-const formRef = ref<FormInst>();
+const formValidationRef = ref<FormInst>();
 
 async function UPDATE() {
-	formRef.value?.validate(async (errors) => {
+	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
 			if (props.onBeforeUpdate)
 				modelValue.value = props.onBeforeUpdate(modelValue.value);
@@ -182,7 +179,7 @@ async function DELETE() {
 
 // Submit form data
 async function CREATE() {
-	formRef.value?.validate(async (errors) => {
+	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
 			if (props.onBeforeCreate)
 				modelValue.value = props.onBeforeCreate(modelValue.value);

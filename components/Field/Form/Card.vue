@@ -117,9 +117,9 @@
                     <slot name="extraActions"></slot>
                 </NFlex>
             </template>
-            <FieldForm ref="formRef" v-bind="$props">
-                <slot></slot>
-            </FieldForm>
+            <slot>
+                <FieldForm ref="formRef" />
+            </slot>
         </NCard>
     </NSpin>
 </template>
@@ -155,8 +155,6 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const table = useState<Table>("table");
 const database = useState<Database>("database");
 const formRef = ref<FormRef>();
-
-// defineExpose({ formRef })
 
 const itemLabel = useState("itemLabel");
 watchEffect(() => {
