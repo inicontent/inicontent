@@ -1,24 +1,24 @@
 <template>
-    <n-card hoverable style="max-width: 300px">
-        <n-tabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
-            <n-tab-pane name="signin" :tab="t('signin')">
-                <n-form ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
-                    <FieldS v-model="SigninForm" :schema="SigninColumns" />
-                    <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
-                        {{ t("signin") }}
-                    </n-button>
-                </n-form>
-            </n-tab-pane>
-            <n-tab-pane name="signup" :tab="t('signup')">
-                <n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
-                    <FieldS v-model="SignupForm" :schema="SignupColumns" />
-                    <n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
-                        {{ t("signup") }}
-                    </n-button>
-                </n-form>
-            </n-tab-pane>
-        </n-tabs>
-    </n-card>
+	<n-card hoverable style="max-width: 300px">
+		<n-tabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
+			<n-tab-pane name="signin" :tab="t('signin')">
+				<n-form ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
+					<FieldS v-model="SigninForm" :schema="SigninColumns" />
+					<n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
+						{{ t("signin") }}
+					</n-button>
+				</n-form>
+			</n-tab-pane>
+			<n-tab-pane name="signup" :tab="t('signup')">
+				<n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
+					<FieldS v-model="SignupForm" :schema="SignupColumns" />
+					<n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
+						{{ t("signup") }}
+					</n-button>
+				</n-form>
+			</n-tab-pane>
+		</n-tabs>
+	</n-card>
 </template>
 
 <script lang="ts" setup>
@@ -94,7 +94,7 @@ const SignupSubmit = async (e: Event) => {
 	e.preventDefault();
 	SignupFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = JSON.parse(JSON.stringify(SignupForm.value));
+			const bodyContent = structuredClone(SignupForm.value);
 			if (Loading.value.Signup !== true) {
 				Loading.value.Signup = true;
 				const data = await $fetch<Record<string, any>>(
@@ -118,7 +118,7 @@ const SigninSubmit = async (e: Event) => {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = JSON.parse(JSON.stringify(SigninForm.value));
+			const bodyContent = structuredClone(SigninForm.value);
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
 				const data = await $fetch<Record<string, any>>(

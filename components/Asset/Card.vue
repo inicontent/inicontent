@@ -1,78 +1,78 @@
 <template>
-    <NCard id="assetsContainer" style="height: fit-content;">
-        <template #header>
-            <span v-if="isAssetRoute">{{ t("assets") }}</span>
-            <NBreadcrumb v-else>
-                <NBreadcrumbItem @click="modelValue = ''">
-                    {{ t("assets") }}
-                </NBreadcrumbItem>
-                <NBreadcrumbItem v-for="(singlePath, index) in (modelValue ?? '').split('/').slice(1)"
-                    @click="modelValue = `/${(modelValue ?? '').split('/').slice(1, index + 1).join('/')}`">
-                    {{ singlePath }}
-                </NBreadcrumbItem>
-            </NBreadcrumb>
-        </template>
-        <template #header-extra>
-            <NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-                :action="`${appConfig.apiBase}${database.slug}/assets${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
-                @update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
-                <NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
-                    <template #trigger>
-                        <NUploadTrigger :abstract="false">
-                            <NPopover>
-                                <template #trigger>
-                                    <NButton round>
-                                        <template #icon>
-                                            <NIcon v-if="!UploadProgress">
-                                                <IconPlus />
-                                            </NIcon>
-                                            <NIcon v-else-if="UploadProgress === 10000">
-                                                <IconCheck />
-                                            </NIcon>
-                                            <NSpin v-else-if="UploadProgress === 1000" :size="16" />
-                                            <NProgress v-else type="circle" :show-indicator="false"
-                                                :status="UploadProgress === 100 ? 'success' : 'warning'"
-                                                :percentage="UploadProgress" :stroke-width="20" />
-                                        </template>
-                                    </NButton>
-                                </template>
-                                <NInputGroup>
-                                    <NInput v-model:value="folder"
-                                        @keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
-                                        :placeholder="t('folderName')">
-                                        <template #suffix>
-                                            <NIcon>
-                                                <IconLetterCase />
-                                            </NIcon>
-                                        </template>
-                                    </NInput>
-                                    <NButton @click="createFolder">
-                                        <template #icon>
-                                            <NIcon>
-                                                <IconFolderPlus />
-                                            </NIcon>
-                                        </template>
-                                    </NButton>
-                                </NInputGroup>
-                            </NPopover>
-                        </NUploadTrigger>
-                    </template>
-                    <NUploadFileList />
-                </NPopover>
-            </NUpload>
-        </template>
-        <NFlex vertical align="center">
-            <AssetGrid v-model="assets" :isAssetRoute :table :targetId>
-                <template v-slot="slotProps">
-                    <slot v-bind="slotProps"></slot>
-                </template>
-            </AssetGrid>
-            <NPagination v-if="itemCount && pageCount > 1" :simple="!!$device.isMobile"
-                :page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
-                @update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="page" :page-size="pageSize"
-                :item-count="itemCount" />
-        </NFlex>
-    </NCard>
+	<NCard id="assetsContainer" style="height: fit-content;">
+		<template #header>
+			<span v-if="isAssetRoute">{{ t("assets") }}</span>
+			<NBreadcrumb v-else>
+				<NBreadcrumbItem @click="modelValue = ''">
+					{{ t("assets") }}
+				</NBreadcrumbItem>
+				<NBreadcrumbItem v-for="(singlePath, index) in (modelValue ?? '').split('/').slice(1)"
+					@click="modelValue = `/${(modelValue ?? '').split('/').slice(1, index + 1).join('/')}`">
+					{{ singlePath }}
+				</NBreadcrumbItem>
+			</NBreadcrumb>
+		</template>
+		<template #header-extra>
+			<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
+				:action="`${appConfig.apiBase}${database.slug}/assets${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
+				@update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
+				<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
+					<template #trigger>
+						<NUploadTrigger :abstract="false">
+							<NPopover>
+								<template #trigger>
+									<NButton round>
+										<template #icon>
+											<NIcon v-if="!UploadProgress">
+												<IconPlus />
+											</NIcon>
+											<NIcon v-else-if="UploadProgress === 10000">
+												<IconCheck />
+											</NIcon>
+											<NSpin v-else-if="UploadProgress === 1000" :size="16" />
+											<NProgress v-else type="circle" :show-indicator="false"
+												:status="UploadProgress === 100 ? 'success' : 'warning'"
+												:percentage="UploadProgress" :stroke-width="20" />
+										</template>
+									</NButton>
+								</template>
+								<NInputGroup>
+									<NInput v-model:value="folder"
+										@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
+										:placeholder="t('folderName')">
+										<template #suffix>
+											<NIcon>
+												<IconLetterCase />
+											</NIcon>
+										</template>
+									</NInput>
+									<NButton @click="createFolder">
+										<template #icon>
+											<NIcon>
+												<IconFolderPlus />
+											</NIcon>
+										</template>
+									</NButton>
+								</NInputGroup>
+							</NPopover>
+						</NUploadTrigger>
+					</template>
+					<NUploadFileList />
+				</NPopover>
+			</NUpload>
+		</template>
+		<NFlex vertical align="center">
+			<AssetGrid v-model="assets" :isAssetRoute :table :targetId>
+				<template v-slot="slotProps">
+					<slot v-bind="slotProps"></slot>
+				</template>
+			</AssetGrid>
+			<NPagination v-if="itemCount && pageCount > 1" :simple="!!$device.isMobile"
+				:page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
+				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="page" :page-size="pageSize"
+				:item-count="itemCount" />
+		</NFlex>
+	</NCard>
 </template>
 
 
@@ -146,7 +146,7 @@ async function onUpdatePage(currentPage: number) {
 	return refreshAssets();
 }
 async function onUpdatePageSize(currentPageSize: number) {
-	const OLD_pageSize = JSON.parse(JSON.stringify(pageSize.value));
+	const OLD_pageSize = structuredClone(pageSize.value);
 	pageSize.value = currentPageSize;
 	let Query: { page?: number; perPage?: number } = route.query;
 	if (pageSize.value !== 15) {
