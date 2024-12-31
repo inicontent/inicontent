@@ -173,6 +173,14 @@ declare global {
 		update: () => Promise<void>;
 		delete: () => Promise<void>;
 		schema: Schema;
+		data?: Item;
+	};
+
+	type DrawerRef = {
+		show: boolean;
+		id?: string;
+		table?: string;
+		data: Item;
 	};
 }
 declare module "nuxt/schema" {
@@ -200,4 +208,5 @@ export type {
 	SearchType,
 	TableRef,
 	FormRef,
+	DrawerRef,
 };
