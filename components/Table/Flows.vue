@@ -360,7 +360,7 @@ const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database"),
 	table = useState<Table>("table"),
-	tableCopy = ref(structuredClone(table.value)),
+	tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
 	currentFlow = ref<string>("onRequest"),
 	currentFlowCard = ref<string>(),
 	Hover = useState<Record<string | number, boolean>>("Hover", () => ({})),
