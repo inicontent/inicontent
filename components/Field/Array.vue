@@ -1,12 +1,11 @@
 <template>
 	<LazyField v-if="field.subType" :field="{
 		...field,
-		type: field.subType,
 		isArray: true,
 	}" v-model="modelValue" />
 	<LazyField v-else-if="!isArrayOfObjects(field.children)" :field="{
 		...field,
-		subType: field.children === 'table' ? 'table' : 'tags',
+		subType: field.children === 'table' ? 'array-table' : 'tags',
 		isArray: true,
 	}" v-model="modelValue" />
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
@@ -46,7 +45,7 @@
 						</NButton>
 					</template>
 					<div class="collapseContentPadding">
-						<LazyFieldS v-model="(modelValue[index] as Data)" :schema="field.children.map((child) => ({
+						<LazyFieldS v-model="(modelValue[index] as Data)" :schema="(field.children as Schema).map((child) => ({
 							...child,
 							...(field.disabledItems
 								? {
