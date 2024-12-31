@@ -1,6 +1,7 @@
 <template>
 	<NDrawer v-if="drawer" v-model:show="drawer.show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
-		:placement="Language === 'ar' ? 'left' : 'right'" @update:width="width => (drawerWidth = width)">
+		:placement="Language === 'ar' ? 'left' : 'right'" @update:width="width => (drawerWidth = width)"
+		:trap-focus="false">
 		<NDrawerContent closable>
 			<template #header>
 				<span v-if="drawer.id">
@@ -44,10 +45,10 @@
 				</NFlex>
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
-				<FieldForm ref="formRef" v-model="drawer.data" :table="drawer.table" @after-create="onAfterUpdateCreate"
-					@after-update="onAfterUpdateCreate" v-bind="$props">
-					<slot></slot>
-				</FieldForm>
+				<slot>
+					<FieldForm ref="formRef" v-model="drawer.data" :table="drawer.table"
+						@after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate" />
+				</slot>
 			</NSpin>
 		</NDrawerContent>
 	</NDrawer>
@@ -83,19 +84,17 @@ const table = computed<Table | undefined>(() =>
 		: undefined,
 );
 
-const drawer = useState<{
-	show: boolean;
-	id?: string;
-	table?: string;
-	data: any;
-}>("Drawer", () => ({
+const drawer = useState<DrawerRef>("drawer", () => ({
 	show: false,
 	id: undefined,
 	table: undefined,
 	data: {},
 }));
 
-const formRef = ref<FormRef>();
+const formRef = useState<FormRef>("formRef");
+const slots = defineSlots<{
+	default(): any;
+}>();
 
 const screenHalf = window.screen.width / 2;
 

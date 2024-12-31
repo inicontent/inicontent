@@ -26,15 +26,10 @@ const table = computed(() =>
 );
 
 const { isMobile } = useDevice();
-const Drawer = useState<{
-	show: boolean;
-	id: null | string;
-	table: null | string;
-	data: any;
-}>("Drawer", () => ({
+const Drawer = useState<DrawerRef>("drawer", () => ({
 	show: false,
-	id: null,
-	table: null,
+	id: undefined,
+	table: undefined,
 	data: {},
 }));
 async function handleClick(item: Item) {
