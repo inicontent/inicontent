@@ -159,45 +159,47 @@ function renderSingleItem(table: Table): MenuOption {
 	};
 }
 
-const menuOptions = computed(() => database.value?.tables
-	? ([
-		...(database.value.tables
-			.filter(
-				({ slug, allowedMethods }) =>
-					![
-						"users",
-						"sessions",
-						"assets",
-						"translations",
-						"pages",
-						"components",
-					].includes(slug) && allowedMethods?.includes("r"),
-			)
-			.map(renderSingleItem) ?? []),
-		database.value.tables.filter(
-			({ slug, allowedMethods }) =>
-				[
-					"users",
-					"sessions",
-					"assets",
-					"translations",
-					"pages",
-					"components",
-				].includes(slug) && allowedMethods?.includes("r"),
-		).length
-			? {
-				key: "divider-1",
-				type: "divider",
-			}
-			: undefined,
-		...(database.value.tables
-			?.filter(
-				({ slug, allowedMethods }) =>
-					["users", "sessions", "assets", "pages", "components"].includes(
-						slug,
-					) && allowedMethods?.includes("r"),
-			)
-			.map(renderSingleItem) ?? []),
-	].filter((item) => item) as MenuOption[])
-	: []);
+const menuOptions = computed(() =>
+	database.value?.tables
+		? ([
+				...(database.value.tables
+					.filter(
+						({ slug, allowedMethods }) =>
+							![
+								"users",
+								"sessions",
+								"assets",
+								"translations",
+								"pages",
+								"components",
+							].includes(slug) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+				database.value.tables.filter(
+					({ slug, allowedMethods }) =>
+						[
+							"users",
+							"sessions",
+							"assets",
+							"translations",
+							"pages",
+							"components",
+						].includes(slug) && allowedMethods?.includes("r"),
+				).length
+					? {
+							key: "divider-1",
+							type: "divider",
+						}
+					: undefined,
+				...(database.value.tables
+					?.filter(
+						({ slug, allowedMethods }) =>
+							["users", "sessions", "assets", "pages", "components"].includes(
+								slug,
+							) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+			].filter((item) => item) as MenuOption[])
+		: [],
+);
 </script>
