@@ -27,11 +27,6 @@ body {
 	--n-padding-multiple: 3px 12px 0 26px !important;
 }
 
-.rtl .n-menu .n-submenu .n-submenu-children .n-menu-item-content {
-	padding-left: 18px !important;
-	padding-right: 64px !important;
-}
-
 .rtl
 	.n-base-select-menu
 	.n-base-select-option.n-base-select-option--show-checkmark {
@@ -130,7 +125,26 @@ body {
 	direction: ltr;
 }
 
-/* TO-DO: Improve padding of menu arrow */
+/* NMenu */
 .n-menu .n-menu-item-content .n-menu-item-content__arrow {
 	padding: 12px;
+}
+
+.ltr .n-menu .n-submenu .n-submenu-children .n-menu-item-content {
+	padding-right: 18px !important;
+	padding-left: 44px !important;
+}
+
+.ltr .n-layout-sider--show-content .n-submenu>.n-menu-item .n-menu-item-content {
+	padding-right: 12px!important;
+	padding-left: 18px!important;
+}
+
+.rtl .n-layout-sider--show-content .n-submenu .n-menu-item-content {
+	padding-left: 12px!important;
+}
+
+.rtl .n-menu .n-submenu .n-submenu-children .n-menu-item-content {
+	padding-left: 18px !important;
+	padding-right: 44px !important;
 }
