@@ -272,7 +272,7 @@ const pagination = reactive({
 		await refresh();
 	},
 	async onUpdatePageSize(pageSize: number) {
-		const OLD_pageSize = structuredClone(pagination.pageSize);
+		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize));
 		pagination.pageSize = pageSize;
 		let { perPage, page, ...Query }: any = route.query;
 		if (pageSize !== 15) {
@@ -515,7 +515,7 @@ watchEffect(() => {
 																...Drawer.value,
 																id: row.id,
 																table: table.value.slug as string,
-																data: structuredClone(row),
+																data: structuredClone(toRaw(row)),
 																show: true,
 															};
 														else

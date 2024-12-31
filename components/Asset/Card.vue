@@ -146,7 +146,7 @@ async function onUpdatePage(currentPage: number) {
 	return refreshAssets();
 }
 async function onUpdatePageSize(currentPageSize: number) {
-	const OLD_pageSize = structuredClone(pageSize.value);
+	const OLD_pageSize = structuredClone(toRaw(pageSize.value));
 	pageSize.value = currentPageSize;
 	let Query: { page?: number; perPage?: number } = route.query;
 	if (pageSize.value !== 15) {

@@ -94,7 +94,7 @@ const SignupSubmit = async (e: Event) => {
 	e.preventDefault();
 	SignupFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = structuredClone(SignupForm.value);
+			const bodyContent = structuredClone(toRaw(SignupForm.value));
 			if (Loading.value.Signup !== true) {
 				Loading.value.Signup = true;
 				const data = await $fetch<Record<string, any>>(
@@ -118,7 +118,7 @@ const SigninSubmit = async (e: Event) => {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = structuredClone(SigninForm.value);
+			const bodyContent = structuredClone(toRaw(SigninForm.value));
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
 				const data = await $fetch<Record<string, any>>(
