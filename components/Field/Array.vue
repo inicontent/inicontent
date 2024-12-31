@@ -150,12 +150,12 @@ const tableColumns: DataTableColumns = [
 			t(child.key),
 			child.required
 				? h(
-					NText,
-					{
-						type: "error",
-					},
-					() => " *",
-				)
+						NText,
+						{
+							type: "error",
+						},
+						() => " *",
+					)
 				: null,
 		],
 		key: child.id,
@@ -165,10 +165,10 @@ const tableColumns: DataTableColumns = [
 					...child,
 					...(field.disabledItems?.includes(index)
 						? {
-							inputProps: {
-								disabled: true,
-							},
-						}
+								inputProps: {
+									disabled: true,
+								},
+							}
 						: {}),
 					labelProps: {
 						style: {
@@ -187,35 +187,35 @@ const tableColumns: DataTableColumns = [
 	field.disableActions === true
 		? {}
 		: {
-			title: t("actions"),
-			fixed: "right",
-			align: "center",
-			width: 100,
-			key: "actions",
-			render(_row: any, index: number) {
-				return h(
-					NTooltip,
-					{ delay: 500 },
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									disabled: field.disabledItems?.includes(index),
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-									onClick: () => modelValue.value?.splice(index, 1),
-								},
-								{
-									icon: () => h(NIcon, () => h(IconTrash)),
-								},
-							),
-						default: () => t("delete"),
-					},
-				);
+				title: t("actions"),
+				fixed: "right",
+				align: "center",
+				width: 100,
+				key: "actions",
+				render(_row: any, index: number) {
+					return h(
+						NTooltip,
+						{ delay: 500 },
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										disabled: field.disabledItems?.includes(index),
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+										onClick: () => modelValue.value?.splice(index, 1),
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("delete"),
+						},
+					);
+				},
 			},
-		},
 ];
 </script>
