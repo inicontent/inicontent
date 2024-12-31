@@ -79,16 +79,17 @@ declare global {
 	type FlowType = (
 		| [
 				"set",
-				string,
+				string | null,
 				string | number | boolean | null | (string | number | boolean | null)[],
 		  ]
-		| ["unset", string | string[]]
-		| ["error", string]
+		| ["unset", null | string | string[]]
+		| ["error", null | string]
 		| [
-				`@${"users" | "data" | "where"}.${string | number}` | "@method",
+				`@${"user" | "data" | "where"}.${string | number}` | "@method",
 				ComparisonOperator,
 				string | number | boolean | null | (string | number | boolean | null)[],
 		  ]
+		| [null, null, null]
 	)[];
 	type Table = {
 		id?: string;

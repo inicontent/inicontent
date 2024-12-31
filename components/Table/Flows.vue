@@ -10,7 +10,7 @@
             </template>
         </NButton>
         <NTabs type="segment" animated v-model:value="currentFlow">
-            <NTabPane v-for="flowName of ['onRequest', 'onResponse']" :name="flowName" :tab="flowName">
+            <NTabPane v-for="flowName of flowNames" :name="flowName" :tab="flowName">
                 <div class="masonry">
                     <div v-for="(flow, index) of tableCopy[flowName]"
                         @mouseover="() => Hover[`${currentFlow}-${index}`] = true"
@@ -36,7 +36,7 @@
                                 </template>
                             </NButton>
                             <NButton secondary type="error"
-                                @click="() => { if (currentFlowCard === `${currentFlow}-${index}`) currentFlowCard = undefined; tableCopy[flowName].splice(index, 1) }">
+                                @click="() => { if (currentFlowCard === `${currentFlow}-${index}`) currentFlowCard = undefined; tableCopy[flowName]?.splice(index, 1) }">
                                 <template #icon>
                                     <NIcon>
                                         <IconTrash />
@@ -48,7 +48,7 @@
                             <NScrollbar x-scrollable>
                                 <NFlex vertical :wrap="false" style="padding:  20px 22px;">
                                     <template v-if="currentFlowCard === `${currentFlow}-${index}`">
-                                        <NInputGroup v-for="([firstValue, secondValue, thirdValue], index) of flow"
+                                        <NInputGroup v-for="([firstValue, secondValue, _thirdValue], index) of flow"
                                             :key="firstValue">
                                             <template v-if="firstValue === 'set'">
                                                 <NDropdown v-bind="ruleDropdownProps(flow, index)">
@@ -134,9 +134,9 @@
                                                         firstValue,
                                                         false,
                                                         true,
-                                                    )" :multiple="['[]', '![]'].includes(secondValue)"
+                                                    )" :multiple="['[]', '![]'].includes(secondValue ?? '')"
                                                     max-tag-count="responsive"
-                                                    :value="['[]', '![]'].includes(secondValue) ? flow[index][2] : flow[index][2]"
+                                                    :value="(['[]', '![]'].includes(secondValue ?? '') ? flow[index][2] : flow[index][2]) as string"
                                                     @update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
                                             </template>
                                         </NInputGroup>
@@ -149,7 +149,7 @@
                                                     flow.push(['set', null, null]);
                                                     break;
                                                 default:
-                                                    flow.push([value, null] as any);
+                                                    flow.push([value, null]);
                                                     break;
                                             }
                                         }">
@@ -179,8 +179,9 @@
                                                 <NTag v-if="thirdValue === undefined" :bordered="false" round>--
                                                 </NTag>
                                                 <NFlex v-else :wrap="false" :size="[4, 8]">
-                                                    <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
-                                                        round>
+                                                    <NTag
+                                                        v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
+                                                        :bordered="false" round>
                                                         {{ String(
                                                             secondValue &&
                                                                 (secondValue ===
@@ -223,8 +224,9 @@
                                                 <NFlex
                                                     v-if="(Array.isArray(secondValue) && secondValue.length) || secondValue"
                                                     :size="[4, 8]">
-                                                    <NTag v-for="value of [].concat(secondValue)" :bordered="false"
-                                                        round>
+                                                    <NTag
+                                                        v-for="value of ([] as string[]).concat(secondValue as string | string[])"
+                                                        :bordered="false" round>
                                                         {{ formatValue(value) }}
                                                     </NTag>
                                                 </NFlex>
@@ -258,8 +260,9 @@
                                                 <NTag v-if="thirdValue === undefined" :bordered="false" round>--
                                                 </NTag>
                                                 <NFlex v-else :wrap="false" :size="[4, 8]">
-                                                    <NTag v-for="value of [].concat(thirdValue)" :bordered="false"
-                                                        round>
+                                                    <NTag
+                                                        v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
+                                                        :bordered="false" round>
                                                         {{ value === null ? '@null' : String(
                                                             firstValue &&
                                                                 (firstValue ===
@@ -310,365 +313,373 @@
 
 <script lang="ts" setup>
 import {
-    IconDeviceFloppy,
-    IconEye,
-    IconArrowDown,
-    IconArrowUp,
-    IconPencil,
-    IconPlus,
-    IconTrash,
+	IconDeviceFloppy,
+	IconEye,
+	IconArrowDown,
+	IconArrowUp,
+	IconPencil,
+	IconPlus,
+	IconTrash,
 } from "@tabler/icons-vue";
 import {
-    NButton,
-    NButtonGroup,
-    NCard,
-    NCascader,
-    NDropdown,
-    NEmpty,
-    NFlex,
-    NIcon,
-    NInputGroup,
-    NPopover,
-    NScrollbar,
-    NSelect,
-    NTabPane,
-    NTabs,
-    NTag,
-    type CascaderOption,
-    type SelectOption,
-    type SelectGroupOption,
-    NTooltip,
+	NButton,
+	NButtonGroup,
+	NCard,
+	NCascader,
+	NDropdown,
+	NEmpty,
+	NFlex,
+	NIcon,
+	NInputGroup,
+	NPopover,
+	NScrollbar,
+	NSelect,
+	NTabPane,
+	NTabs,
+	NTag,
+	type CascaderOption,
+	type SelectOption,
+	type SelectGroupOption,
+	NTooltip,
 } from "naive-ui";
 import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 onMounted(() => {
-    document.onkeydown = (e) => {
-        if (
-            !(
-                (e.ctrlKey || e.metaKey) &&
-                (e.key.toLowerCase() === "s" || e.key === "س")
-            )
-        )
-            return;
-        e.preventDefault();
-        saveFlow();
-    };
+	document.onkeydown = (e) => {
+		if (
+			!(
+				(e.ctrlKey || e.metaKey) &&
+				(e.key.toLowerCase() === "s" || e.key === "س")
+			)
+		)
+			return;
+		e.preventDefault();
+		saveFlow();
+	};
 });
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database"),
-    table = useState<Table>("table"),
-    tableCopy = ref(JSON.parse(JSON.stringify(table.value))),
-    currentFlow = ref<string>("onRequest"),
-    currentFlowCard = ref<string>(),
-    Hover = useState<Record<string | number, boolean>>("Hover", () => ({})),
-    saveFlow = async () => {
-        Loading.value.updateTable = true;
-        const bodyContent = JSON.parse(JSON.stringify(tableCopy.value));
-        const data = await $fetch<apiResponse>(
-            `${appConfig.apiBase}inicontent/databases/${database.value.slug
-            }/${table.value.slug}`,
-            {
-                method: "PUT",
-                body: (({ onResponse, onRequest }) => ({
-                    onResponse,
-                    onRequest,
-                }))(bodyContent),
-            },
-        );
+	table = useState<Table>("table"),
+	tableCopy = ref(structuredClone(table.value)),
+	currentFlow = ref<string>("onRequest"),
+	currentFlowCard = ref<string>(),
+	Hover = useState<Record<string | number, boolean>>("Hover", () => ({})),
+	saveFlow = async () => {
+		Loading.value.updateTable = true;
+		const bodyContent = structuredClone(tableCopy.value);
+		const data = await $fetch<apiResponse>(
+			`${appConfig.apiBase}inicontent/databases/${
+				database.value.slug
+			}/${table.value.slug}`,
+			{
+				method: "PUT",
+				body: (({ onResponse, onRequest }) => ({
+					onResponse,
+					onRequest,
+				}))(bodyContent),
+			},
+		);
 
-        if (data.result) {
-            tableCopy.value = data.result;
-            window.$message.success(data.message);
-        } else window.$message.error(data.message);
-        Loading.value.updateTable = false;
-    };
+		if (data.result) {
+			tableCopy.value = data.result;
+			window.$message.success(data.message);
+		} else window.$message.error(data.message);
+		Loading.value.updateTable = false;
+	};
 
 function schemaToOptions(schema: Schema, prefix = "@data") {
-    const options: CascaderOption[] = [];
-    for (const field of schema) {
-        let option: CascaderOption = {
-            label: field.key,
-            value: `${prefix}.${field.id}`,
-        };
-        if (isArrayOfObjects(field.children))
-            option.children = schemaToOptions(field.children);
-        options.push(option);
-    }
-    return options;
+	const options: CascaderOption[] = [];
+	for (const field of schema) {
+		let option: CascaderOption = {
+			label: field.key,
+			value: `${prefix}.${field.id}`,
+		};
+		if (isArrayOfObjects(field.children))
+			option.children = schemaToOptions(field.children);
+		options.push(option);
+	}
+	return options;
 }
 function generateFlowCascaderOptions(
-    withWhere?: boolean,
-    withWhereOr?: boolean,
-    withUser?: boolean,
+	withWhere?: boolean,
+	withWhereOr?: boolean,
+	withUser?: boolean,
 ) {
-    const result: CascaderOption[] = [];
-    if (withUser) {
-        let userSchema = database.value.tables?.find(
-            ({ slug }) => slug === "users",
-        )?.schema;
-        if (userSchema) {
-            userSchema = flattenSchema(userSchema);
-            result.push({
-                label: "@user",
-                value: "@user",
-                children: userSchema.map(({ id, key }) => ({
-                    label: key,
-                    value: `@user.${id}`,
-                })),
-            });
-        }
-    }
-    if (table.value.schema) {
-        if (withWhere)
-            result.push({
-                label: "@where",
-                value: "@where",
-                children: [
-                    ...(withWhereOr
-                        ? [
-                            {
-                                label: "or",
-                                value: "@where.or",
-                                children: schemaToOptions(table.value.schema, "@where.or"),
-                            },
-                        ]
-                        : []),
-                    ...schemaToOptions(table.value.schema, "@where"),
-                ],
-            });
-        result.push({
-            label: "@data",
-            value: "@data",
-            children: schemaToOptions(table.value.schema),
-        });
-    }
-    return result;
+	const result: CascaderOption[] = [];
+	if (withUser) {
+		let userSchema = database.value.tables?.find(
+			({ slug }) => slug === "users",
+		)?.schema;
+		if (userSchema) {
+			userSchema = flattenSchema(userSchema);
+			result.push({
+				label: "@user",
+				value: "@user",
+				children: userSchema.map(({ id, key }) => ({
+					label: key,
+					value: `@user.${id}`,
+				})),
+			});
+		}
+	}
+	if (table.value.schema) {
+		if (withWhere)
+			result.push({
+				label: "@where",
+				value: "@where",
+				children: [
+					...(withWhereOr
+						? [
+								{
+									label: "or",
+									value: "@where.or",
+									children: schemaToOptions(table.value.schema, "@where.or"),
+								},
+							]
+						: []),
+					...schemaToOptions(table.value.schema, "@where"),
+				],
+			});
+		result.push({
+			label: "@data",
+			value: "@data",
+			children: schemaToOptions(table.value.schema),
+		});
+	}
+	return result;
 }
 function generateFlowSelectOptions(
-    value: string,
-    withWhereOr = true,
-    withUser?: boolean,
+	value: string | null,
+	withWhereOr = true,
+	withUser?: boolean,
 ) {
-    const result: (SelectOption | SelectGroupOption)[] = [];
-    if (value === "@method")
-        return ["get", "post", "put", "delete"].map((method) => ({
-            label: method.toUpperCase(),
-            value: method.toUpperCase(),
-        }));
+	const result: (SelectOption | SelectGroupOption)[] = [];
+	if (value === "@method")
+		return ["get", "post", "put", "delete"].map((method) => ({
+			label: method.toUpperCase(),
+			value: method.toUpperCase(),
+		}));
 
-    result.push({
-        label: "@null",
-        value: "null",
-    });
+	result.push({
+		label: "@null",
+		value: "null",
+	});
 
-    if (
-        value &&
-        (value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-            (table.value.slug === "users" &&
-                value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
-    )
-        // @user.role
-        result.push({
-            key: "@role",
-            label: "@role",
-            type: "group",
-            children: database.value.roles?.map(({ name, id }) => ({
-                label: name,
-                value: id,
-            })),
-        });
-    if (withUser) {
-        let userSchema = database.value.tables?.find(
-            ({ slug }) => slug === "users",
-        )?.schema;
-        if (userSchema) {
-            userSchema = flattenSchema(userSchema);
-            result.push({
-                key: "@user",
-                label: "@user",
-                type: "group",
-                children: userSchema.map(({ id, key }) => ({
-                    label: `@user.${key}`,
-                    value: `@user.${id}`,
-                })),
-            });
-        }
-    }
-    if (table.value.schema) {
-        const schema = flattenSchema(table.value.schema);
-        result.push({
-            key: "@where",
-            label: "@where",
-            type: "group",
-            children: [
-                ...(withWhereOr
-                    ? [
-                        {
-                            key: "@where.or",
-                            label: "or",
-                            type: "group",
-                            children: schema.map(({ id, key }) => ({
-                                label: `@where.or.${key}`,
-                                value: `@where.or.${id}`,
-                            })),
-                        },
-                    ]
-                    : []),
-                ...schema.map(({ id, key }) => ({
-                    label: `@where.${key}`,
-                    value: `@where.${id}`,
-                })),
-            ],
-        });
-        result.push({
-            key: "@data",
-            label: "@data",
-            type: "group",
-            children: schema.map(({ id, key }) => ({
-                label: `@data.${key}`,
-                value: `@data.${id}`,
-            })),
-        });
-    }
-    return result;
+	if (
+		value &&
+		(value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
+			(table.value.slug === "users" &&
+				value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
+	)
+		// @user.role
+		result.push({
+			key: "@role",
+			label: "@role",
+			type: "group",
+			children: database.value.roles?.map(({ name, id }) => ({
+				label: name,
+				value: id,
+			})),
+		});
+	if (withUser) {
+		let userSchema = database.value.tables?.find(
+			({ slug }) => slug === "users",
+		)?.schema;
+		if (userSchema) {
+			userSchema = flattenSchema(userSchema);
+			result.push({
+				key: "@user",
+				label: "@user",
+				type: "group",
+				children: userSchema.map(({ id, key }) => ({
+					label: `@user.${key}`,
+					value: `@user.${id}`,
+				})),
+			});
+		}
+	}
+	if (table.value.schema) {
+		const schema = flattenSchema(table.value.schema);
+		result.push({
+			key: "@where",
+			label: "@where",
+			type: "group",
+			children: [
+				...(withWhereOr
+					? [
+							{
+								key: "@where.or",
+								label: "or",
+								type: "group",
+								children: schema.map(({ id, key }) => ({
+									label: `@where.or.${key}`,
+									value: `@where.or.${id}`,
+								})),
+							},
+						]
+					: []),
+				...schema.map(({ id, key }) => ({
+					label: `@where.${key}`,
+					value: `@where.${id}`,
+				})),
+			],
+		});
+		result.push({
+			key: "@data",
+			label: "@data",
+			type: "group",
+			children: schema.map(({ id, key }) => ({
+				label: `@data.${key}`,
+				value: `@data.${id}`,
+			})),
+		});
+	}
+	return result;
 }
 
 function formatValue(
-    value?: string | number | boolean | null,
-    property: keyof Field = "key",
-    defaultValue?: string,
+	value?: string | number | boolean | null,
+	property: keyof Field = "key",
+	defaultValue?: string,
 ) {
-    if (
-        value &&
-        typeof value === "string" &&
-        (value.startsWith("@user.") ||
-            value.startsWith("@data.") ||
-            value.startsWith("@where."))
-    ) {
-        const splitedValue = value.split("."),
-            lastItem = splitedValue.pop();
-        let schema =
-            splitedValue[0] === "@user"
-                ? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
-                : table.value.schema;
-        if (schema) {
-            schema = flattenSchema(schema, true);
-            const item = schema.find(({ id }) => id === lastItem);
+	if (
+		value &&
+		typeof value === "string" &&
+		(value.startsWith("@user.") ||
+			value.startsWith("@data.") ||
+			value.startsWith("@where."))
+	) {
+		const splitedValue = value.split("."),
+			lastItem = splitedValue.pop();
+		let schema =
+			splitedValue[0] === "@user"
+				? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
+				: table.value.schema;
+		if (schema) {
+			schema = flattenSchema(schema, true);
+			const item = schema.find(({ id }) => id === lastItem);
 
-            if (!item) return undefined;
+			if (!item) return undefined;
 
-            if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
+			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
 
-            return item[property] ?? defaultValue;
-        }
-    }
-    return value || defaultValue;
+			return item[property] ?? defaultValue;
+		}
+	}
+	return value || defaultValue;
 }
 
-function flowDropdownProps(flowName: string, index: number) {
-    return {
-        options: [
-            {
-                label: t("moveUp"),
-                key: "moveUp",
-                icon: () => h(NIcon, () => h(IconArrowUp)),
-                disabled: index === 0,
-            },
-            {
-                label: t("moveDown"),
-                key: "moveDown",
-                icon: () => h(NIcon, () => h(IconArrowDown)),
-                disabled: index + 1 === tableCopy.value[flowName].length,
-            },
-        ],
-        onSelect(key: string) {
-            switch (key) {
-                case "moveUp": {
-                    const element = tableCopy.value[flowName][index];
-                    tableCopy.value[flowName].splice(index, 1);
-                    tableCopy.value[flowName].splice(index - 1, 0, element);
-                    break;
-                }
-                case "moveDown": {
-                    const element = tableCopy.value[flowName][index];
-                    tableCopy.value[flowName].splice(index, 1);
-                    tableCopy.value[flowName].splice(index + 1, 0, element);
-                    break;
-                }
-            }
-        },
-    };
+const flowNames = ["onRequest", "onResponse"] as const;
+
+function flowDropdownProps(
+	flowName: "onRequest" | "onResponse",
+	index: number,
+) {
+	return {
+		options: [
+			{
+				label: t("moveUp"),
+				key: "moveUp",
+				icon: () => h(NIcon, () => h(IconArrowUp)),
+				disabled: index === 0,
+			},
+			{
+				label: t("moveDown"),
+				key: "moveDown",
+				icon: () => h(NIcon, () => h(IconArrowDown)),
+				disabled: index + 1 === tableCopy.value[flowName]?.length,
+			},
+		],
+		onSelect(key: string) {
+			switch (key) {
+				case "moveUp": {
+					const element = tableCopy.value[flowName]?.[index];
+					if (!element) return;
+					tableCopy.value[flowName]?.splice(index, 1);
+					tableCopy.value[flowName]?.splice(index - 1, 0, element);
+					break;
+				}
+				case "moveDown": {
+					const element = tableCopy.value[flowName]?.[index];
+					if (!element) return;
+					tableCopy.value[flowName]?.splice(index, 1);
+					tableCopy.value[flowName]?.splice(index + 1, 0, element);
+					break;
+				}
+			}
+		},
+	};
 }
 
 function ruleDropdownProps(flow: FlowType, index: number) {
-    return {
-        options: [
-            {
-                label: t("delete"),
-                key: "delete",
-                icon: () => h(NIcon, () => h(IconTrash)),
-            },
-            {
-                label: t("moveUp"),
-                key: "moveUp",
-                icon: () => h(NIcon, () => h(IconArrowUp)),
-                disabled: index === 0,
-            },
-            {
-                label: t("moveDown"),
-                key: "moveDown",
-                icon: () => h(NIcon, () => h(IconArrowDown)),
-                disabled: index + 1 === flow.length,
-            },
-        ],
-        onSelect(key: string) {
-            switch (key) {
-                case "delete":
-                    flow.splice(index, 1);
-                    break;
-                case "moveUp": {
-                    const element = flow[index];
-                    flow.splice(index, 1);
-                    flow.splice(index - 1, 0, element);
-                    break;
-                }
-                case "moveDown": {
-                    const element = flow[index];
-                    flow.splice(index, 1);
-                    flow.splice(index + 1, 0, element);
-                    break;
-                }
-            }
-        },
-    };
+	return {
+		options: [
+			{
+				label: t("delete"),
+				key: "delete",
+				icon: () => h(NIcon, () => h(IconTrash)),
+			},
+			{
+				label: t("moveUp"),
+				key: "moveUp",
+				icon: () => h(NIcon, () => h(IconArrowUp)),
+				disabled: index === 0,
+			},
+			{
+				label: t("moveDown"),
+				key: "moveDown",
+				icon: () => h(NIcon, () => h(IconArrowDown)),
+				disabled: index + 1 === flow.length,
+			},
+		],
+		onSelect(key: string) {
+			switch (key) {
+				case "delete":
+					flow.splice(index, 1);
+					break;
+				case "moveUp": {
+					const element = flow[index];
+					flow.splice(index, 1);
+					flow.splice(index - 1, 0, element);
+					break;
+				}
+				case "moveDown": {
+					const element = flow[index];
+					flow.splice(index, 1);
+					flow.splice(index + 1, 0, element);
+					break;
+				}
+			}
+		},
+	};
 }
 
 const addNewRuleDropdownOptions = [
-    {
-        key: "if",
-        label: t("condition"),
-    },
-    {
-        key: "set",
-        label: t("set"),
-        show: table.value.slug !== "assets",
-    },
-    {
-        key: "unset",
-        label: t("unset"),
-        show: table.value.slug !== "assets",
-    },
-    {
-        key: "error",
-        label: t("throwError"),
-    },
+	{
+		key: "if",
+		label: t("condition"),
+	},
+	{
+		key: "set",
+		label: t("set"),
+		show: table.value.slug !== "assets",
+	},
+	{
+		key: "unset",
+		label: t("unset"),
+		show: table.value.slug !== "assets",
+	},
+	{
+		key: "error",
+		label: t("throwError"),
+	},
 ];
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("flows")}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("flows")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 });
 </script>
 
