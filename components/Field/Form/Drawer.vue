@@ -45,7 +45,7 @@
 				</NFlex>
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
-				<slot>
+				<slot @after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate">
 					<FieldForm ref="formRef" v-model="drawer.data" :table="drawer.table"
 						@after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate" />
 				</slot>
@@ -93,7 +93,10 @@ const drawer = useState<DrawerRef>("drawer", () => ({
 
 const formRef = useState<FormRef>("formRef");
 const slots = defineSlots<{
-	default(): any;
+	default(props: {
+		onAfterCreate: () => Promise<void>;
+		onAfterUpdate: () => Promise<void>;
+	}): any;
 }>();
 
 const screenHalf = window.screen.width / 2;

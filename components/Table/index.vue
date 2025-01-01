@@ -1,6 +1,8 @@
 <template>
 	<LazyFieldFormDrawer v-if="!isMobile">
-		<slot name="form"></slot>
+		<template #default="{ onAfterCreate, onAfterUpdate }">
+			<slot name="form" :onAfterCreate :onAfterUpdate></slot>
+		</template>
 	</LazyFieldFormDrawer>
 	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
 		content-style="padding: 0" :bordered="false">
@@ -159,7 +161,10 @@ defineExpose<TableRef>({
 
 const slots = defineSlots<{
 	default(props: { data: apiResponse<Item[]> | null }): any;
-	form(): any;
+	form(props: {
+		onAfterCreate: () => Promise<void>;
+		onAfterUpdate: () => Promise<void>;
+	}): any;
 	navbarActions(): any;
 	navbarExtraActions(): any;
 	navbarExtraButtons(): any;
