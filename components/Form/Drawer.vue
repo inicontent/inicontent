@@ -46,7 +46,7 @@
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
 				<slot @after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate">
-					<FieldForm ref="formRef" v-model="drawer.data" :table="drawer.table"
+					<Form ref="formRef" v-model="drawer.data" :table="drawer.table"
 						@after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate" />
 				</slot>
 			</NSpin>
