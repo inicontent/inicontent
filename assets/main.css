@@ -135,16 +135,25 @@ body {
 	padding-left: 44px !important;
 }
 
-.ltr .n-layout-sider--show-content .n-submenu>.n-menu-item .n-menu-item-content {
-	padding-right: 12px!important;
-	padding-left: 18px!important;
+.ltr
+	.n-layout-sider--show-content
+	.n-submenu
+	> .n-menu-item
+	.n-menu-item-content {
+	padding-right: 12px !important;
+	padding-left: 18px !important;
 }
 
 .rtl .n-layout-sider--show-content .n-submenu .n-menu-item-content {
-	padding-left: 12px!important;
+	padding-left: 12px !important;
 }
 
 .rtl .n-menu .n-submenu .n-submenu-children .n-menu-item-content {
 	padding-left: 18px !important;
 	padding-right: 44px !important;
+}
+
+/* Hide table resize on RTL */
+.n-data-table.n-data-table--rtl .n-data-table-th .n-data-table-resize-button {
+	display: none;
 }
