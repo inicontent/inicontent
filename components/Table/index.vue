@@ -1,9 +1,9 @@
 <template>
-	<LazyFieldFormDrawer v-if="!isMobile">
+	<LazyFormDrawer v-if="!isMobile">
 		<template #default="{ onAfterCreate, onAfterUpdate }">
 			<slot name="form" :onAfterCreate :onAfterUpdate></slot>
 		</template>
-	</LazyFieldFormDrawer>
+	</LazyFormDrawer>
 	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
 		content-style="padding: 0" :bordered="false">
 		<template #header-extra>
@@ -469,7 +469,11 @@ watchEffect(() => {
 			sortOrder: sortObject.value[field.key]
 				? `${sortObject.value[field.key]}end`
 				: undefined,
-			render: (row: any) => h(Column, { value: row[field.key], field }),
+			render: ([] as string[])
+				.concat(field.type)
+				.some((type) => ["string", "number"].includes(type))
+				? undefined
+				: (row: any) => h(Column, { value: row[field.key], field }),
 		})),
 		{
 			title: t("actions"),
