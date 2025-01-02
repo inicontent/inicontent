@@ -75,6 +75,8 @@ export default function fieldsList(): fieldListOptionType[] {
 				mention: "نصوص جاهزة",
 				id: "معرف",
 				multiple: "متعدد",
+				range: "مجال",
+				slider: "شريط",
 			},
 		},
 		en: {
@@ -89,11 +91,6 @@ export default function fieldsList(): fieldListOptionType[] {
 			key: "text",
 			icon: renderIcon(IconTypography),
 			children: [
-				{
-					label: t("fields.multiple"),
-					key: "multiple",
-					icon: renderIcon(IconBoxMultiple),
-				},
 				{
 					label: t("fields.shortText"),
 					key: "string",
@@ -142,11 +139,6 @@ export default function fieldsList(): fieldListOptionType[] {
 			],
 		},
 		{
-			label: t("fields.id"),
-			key: "id",
-			icon: renderIcon(IconId),
-		},
-		{
 			label: t("fields.number"),
 			key: "number",
 			icon: renderIcon(IconNumber),
@@ -166,6 +158,11 @@ export default function fieldsList(): fieldListOptionType[] {
 			],
 		},
 		{
+			label: t("fields.multiple"),
+			key: "multiple",
+			icon: renderIcon(IconBoxMultiple),
+		},
+		{
 			label: t("fields.date"),
 			key: "date",
 			icon: renderIcon(IconCalendar),
@@ -174,6 +171,11 @@ export default function fieldsList(): fieldListOptionType[] {
 			label: t("fields.toggle"),
 			key: "boolean",
 			icon: renderIcon(IconToggleLeft),
+		},
+		{
+			label: t("fields.id"),
+			key: "id",
+			icon: renderIcon(IconId),
 		},
 		{
 			label: t("fields.asset"),
