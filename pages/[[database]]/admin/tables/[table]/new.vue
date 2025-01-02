@@ -1,5 +1,5 @@
 <template>
-	<FieldFormCard v-model="data"></FieldFormCard>
+	<FormCard v-model="data"></FormCard>
 </template>
 
 <script lang="ts" setup>

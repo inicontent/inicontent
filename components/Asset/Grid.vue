@@ -119,11 +119,11 @@ const CurrentAsset = ref<Asset>();
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-		{
-			method: "DELETE",
-		},
-	),
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			{
+				method: "DELETE",
+			},
+		),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(

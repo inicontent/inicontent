@@ -77,12 +77,14 @@ const rule: FormItemRule = {
 	},
 };
 
-const options = computed(() => field.options
-	? isArrayOfObjects(field.options)
-		? field.options
-		: (field.options as string[]).map((value) => ({
-			value: value,
-			label: t(value),
-		}))
-	: []);
+const options = computed(() =>
+	field.options
+		? isArrayOfObjects(field.options)
+			? field.options
+			: (field.options as string[]).map((value) => ({
+					value: value,
+					label: t(value),
+				}))
+		: [],
+);
 </script>

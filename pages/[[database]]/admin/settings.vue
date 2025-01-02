@@ -84,7 +84,13 @@ definePageMeta({
 
 onMounted(() => {
 	document.onkeydown = (e) => {
-		if (!((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "s" || e.key === "س"))) return;
+		if (
+			!(
+				(e.ctrlKey || e.metaKey) &&
+				(e.key.toLowerCase() === "s" || e.key === "س")
+			)
+		)
+			return;
 		e.preventDefault();
 		updateDatabase();
 	};

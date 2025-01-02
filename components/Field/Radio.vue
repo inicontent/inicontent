@@ -37,14 +37,14 @@
 <script lang="ts" setup>
 import { IconQuestionMark } from "@tabler/icons-vue";
 import {
-    NButton,
-    NFlex,
-    NIcon,
-    NTooltip,
-    NFormItem,
-    NRadio,
-    NRadioGroup,
-    type FormItemRule,
+	NButton,
+	NFlex,
+	NIcon,
+	NTooltip,
+	NFormItem,
+	NRadio,
+	NRadioGroup,
+	type FormItemRule,
 } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
@@ -52,11 +52,11 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
-    required: field.required,
-    trigger: ["blur", "input"],
-    validator() {
-        if (!modelValue.value && field.required)
-            return new Error(`${t(field.key)} ${t("isRequired")}`);
-    },
+	required: field.required,
+	trigger: ["blur", "input"],
+	validator() {
+		if (!modelValue.value && field.required)
+			return new Error(`${t(field.key)} ${t("isRequired")}`);
+	},
 };
 </script>
