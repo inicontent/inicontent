@@ -23,9 +23,6 @@
 			"style": {
 				"useSingleVarDeclarator": "off",
 				"noParameterAssign": "off"
-			},
-			"complexity": {
-				"noExtraBooleanCast": "off"
 			}
 		}
 	},
