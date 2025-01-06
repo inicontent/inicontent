@@ -6,6 +6,7 @@ import type {
 } from "inibase";
 import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
+import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
 import type languages from "~/composables/Translation/languages";
 
 type onCreateCallback = (index: number) => onCreateType;
@@ -17,6 +18,7 @@ declare global {
 	interface Window {
 		$message: MessageApiInjection;
 		$dialog: DialogApiInjection;
+		$notification: NotificationApiInjection;
 	}
 	type CMS_FieldType =
 		| "text"
@@ -101,6 +103,7 @@ declare global {
 		schema?: Schema;
 		onRequest?: FlowType[];
 		onResponse?: FlowType[];
+		currentJob?: "export" | "import";
 	};
 	type Item = {
 		id?: string;

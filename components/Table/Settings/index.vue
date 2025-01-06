@@ -8,7 +8,7 @@
 							<NTooltip :delay="500">
 								<template #trigger>
 									<NPopconfirm :show-icon="false" @positive-click="deleteTable">
-										<template #activator>
+										<template #trigger>
 											<NButton :disabled="isUnDeletable" type="error" tertiary round
 												:loading="Loading.deleteTable">
 												<template #icon>

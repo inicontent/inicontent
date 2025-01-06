@@ -157,3 +157,7 @@ body {
 .n-data-table.n-data-table--rtl .n-data-table-th .n-data-table-resize-button {
 	display: none;
 }
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-right {
+	top: 70px;
+}

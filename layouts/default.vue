@@ -92,20 +92,24 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
 	dateLocale: dateLocales[Language.value as "ar" | "en"] ?? dateLocales.en,
 }));
-const { message, dialog } = createDiscreteApi(["message", "dialog"], {
-	messageProviderProps: {
-		keepAliveOnHover: true,
-		closable: true,
-		containerStyle: {
-			top: "70px",
+const { message, dialog, notification } = createDiscreteApi(
+	["message", "dialog", "notification"],
+	{
+		messageProviderProps: {
+			keepAliveOnHover: true,
+			closable: true,
+			containerStyle: {
+				top: "70px",
+			},
 		},
+		configProviderProps,
 	},
-	configProviderProps,
-});
+);
 
 onMounted(() => {
 	window.$message = message;
 	window.$dialog = dialog;
+	window.$notification = notification;
 });
 
 // onMounted(fetchTranslation);

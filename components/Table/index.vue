@@ -55,7 +55,7 @@
 							</template>
 							<TableSearch v-model="searchArray" :callback="executeSearch" />
 						</NPopover>
-						<NDropdown :options="toolsDropdownOptions" trigger="click">
+						<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 							<NTooltip :delay="500">
 								<template #trigger>
 									<NButton round>
@@ -103,8 +103,8 @@
 		<slot name="default" :data>
 			<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
 				:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys"
-				@update:sorter="handleSorterChange" />
+				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
+				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" />
 		</slot>
 	</NCard>
 </template>
@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import {
 	IconEye,
+	IconFileArrowRight,
 	IconPencil,
 	IconPlus,
 	IconSearch,
@@ -133,11 +134,21 @@ import {
 	NIcon,
 	NPopconfirm,
 	NPopover,
+	NProgress,
 	NTooltip,
 	type DataTableColumns,
+	type DataTableInst,
+	type NotificationReactive,
+	type DataTableGetCsvCell,
+	type DataTableGetCsvHeader,
+	NTime,
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
-import { FormatObjectCriteriaValue } from "inibase/utils";
+import {
+	FormatObjectCriteriaValue,
+	isArrayOfObjects,
+	isObject,
+} from "inibase/utils";
 
 const extraColumns = defineModel<DataTableColumns>("extraColumns", {
 	default: [],
@@ -197,6 +208,67 @@ const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
 );
 
+const notificationRef = ref<NotificationReactive>();
+const currentJob = computed(() => table.value?.currentJob);
+async function jobNotification() {
+	if (currentJob.value) {
+		if (!notificationRef.value)
+			notificationRef.value = window.$notification.info({
+				title: t(`an_${currentJob.value}_job_is_running_in_background`),
+				onClose() {
+					notificationRef.value = undefined;
+				},
+				meta() {
+					return h(NTime);
+				},
+			});
+
+		const jobTimer = setInterval(async () => {
+			if (notificationRef.value) {
+				const currentJobProgress = (
+					await $fetch<apiResponse<number>>(
+						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
+					)
+				).result;
+
+				if (currentJobProgress === 100) {
+					clearInterval(jobTimer);
+					if (currentJob.value === "export")
+						notificationRef.value.action = () =>
+							h(
+								NButton,
+								{
+									text: true,
+									type: "primary",
+									onClick: () => {
+										window.open(
+											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download`,
+										);
+										notificationRef.value?.destroy();
+									},
+								},
+								{
+									default: () => t("download"),
+								},
+							);
+					setTimeout(() => {
+						(notificationRef.value as NotificationReactive).content = undefined;
+					}, 500);
+				} else
+					notificationRef.value.content = () =>
+						h(NProgress, {
+							type: "line",
+							percentage: currentJobProgress,
+							indicatorPlacement: "inside",
+							processing: true,
+						});
+			}
+		}, 1000);
+	}
+}
+watch(currentJob, jobNotification);
+onMounted(jobNotification);
+
 function generateSearchArray(searchQuery: any) {
 	const RETURN: any = {};
 	for (const [condition, items] of Object.entries(searchQuery)) {
@@ -255,7 +327,7 @@ const Drawer = useState<DrawerRef>("drawer", () => ({
 	table: undefined,
 	data: {},
 }));
-const dataRef = ref(null);
+const dataRef = ref<DataTableInst>();
 const checkedRowKeys = ref<string[]>([]);
 const pagination = reactive({
 	page: route.query.page ? Number(route.query.page) : 1,
@@ -360,19 +432,60 @@ const toolsDropdownOptions = [
 		icon: () => h(NIcon, () => h(IconTableExport)),
 		label: t("export"),
 		key: "export",
-		disabled: true,
 		children: [
 			{
+				icon: () => h(NIcon, () => h(IconFileArrowRight)),
 				label: t("export_current_data"),
 				key: "export_current_data",
 			},
 			{
+				icon: () => h(NIcon, () => h(IconTableExport)),
+				disabled: !!currentJob.value,
 				label: t("export_all_data"),
 				key: "export_all_data",
 			},
 		],
 	},
 ];
+
+async function toolsDropdownOnSelect(
+	value: "import" | "export_current_data" | "export_all_data",
+) {
+	switch (value) {
+		case "export_all_data": {
+			await $fetch(
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
+				{ method: "POST" },
+			);
+			table.value.currentJob = "export";
+			break;
+		}
+		case "export_current_data": {
+			dataRef.value?.downloadCsv({
+				fileName: table.value.slug,
+				keepOriginalData: false,
+			});
+			break;
+		}
+	}
+}
+
+const getCsvCell: DataTableGetCsvCell = (value) => {
+	if (["boolean", "string", "number"].includes(typeof value)) return value;
+	if (!value) return null;
+	if (isObject(value) && Object.hasOwn(value, "id")) return value.id;
+	if (
+		Array.isArray(value) &&
+		isArrayOfObjects(value) &&
+		value.every((_v) => Object.hasOwn(_v, "id"))
+	)
+		value = value.map((_v) => _v.id);
+	return `"${Inison.stringify(value)}"`;
+};
+
+const getCsvHeader: DataTableGetCsvHeader = (col) => {
+	return (col.key as string) || "Unknown";
+};
 
 const sortObject = ref<Record<string, "asc" | "desc">>({});
 
