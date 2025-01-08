@@ -10,7 +10,7 @@
                 : field.inputProps
             : {}">
             <NFlex>
-                <NRadio v-for="value in (field.options as (string | number)[])" :value="value" :label="t(value)" />
+                <NRadio v-for="{ label, value } in options" :value :label />
             </NFlex>
         </NRadioGroup>
         <template #label>
@@ -36,6 +36,7 @@
 
 <script lang="ts" setup>
 import { IconQuestionMark } from "@tabler/icons-vue";
+import { isArrayOfObjects } from "inibase/utils";
 import {
 	NButton,
 	NFlex,
@@ -49,7 +50,7 @@ import {
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<string>();
+const modelValue = defineModel<string | number>();
 
 const rule: FormItemRule = {
 	required: field.required,
@@ -59,4 +60,15 @@ const rule: FormItemRule = {
 			return new Error(`${t(field.key)} ${t("isRequired")}`);
 	},
 };
+
+const options = computed(() =>
+	field.options
+		? isArrayOfObjects(field.options)
+			? field.options
+			: (field.options as string[]).map((value) => ({
+					value: value,
+					label: t(value),
+				}))
+		: [],
+);
 </script>

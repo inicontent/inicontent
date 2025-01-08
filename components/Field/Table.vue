@@ -6,7 +6,8 @@
 		: {})">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
-			:consistent-menu-width="false" max-tag-count="responsive" :onFocus :onSearch="loadOptions" v-bind="field.inputProps
+			:consistent-menu-width="false" max-tag-count="responsive" @focus="loadOptions()" @search="loadOptions"
+			v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
@@ -41,7 +42,13 @@ import { isArrayOfObjects, isObject } from "inibase/utils";
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<Item | Item[]>();
-
+watch(
+	modelValue,
+	(v) => {
+		if (v) options.value = ([] as Item[]).concat(v).map(singleOption);
+	},
+	{ immediate: true },
+);
 const selectValue = computed<null | string | string[]>(() =>
 	modelValue.value
 		? field.isArray && Array.isArray(modelValue.value)
@@ -93,7 +100,7 @@ function singleOption(option: Item): tableOption {
 		raw: option,
 	};
 }
-function onUpdateSelectValue(
+async function onUpdateSelectValue(
 	_id: string | string[],
 	option: tableOption | tableOption[],
 ) {
@@ -102,6 +109,7 @@ function onUpdateSelectValue(
 			? option.map(({ raw }) => raw)
 			: option.raw
 		: undefined;
+	await nextTick();
 	if (modelValue.value && modelValue.value.length === options.value?.length)
 		options.value = options.value?.filter(({ value }) =>
 			Array.isArray(_id) ? _id.includes(value) : _id === value,
@@ -167,33 +175,27 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = false;
 }
 
-async function onFocus() {
-	await loadOptions();
-}
-
-if (modelValue.value) {
-	if (
-		typeof modelValue.value === "string" ||
+if (
+	modelValue.value &&
+	(typeof modelValue.value === "string" ||
 		(Array.isArray(modelValue.value) &&
-			modelValue.value.every((value) => typeof value === "string"))
-	) {
-		Loading.value[`options_${field.key}`] = true;
-		await useLazyFetch<apiResponse<Item[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${field.table}`,
-			{
-				cache: "no-cache",
-				query: {
-					where: Inison.stringify({
-						id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
-					}),
-				},
-				onResponse: ({ response }) => {
-					options.value = response._data.result.map(singleOption);
-					Loading.value[`options_${field.key}`] = false;
-				},
+			modelValue.value.every((value) => typeof value === "string")))
+) {
+	Loading.value[`options_${field.key}`] = true;
+	await useLazyFetch<apiResponse<Item[]>>(
+		`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+		{
+			cache: "no-cache",
+			query: {
+				where: Inison.stringify({
+					id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
+				}),
 			},
-		);
-	} else
-		options.value = ([] as Item[]).concat(modelValue.value).map(singleOption);
+			onResponse: ({ response }) => {
+				options.value = response._data.result.map(singleOption);
+				Loading.value[`options_${field.key}`] = false;
+			},
+		},
+	);
 }
 </script>
