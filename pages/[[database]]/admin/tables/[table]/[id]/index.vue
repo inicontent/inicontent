@@ -150,8 +150,8 @@ useHead({
 });
 </script>
 
-<style lang="css">
-@media only print {
+<style>
+/* @media print {
     * {
         max-height: unset !important;
         overflow: visible !important;
@@ -175,12 +175,12 @@ useHead({
     }
 
     #Printable {
-        position: absolute !important;
+        position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
         right: 0 !important;
         left: 0 !important;
         z-index: 9999999 !important;
     }
-}
+} */
 </style>
