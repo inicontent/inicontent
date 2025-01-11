@@ -3,7 +3,8 @@
         style="margin: 0 0 20px;" arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
         <NCollapseItem display-directive="show" :path="field.id" :name="field.id">
             <template #header>
-                <NDropdown trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
+                <NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+                    :delay="500" :options="dropdownOptions" @select="handleSelect">
                     {{ t(field.key) }}
                 </NDropdown>
             </template>
@@ -16,7 +17,7 @@
 
 <script setup lang="ts">
 import { IconClipboard, IconCopy } from "@tabler/icons-vue";
-import { isStringified } from "inibase/utils";
+import { isObject, isStringified } from "inibase/utils";
 import Inison from "inison";
 import {
 	NCollapse,
@@ -25,6 +26,8 @@ import {
 	NIcon,
 	type DropdownOption,
 } from "naive-ui";
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -54,7 +57,7 @@ async function handleSelect(value: string) {
 				}
 
 				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
-				if (!unstringifiedItem && !Array.isArray(unstringifiedItem)) {
+				if (!unstringifiedItem && !isObject(unstringifiedItem)) {
 					window.$message.error(t("clipboardItemIsNotCorrect"));
 					return;
 				}
@@ -70,6 +73,7 @@ const dropdownOptions: DropdownOption[] = [
 	{
 		label: t("copyItem"),
 		key: "copy",
+		show: !!modelValue.value,
 		icon: () => h(NIcon, () => h(IconCopy)),
 	},
 	{

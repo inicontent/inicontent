@@ -20,21 +20,19 @@
 		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="field.id"
 			:disabled="!modelValue?.length">
 			<template #header>
-				<NDropdown trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
+				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+					:delay="500" :options="dropdownOptions" @select="handleSelect">
 					{{ t(field.key) }}
 				</NDropdown>
 			</template>
 			<template #header-extra>
-				<NDropdown placement="bottom" trigger="hover" :options="createDropdownOptions"
-					@select="createDropdownOnSelect">
-					<NButton size="small" round @click="handleAddNewItem">
-						<template #icon>
-							<NIcon>
-								<IconPlus />
-							</NIcon>
-						</template>
-					</NButton>
-				</NDropdown>
+				<NButton size="small" round @click="handleAddNewItem">
+					<template #icon>
+						<NIcon>
+							<IconPlus />
+						</NIcon>
+					</template>
+				</NButton>
 			</template>
 			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
@@ -71,8 +69,14 @@
 			</NCollapse>
 		</NCollapseItem>
 	</NCollapse>
-	<NCard v-else :title="t(field.key)" :bordered="false" content-style="padding-left: 0; padding-right: 0;"
+	<NCard v-else :bordered="false" content-style="padding-left: 0; padding-right: 0;"
 		header-style="padding-top: 0; padding-left: 0; padding-right: 0;">
+		<template #header>
+			<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+				:delay="500" :options="dropdownOptions" @select="handleSelect">
+				{{ t(field.key) }}
+			</NDropdown>
+		</template>
 		<template #header-extra v-if="!field.disableActions">
 			<NButton size="small" round @click="handleAddNewItem">
 				<template #icon>
@@ -104,6 +108,7 @@ import {
 import { isArrayOfObjects, isObject, isStringified } from "inibase/utils";
 import {
 	IconChevronRight,
+	IconClipboard,
 	IconCopy,
 	IconPlus,
 	IconTrash,
@@ -111,12 +116,7 @@ import {
 import { LazyField } from "#components";
 import Inison from "inison";
 
-defineTranslation({
-	ar: {
-		delete: "حذف",
-		actions: "أوامر",
-	},
-});
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -148,47 +148,37 @@ function handleAddNewItem() {
 	expandedNames.value = `${field.id}.${newElementIndex}`;
 }
 
-const createDropdownOptions: DropdownOption[] = [
-	{
-		label: t("createFromClipboard"),
-		key: "paste",
-		icon: () => h(NIcon, () => h(IconCopy)),
-	},
-];
-async function createDropdownOnSelect(value: string) {
-	try {
-		const itemFromClipboard = await navigator.clipboard.readText();
-
-		if (!itemFromClipboard) {
-			window.$message.error(t("clipboardEmpty"));
-			return;
-		}
-		if (!isStringified(itemFromClipboard)) {
-			window.$message.error(t("clipboardItemIsNotCorrect"));
-			return;
-		}
-
-		const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
-		if (!unstringifiedItem && !isObject(unstringifiedItem)) {
-			window.$message.error(t("clipboardItemIsNotCorrect"));
-			return;
-		}
-
-		switch (value) {
-			case "paste": {
-				modelValue.value = unstringifiedItem;
-			}
-		}
-	} catch {
-		window.$message.error(t("clipboardItemIsNotCorrect"));
-	}
-}
 async function handleSelect(value: string) {
-	if (!modelValue.value) return;
 	switch (value) {
 		case "copy": {
+			if (!modelValue.value) return;
 			await copyToClipboard(Inison.stringify(modelValue.value));
 			window.$message.success(t("copiedSuccessfully"));
+			break;
+		}
+		case "paste": {
+			try {
+				const itemFromClipboard = await navigator.clipboard.readText();
+
+				if (!itemFromClipboard) {
+					window.$message.error(t("clipboardEmpty"));
+					return;
+				}
+				if (!isStringified(itemFromClipboard)) {
+					window.$message.error(t("clipboardItemIsNotCorrect"));
+					return;
+				}
+
+				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
+				if (!unstringifiedItem && !Array.isArray(unstringifiedItem)) {
+					window.$message.error(t("clipboardItemIsNotCorrect"));
+					return;
+				}
+
+				modelValue.value = unstringifiedItem;
+			} catch {
+				window.$message.error(t("clipboardItemIsNotCorrect"));
+			}
 		}
 	}
 }
@@ -196,7 +186,16 @@ const dropdownOptions: DropdownOption[] = [
 	{
 		label: t("copyItem"),
 		key: "copy",
+		show:
+			!!modelValue.value &&
+			Array.isArray(modelValue.value) &&
+			modelValue.value.length > 0,
 		icon: () => h(NIcon, () => h(IconCopy)),
+	},
+	{
+		label: t("pasteItem"),
+		key: "paste",
+		icon: () => h(NIcon, () => h(IconClipboard)),
 	},
 ];
 

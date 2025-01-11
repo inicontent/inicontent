@@ -9,7 +9,8 @@
             <NFlex v-if="field.description" align="center" :size="0">
                 <NDropdown
                     :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
-                    trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
+                    show-arrow placement="top" trigger="hover" :delay="500" :options="dropdownOptions"
+                    @select="handleSelect">
                     {{ t(field.key) }}
                 </NDropdown>
                 <NTooltip>
@@ -28,7 +29,8 @@
             <template v-else>
                 <NDropdown
                     :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
-                    trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
+                    show-arrow placement="top" trigger="hover" :delay="500" :options="dropdownOptions"
+                    @select="handleSelect">
                     {{ t(field.key) }}
                 </NDropdown>
             </template>
@@ -95,10 +97,11 @@ async function handleSelect(value: string) {
 		}
 	}
 }
-const dropdownOptions: DropdownOption[] = [
+const dropdownOptions = computed<DropdownOption[]>(() => [
 	{
 		label: t("copyItem"),
 		key: "copy",
+		show: !!modelValue.value,
 		icon: () => h(NIcon, () => h(IconCopy)),
 	},
 	{
@@ -106,5 +109,5 @@ const dropdownOptions: DropdownOption[] = [
 		key: "paste",
 		icon: () => h(NIcon, () => h(IconClipboard)),
 	},
-];
+]);
 </script>

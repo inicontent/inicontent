@@ -107,9 +107,9 @@
 			<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
 				:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps />
-			<NDropdown placement="bottom-start" trigger="manual" :x :y :options="dropdownOptions" :show="showDropdown"
-				:onClickoutside @select="handleSelect" />
+				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" />
+			<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
+				:show="showDropdown" :onClickoutside @select="handleSelect" />
 		</slot>
 	</NCard>
 </template>
@@ -602,8 +602,8 @@ function rowProps(row: Item) {
 				row,
 			);
 			showDropdown.value = true;
-			x.value = e.clientX;
-			y.value = e.clientY;
+			x.value = e.clientX + 8;
+			y.value = e.clientY + 6;
 		},
 	};
 }
@@ -652,6 +652,10 @@ async function createDropdownOnSelect(value: string) {
 	} catch {
 		window.$message.error(t("clipboardItemIsNotCorrect"));
 	}
+}
+
+function handleScroll() {
+	showDropdown.value = false; // Hide dropdown on scroll
 }
 watchEffect(() => {
 	isSearchDisabled.value =
