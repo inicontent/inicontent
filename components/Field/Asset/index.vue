@@ -1,30 +1,7 @@
 <template>
-	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-		? typeof field.labelProps === 'function'
-			? field.labelProps(modelValue) ?? {}
-			: field.labelProps
-		: {})">
+	<FieldWrapper :field :rule v-model="modelValue">
 		<template #label>
-			<NFlex align="center" size="small">
-				<NFlex v-if="field.description" align="center" :size="0">
-					{{ t(field.key) }}
-					<NTooltip>
-						<template #trigger>
-							<NButton circle text size="tiny">
-								<template #icon>
-									<NIcon>
-										<IconQuestionMark />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						{{ t(field.description) }}
-					</NTooltip>
-				</NFlex>
-				<template v-else>{{ t(field.key) }}</template>
-				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
-					:callback="importAssetCallback" />
-			</NFlex>
+			<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field :callback="importAssetCallback" />
 		</template>
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
@@ -57,19 +34,16 @@
 				</AssetCard>
 			</NDrawerContent>
 		</NDrawer>
-	</NFormItem>
+	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
-import { IconQuestionMark, IconUpload } from "@tabler/icons-vue";
+import { IconUpload } from "@tabler/icons-vue";
 import {
-	NButton,
 	NFlex,
 	NIcon,
-	NTooltip,
 	NDrawer,
 	NDrawerContent,
-	NFormItem,
 	NRadio,
 	NUpload,
 	NUploadDragger,

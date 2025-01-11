@@ -20,6 +20,6 @@ const { value } = defineProps<{ value?: string }>();
 async function copyID() {
 	if (!value) return;
 	await copyToClipboard(value);
-	window.$message.success(t("textCopied"));
+	window.$message.success(t("copiedSuccessfully"));
 }
 </script>

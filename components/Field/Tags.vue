@@ -1,9 +1,5 @@
 <template>
-    <NFormItem ref="dynamicTags" :label="t(field.key)" :path="field.id" :rule v-bind="(field.labelProps
-        ? typeof field.labelProps === 'function'
-            ? field.labelProps(modelValue) ?? {}
-            : field.labelProps
-        : {})">
+    <FieldWrapper ref="dynamicTags" :field :rule>
         <NFlex v-if="field.defaultValue" style="margin-right: 8px;">
             <NTag v-for="value in field.defaultValue" size="large">{{ t(value) }}</NTag>
         </NFlex>
@@ -46,30 +42,11 @@
                 </NButton>
             </template>
         </NDynamicTags>
-        <template #label>
-            <NFlex v-if="field.description" align="center" :size="0">
-                {{ t(field.key) }}
-                <NTooltip>
-                    <template #trigger>
-                        <NButton circle text size="tiny">
-                            <template #icon>
-                                <NIcon>
-                                    <IconQuestionMark />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t(field.description) }}
-                </NTooltip>
-            </NFlex>
-            <template v-else>{{ t(field.key) }}</template>
-        </template>
-    </NFormItem>
+    </FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import {
-	NFormItem,
 	NDynamicTags,
 	NIcon,
 	NInput,
@@ -80,7 +57,7 @@ import {
 	type FormItemRule,
 	type FormInst,
 } from "naive-ui";
-import { IconPlus, IconQuestionMark } from "@tabler/icons-vue";
+import { IconPlus } from "@tabler/icons-vue";
 import type { FieldType } from "inibase";
 import { validateFieldType } from "inibase/utils";
 

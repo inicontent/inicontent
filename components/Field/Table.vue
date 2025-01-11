@@ -1,9 +1,5 @@
 <template>
-	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-		? typeof field.labelProps === 'function'
-			? field.labelProps(modelValue) ?? {}
-			: field.labelProps
-		: {})">
+	<FieldWrapper :field :rule v-model="modelValue">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
 			:consistent-menu-width="false" max-tag-count="responsive" @focus="loadOptions()" @search="loadOptions"
@@ -12,36 +8,20 @@
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
 				: {}" />
-		<template #label>
-			<NFlex v-if="field.description" align="center" :size="0">
-				{{ t(field.key) }}
-				<NTooltip>
-					<template #trigger>
-						<NButton circle text size="tiny">
-							<template #icon>
-								<NIcon>
-									<IconQuestionMark />
-								</NIcon>
-							</template>
-						</NButton>
-					</template>
-					{{ t(field.description) }}
-				</NTooltip>
-			</NFlex>
-			<template v-else>{{ t(field.key) }}</template>
-		</template>
-	</NFormItem>
+	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import Inison from "inison";
-import { IconQuestionMark } from "@tabler/icons-vue";
-import { NButton, NFlex, NIcon, NTooltip, NFormItem, NSelect } from "naive-ui";
+import { NSelect } from "naive-ui";
 import { isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<Item | Item[]>();
+const options = ref<tableOption[]>();
+const database = useState<Database>("database");
+const table = database.value.tables?.find(({ slug }) => slug === field.table);
 watch(
 	modelValue,
 	(v) => {
@@ -83,8 +63,6 @@ const rule = {
 };
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
-const table = database.value.tables?.find(({ slug }) => slug === field.table);
 
 type tableOption = {
 	label: string;
@@ -92,7 +70,6 @@ type tableOption = {
 	raw: Item;
 };
 
-const options = ref<tableOption[]>();
 function singleOption(option: Item): tableOption {
 	return {
 		label: renderLabel(table, option),
@@ -179,6 +156,7 @@ if (
 	modelValue.value &&
 	(typeof modelValue.value === "string" ||
 		(Array.isArray(modelValue.value) &&
+			modelValue.value.length &&
 			modelValue.value.every((value) => typeof value === "string")))
 ) {
 	Loading.value[`options_${field.key}`] = true;

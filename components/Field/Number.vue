@@ -1,9 +1,5 @@
 <template>
-    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-        ? typeof field.labelProps === 'function'
-            ? field.labelProps(modelValue) ?? {}
-            : field.labelProps
-        : {})">
+    <FieldWrapper :field :rule v-model="modelValue">
         <NInputNumber v-model:value="modelValue" :placeholder="t(field.key)" :show-button="false" clearable v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
@@ -13,39 +9,12 @@
                 <component :is="getField(field).icon" />
             </template>
         </NInputNumber>
-        <template #label>
-            <NFlex v-if="field.description" align="center" :size="0">
-                {{ t(field.key) }}
-                <NTooltip>
-                    <template #trigger>
-                        <NButton circle text size="tiny">
-                            <template #icon>
-                                <NIcon>
-                                    <IconQuestionMark />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t(field.description) }}
-                </NTooltip>
-            </NFlex>
-            <template v-else>{{ t(field.key) }}</template>
-        </template>
-    </NFormItem>
+    </FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import { isNumber } from "inibase/utils";
-import { IconQuestionMark } from "@tabler/icons-vue";
-import {
-	NButton,
-	NFlex,
-	NIcon,
-	NTooltip,
-	NFormItem,
-	NInputNumber,
-	type FormItemRule,
-} from "naive-ui";
+import { NInputNumber, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
 
