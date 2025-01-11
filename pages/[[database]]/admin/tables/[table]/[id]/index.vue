@@ -1,5 +1,5 @@
 <template>
-    <LazyTableDrawer v-if="!$device.isMobile" />
+    <LazyFormDrawer v-if="!$device.isMobile" />
     <NCard style="height: fit-content">
         <template #header>
             <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>
@@ -149,38 +149,3 @@ useHead({
 	],
 });
 </script>
-
-<style>
-/* @media print {
-    * {
-        max-height: unset !important;
-        overflow: visible !important;
-        visibility: hidden !important;
-        color: #000 !important;
-        fill: #000;
-    }
-
-    .n-button__icon,
-    .n-card-header {
-        display: none !important;
-    }
-
-    #__nuxt,
-    #__nuxt .n-config-provider,
-    #__nuxt .n-config-provider .n-layout,
-    #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2),
-    #__nuxt .n-config-provider .n-layout .n-layout-scroll-container>div:nth-child(2) #Printable * {
-        top: 0 !important;
-        visibility: visible !important;
-    }
-
-    #Printable {
-        position: fixed !important;
-        top: 0 !important;
-        bottom: 0 !important;
-        right: 0 !important;
-        left: 0 !important;
-        z-index: 9999999 !important;
-    }
-} */
-</style>
