@@ -149,6 +149,7 @@ import {
 	isArrayOfObjects,
 	isObject,
 } from "inibase/utils";
+import type { VNode } from 'vue';
 
 const extraColumns = defineModel<DataTableColumns>("extraColumns", {
 	default: [],
@@ -171,18 +172,30 @@ defineExpose<TableRef>({
 });
 
 const slots = defineSlots<{
-	default(props: { data: apiResponse<Item[]> | null }): any;
-	form(props: {
+	default(props?: { data: apiResponse<Item[]> | null }): any;
+	form(props?: {
 		onAfterCreate: () => Promise<void>;
 		onAfterUpdate: () => Promise<void>;
 	}): any;
 	navbarActions(): any;
 	navbarExtraActions(): any;
 	navbarExtraButtons(): any;
-	itemActions(props: Item): any;
-	itemExtraActions(props: Item): any;
-	itemExtraButtons(props: Item): any;
+	itemActions(props?: Item): any;
+	itemExtraActions(props?: Item): any;
+	itemExtraButtons(props?: Item): any;
 }>();
+
+function isSlotEmpty(slotName: keyof typeof slots): boolean {
+	const slot = slots[slotName];
+	if (!slot) {
+		// Slot is not defined
+		return true;
+	}
+
+	const vnodes: VNode[] = slot();
+	// Check if all nodes are comments or have undefined children
+	return vnodes.every((vnode) => vnode.type === Comment || vnode.children === undefined);
+}
 
 onBeforeRouteLeave(() => {
 	clearNuxtState("Drawer");
@@ -588,7 +601,7 @@ watchEffect(() => {
 				? undefined
 				: (row: any) => h(Column, { value: row[field.key], field }),
 		})),
-		{
+		...((["itemActions", "itemExtraActions", "itemExtraButtons"] as (keyof typeof slots)[]).every(isSlotEmpty) ? [] : [{
 			title: t("actions"),
 			align: "center",
 			width: 150,
@@ -679,7 +692,7 @@ watchEffect(() => {
 							].filter((i) => i !== null),
 						),
 					],
-		},
+		}]),
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(
