@@ -182,7 +182,7 @@ async function handleSelect(value: string) {
 		}
 	}
 }
-const dropdownOptions: DropdownOption[] = [
+const dropdownOptions = computed<DropdownOption[]>(() => [
 	{
 		label: t("copyItem"),
 		key: "copy",
@@ -197,7 +197,7 @@ const dropdownOptions: DropdownOption[] = [
 		key: "paste",
 		icon: () => h(NIcon, () => h(IconClipboard)),
 	},
-];
+]);
 
 const tableWidth = (field.children as Schema).reduce(
 	(accumulator: number, child: any) => {
