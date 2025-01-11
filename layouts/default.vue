@@ -110,6 +110,14 @@ onMounted(() => {
 	window.$message = message;
 	window.$dialog = dialog;
 	window.$notification = notification;
+	// Select the element with the class "Printable"
+	let element = document.querySelector(".printable");
+
+	// Traverse up the DOM and add a class to each parent element
+	while (element?.parentElement) {
+		element.parentElement.classList.add("printable-parent");
+		element = element.parentElement;
+	}
 });
 
 // onMounted(fetchTranslation);

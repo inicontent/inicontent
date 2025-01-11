@@ -1,6 +1,6 @@
 <template>
     <NScrollbar x-scrollable>
-        <NList id="Printable" hoverable :bordered="false">
+        <NList class="printable" hoverable :bordered="false">
             <Data v-for="field in schema" :field :value="value[field.key]" />
         </NList>
     </NScrollbar>
