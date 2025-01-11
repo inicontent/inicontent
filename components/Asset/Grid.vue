@@ -63,9 +63,8 @@
 			</template>
 		</NGrid>
 		<NDropdown v-if="table.allowedMethods?.includes('u') || table.allowedMethods?.includes('d')"
-			placement="bottom-start" trigger="manual" :x="xRef" :y="yRef" :show="showDropdown"
-			:options="dropdownOptions" @clickoutside="dropdownOnClickOutside"
-			@select="(key: string) => dropdownOnSelect(key)" />
+			placement="bottom-start" trigger="manual" :x="x" :y="y" :show="showDropdown" :options="dropdownOptions"
+			@clickoutside="dropdownOnClickOutside" @select="(key: string) => dropdownOnSelect(key)" />
 	</template>
 	<NEmpty v-else />
 </template>
@@ -81,7 +80,6 @@ import {
 	NImage,
 	NSkeleton,
 	NPerformantEllipsis,
-	useDialog,
 	NEmpty,
 	NA,
 	NDrawer,
@@ -183,17 +181,16 @@ function dropdownOnSelect(key: string) {
 
 const showDrawer = ref(false);
 const showDropdown = ref(false);
-const xRef = ref(0);
-const yRef = ref(0);
-function handleContextMenu(e: MouseEvent, asset: Asset) {
+const x = ref(0);
+const y = ref(0);
+async function handleContextMenu(e: MouseEvent, asset: Asset) {
 	e.preventDefault();
 	showDropdown.value = false;
-	nextTick().then(() => {
-		CurrentAsset.value = asset;
-		showDropdown.value = true;
-		xRef.value = e.clientX + 8;
-		yRef.value = e.clientY + 8;
-	});
+	await nextTick();
+	CurrentAsset.value = asset;
+	showDropdown.value = true;
+	x.value = e.clientX + 8;
+	y.value = e.clientY + 8;
 }
 function dropdownOnClickOutside(e: MouseEvent) {
 	const isRightClick = e.button === 2;
