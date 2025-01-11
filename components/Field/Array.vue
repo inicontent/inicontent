@@ -17,21 +17,29 @@
 				<IconChevronRight v-if="modelValue && modelValue.length > 0" />
 			</NIcon>
 		</template>
-		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :title="t(field.key)" :name="field.id"
+		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="field.id"
 			:disabled="!modelValue?.length">
+			<template #header>
+				<NDropdown trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
+					{{ t(field.key) }}
+				</NDropdown>
+			</template>
 			<template #header-extra>
-				<NButton size="small" round @click="handleAddNewItem">
-					<template #icon>
-						<NIcon>
-							<IconPlus />
-						</NIcon>
-					</template>
-				</NButton>
+				<NDropdown placement="bottom" trigger="hover" :options="createDropdownOptions"
+					@select="createDropdownOnSelect">
+					<NButton size="small" round @click="handleAddNewItem">
+						<template #icon>
+							<NIcon>
+								<IconPlus />
+							</NIcon>
+						</template>
+					</NButton>
+				</NDropdown>
 			</template>
 			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
 				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
-					:title="field.children[0].type === 'string' ? (_item as Data)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
+					:title="field.children[0].type === 'string' ? (_item as Item)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
 					:name="`${field.id}.${index}`">
 					<template #header-extra>
 						<NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
@@ -45,7 +53,7 @@
 						</NButton>
 					</template>
 					<div class="collapseContentPadding">
-						<LazyFieldS v-model="(modelValue[index] as Data)" :schema="(field.children as Schema).map((child) => ({
+						<LazyFieldS v-model="(modelValue[index] as Item)" :schema="(field.children as Schema).map((child) => ({
 							...child,
 							...(field.disabledItems
 								? {
@@ -74,7 +82,7 @@
 				</template>
 			</NButton>
 		</template>
-		<NDataTable v-if="field.children" :columns="tableColumns" :data="(modelValue as Data[])"
+		<NDataTable v-if="field.children" :columns="tableColumns" :data="(modelValue as Item[])"
 			:scroll-x="tableWidth" />
 	</NCard>
 </template>
@@ -89,12 +97,19 @@ import {
 	NDataTable,
 	NText,
 	NTooltip,
+	NDropdown,
 	type DataTableColumns,
+	type DropdownOption,
 } from "naive-ui";
-import { isArrayOfObjects } from "inibase/utils";
-import { IconChevronRight, IconPlus, IconTrash } from "@tabler/icons-vue";
+import { isArrayOfObjects, isObject, isStringified } from "inibase/utils";
+import {
+	IconChevronRight,
+	IconCopy,
+	IconPlus,
+	IconTrash,
+} from "@tabler/icons-vue";
 import { LazyField } from "#components";
-import type { Data } from "inibase";
+import Inison from "inison";
 
 defineTranslation({
 	ar: {
@@ -105,7 +120,7 @@ defineTranslation({
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<(string | number | Data)[]>();
+const modelValue = defineModel<(string | number | Item)[]>();
 
 const expandedNames = ref();
 
@@ -132,6 +147,58 @@ function handleAddNewItem() {
 	}
 	expandedNames.value = `${field.id}.${newElementIndex}`;
 }
+
+const createDropdownOptions: DropdownOption[] = [
+	{
+		label: t("createFromClipboard"),
+		key: "paste",
+		icon: () => h(NIcon, () => h(IconCopy)),
+	},
+];
+async function createDropdownOnSelect(value: string) {
+	try {
+		const itemFromClipboard = await navigator.clipboard.readText();
+
+		if (!itemFromClipboard) {
+			window.$message.error(t("clipboardEmpty"));
+			return;
+		}
+		if (!isStringified(itemFromClipboard)) {
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
+		}
+
+		const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
+		if (!unstringifiedItem && !isObject(unstringifiedItem)) {
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
+		}
+
+		switch (value) {
+			case "paste": {
+				modelValue.value = unstringifiedItem;
+			}
+		}
+	} catch {
+		window.$message.error(t("clipboardItemIsNotCorrect"));
+	}
+}
+async function handleSelect(value: string) {
+	if (!modelValue.value) return;
+	switch (value) {
+		case "copy": {
+			await copyToClipboard(Inison.stringify(modelValue.value));
+			window.$message.success(t("copiedSuccessfully"));
+		}
+	}
+}
+const dropdownOptions: DropdownOption[] = [
+	{
+		label: t("copyItem"),
+		key: "copy",
+		icon: () => h(NIcon, () => h(IconCopy)),
+	},
+];
 
 const tableWidth = (field.children as Schema).reduce(
 	(accumulator: number, child: any) => {
@@ -179,9 +246,9 @@ const tableColumns: DataTableColumns = [
 					isTable: true,
 				},
 				"onUpdate:modelValue": (newValue) => {
-					(modelValue.value as Data[])[index][child.key] = newValue;
+					(modelValue.value as Item[])[index][child.key] = newValue;
 				},
-				modelValue: (modelValue.value as Data[])[index][child.key],
+				modelValue: (modelValue.value as Item[])[index][child.key],
 			}),
 	})) as any),
 	field.disableActions === true

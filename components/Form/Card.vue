@@ -118,7 +118,7 @@
                 </NFlex>
             </template>
             <slot>
-                <Form ref="formRef"></Form>
+                <Form ref="formRef" v-model="modelValue"></Form>
             </slot>
         </NCard>
     </NSpin>

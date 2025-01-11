@@ -8,7 +8,7 @@
         <template #label>
             <NFlex v-if="field.description" align="center" :size="0">
                 <NDropdown
-                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array'].includes(type))"
+                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
                     trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
                     {{ t(field.key) }}
                 </NDropdown>
@@ -27,7 +27,7 @@
             </NFlex>
             <template v-else>
                 <NDropdown
-                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array'].includes(type))"
+                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
                     trigger="hover" :delay="500" :options="dropdownOptions" @select="handleSelect">
                     {{ t(field.key) }}
                 </NDropdown>
@@ -59,7 +59,7 @@ const modelValue = defineModel<any>();
 async function handleSelect(value: string) {
 	switch (value) {
 		case "copy": {
-            if (!modelValue.value) return;
+			if (!modelValue.value) return;
 			await copyToClipboard(Inison.stringify(modelValue.value));
 			window.$message.success(t("copiedSuccessfully"));
 			break;

@@ -86,7 +86,7 @@ function debounce<T extends (...args: any[]) => void>(
 // Debounced version of fetchSchemaAndData
 const debouncedFetchSchemaAndData = debounce(async () => {
 	await fetchSchemaAndData();
-}, 500);
+}, 1000);
 
 // Trigger schema fetch on input changes with debounce
 watch(

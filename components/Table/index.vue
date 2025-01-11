@@ -70,32 +70,35 @@
 							</NTooltip>
 						</NDropdown>
 
-						<NTooltip :delay="500">
-							<template #trigger>
-								<NButton round :disabled="!table.schema" tag="a"
-									:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-									@click.prevent="() => {
-										if (!isMobile)
-											Drawer = {
-												...Drawer,
-												table: table.slug,
-												id: undefined,
-												data: {},
-												show: true,
-											};
-										else
-											navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
-											);
-									}">
-									<template #icon>
-										<NIcon>
-											<IconPlus />
-										</NIcon>
-									</template>
-								</NButton>
-							</template>
-							{{ t("newItem") }}
-						</NTooltip>
+						<NDropdown placement="bottom" trigger="hover" :options="createDropdownOptions"
+							@select="createDropdownOnSelect">
+							<NTooltip placement="top" :delay="500">
+								<template #trigger>
+									<NButton round :disabled="!table.schema" tag="a"
+										:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+										@click.prevent="() => {
+											if (!isMobile)
+												Drawer = {
+													...Drawer,
+													table: table.slug,
+													id: undefined,
+													data: {},
+													show: true,
+												};
+											else
+												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
+												);
+										}">
+										<template #icon>
+											<NIcon>
+												<IconPlus />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ t("newItem") }}
+							</NTooltip>
+						</NDropdown>
 					</NButtonGroup>
 				</slot>
 			</NFlex>
@@ -104,13 +107,16 @@
 			<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
 				:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" />
+				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps />
+			<NDropdown placement="bottom-start" trigger="manual" :x :y :options="dropdownOptions" :show="showDropdown"
+				:onClickoutside @select="handleSelect" />
 		</slot>
 	</NCard>
 </template>
 
 <script setup lang="ts">
 import {
+	IconCopy,
 	IconEye,
 	IconFileArrowRight,
 	IconPencil,
@@ -142,14 +148,16 @@ import {
 	type DataTableGetCsvCell,
 	type DataTableGetCsvHeader,
 	NTime,
+	type DropdownOption,
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
 import {
 	FormatObjectCriteriaValue,
 	isArrayOfObjects,
 	isObject,
+	isStringified,
 } from "inibase/utils";
-import type { VNode } from 'vue';
+import type { VNode } from "vue";
 
 const extraColumns = defineModel<DataTableColumns>("extraColumns", {
 	default: [],
@@ -194,7 +202,9 @@ function isSlotEmpty(slotName: keyof typeof slots): boolean {
 
 	const vnodes: VNode[] = slot();
 	// Check if all nodes are comments or have undefined children
-	return vnodes.every((vnode) => vnode.type === Comment || vnode.children === undefined);
+	return vnodes.every(
+		(vnode) => vnode.type === Comment || vnode.children === undefined,
+	);
 }
 
 onBeforeRouteLeave(() => {
@@ -301,7 +311,8 @@ function generateSearchInput(searchArray: any) {
 		for (const item of searchArray[condition]) {
 			if (!RETURN[condition]) RETURN[condition] = {};
 			if (Array.isArray(item) && item[0])
-				RETURN[condition][item[0]] = `${item[1] === "=" ? '' : item[1]}${item[2]}`;
+				RETURN[condition][item[0]] =
+					`${item[1] === "=" ? "" : item[1]}${item[2]}`;
 			else RETURN[condition] = generateSearchInput(item);
 		}
 	}
@@ -324,14 +335,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
 		: router.push({
-			query: Query ?? {},
-		});
+				query: Query ?? {},
+			});
 });
 
 const Drawer = useState<DrawerRef>("drawer", () => ({
@@ -512,24 +523,142 @@ function handleSorterChange({
 	}
 	queryOptions.value = Object.keys(sortObject.value).length
 		? Inison.stringify({
-			...Inison.unstringify(queryOptions.value),
-			sort: sortObject.value,
-		})
+				...Inison.unstringify(queryOptions.value),
+				sort: sortObject.value,
+			})
 		: Inison.stringify(
-			(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
-		);
+				(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
+			);
 }
 
 const columns = ref<DataTableColumns>();
 const tableWidth = ref<number>(0);
 const dataTablePagination = ref();
 const isSearchDisabled = ref(false);
+
+const currentItem = ref<Item>();
+const showDropdown = ref(false);
+const x = ref(0);
+const y = ref(0);
+async function handleSelect(value: string) {
+	showDropdown.value = false;
+	if (!currentItem.value) return;
+	switch (value) {
+		case "copy": {
+			await copyToClipboard(Inison.stringify(currentItem.value));
+			window.$message.success(t("copiedSuccessfully"));
+			currentItem.value = undefined;
+		}
+	}
+}
+function onClickoutside(e: MouseEvent) {
+	const isRightClick = e.button === 2;
+	if (!isRightClick) showDropdown.value = false;
+}
+const dropdownOptions: DropdownOption[] = [
+	{
+		label: t("copyItem"),
+		key: "copy",
+		icon: () => h(NIcon, () => h(IconCopy)),
+	},
+];
+function rowProps(row: Item) {
+	return {
+		onContextmenu: async (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			// If it's a link or an image, do not show the dropdown
+			if (
+				target.closest("a[href]") || // Link
+				target.closest("img") || // Image
+				target.closest("button") || // Button
+				target.closest('[role="button"]') // ARIA role button
+			) {
+				showDropdown.value = false;
+				return;
+			}
+
+			// Check if text is selected and the mouse is above the selection
+			const selection = window.getSelection();
+			if (selection && selection.toString().trim() !== "") {
+				const range = selection.getRangeAt(0); // Get the range of the selected text
+				const rect = range.getBoundingClientRect(); // Get the bounding rectangle of the selection
+
+				// Check if the mouse is within the bounding rectangle of the selection
+				if (
+					e.clientX >= rect.left &&
+					e.clientX <= rect.right &&
+					e.clientY >= rect.top &&
+					e.clientY <= rect.bottom
+				) {
+					showDropdown.value = false;
+					return;
+				}
+			}
+
+			e.preventDefault();
+			showDropdown.value = false;
+			await nextTick();
+			currentItem.value = (({ id, createdAt, updatedAt, ...rest }) => rest)(
+				row,
+			);
+			showDropdown.value = true;
+			x.value = e.clientX;
+			y.value = e.clientY;
+		},
+	};
+}
+const createDropdownOptions: DropdownOption[] = [
+	{
+		label: t("createFromClipboard"),
+		key: "paste",
+		icon: () => h(NIcon, () => h(IconCopy)),
+	},
+];
+async function createDropdownOnSelect(value: string) {
+	try {
+		const itemFromClipboard = await navigator.clipboard.readText();
+
+		if (!itemFromClipboard) {
+			window.$message.error(t("clipboardEmpty"));
+			return;
+		}
+		if (!isStringified(itemFromClipboard)) {
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
+		}
+
+		const unstringifiedItem = Inison.unstringify<Item>(itemFromClipboard);
+		if (!unstringifiedItem) {
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
+		}
+
+		switch (value) {
+			case "paste": {
+				if (!isMobile)
+					Drawer.value = {
+						...Drawer.value,
+						table: table.value.slug,
+						id: undefined,
+						data: unstringifiedItem,
+						show: true,
+					};
+				else
+					await navigateTo(
+						`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/new?data=${itemFromClipboard}`,
+					);
+			}
+		}
+	} catch {
+		window.$message.error(t("clipboardItemIsNotCorrect"));
+	}
+}
 watchEffect(() => {
 	isSearchDisabled.value =
 		searchArray.value &&
 		Object.keys(searchArray.value).length === 1 &&
 		searchArray.value[
-		Object.keys(searchArray.value)[0] as "and" | "or"
+			Object.keys(searchArray.value)[0] as "and" | "or"
 		]?.[0][0] === null;
 
 	dataTablePagination.value = {
@@ -547,34 +676,34 @@ watchEffect(() => {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
 			? [
-				{
-					type: "selection",
-					fixed: "left",
-					options: [
-						{
-							label: t("delete"),
-							key: "delete",
-							disabled: checkedRowKeys.value.length === 0,
-							icon: () => h(NIcon, () => h(IconTrash)),
-							onSelect: async () => {
-								await DELETE(checkedRowKeys.value);
-								checkedRowKeys.value = [];
+					{
+						type: "selection",
+						fixed: "left",
+						options: [
+							{
+								label: t("delete"),
+								key: "delete",
+								disabled: checkedRowKeys.value.length === 0,
+								icon: () => h(NIcon, () => h(IconTrash)),
+								onSelect: async () => {
+									await DELETE(checkedRowKeys.value);
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-						{
-							label: t("clearTable"),
-							key: "clear",
-							disabled:
-								checkedRowKeys.value.length !== data.value?.result?.length,
-							icon: () => h(NIcon, () => h(IconTableMinus)),
-							onSelect: async () => {
-								await DELETE();
-								checkedRowKeys.value = [];
+							{
+								label: t("clearTable"),
+								key: "clear",
+								disabled:
+									checkedRowKeys.value.length !== data.value?.result?.length,
+								icon: () => h(NIcon, () => h(IconTableMinus)),
+								onSelect: async () => {
+									await DELETE();
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-					],
-				},
-			]
+						],
+					},
+				]
 			: []),
 		...extraColumns.value,
 		...(table.value.schema ?? []).map((field) => ({
@@ -601,98 +730,111 @@ watchEffect(() => {
 				? undefined
 				: (row: any) => h(Column, { value: row[field.key], field }),
 		})),
-		...((["itemActions", "itemExtraActions", "itemExtraButtons"] as (keyof typeof slots)[]).every(isSlotEmpty) ? [] : [{
-			title: t("actions"),
-			align: "center",
-			width: 150,
-			key: "actions",
-			fixed: "right",
-			render: (row: any) =>
-				slots.itemActions
-					? slots.itemActions(row)
-					: [
-						slots.itemExtraActions ? slots.itemExtraActions(row) : undefined,
-						h(NButtonGroup, () =>
-							[
-								slots.itemExtraButtons
-									? slots.itemExtraButtons(row)
-									: undefined,
-								table.value.allowedMethods?.includes("r")
-									? h(
-										NButton,
-										{
-											secondary: true,
-											circle: true,
-											type: "primary",
-										},
-										{
-											icon: () =>
-												h(
-													NuxtLink,
-													{
-														to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-													},
-													() => h(NIcon, () => h(IconEye)),
-												),
-										},
-									)
-									: null,
-								table.value.allowedMethods?.includes("u")
-									? h(
-										NButton,
-										{
-											tag: "a",
-											href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-											onClick: (e) => {
-												e.preventDefault();
-												if (!isMobile)
-													Drawer.value = {
-														...Drawer.value,
-														id: row.id,
-														table: table.value.slug as string,
-														data: structuredClone(toRaw(row)),
-														show: true,
-													};
-												else
-													navigateTo(
-														`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-													);
-											},
-											secondary: true,
-											circle: true,
-											type: "info",
-										},
-										{ icon: () => h(NIcon, () => h(IconPencil)) },
-									)
-									: null,
-								table.value.allowedMethods?.includes("d")
-									? h(
-										NPopconfirm,
-										{
-											onPositiveClick: () => DELETE(row.id),
-										},
-										{
-											trigger: () =>
-												h(
-													NButton,
-													{
-														strong: true,
-														secondary: true,
-														circle: true,
-														type: "error",
-													},
-													{
-														icon: () => h(NIcon, () => h(IconTrash)),
-													},
-												),
-											default: () => t("theFollowingActionIsIrreversible"),
-										},
-									)
-									: null,
-							].filter((i) => i !== null),
-						),
-					],
-		}]),
+		...((
+			[
+				"itemActions",
+				"itemExtraActions",
+				"itemExtraButtons",
+			] as (keyof typeof slots)[]
+		).every(isSlotEmpty)
+			? []
+			: [
+					{
+						title: t("actions"),
+						align: "center",
+						width: 150,
+						key: "actions",
+						fixed: "right",
+						render: (row: any) =>
+							slots.itemActions
+								? slots.itemActions(row)
+								: [
+										slots.itemExtraActions
+											? slots.itemExtraActions(row)
+											: undefined,
+										h(NButtonGroup, () =>
+											[
+												slots.itemExtraButtons
+													? slots.itemExtraButtons(row)
+													: undefined,
+												table.value.allowedMethods?.includes("r")
+													? h(
+															NButton,
+															{
+																secondary: true,
+																circle: true,
+																type: "primary",
+															},
+															{
+																icon: () =>
+																	h(
+																		NuxtLink,
+																		{
+																			to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+																		},
+																		() => h(NIcon, () => h(IconEye)),
+																	),
+															},
+														)
+													: null,
+												table.value.allowedMethods?.includes("u")
+													? h(
+															NButton,
+															{
+																tag: "a",
+																href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																onClick: (e) => {
+																	e.preventDefault();
+																	if (!isMobile)
+																		Drawer.value = {
+																			...Drawer.value,
+																			id: row.id,
+																			table: table.value.slug as string,
+																			data: structuredClone(toRaw(row)),
+																			show: true,
+																		};
+																	else
+																		navigateTo(
+																			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																		);
+																},
+																secondary: true,
+																circle: true,
+																type: "info",
+															},
+															{ icon: () => h(NIcon, () => h(IconPencil)) },
+														)
+													: null,
+												table.value.allowedMethods?.includes("d")
+													? h(
+															NPopconfirm,
+															{
+																onPositiveClick: () => DELETE(row.id),
+															},
+															{
+																trigger: () =>
+																	h(
+																		NButton,
+																		{
+																			strong: true,
+																			secondary: true,
+																			circle: true,
+																			type: "error",
+																		},
+																		{
+																			icon: () => h(NIcon, () => h(IconTrash)),
+																		},
+																	),
+																default: () =>
+																	t("theFollowingActionIsIrreversible"),
+															},
+														)
+													: null,
+											].filter((i) => i !== null),
+										),
+									],
+					},
+				]),
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(

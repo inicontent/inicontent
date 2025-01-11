@@ -46,7 +46,7 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 defineTranslation({
 	ar: {
 		clickToCopy: "نسخ",
-		textCopied: "تم نسخ النص",
+		copiedSuccessfully: "تم النسخ بنجاح",
 		viewTheItem: "مُعاينة العنصر",
 		createdAt: "تاريخ الإنشاء",
 		updatedAt: "تاريخ التعديل",
@@ -60,6 +60,11 @@ defineTranslation({
 		new: "جديد",
 		id: "معرف",
 		publish: "نشر",
+		pasteItem: "لصق العنصر",
+		copyItem: "نسخ العنصر",
+		createFromClipboard: "إنشاء من الحافظة",
+		clipboardItemIsNotCorrect: "العنصر في الحافظة غير صحيح",
+		clipboardEmpty: "الحافظة فارغة",
 	},
 });
 
