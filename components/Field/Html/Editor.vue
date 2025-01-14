@@ -611,18 +611,6 @@ const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
   width: 100%;
 }
 
-.light .internalRichEditor {
-  --gray-1: rgba(61, 37, 20, .05);
-  --gray-2: rgba(61, 37, 20, .08);
-  --gray-3: rgba(61, 37, 20, .12);
-}
-
-.dark .internalRichEditor {
-  --gray-1: rgba(255, 255, 255, .14);
-  --gray-2: rgba(255, 255, 255, .08);
-  --gray-3: rgba(255, 255, 255, .35);
-}
-
 .externalRichEditor:hover,
 .externalRichEditor:focus {
   border-color: v-bind(primaryColor);

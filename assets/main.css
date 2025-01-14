@@ -162,6 +162,18 @@ body {
 	top: 70px;
 }
 
+.light .internalRichEditor {
+	--gray-1: rgba(61, 37, 20, 0.05);
+	--gray-2: rgba(61, 37, 20, 0.08);
+	--gray-3: rgba(61, 37, 20, 0.12);
+}
+
+.dark .internalRichEditor {
+	--gray-1: rgba(255, 255, 255, 0.14);
+	--gray-2: rgba(255, 255, 255, 0.08);
+	--gray-3: rgba(255, 255, 255, 0.35);
+}
+
 @media print {
 	* {
 		max-height: unset !important;
