@@ -153,6 +153,11 @@ body {
 	padding-right: 44px !important;
 }
 
+/* Fix Select Menu */
+.n-base-select-menu.n-base-select-menu--rtl {
+	left: -48px;
+}
+
 /* Hide table resize on RTL */
 .n-data-table.n-data-table--rtl .n-data-table-th .n-data-table-resize-button {
 	display: none;
