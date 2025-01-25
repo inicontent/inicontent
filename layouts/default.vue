@@ -110,14 +110,27 @@ onMounted(() => {
 	window.$message = message;
 	window.$dialog = dialog;
 	window.$notification = notification;
-	// Select the element with the class "Printable"
-	let element = document.querySelector(".printable");
 
-	// Traverse up the DOM and add a class to each parent element
-	while (element?.parentElement) {
-		element.parentElement.classList.add("printable-parent");
-		element = element.parentElement;
-	}
+	// Add an event listener for the print action
+	window.onbeforeprint = () => {
+		// Select the element with the class "printable"
+		let element = document.querySelector(".printable");
+
+		// Traverse up the DOM and add a class to each parent element
+		while (element?.parentElement) {
+			element.parentElement.classList.add("printable-parent");
+			element = element.parentElement;
+		}
+	};
+
+	// Optional: Remove the added classes after printing
+	window.onafterprint = () => {
+		// Remove the "printable-parent" class after printing
+		const elements = document.querySelectorAll(".printable-parent");
+		for (let i = 0; i < elements.length; i++) {
+			elements[i].classList.remove("printable-parent");
+		}
+	};
 });
 
 // onMounted(fetchTranslation);

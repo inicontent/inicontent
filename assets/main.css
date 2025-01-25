@@ -177,8 +177,6 @@ body {
 @media print {
 	* {
 		max-height: unset !important;
-		overflow: visible !important;
-		visibility: hidden !important;
 		color: #000 !important;
 	}
 
@@ -187,17 +185,14 @@ body {
 		color: #000 !important;
 	}
 
-	.printable *,
-	.printable-parent {
+	.printable-parent * {
 		visibility: visible !important;
 	}
 
 	.printable-parent {
 		background: #fff !important;
-	}
-
-	.n-card-header {
-		display: none !important;
+		box-shadow: none !important;
+		overflow: visible !important;
 	}
 
 	.printable {
