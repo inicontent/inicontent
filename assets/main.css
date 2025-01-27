@@ -163,6 +163,15 @@ body {
 	display: none;
 }
 
+/* Fix DataTable RTL fixed column */
+.rtl .n-data-table .n-data-table-td.n-data-table-td--fixed-right,
+.rtl .n-data-table .n-data-table-th.n-data-table-th--fixed-right {
+	left: 0 !important;
+	right: unset !important;
+	box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.24), 0 3px 6px 0
+		rgba(0, 0, 0, 0.18), 0 5px 12px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
 .n-notification-container.n-notification-container--scrollable.n-notification-container--top-right {
 	top: 70px;
 }
