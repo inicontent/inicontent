@@ -127,7 +127,7 @@
 							<NSelect filterable v-model:value="schema[index].table" :options="tableSelectOptions" />
 						</NFormItem>
 						<NFormItem :label="t('extendWhere')">
-							<NInput v-model:value="schema[index].where" />
+							<NInput v-model:value="(schema[index].where as string)" />
 							<template #feedback>
 								{{ t('useInison') }} / {{ t('ie') }}:
 								{<strong>subCategory</strong>:<strong>null</strong>}

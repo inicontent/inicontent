@@ -128,8 +128,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${modelValue.value?.id}`,
 				{
 					method: "PUT",
@@ -154,8 +153,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${modelValue.value?.id}`,
 		{
 			method: "DELETE",

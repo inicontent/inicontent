@@ -1,18 +1,18 @@
 <template>
-    <NCollapse :default-expanded-names="field.expand ? field.id : undefined" display-directive="show"
-        style="margin: 0 0 20px;" arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
-        <NCollapseItem display-directive="show" :path="field.id" :name="field.id">
-            <template #header>
-                <NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
-                    :delay="500" :options="dropdownOptions" @select="handleSelect">
-                    {{ t(field.key) }}
-                </NDropdown>
-            </template>
-            <div class="collapseContentPadding">
-                <FieldS :schema="(field.children as Schema)" v-model="modelValue" />
-            </div>
-        </NCollapseItem>
-    </NCollapse>
+	<NCollapse :default-expanded-names="field.expand ? field.id : undefined" display-directive="show"
+		style="margin: 0 0 20px;" arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
+		<NCollapseItem display-directive="show" :path="field.id" :name="field.id">
+			<template #header>
+				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+					:delay="500" :options="dropdownOptions" @select="handleSelect">
+					{{ t(field.key) }}
+				</NDropdown>
+			</template>
+			<div class="collapseContentPadding">
+				<FieldS :schema="(field.children as Schema)" v-model="localVModelValue" />
+			</div>
+		</NCollapseItem>
+	</NCollapse>
 </template>
 
 <script setup lang="ts">
@@ -31,9 +31,10 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<Record<string | number, any>>({
-	default: () => reactive({}),
-});
+const localVModelValue = ref<Record<string | number, any>>({})
+watch(localVModelValue, (v) => { modelValue.value = v }, { deep: true })
+
+const modelValue = defineModel<Record<string | number, any>>();
 
 async function handleSelect(value: string) {
 	switch (value) {
