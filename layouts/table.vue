@@ -50,6 +50,7 @@ defineTranslation({
 		viewTheItem: "مُعاينة العنصر",
 		createdAt: "تاريخ الإنشاء",
 		updatedAt: "تاريخ التعديل",
+		view: "عرض",
 		update: "تحديث",
 		create: "إنشاء",
 		delete: "حذف",
