@@ -343,52 +343,52 @@
 
 <script setup lang="ts">
 import {
-  NButton,
-  NButtonGroup,
-  NRadio,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-  NPopselect,
-  NScrollbar,
-  NFlex,
-  NPopover,
-  NDivider,
-  NInputGroup,
-  NInput,
-  NTooltip,
+	NButton,
+	NButtonGroup,
+	NRadio,
+	NDrawer,
+	NDrawerContent,
+	NIcon,
+	NPopselect,
+	NScrollbar,
+	NFlex,
+	NPopover,
+	NDivider,
+	NInputGroup,
+	NInput,
+	NTooltip,
 } from "naive-ui";
 import {
-  IconBold,
-  IconItalic,
-  IconUnderline,
-  IconStrikethrough,
-  IconHeading,
-  IconColorPicker,
-  IconHighlight,
-  IconListNumbers,
-  IconList,
-  IconTextSize,
-  IconUpload,
-  IconLink,
-  IconArrowRight,
-  IconAlignLeft,
-  IconAlignCenter,
-  IconAlignRight,
-  IconArrowBackUp,
-  IconArrowForwardUp,
-  IconLinkOff,
-  IconAlignJustified,
-  IconTextWrap,
-  IconTablePlus,
-  IconTableMinus,
-  IconColumnInsertLeft,
-  IconColumnInsertRight,
-  IconColumnRemove,
-  IconRowInsertBottom,
-  IconRowInsertTop,
-  IconRowRemove,
-  IconTableRow,
+	IconBold,
+	IconItalic,
+	IconUnderline,
+	IconStrikethrough,
+	IconHeading,
+	IconColorPicker,
+	IconHighlight,
+	IconListNumbers,
+	IconList,
+	IconTextSize,
+	IconUpload,
+	IconLink,
+	IconArrowRight,
+	IconAlignLeft,
+	IconAlignCenter,
+	IconAlignRight,
+	IconArrowBackUp,
+	IconArrowForwardUp,
+	IconLinkOff,
+	IconAlignJustified,
+	IconTextWrap,
+	IconTablePlus,
+	IconTableMinus,
+	IconColumnInsertLeft,
+	IconColumnInsertRight,
+	IconColumnRemove,
+	IconRowInsertBottom,
+	IconRowInsertTop,
+	IconRowRemove,
+	IconTableRow,
 } from "@tabler/icons-vue";
 import TiptapTextStyle from "@tiptap/extension-text-style";
 import { Color as TiptapColor } from "@tiptap/extension-color";
@@ -409,177 +409,177 @@ const fontBgColor = ref();
 const url = ref();
 
 function renderHeadingOption({ value }: { value: number }) {
-  return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
+	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const headingOptions = [
-  {
-    value: 1,
-  },
-  {
-    value: 2,
-  },
-  {
-    value: 3,
-  },
-  {
-    value: 4,
-  },
-  {
-    value: 5,
-  },
-  {
-    value: 6,
-  },
+	{
+		value: 1,
+	},
+	{
+		value: 2,
+	},
+	{
+		value: 3,
+	},
+	{
+		value: 4,
+	},
+	{
+		value: 5,
+	},
+	{
+		value: 6,
+	},
 ];
 
 function renderFontSizeOption({ value }: { value: number }) {
-  return h("span", { style: { fontSize: `${value}px` } }, "Paragraph");
+	return h("span", { style: { fontSize: `${value}px` } }, "Paragraph");
 }
 
 const fontSizeOptions = [
-  {
-    value: 8,
-  },
-  {
-    value: 10,
-  },
-  {
-    value: 12,
-  },
-  {
-    value: 14,
-  },
-  {
-    value: 16,
-  },
-  {
-    value: 18,
-  },
-  {
-    value: 20,
-  },
-  {
-    value: 24,
-  },
-  {
-    value: 30,
-  },
-  {
-    value: 48,
-  },
-  {
-    value: 60,
-  },
-  {
-    value: 72,
-  },
+	{
+		value: 8,
+	},
+	{
+		value: 10,
+	},
+	{
+		value: 12,
+	},
+	{
+		value: 14,
+	},
+	{
+		value: 16,
+	},
+	{
+		value: 18,
+	},
+	{
+		value: 20,
+	},
+	{
+		value: 24,
+	},
+	{
+		value: 30,
+	},
+	{
+		value: 48,
+	},
+	{
+		value: 60,
+	},
+	{
+		value: 72,
+	},
 ];
 
 function setLink() {
-  // cancelled
-  if (url.value === null) {
-    return;
-  }
+	// cancelled
+	if (url.value === null) {
+		return;
+	}
 
-  // empty
-  if (url.value === "") {
-    editor.value?.chain().focus().extendMarkRange("link").unsetLink().run();
+	// empty
+	if (url.value === "") {
+		editor.value?.chain().focus().extendMarkRange("link").unsetLink().run();
 
-    return;
-  }
+		return;
+	}
 
-  // update link
-  editor.value
-    ?.chain()
-    .focus()
-    .extendMarkRange("link")
-    .setLink({ href: url.value })
-    .run();
+	// update link
+	editor.value
+		?.chain()
+		.focus()
+		.extendMarkRange("link")
+		.setLink({ href: url.value })
+		.run();
 }
 
 declare module "@tiptap/core" {
-  interface Commands<ReturnType> {
-    fontSize: {
-      /**
-       * Set the font size
-       */
-      setFontSize: (size: string) => ReturnType;
-      /**
-       * Unset the font size
-       */
-      unsetFontSize: () => ReturnType;
-    };
-  }
+	interface Commands<ReturnType> {
+		fontSize: {
+			/**
+			 * Set the font size
+			 */
+			setFontSize: (size: string) => ReturnType;
+			/**
+			 * Unset the font size
+			 */
+			unsetFontSize: () => ReturnType;
+		};
+	}
 }
 
 const TextStyleExtended = TiptapTextStyle.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      fontSize: {
-        default: null,
-        parseHTML: (element) => element.style.fontSize.replace("px", ""),
-        renderHTML: (attributes) => {
-          if (!attributes.fontSize) {
-            return {};
-          }
-          return {
-            style: `font-size: ${attributes.fontSize}px`,
-          };
-        },
-      },
-    };
-  },
+	addAttributes() {
+		return {
+			...this.parent?.(),
+			fontSize: {
+				default: null,
+				parseHTML: (element) => element.style.fontSize.replace("px", ""),
+				renderHTML: (attributes) => {
+					if (!attributes.fontSize) {
+						return {};
+					}
+					return {
+						style: `font-size: ${attributes.fontSize}px`,
+					};
+				},
+			},
+		};
+	},
 
-  addCommands() {
-    return {
-      ...this.parent?.(),
-      setFontSize:
-        (fontSize) =>
-          ({ commands }) => {
-            return commands.setMark(this.name, { fontSize: fontSize });
-          },
-      unsetFontSize:
-        () =>
-          ({ chain }) => {
-            return chain()
-              .setMark(this.name, { fontSize: null })
-              .removeEmptyTextStyle()
-              .run();
-          },
-    };
-  },
+	addCommands() {
+		return {
+			...this.parent?.(),
+			setFontSize:
+				(fontSize) =>
+				({ commands }) => {
+					return commands.setMark(this.name, { fontSize: fontSize });
+				},
+			unsetFontSize:
+				() =>
+				({ chain }) => {
+					return chain()
+						.setMark(this.name, { fontSize: null })
+						.removeEmptyTextStyle()
+						.run();
+				},
+		};
+	},
 });
 
 const editor = useEditor({
-  content: modelValue.value,
-  extensions: [
-    TiptapStarterKit,
-    TiptapImage,
-    TiptapColor,
-    TextStyleExtended,
-    TiptapHighlight,
-    TiptapUnderline,
-    TiptapTextAlign,
-    Link,
-    Table.configure({
-      resizable: true,
-    }),
-    TableRow,
-    TableHeader,
-    TableCell,
-  ],
-  onUpdate: ({ editor }) => {
-    const content = editor.getHTML();
-    modelValue.value = content;
-  },
+	content: modelValue.value,
+	extensions: [
+		TiptapStarterKit,
+		TiptapImage,
+		TiptapColor,
+		TextStyleExtended,
+		TiptapHighlight,
+		TiptapUnderline,
+		TiptapTextAlign,
+		Link,
+		Table.configure({
+			resizable: true,
+		}),
+		TableRow,
+		TableHeader,
+		TableCell,
+	],
+	onUpdate: ({ editor }) => {
+		const content = editor.getHTML();
+		modelValue.value = content;
+	},
 });
 
 onBeforeUnmount(() => {
-  unref(editor)?.destroy();
+	unref(editor)?.destroy();
 });
 
 const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
