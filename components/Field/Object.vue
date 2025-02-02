@@ -9,7 +9,7 @@
 				</NDropdown>
 			</template>
 			<div class="collapseContentPadding">
-				<FieldS :schema="(field.children as Schema)" v-model="localVModelValue" />
+				<FieldS :schema="(field.children as Schema)" v-model="modelValue" />
 			</div>
 		</NCollapseItem>
 	</NCollapse>
@@ -31,10 +31,18 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const { field } = defineProps<{ field: Field }>();
 
-const localVModelValue = ref<Record<string | number, any>>({})
-watch(localVModelValue, (v) => { modelValue.value = v }, { deep: true })
-
 const modelValue = defineModel<Record<string | number, any>>();
+
+const localVModelValue = ref<Record<string | number, any>>(
+	toRaw(modelValue.value ?? {}),
+);
+watch(
+	localVModelValue,
+	(v) => {
+		modelValue.value = v;
+	},
+	{ deep: true },
+);
 
 async function handleSelect(value: string) {
 	switch (value) {

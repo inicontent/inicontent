@@ -53,9 +53,6 @@
 												check-strategy="child" :cascard="false" :options="searchInSelectOptions"
 												@update:value="submit($event)"
 												@update:show="(value) => value ? '' : deactivate()" />
-											<!-- <NSelect size="small" filterable tag show :options="generateLabelOptions"
-												@update:value="submit($event)"
-												@update:show="(value) => value ? '' : deactivate()" /> -->
 										</template>
 									</NDynamicTags>
 								</NFormItem>
@@ -175,14 +172,14 @@ defineTranslation({
 
 const expandedNames = ref<string[]>();
 function pushToSchema(type: string) {
-	tableCopy.value.schema.splice(-2, 0, {
+	tableCopy.value.schema?.splice(-2, 0, {
 		id: `temp-${randomID()}`,
-		key: null,
+		key: "",
 		required: false,
-		...handleSelectedSchemaType(type),
+		...(handleSelectedSchemaType(type) as any),
 	});
-	const newElementId = tableCopy.value.schema.at(-3).id;
-	expandedNames.value = [newElementId];
+	const newElementId = tableCopy.value.schema?.at(-3)?.id as string | undefined;
+	if (newElementId) expandedNames.value = [newElementId];
 	setTimeout(
 		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
 		300,
@@ -197,18 +194,19 @@ const showDraggable = ref(false);
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const settingsFormRef = ref<FormInst | null>(null);
-const tableCopy = ref(JSON.parse(JSON.stringify(table.value)));
+const tableCopy = ref<Table & {
+	localLabel?: { value: string; label: string }[];
+}>(
+	toRaw(table.value),
+);
 
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = JSON.parse(
-				JSON.stringify(
-					(({ onRequest, onResponse, ...rest }) => ({
-						...rest,
-					}))(tableCopy.value),
-				),
-			);
+			const bodyContent =
+				(({ onRequest, onResponse, ...rest }) => ({
+					...rest,
+				}))(tableCopy.value)
 			Loading.value.updateTable = true;
 
 			if (bodyContent.localLabel)
@@ -216,9 +214,10 @@ async function updateTable() {
 					.map(({ value }: { value: string }) => value)
 					.join(" ");
 
-			const data = await $fetch<apiResponse<Table>>(
-				`${appConfig.apiBase}inicontent/databases/${
-					database.value.slug
+			const data = await $fetch<
+				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
+			>(
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -257,8 +256,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${
-			database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -284,7 +282,7 @@ async function deleteTable() {
 }
 
 const flattenCopySchema = computed<Schema>(() =>
-	flattenSchema(tableCopy.value.schema),
+	tableCopy.value.schema ? flattenSchema(tableCopy.value.schema) : [],
 );
 tableCopy.value.localLabel = tableCopy.value.label
 	?.split(/(@\w+)/g)
@@ -292,8 +290,9 @@ tableCopy.value.localLabel = tableCopy.value.label
 	.map((label: string) => {
 		if (label.startsWith("@"))
 			return {
-				label: flattenCopySchema.value.find(({ id }) => id === label.slice(1))
-					?.key,
+				label:
+					flattenCopySchema.value.find(({ id }) => id === label.slice(1))
+						?.key ?? "",
 				value: label,
 			};
 		return {
@@ -325,12 +324,12 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-				isValidID(labelObject.value.slice(1))
+					isValidID(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
 			onClose: () => {
-				tableCopy.value.localLabel.splice(index, 1);
+				tableCopy.value.localLabel?.splice(index, 1);
 			},
 		},
 		{
@@ -379,8 +378,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -389,8 +388,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -398,8 +397,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -407,8 +406,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 	{
@@ -417,8 +416,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 	},
 ]);
