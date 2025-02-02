@@ -104,6 +104,11 @@ declare global {
 		onRequest?: FlowType[];
 		onResponse?: FlowType[];
 		currentJob?: "export" | "import";
+		config?: {
+			compression: boolean;
+			cache: boolean;
+			prepend: boolean;
+		};
 	};
 	type Item = {
 		id?: string;
