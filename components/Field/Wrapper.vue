@@ -1,42 +1,42 @@
 <template>
-    <NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-        ? typeof field.labelProps === 'function'
-            ? field.labelProps(modelValue) ?? {}
-            : field.labelProps
-        : {})">
-        <slot></slot>
-        <template #label>
-            <NFlex v-if="field.description" align="center" :size="0">
-                <NDropdown
-                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
-                    show-arrow placement="top" trigger="hover" :delay="500" :options="dropdownOptions"
-                    @select="handleSelect">
-                    {{ t(field.key) }}
-                </NDropdown>
-                <NTooltip>
-                    <template #trigger>
-                        <NButton circle text size="tiny">
-                            <template #icon>
-                                <NIcon>
-                                    <IconQuestionMark />
-                                </NIcon>
-                            </template>
-                        </NButton>
-                    </template>
-                    {{ t(field.description) }}
-                </NTooltip>
-            </NFlex>
-            <template v-else>
-                <NDropdown
-                    :disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
-                    show-arrow placement="top" trigger="hover" :delay="500" :options="dropdownOptions"
-                    @select="handleSelect">
-                    {{ t(field.key) }}
-                </NDropdown>
-            </template>
-            <slot name="label"></slot>
-        </template>
-    </NFormItem>
+	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
+		? typeof field.labelProps === 'function'
+			? field.labelProps(modelValue) ?? {}
+			: field.labelProps
+		: {})">
+		<slot></slot>
+		<template #label>
+			<NFlex v-if="field.description" align="center" :size="0">
+				<NDropdown
+					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
+					show-arrow placement="top" trigger="hover" :delay="800" :options="dropdownOptions"
+					@select="handleSelect">
+					{{ t(field.key) }}
+				</NDropdown>
+				<NTooltip>
+					<template #trigger>
+						<NButton circle text size="tiny">
+							<template #icon>
+								<NIcon>
+									<IconQuestionMark />
+								</NIcon>
+							</template>
+						</NButton>
+					</template>
+					{{ t(field.description) }}
+				</NTooltip>
+			</NFlex>
+			<template v-else>
+				<NDropdown
+					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
+					show-arrow placement="top" trigger="hover" :delay="500" :options="dropdownOptions" size="small"
+					@select="handleSelect">
+					{{ t(field.key) }}
+				</NDropdown>
+			</template>
+			<slot name="label"></slot>
+		</template>
+	</NFormItem>
 </template>
 
 <script lang="ts" setup>

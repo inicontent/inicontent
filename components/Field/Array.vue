@@ -11,7 +11,7 @@
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
 	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-		:expanded-names="field.expand || expandedNames ? field.id : undefined" accordion>
+		:default-expanded-names="field.expand ? field.id : undefined" v-model:expanded-names="parentExpanded" accordion>
 		<template #arrow>
 			<NIcon>
 				<IconChevronRight v-if="modelValue && modelValue.length > 0" />
@@ -86,8 +86,7 @@
 				</template>
 			</NButton>
 		</template>
-		<NDataTable v-if="field.children" :columns="tableColumns" :data="(modelValue as Item[])"
-			:scroll-x="tableWidth" />
+		<NDataTable v-if="field.children" :columns :data="(modelValue as Item[])" :scroll-x="tableWidth" />
 	</NCard>
 </template>
 
@@ -122,8 +121,12 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<(string | number | Item)[]>();
 
-const expandedNames = ref();
+const parentExpanded = ref();
 
+const expandedNames = ref();
+watch(expandedNames, (v) => {
+	if (v) parentExpanded.value = field.id;
+});
 function handleAddNewItem() {
 	let newElementIndex: number;
 	if (!modelValue.value) {
@@ -199,89 +202,91 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 	},
 ]);
 
-const tableWidth = (field.children as Schema).reduce(
-	(accumulator: number, child: any) => {
-		return (
-			accumulator +
-			(t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200)
-		);
-	},
-	100,
-);
 
-const tableColumns: DataTableColumns = [
-	...((field.children as Schema).map((child) => ({
-		width: t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200,
-		title: () => [
-			t(child.key),
-			child.required
-				? h(
-					NText,
-					{
-						type: "error",
-					},
-					() => " *",
-				)
-				: null,
-		],
-		key: child.id,
-		render: (_item: any, index: number) =>
-			h(LazyField, {
-				field: {
-					...child,
-					...(field.disabledItems?.includes(index)
-						? {
-							inputProps: {
-								disabled: true,
-							},
-						}
-						: {}),
-					labelProps: {
-						style: {
-							marginTop: "24px",
+const columns = ref<DataTableColumns>();
+const tableWidth = ref<number>(0);
+
+watchEffect(() => {
+
+	columns.value = [
+		...((field.children as Schema).map((child) => ({
+			width: t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200,
+			title: () => [
+				t(child.key),
+				child.required
+					? h(
+						NText,
+						{
+							type: "error",
 						},
-						showLabel: false,
-					},
-					isTable: true,
-				},
-				"onUpdate:modelValue": (newValue) => {
-					(modelValue.value as Item[])[index][child.key] = newValue;
-				},
-				modelValue: (modelValue.value as Item[])[index][child.key],
-			}),
-	})) as any),
-	field.disableActions === true
-		? {}
-		: {
-			title: t("actions"),
-			fixed: "right",
-			align: "center",
-			width: 100,
-			key: "actions",
-			render(_row: any, index: number) {
-				return h(
-					NTooltip,
-					{ delay: 500 },
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									disabled: field.disabledItems?.includes(index),
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-									onClick: () => modelValue.value?.splice(index, 1),
+						() => " *",
+					)
+					: null,
+			],
+			key: child.id,
+			render: (_item: any, index: number) =>
+				h(LazyField, {
+					field: {
+						...child,
+						...(field.disabledItems?.includes(index)
+							? {
+								inputProps: {
+									disabled: true,
 								},
-								{
-									icon: () => h(NIcon, () => h(IconTrash)),
-								},
-							),
-						default: () => t("delete"),
+							}
+							: {}),
+						labelProps: {
+							style: {
+								marginTop: "24px",
+							},
+							showLabel: false,
+						},
+						isTable: true,
 					},
-				);
+					"onUpdate:modelValue": (newValue) => {
+						(modelValue.value as Item[])[index][child.key] = newValue;
+					},
+					modelValue: (modelValue.value as Item[])[index][child.key],
+				}),
+		}))),
+		field.disableActions === true
+			? {}
+			: {
+				title: t("actions"),
+				fixed: "right",
+				align: "center",
+				width: 100,
+				key: "actions",
+				render(_row: any, index: number) {
+					return h(
+						NTooltip,
+						{ delay: 500 },
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										disabled: field.disabledItems?.includes(index),
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+										onClick: () => modelValue.value?.splice(index, 1),
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("delete"),
+						},
+					);
+				},
 			},
-		},
-];
+	] as DataTableColumns;
+
+	tableWidth.value = columns.value.reduce(
+		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
+		40,
+	);
+})
 </script>

@@ -1,7 +1,10 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<template #label>
-			<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field :callback="importAssetCallback" />
+			<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
+				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
+					:callback="importAssetCallback" />
+			</NFlex>
 		</template>
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
@@ -20,7 +23,7 @@
 				<NFlex align="center" size="small">
 					<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 						:callback="importAssetCallback" />
-				</Nflex>
+				</NFlex>
 			</template>
 		</NUpload>
 
@@ -58,6 +61,8 @@ const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 watch(modelValue, () => {
 	fileList.value = getFileList();
 });
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const appConfig = useAppConfig();
 const rule: FormItemRule = {
