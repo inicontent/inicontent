@@ -133,7 +133,6 @@ import {
 	NSpin,
 	NDynamicTags,
 	NFormItem,
-	NSelect,
 	NTag,
 	NButtonGroup,
 	NCascader,
@@ -164,6 +163,8 @@ defineTranslation({
 		deleteTable: "حذف الجدول",
 		defaultSearchableColumns: "الأعمدة الإفتراضية للبحث",
 		compression: "ضغط البيانات",
+		disableIdEncryption: "إلغاء تشفير المعرف, وإعتماد الأرقام",
+		decodeID: "إلغاء تشفير المعرف",
 		prepend: "إضافة مقدمة",
 		recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
 		cache: "التخزين المؤقت",
@@ -194,19 +195,18 @@ const showDraggable = ref(false);
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const settingsFormRef = ref<FormInst | null>(null);
-const tableCopy = ref<Table & {
-	localLabel?: { value: string; label: string }[];
-}>(
-	toRaw(table.value),
-);
+const tableCopy = ref<
+	Table & {
+		localLabel?: { value: string; label: string }[];
+	}
+>(toRaw(table.value));
 
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent =
-				(({ onRequest, onResponse, ...rest }) => ({
-					...rest,
-				}))(tableCopy.value)
+			const bodyContent = (({ onRequest, onResponse, ...rest }) => ({
+				...rest,
+			}))(tableCopy.value);
 			Loading.value.updateTable = true;
 
 			if (bodyContent.localLabel)
@@ -217,7 +217,8 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -256,7 +257,8 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -324,7 +326,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isValidID(labelObject.value.slice(1))
+				isValidID(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -378,8 +380,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -388,8 +390,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -397,8 +399,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -406,8 +408,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 	},
 	{
@@ -416,8 +418,18 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
+			: {},
+	},
+	{
+		key: "decodeID",
+		type: "boolean",
+		description: "disableIdEncryption",
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
 			: {},
 	},
 ]);

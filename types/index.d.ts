@@ -108,6 +108,7 @@ declare global {
 			compression: boolean;
 			cache: boolean;
 			prepend: boolean;
+			decodeID: boolean;
 		};
 	};
 	type Item = {
