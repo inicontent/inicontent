@@ -1,11 +1,11 @@
-export default async function (textToCopy: string) {
+export default async function (textToCopy: string | number) {
 	// Navigator clipboard api needs a secure context (https)
 	if (navigator.clipboard && window.isSecureContext) {
-		await navigator.clipboard.writeText(textToCopy);
+		await navigator.clipboard.writeText(String(textToCopy));
 	} else {
 		// Use the 'out of viewport hidden text area' trick
 		const textArea = document.createElement("textarea");
-		textArea.value = textToCopy;
+		textArea.value = String(textToCopy);
 
 		// Move textarea out of the viewport so it's not visible
 		textArea.style.position = "absolute";
