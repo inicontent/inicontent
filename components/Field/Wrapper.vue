@@ -69,7 +69,6 @@ async function handleSelect(value: string) {
 		case "paste": {
 			try {
 				const itemFromClipboard = await navigator.clipboard.readText();
-				console.log(itemFromClipboard);
 
 				if (!itemFromClipboard) {
 					window.$message.error(t("clipboardEmpty"));
