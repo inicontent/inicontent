@@ -25,7 +25,7 @@ defineSlots<{
 	default(data?: Item, schema?: Schema): any;
 }>();
 
-const modelValue = defineModel<Item>({ default: () => reactive({}) });
+const modelValue = defineModel<Item>();
 
 defineExpose<FormRef>({
 	create: CREATE,
@@ -44,12 +44,15 @@ const table = useState<Table>("table");
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
 	Loading.value.SCHEMA = true;
+
+	const bodyContent = toRaw(modelValue.value);
+
 	try {
 		const response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
 			`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
 			{
-				method: modelValue.value?.id ? "PUT" : "POST",
-				body: modelValue.value, // Send the current form data
+				method: bodyContent?.id ? "PUT" : "POST",
+				body: bodyContent, // Send the current form data
 			},
 		);
 		// Update the schema
@@ -62,8 +65,11 @@ async function fetchSchemaAndData() {
 			);
 
 		// Update data only if the API sends changes
-		if (response.result?.data && modelValue.value)
-			Object.assign(modelValue.value, response.result.data);
+		if (response.result?.data) {
+			if (modelValue.value)
+				Object.assign(modelValue.value, response.result.data);
+			else modelValue.value = response.result.data;
+		}
 	} catch (error) {
 		console.error("Error fetching schema:", error);
 		window.$message.error(t("errorFetchingSchema"));
@@ -90,17 +96,14 @@ const debouncedFetchSchemaAndData = debounce(async () => {
 
 // Trigger schema fetch on input changes with debounce
 watch(
-	() => modelValue.value,
-	async () => {
-		debouncedFetchSchemaAndData();
+	modelValue,
+	(v) => {
+		if (v && Object.keys(v).length) debouncedFetchSchemaAndData();
 	},
-	{ deep: true },
+	{ deep: true, immediate: true },
 );
 
 onMounted(async () => {
-	// Fetch initial schema and data
-	await fetchSchemaAndData();
-
 	// Save on Ctrl+S or Command+S
 	document.onkeydown = (e) => {
 		if (
@@ -121,15 +124,15 @@ const formValidationRef = ref<FormInst>();
 async function UPDATE() {
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
-			if (props.onBeforeUpdate)
-				modelValue.value = props.onBeforeUpdate(modelValue.value);
-
 			const bodyContent = toRaw(modelValue.value);
+
+			if (props.onBeforeUpdate)
+				modelValue.value = props.onBeforeUpdate(bodyContent);
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
 				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
-				}/${modelValue.value?.id}`,
+				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
 					body: bodyContent,
@@ -140,8 +143,6 @@ async function UPDATE() {
 			if (data.result?.id) {
 				modelValue.value = data.result;
 				window.$message.success(data.message);
-				await refreshNuxtData();
-
 				if (props.onAfterUpdate) return props.onAfterUpdate(data.result);
 			} else window.$message.error(data.message);
 		} else window.$message.error(t("inputsAreInvalid"));
@@ -149,12 +150,14 @@ async function UPDATE() {
 }
 
 async function DELETE() {
-	if (props.onBeforeDelete) props.onBeforeDelete(modelValue.value);
+	const bodyContent = toRaw(modelValue.value);
+
+	if (props.onBeforeDelete) props.onBeforeDelete(bodyContent);
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
 		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
-		}/${modelValue.value?.id}`,
+		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
 		},
@@ -179,10 +182,10 @@ async function DELETE() {
 async function CREATE() {
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
-			if (props.onBeforeCreate)
-				modelValue.value = props.onBeforeCreate(modelValue.value);
-
 			const bodyContent = toRaw(modelValue.value);
+
+			if (props.onBeforeCreate)
+				modelValue.value = props.onBeforeCreate(bodyContent);
 
 			Loading.value.CREATE = true;
 			const data = await $fetch<apiResponse>(
