@@ -199,8 +199,9 @@ defineTranslation({
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
 const appConfig = useAppConfig();
 const route = useRoute();
-const user = useState<User | null>("users");
+const user = useState<User | undefined>("users");
 const database = useState<Database>("database");
+const fromPath = useCookie("from");
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",
@@ -210,10 +211,10 @@ const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 }));
 
 const showBreadcrumb =
-	database.value?.slug &&
-	!["index", "auth", "dashboard", "database", "database-auth"].includes(
-		String(route.matched[0].name),
-	);
+	computed(() => database.value?.slug &&
+		!["index", "auth", "dashboard", "database", "database-auth"].includes(
+			String(route.matched[0].name),
+		));
 
 const breadcrumbArray = computed(() =>
 	route.path
@@ -231,9 +232,9 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
+					(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
-				.join("/") + (database.value.slug === "inicontent" ? "" : "/tables")
+				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		);
 	}
 	return route.path
@@ -273,7 +274,7 @@ const userDropdownOptions = [
 						() =>
 							user.value?.username
 								? user.value.username.charAt(0).toUpperCase() +
-									user.value.username.slice(1)
+								user.value.username.slice(1)
 								: "--",
 					),
 			),
@@ -300,19 +301,18 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
-					(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
 				}/edit`,
 			);
 			break;
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${
-					database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{},
 			);
-			user.value = null;
+			fromPath.value = undefined
+			user.value = undefined;
 			await navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/auth`,
 			);
