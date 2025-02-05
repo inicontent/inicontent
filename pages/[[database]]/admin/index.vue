@@ -1,69 +1,69 @@
 <template>
-    <NCard :title="t('databases')" style="background: none" :bordered="false">
-        <template #header-extra>
-            <NButton :circle="$device.isMobile" :round="!$device.isMobile"
-                @click="DatabaseModal = {}, showDatabaseModal = true">
-                <template #icon>
-                    <NIcon>
-                        <IconPlus />
-                    </NIcon>
-                </template>
-                <template v-if="!$device.isMobile">
-                    {{ t('addNewDatabase') }}
-                </template>
-            </NButton>
-        </template>
-        <NDrawer v-model:show="showDatabaseModal" :placement="Language === 'ar' ? 'left' : 'right'"
-            :width="$device.isMobile ? '100%' : 350">
-            <NDrawerContent :title="t('createDatabase')" closable>
-                <template #footer>
-                    <NFlex justify="end">
-                        <NButton round :loading="Loading.Database" @click="saveDatabase">
-                            <template #icon>
-                                <NIcon>
-                                    <IconDeviceFloppy />
-                                </NIcon>
-                            </template>
-                            {{ t("create") }}
-                        </NButton>
-                    </NFlex>
-                </template>
-                <NForm ref="DatabaseRef" :model="DatabaseModal">
-                    <LazyFieldS v-model="DatabaseModal" :schema="databaseSchema" />
-                </NForm>
-            </NDrawerContent>
-        </NDrawer>
-        <NCollapse v-if="databases?.result?.length" v-model:expanded-names="expandedNames"
-            :triggerAreas="['main', 'arrow']" accordion>
-            <NCollapseItem v-for="(database, index) in databases?.result" :title="t(database.slug)"
-                :name="database.slug">
-                <template #header-extra>
-                    <NButtonGroup>
-                        <NButton round>
-                            <template #icon>
-                                <NuxtLink :to="`/${database.slug}/admin/settings`">
-                                    <NIcon>
-                                        <IconSettings />
-                                    </NIcon>
-                                </NuxtLink>
-                            </template>
-                        </NButton>
-                        <NButton round>
-                            <template #icon>
-                                <NuxtLink :to="`/${database.slug}/admin/tables`">
-                                    <NIcon>
-                                        <IconArrowRight />
-                                    </NIcon>
-                                </NuxtLink>
-                            </template>
-                        </NButton>
-                    </NButtonGroup>
-                </template>
-                <LazyTableGrid v-model="databases.result[index]" />
-            </NCollapseItem>
-        </NCollapse>
-        <NEmpty v-else />
-    </NCard>
+	<NCard :title="t('databases')" style="background: none" :bordered="false">
+		<template #header-extra>
+			<NButton :circle="$device.isMobile" :round="!$device.isMobile"
+				@click="DatabaseModal = {}, showDatabaseModal = true">
+				<template #icon>
+					<NIcon>
+						<IconPlus />
+					</NIcon>
+				</template>
+				<template v-if="!$device.isMobile">
+					{{ t('addNewDatabase') }}
+				</template>
+			</NButton>
+		</template>
+		<NDrawer v-model:show="showDatabaseModal" :placement="Language === 'ar' ? 'left' : 'right'"
+			:width="$device.isMobile ? '100%' : 350">
+			<NDrawerContent :title="t('createDatabase')" closable>
+				<template #footer>
+					<NFlex justify="end">
+						<NButton round :loading="Loading.Database" @click="saveDatabase">
+							<template #icon>
+								<NIcon>
+									<IconDeviceFloppy />
+								</NIcon>
+							</template>
+							{{ t("create") }}
+						</NButton>
+					</NFlex>
+				</template>
+				<NForm ref="DatabaseRef" :model="DatabaseModal">
+					<LazyFieldS v-model="DatabaseModal" :schema="databaseSchema" />
+				</NForm>
+			</NDrawerContent>
+		</NDrawer>
+		<NCollapse v-if="databases?.result?.length" v-model:expanded-names="expandedNames"
+			:triggerAreas="['main', 'arrow']" accordion>
+			<NCollapseItem v-for="(database, index) in databases?.result" :title="t(database.slug)"
+				:name="database.slug">
+				<template #header-extra>
+					<NButtonGroup>
+						<NButton round>
+							<template #icon>
+								<NuxtLink :to="`/${database.slug}/admin/settings`">
+									<NIcon>
+										<IconSettings />
+									</NIcon>
+								</NuxtLink>
+							</template>
+						</NButton>
+						<NButton round>
+							<template #icon>
+								<NuxtLink :to="`/${database.slug}/admin/tables`">
+									<NIcon>
+										<IconArrowRight />
+									</NIcon>
+								</NuxtLink>
+							</template>
+						</NButton>
+					</NButtonGroup>
+				</template>
+				<LazyTableGrid v-model="databases.result[index]" />
+			</NCollapseItem>
+		</NCollapse>
+		<NEmpty v-else />
+	</NCard>
 </template>
 
 <script setup lang="ts">
