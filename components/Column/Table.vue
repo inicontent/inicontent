@@ -5,9 +5,7 @@
 			@click.prevent.stop="handleClick(singleValue)" :loading="Loading[`Drawer_${field.table}_${singleValue.id}`]"
 			size="small" round>
 			<template v-if="table" #icon>
-				<NIcon>
-					<component :is="getTableIcon(table)"></component>
-				</NIcon>
+				<component :is="getTableIcon(table)"></component>
 			</template>
 			{{ renderLabel(table, singleValue) }}
 		</NButton>

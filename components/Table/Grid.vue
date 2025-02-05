@@ -5,10 +5,8 @@
 				<NCard hoverable>
 					<template #header>
 						<NFlex align="center">
-							<NIconWrapper :border-radius="50">
-								<NIcon style="font-style: normal">
-									<component :is="getTableIcon(table)" />
-								</NIcon>
+							<NIconWrapper :border-radius="50" style="font-style: normal">
+								<component :is="getTableIcon(table)" />
 							</NIconWrapper>
 							<NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
 						</NFlex>
