@@ -34,6 +34,7 @@ import {
 
 defineTranslation({
 	ar: {
+		authentication: "صفحة الدخول",
 		signin: "تسجيل الدخول",
 		signup: "إنشاء حساب",
 	},
@@ -41,38 +42,40 @@ defineTranslation({
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-const SigninFormRef = ref<FormInst | null>(null),
-	route = useRoute(),
-	tabsInstRef = ref<TabsInst | null>(null),
-	tabsValue = ref((route.query.tab as string) ?? "signin"), // Default tab
-	database = useState<Database>("database"),
-	user = useState<User>("users"),
-	SignupForm = useState(() => ({})),
-	SignupFormRef = ref<FormInst | null>(null),
-	SigninForm = ref({
-		username: "",
-		password: "",
-	}),
-	SigninColumns: Schema = [
-		{
-			key: "username",
-			type: "string",
-			required: true,
-		},
-		{
-			key: "password",
-			type: "password",
-			required: true,
-		},
-	],
-	SignupColumns: Schema = database.value?.tables
-		?.find((item) => item.slug === "users")
-		?.schema?.filter(
-			(field) =>
-				!["id", "createdAt", "createdBy", "updatedAt", "role"].includes(
-					field.key,
-				),
-		) ?? [
+const fromPath = useCookie("from");
+
+const SigninFormRef = ref<FormInst | null>(null);
+const route = useRoute();
+const tabsInstRef = ref<TabsInst | null>(null);
+const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
+const database = useState<Database>("database");
+const user = useState<User>("users");
+const SignupForm = useState(() => ({}));
+const SignupFormRef = ref<FormInst | null>(null);
+const SigninForm = ref({
+	username: "",
+	password: "",
+});
+const SigninColumns: Schema = [
+	{
+		key: "username",
+		type: "string",
+		required: true,
+	},
+	{
+		key: "password",
+		type: "password",
+		required: true,
+	},
+];
+const SignupColumns: Schema = database.value?.tables
+	?.find((item) => item.slug === "users")
+	?.schema?.filter(
+		(field) =>
+			!["id", "createdAt", "createdBy", "updatedAt", "role"].includes(
+				field.key,
+			),
+	) ?? [
 		{
 			key: "username",
 			type: "string",
@@ -90,7 +93,7 @@ const SigninFormRef = ref<FormInst | null>(null),
 		},
 	];
 
-const SignupSubmit = async (e: Event) => {
+async function SignupSubmit(e: Event) {
 	e.preventDefault();
 	SignupFormRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -113,8 +116,9 @@ const SignupSubmit = async (e: Event) => {
 			}
 		} else window.$message.error(t("inputsAreInvalid"));
 	});
-};
-const SigninSubmit = async (e: Event) => {
+}
+
+async function SigninSubmit(e: Event) {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -137,16 +141,22 @@ const SigninSubmit = async (e: Event) => {
 						)
 					).result;
 					await navigateTo(
-						route.params.database
-							? `/${route.params.database}/admin`
-							: "/admin",
+						fromPath.value &&
+							(fromPath.value.startsWith(`/${database.value.slug}`) ||
+								fromPath.value.startsWith("/admin")) &&
+							!fromPath.value.endsWith("/auth")
+							? fromPath.value
+							: route.params.database
+								? `/${database.value.slug}/admin`
+								: "/admin",
 					);
 				} else window.$message.error(data.message);
 				Loading.value.Signin = false;
 			}
 		} else window.$message.error(t("inputsAreInvalid"));
 	});
-};
+}
+
 useHead({
 	title: `${t(database.value.slug)} | ${t("authentication")}`,
 	link: [
