@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async () => {
 	const user = useState<User>("users");
 	const database = useState<Database>("database");
 	const appConfig = useAppConfig();
