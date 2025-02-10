@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex, NButton, NIcon } from "naive-ui";
+import { NFlex, NButton } from "naive-ui";
 
 const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>();
 const route = useRoute();
@@ -28,7 +28,7 @@ const Drawer = useState<DrawerRef>("drawer", () => ({
 	show: false,
 	id: undefined,
 	table: undefined,
-	data: {},
+	data: undefined,
 }));
 async function handleClick(item: Item) {
 	if (item.id && field.table) {

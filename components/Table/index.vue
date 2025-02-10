@@ -347,7 +347,7 @@ const Drawer = useState<DrawerRef>("drawer", () => ({
 	show: false,
 	id: undefined,
 	table: undefined,
-	data: {},
+	data: undefined,
 }));
 const dataRef = ref<DataTableInst>();
 const checkedRowKeys = ref<string[]>([]);

@@ -189,7 +189,7 @@ declare global {
 		show: boolean;
 		id?: string;
 		table?: string;
-		data: Item;
+		data?: Item;
 	};
 }
 declare module "nuxt/schema" {

@@ -88,7 +88,7 @@ const drawer = useState<DrawerRef>("drawer", () => ({
 	show: false,
 	id: undefined,
 	table: undefined,
-	data: {},
+	data: undefined,
 }));
 
 const formRef = useState<FormRef>("formRef");
@@ -117,7 +117,7 @@ async function loadDrawer() {
 async function onAfterUpdateCreate() {
 	Object.assign(drawer.value, {
 		id: null,
-		data: {},
+		data: null,
 		table: null,
 		show: false,
 	});
@@ -128,7 +128,7 @@ watch(drawer, (value, originalValue) => {
 	if (
 		value?.show &&
 		value.id &&
-		(!Object.keys(value.data).length ||
+		((value.data && !Object.keys(value.data).length) ||
 			value.table !== originalValue.table ||
 			value.id !== originalValue.id)
 	)
