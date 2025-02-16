@@ -163,17 +163,18 @@ declare global {
 		[localeName: LanguagesType]: singleLanguageTranslations;
 	};
 
-	type SearchType = {
-		and?: [string | null, string, any][];
-		or?: [string | null, string, any][];
+	type searchTypeValueItem =
+		| [string | null, string, any]
+		| [string | null, string, any, any];
+	type searchTypeValue = (searchTypeValueItem | searchType)[];
+	type searchType = {
+		and?: searchTypeValue;
+		or?: searchTypeValue;
 	};
 
 	type TableRef = {
-		search: {
-			data: SearchType;
-			execute: (search?: SearchType) => void;
-			reset: () => void;
-		};
+		search?: searchType;
+		columns?: DataTableColumns;
 		delete: (id?: string | string[]) => Promise<void>;
 	};
 
@@ -186,7 +187,7 @@ declare global {
 	};
 
 	type DrawerRef = {
-		show: boolean;
+		show?: boolean;
 		id?: string;
 		table?: string;
 		data?: Item;

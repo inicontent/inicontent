@@ -38,8 +38,12 @@ const modelValue = defineModel<any>();
 
 const database = useState<Database>("database");
 
-const detectedFieldType = ref<FieldType | CMS_FieldType>(
-    (field.value.subType ?? field.value.type) as FieldType | CMS_FieldType,
+const detectedFieldType = computed<FieldType | CMS_FieldType>(() => {
+    const fieldType = (field.value.subType ?? field.value.type) as FieldType | CMS_FieldType;
+    if (Array.isArray(fieldType))
+        return getField(field.value).key;
+    return fieldType
+}
 );
 
 watchEffect(() => {
@@ -51,8 +55,5 @@ watchEffect(() => {
         (typeof field.value.type === "string" && field.value.type === "array")
     )
         field.value.isArray = true;
-
-    if (Array.isArray(detectedFieldType.value))
-        detectedFieldType.value = getField(field.value).key;
 });
 </script>
