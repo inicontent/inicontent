@@ -33,7 +33,7 @@
 								<NFlex justify="end">
 									<NButtonGroup>
 										<NButton round type="error" secondary :loading="Loading.data"
-											:disabled="isSearchDisabled" @click="resetSearch">
+											:disabled="isSearchDisabled" @click="searchArray = undefined">
 											<template #icon>
 												<NIcon>
 													<IconX />
@@ -42,7 +42,7 @@
 											{{ t("reset") }}
 										</NButton>
 										<NButton round type="primary" secondary :loading="Loading.data"
-											:disabled="isSearchDisabled" @click="() => executeSearch()">
+											:disabled="isSearchDisabled" @click="executeSearch">
 											<template #icon>
 												<NIcon>
 													<IconSearch />
@@ -53,7 +53,7 @@
 									</NButtonGroup>
 								</NFlex>
 							</template>
-							<TableSearch v-model="searchArray" :callback="executeSearch" />
+							<TableSearch v-model="localSearchArray" :callback="executeSearch" />
 						</NPopover>
 						<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 							<NTooltip :delay="500">
@@ -159,38 +159,62 @@ import {
 } from "inibase/utils";
 import type { VNode } from "vue";
 
-const extraColumns = defineModel<DataTableColumns>("extraColumns", {
-	default: [],
-});
-
 const route = useRoute();
-const searchArray = ref<SearchType>(
+const searchArray = ref<searchType | undefined>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
-		: { and: [[null, "=", null]] },
+		: undefined,
+);
+const localSearchArray = ref<searchType>(
+	searchArray.value || { and: [[null, "=", null]] },
+);
+function executeSearch() {
+	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value));
+}
+watch(
+	localSearchArray,
+	(value) => {
+		if (!value || !Object.keys(value).length)
+			localSearchArray.value = { and: [[null, "=", null]] };
+	},
+	{ deep: true },
+);
+watch(
+	searchArray,
+	(value) => {
+		if (!value) {
+			if (whereQuery.value) whereQuery.value = undefined;
+		} else {
+			const generatedSearchInput = generateSearchInput(value);
+			if (generatedSearchInput) {
+				whereQuery.value = Inison.stringify(generatedSearchInput);
+				pagination.onUpdatePage(1);
+			}
+		}
+	},
+	{ deep: true },
 );
 
+const columns = ref<DataTableColumns>();
+
 defineExpose<TableRef>({
-	search: {
-		data: searchArray.value,
-		execute: executeSearch,
-		reset: resetSearch,
-	},
+	search: searchArray as searchType,
+	columns: columns,
 	delete: DELETE,
 });
 
 const slots = defineSlots<{
-	default(props?: { data: apiResponse<Item[]> | null }): any;
-	form(props?: {
+	default(props: { data: apiResponse<Item[]> | null }): any;
+	form(props: {
 		onAfterCreate: () => Promise<void>;
 		onAfterUpdate: () => Promise<void>;
 	}): any;
 	navbarActions(): any;
 	navbarExtraActions(): any;
 	navbarExtraButtons(): any;
-	itemActions(props?: Item): any;
-	itemExtraActions(props?: Item): any;
-	itemExtraButtons(props?: Item): any;
+	itemActions(props: Item): any;
+	itemExtraActions(props: Item): any;
+	itemExtraButtons(props: Item): any;
 }>();
 
 function isSlotEmpty(slotName: keyof typeof slots): boolean {
@@ -198,7 +222,7 @@ function isSlotEmpty(slotName: keyof typeof slots): boolean {
 
 	if (!slot) return false;
 
-	const vnodes: VNode[] = slot();
+	const vnodes: VNode[] = (slot as any)();
 	// Check if all nodes are comments or have undefined children
 	return vnodes.every(
 		(vnode) => vnode.type === Comment || vnode.children === undefined,
@@ -206,7 +230,7 @@ function isSlotEmpty(slotName: keyof typeof slots): boolean {
 }
 
 onBeforeRouteLeave(() => {
-	clearNuxtState("Drawer");
+	clearNuxtState("drawer");
 });
 
 defineTranslation({
@@ -290,14 +314,21 @@ async function jobNotification() {
 watch(currentJob, jobNotification);
 onMounted(jobNotification);
 
-function generateSearchArray(searchQuery: any) {
-	const RETURN: any = {};
+function generateSearchArray(searchQuery: any): searchType {
+	const RETURN: searchType = {};
 	for (const [condition, items] of Object.entries(searchQuery)) {
-		if (!RETURN[condition]) RETURN[condition] = [];
+		if (!RETURN[condition as "and" | "or"])
+			RETURN[condition as "and" | "or"] = [];
 		for (const [key, value] of Object.entries(items)) {
 			if (["and", "or"].includes(key))
-				RETURN[condition].push({ [key]: generateSearchArray(value) });
-			else RETURN[condition].push([key, ...FormatObjectCriteriaValue(value)]);
+				RETURN[condition as "and" | "or"]?.push({
+					[key]: generateSearchArray(value),
+				});
+			else
+				RETURN[condition as "and" | "or"]?.push([
+					key,
+					...FormatObjectCriteriaValue(value),
+				]);
 		}
 	}
 	return RETURN;
@@ -314,41 +345,24 @@ function generateSearchInput(searchArray: any) {
 			else RETURN[condition] = generateSearchInput(item);
 		}
 	}
-	return RETURN;
-}
-
-function resetSearch() {
-	searchArray.value = {
-		and: [[null, "=", null]],
-	};
-	if (whereQuery.value) whereQuery.value = undefined;
-}
-function executeSearch(search?: SearchType) {
-	if (search) searchArray.value = search;
-	whereQuery.value = Inison.stringify(generateSearchInput(searchArray.value));
-	pagination.onUpdatePage(1);
+	return Object.keys(RETURN).length ? RETURN : undefined;
 }
 
 watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-				query: {
-					...(Query ?? {}),
-					search: v,
-				},
-			})
+			query: {
+				...(Query ?? {}),
+				search: v,
+			},
+		})
 		: router.push({
-				query: Query ?? {},
-			});
+			query: Query ?? {},
+		});
 });
 
-const Drawer = useState<DrawerRef>("drawer", () => ({
-	show: false,
-	id: undefined,
-	table: undefined,
-	data: undefined,
-}));
+const Drawer = useState<DrawerRef>("drawer", () => ({}));
 const dataRef = ref<DataTableInst>();
 const checkedRowKeys = ref<string[]>([]);
 const pagination = reactive({
@@ -519,15 +533,14 @@ function handleSorterChange({
 	}
 	queryOptions.value = Object.keys(sortObject.value).length
 		? Inison.stringify({
-				...Inison.unstringify(queryOptions.value),
-				sort: sortObject.value,
-			})
+			...Inison.unstringify(queryOptions.value),
+			sort: sortObject.value,
+		})
 		: Inison.stringify(
-				(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
-			);
+			(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
+		);
 }
 
-const columns = ref<DataTableColumns>();
 const tableWidth = ref<number>(0);
 const dataTablePagination = ref();
 const isSearchDisabled = ref(false);
@@ -654,12 +667,15 @@ function handleScroll() {
 	showDropdown.value = false; // Hide dropdown on scroll
 }
 watchEffect(() => {
-	isSearchDisabled.value =
-		searchArray.value &&
-		Object.keys(searchArray.value).length === 1 &&
-		searchArray.value[
-			Object.keys(searchArray.value)[0] as "and" | "or"
-		]?.[0][0] === null;
+	isSearchDisabled.value = !!(
+		localSearchArray.value &&
+		Object.keys(localSearchArray.value).length === 1 &&
+		(
+			localSearchArray.value[
+			Object.keys(localSearchArray.value)[0] as "and" | "or"
+			]?.[0] as any
+		)[0] === null
+	);
 
 	dataTablePagination.value = {
 		disabled: !data.value?.options.total,
@@ -672,10 +688,15 @@ watchEffect(() => {
 		prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
 		...pagination,
 	};
+});
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
-	columns.value = [
-		...(table.value.allowedMethods !== "r"
-			? [
+watch(
+	Language,
+	() => {
+		columns.value = [
+			...(table.value.allowedMethods !== "r"
+				? [
 					{
 						type: "selection",
 						fixed: "left",
@@ -704,42 +725,41 @@ watchEffect(() => {
 						],
 					},
 				]
-			: []),
-		...extraColumns.value,
-		...(table.value.schema ?? []).map((field) => ({
-			title: () =>
-				h(NFlex, { align: "center", justify: "start" }, () => [
-					getField(field).icon(),
-					t(field.key),
-				]),
-			width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
-			key: field.key,
-			sorter: !!data.value?.result,
-			ellipsis: {
-				tooltip: true,
-			},
-			resizable:
-				(!Array.isArray(field.type) && field.type !== "array") ||
-				(Array.isArray(field.type) && !field.type.includes("array")),
-			sortOrder: sortObject.value[field.key]
-				? `${sortObject.value[field.key]}end`
-				: undefined,
-			render: ([] as string[])
-				.concat(field.type)
-				.some((type) => ["string", "number"].includes(type))
-				? undefined
-				: (row: any) => h(Column, { value: row[field.key], field }),
-		})),
-		...(isSlotEmpty("itemActions")
-			? []
-			: [
+				: []),
+			...(table.value.schema ?? []).map((field) => ({
+				title: () =>
+					h(NFlex, { align: "center", justify: "start" }, () => [
+						getField(field).icon(),
+						t(field.key),
+					]),
+				width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
+				key: field.key,
+				sorter: !!data.value?.result,
+				ellipsis: {
+					tooltip: true,
+				},
+				resizable:
+					(!Array.isArray(field.type) && field.type !== "array") ||
+					(Array.isArray(field.type) && !field.type.includes("array")),
+				sortOrder: sortObject.value[field.key]
+					? `${sortObject.value[field.key]}end`
+					: undefined,
+				render: ([] as string[])
+					.concat(field.type)
+					.some((type) => ["string", "number"].includes(type))
+					? undefined
+					: (row: any) => h(Column, { value: row[field.key], field }),
+			})),
+			...(isSlotEmpty("itemActions")
+				? []
+				: [
 					{
 						title: t("actions"),
 						align: "center",
 						width:
 							150 +
 							(slots.itemExtraButtons
-								? slots.itemExtraButtons().length * 20
+								? (slots.itemExtraButtons as any)().length * 20
 								: 0),
 						key: "actions",
 						fixed: "right",
@@ -747,100 +767,102 @@ watchEffect(() => {
 							slots.itemActions
 								? slots.itemActions(row)
 								: [
-										slots.itemExtraActions
-											? slots.itemExtraActions(row)
-											: undefined,
-										h(NButtonGroup, () =>
-											[
-												slots.itemExtraButtons
-													? slots.itemExtraButtons(row)
-													: undefined,
-												table.value.allowedMethods?.includes("r")
-													? h(
-															NButton,
-															{
-																secondary: true,
-																circle: true,
-																type: "primary",
-															},
-															{
-																icon: () =>
-																	h(
-																		NuxtLink,
-																		{
-																			to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-																		},
-																		() => h(NIcon, () => h(IconEye)),
-																	),
-															},
-														)
-													: null,
-												table.value.allowedMethods?.includes("u")
-													? h(
-															NButton,
-															{
-																tag: "a",
-																href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-																onClick: (e) => {
-																	e.preventDefault();
-																	if (!isMobile)
-																		Drawer.value = {
-																			...Drawer.value,
-																			id: row.id,
-																			table: table.value.slug as string,
-																			data: structuredClone(toRaw(row)),
-																			show: true,
-																		};
-																	else
-																		navigateTo(
-																			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-																		);
+									slots.itemExtraActions
+										? slots.itemExtraActions(row)
+										: undefined,
+									h(NButtonGroup, () =>
+										[
+											slots.itemExtraButtons
+												? slots.itemExtraButtons(row)
+												: undefined,
+											table.value.allowedMethods?.includes("r")
+												? h(
+													NButton,
+													{
+														secondary: true,
+														circle: true,
+														type: "primary",
+													},
+													{
+														icon: () =>
+															h(
+																NuxtLink,
+																{
+																	to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
 																},
-																secondary: true,
-																circle: true,
-																type: "info",
-															},
-															{ icon: () => h(NIcon, () => h(IconPencil)) },
-														)
-													: null,
-												table.value.allowedMethods?.includes("d")
-													? h(
-															NPopconfirm,
-															{
-																onPositiveClick: () => DELETE(row.id),
-															},
-															{
-																trigger: () =>
-																	h(
-																		NButton,
-																		{
-																			strong: true,
-																			secondary: true,
-																			circle: true,
-																			type: "error",
-																		},
-																		{
-																			icon: () => h(NIcon, () => h(IconTrash)),
-																		},
-																	),
-																default: () =>
-																	t("theFollowingActionIsIrreversible"),
-															},
-														)
-													: null,
-											].filter((i) => i !== null),
-										),
-									],
+																() => h(NIcon, () => h(IconEye)),
+															),
+													},
+												)
+												: null,
+											table.value.allowedMethods?.includes("u")
+												? h(
+													NButton,
+													{
+														tag: "a",
+														href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+														onClick: (e) => {
+															e.preventDefault();
+															if (!isMobile)
+																Drawer.value = {
+																	...Drawer.value,
+																	id: row.id,
+																	table: table.value.slug as string,
+																	data: structuredClone(toRaw(row)),
+																	show: true,
+																};
+															else
+																navigateTo(
+																	`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																);
+														},
+														secondary: true,
+														circle: true,
+														type: "info",
+													},
+													{ icon: () => h(NIcon, () => h(IconPencil)) },
+												)
+												: null,
+											table.value.allowedMethods?.includes("d")
+												? h(
+													NPopconfirm,
+													{
+														onPositiveClick: () => DELETE(row.id),
+													},
+													{
+														trigger: () =>
+															h(
+																NButton,
+																{
+																	strong: true,
+																	secondary: true,
+																	circle: true,
+																	type: "error",
+																},
+																{
+																	icon: () =>
+																		h(NIcon, () => h(IconTrash)),
+																},
+															),
+														default: () =>
+															t("theFollowingActionIsIrreversible"),
+													},
+												)
+												: null,
+										].filter((i) => i !== null),
+									),
+								],
 					},
 				]),
-	] as DataTableColumns;
+		] as DataTableColumns;
 
-	tableWidth.value = columns.value.reduce(
-		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
-		40,
-	);
-});
-
+		tableWidth.value = columns.value.reduce(
+			(accumulator: number, value: any) => accumulator + (value.width ?? 0),
+			40,
+		);
+	},
+	{ immediate: true },
+);
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
 	link: [
