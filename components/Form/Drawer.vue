@@ -1,15 +1,15 @@
 <template>
-	<NDrawer v-if="drawer" v-model:show="drawer.show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
+	<NDrawer v-if="Drawer" :show="Drawer.show || false" @update:show="(show) => Drawer.show = show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
 		:placement="Language === 'ar' ? 'left' : 'right'" @update:width="width => (drawerWidth = width)"
 		:trap-focus="false">
 		<NDrawerContent closable>
 			<template #header>
-				<span v-if="drawer.id">
+				<span v-if="Drawer.id">
 					{{ t('edit') }}
 					<NuxtLink
-						:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
+						:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${Drawer.table}/${Drawer.id}/edit`">
 						<NText type="primary">
-							{{ itemLabel || t(drawer.table) }}
+							{{ itemLabel || t(Drawer.table) }}
 							<NIcon size="small">
 								<IconExternalLink />
 							</NIcon>
@@ -17,7 +17,7 @@
 					</NuxtLink>
 				</span>
 				<span v-else>
-					{{ t('new') }} {{ t(drawer.table) }}
+					{{ t('new') }} {{ t(Drawer.table) }}
 				</span>
 			</template>
 
@@ -34,19 +34,19 @@
 
 					<NButton round secondary type="primary"
 						:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
-						@click="drawer.id ? formRef?.update() : formRef?.create()">
+						@click="Drawer.id ? formRef?.update() : formRef?.create()">
 						<template #icon>
 							<NIcon>
 								<IconDeviceFloppy />
 							</NIcon>
 						</template>
-						{{ drawer.id ? t('update') : t('create') }}
+						{{ Drawer.id ? t('update') : t('create') }}
 					</NButton>
 				</NFlex>
 			</template>
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
 				<slot @after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate">
-					<Form ref="formRef" v-model="drawer.data" :table="drawer.table" @after-create="onAfterUpdateCreate"
+					<Form ref="formRef" v-model="Drawer.data" :table="Drawer.table" @after-create="onAfterUpdateCreate"
 						@after-update="onAfterUpdateCreate" />
 				</slot>
 			</NSpin>
@@ -79,19 +79,14 @@ const drawerWidth = useCookie<number | string>("drawerWidth", {
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const table = computed<Table | undefined>(() =>
-	drawer.value
-		? database.value.tables?.find(({ slug }) => slug === drawer.value.table)
+	Drawer.value
+		? database.value.tables?.find(({ slug }) => slug === Drawer.value.table)
 		: undefined,
 );
 
-const drawer = useState<DrawerRef>("drawer", () => ({
-	show: false,
-	id: undefined,
-	table: undefined,
-	data: undefined,
-}));
+const Drawer = useState<DrawerRef>("drawer", () => ({}));
 
-const formRef = useState<FormRef>("formRef");
+const formRef = ref<FormRef>();
 const slots = defineSlots<{
 	default(props: {
 		onAfterCreate: () => Promise<void>;
@@ -102,20 +97,20 @@ const slots = defineSlots<{
 const screenHalf = window.screen.width / 2;
 
 async function loadDrawer() {
-	drawer.value.show = false;
-	const key = `Drawer_${drawer.value.table}_${drawer.value.id}`;
+	Drawer.value.show = false;
+	const key = `Drawer_${Drawer.value.table}_${Drawer.value.id}`;
 	Loading.value[key] = true;
-	drawer.value.data = (
+	Drawer.value.data = (
 		await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/${drawer.value.table}/${drawer.value.id}`,
+			`${appConfig.apiBase}${database.value.slug}/${Drawer.value.table}/${Drawer.value.id}`,
 		)
 	).result;
 	Loading.value[key] = false;
-	drawer.value.show = true;
+	Drawer.value.show = true;
 }
 
 async function onAfterUpdateCreate() {
-	Object.assign(drawer.value, {
+	Object.assign(Drawer.value, {
 		id: null,
 		data: null,
 		table: null,
@@ -124,7 +119,7 @@ async function onAfterUpdateCreate() {
 	await refreshNuxtData();
 }
 
-watch(drawer, (value, originalValue) => {
+watch(Drawer, (value, originalValue) => {
 	if (
 		value?.show &&
 		value.id &&
@@ -142,7 +137,7 @@ const toggleDrawerWidth = () => {
 
 const itemLabel = useState("itemLabel");
 watchEffect(() => {
-	if (table.value && drawer.value)
-		itemLabel.value = renderLabel(table.value, drawer.value.data);
+	if (table.value && Drawer.value)
+		itemLabel.value = renderLabel(table.value, Drawer.value.data);
 });
 </script>

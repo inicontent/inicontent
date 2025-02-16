@@ -24,12 +24,9 @@ const table = computed(() =>
 );
 
 const { isMobile } = useDevice();
-const Drawer = useState<DrawerRef>("drawer", () => ({
-	show: false,
-	id: undefined,
-	table: undefined,
-	data: undefined,
-}));
+
+const Drawer = useState<DrawerRef>("drawer", () => ({}));
+
 async function handleClick(item: Item) {
 	if (item.id && field.table) {
 		if (!isMobile)
