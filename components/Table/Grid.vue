@@ -113,8 +113,10 @@ const Hover = ref<Record<string, boolean>>({});
 const newTableSlug = ref();
 const route = useRoute();
 
+const database = useState<Database>("database")
+
 function getTableUrl(slug: string) {
-	return `/${route.params.database ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`;
+	return `/${route.params.database || (database.value?.slug === 'inicontent' && route.path === '/admin') ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`;
 }
 
 const createTable = async () => {
