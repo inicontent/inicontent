@@ -163,11 +163,41 @@ body {
 	display: none;
 }
 
+/* Fix DataTable Selection Icon */
+.n-data-table
+	.n-data-table-th.n-data-table-th--selection
+	.n-data-table-check-extra
+	svg {
+	transform: rotate(-90deg);
+	right: 1.5px;
+}
+.n-data-table
+	.n-data-table-th.n-data-table-th--selection
+	.n-data-table-check-extra {
+	right: 0;
+}
+
+.rtl
+	.n-data-table
+	.n-data-table-th.n-data-table-th--selection
+	.n-data-table-check-extra
+	svg {
+	transform: scaleX(-1) rotate(-90deg);
+}
+
 /* Fix DataTable RTL fixed column */
 .rtl .n-data-table .n-data-table-td.n-data-table-td--fixed-right,
 .rtl .n-data-table .n-data-table-th.n-data-table-th--fixed-right {
 	left: 0 !important;
 	right: unset !important;
+	box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.24), 0 3px 6px 0
+		rgba(0, 0, 0, 0.18), 0 5px 12px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+.rtl .n-data-table .n-data-table-td.n-data-table-td--fixed-left,
+.rtl .n-data-table .n-data-table-th.n-data-table-th--fixed-left {
+	right: 0 !important;
+	left: unset !important;
 	box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.24), 0 3px 6px 0
 		rgba(0, 0, 0, 0.18), 0 5px 12px 4px rgba(0, 0, 0, 0.12) !important;
 }
