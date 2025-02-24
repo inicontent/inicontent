@@ -32,7 +32,7 @@ import { NText, NScrollbar } from "naive-ui";
 const { field, value } = defineProps<{ field: Field; value?: any }>();
 
 let detectedFieldType = (field.subType ?? field.type) as
-	| FieldType
-	| CMS_FieldType;
+    | FieldType
+    | CMS_FieldType;
 if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
 </script>
