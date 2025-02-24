@@ -67,8 +67,7 @@
 														secondValue,
 														false,
 														true,
-													)" :value="String(flow[index][2])"
-													@update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
+													)" :value="String(flow[index][2])" @update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
 											</template>
 											<template v-else-if="firstValue === 'error'">
 												<NDropdown v-bind="ruleDropdownProps(flow, index)">
@@ -107,8 +106,8 @@
 													:options="[
 														...generateFlowCascaderOptions(true, true, true),
 														{ label: '@method', value: '@method' },
-													]" check-strategy="child" expand-trigger="hover" show-path
-													separator="." filterable v-model:value="flow[index][0]" />
+													]" check-strategy="child" expand-trigger="hover" show-path separator="." filterable
+													v-model:value="flow[index][0]" />
 												<NSelect size="small" style="width: 136px;"
 													:consistent-menu-width="false" filterable
 													:render-tag="({ option }) => option.value" :options="checkFieldType(
@@ -134,9 +133,8 @@
 														firstValue,
 														false,
 														true,
-													)" :multiple="['[]', '![]'].includes(secondValue ?? '')"
-													max-tag-count="responsive"
-													:value="(['[]', '![]'].includes(secondValue ?? '') ? flow[index][2] : flow[index][2]) as string"
+													)" :multiple="['[]', '![]'].includes(secondValue ?? '')" max-tag-count="responsive"
+													:value="((['[]', '![]'].includes(secondValue ?? '') ? flow[index][2] : flow[index][2]) as string)"
 													@update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
 											</template>
 										</NInputGroup>
@@ -182,7 +180,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ String(
+														{{String(
 															secondValue &&
 																(secondValue ===
 																	"@user.c12f82766d02ae29c6a94a3acf11cda4" ||
@@ -195,7 +193,7 @@
 																	({ id }) => id === value,
 																)?.name
 																: formatValue(value),
-														) }}
+														)}}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -253,9 +251,9 @@
 															{{ secondValue }}
 														</NTag>
 													</template>
-													{{ comparisonOperatorOptions().find(
+													{{comparisonOperatorOptions().find(
 														({ value }) => value === (secondValue ?? '='),
-													)?.label }}
+													)?.label}}
 												</NTooltip>
 												<NTag v-if="thirdValue === undefined" :bordered="false" round>--
 												</NTag>
@@ -263,7 +261,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ value === null ? '@null' : String(
+														{{value === null ? '@null' : String(
 															firstValue &&
 																(firstValue ===
 																	"@user.c12f82766d02ae29c6a94a3acf11cda4" ||
@@ -276,7 +274,7 @@
 																	({ id }) => id === value,
 																)?.name
 																: formatValue(value),
-														) }}
+														)}}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -342,7 +340,7 @@ import {
 	type SelectGroupOption,
 	NTooltip,
 } from "naive-ui";
-import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects, isObject, isValidID } from "inibase/utils";
 onMounted(() => {
 	document.onkeydown = (e) => {
 		if (
@@ -368,8 +366,7 @@ const database = useState<Database>("database"),
 		Loading.value.updateTable = true;
 		const bodyContent = structuredClone(toRaw(tableCopy.value));
 		const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}inicontent/databases/${
-				database.value.slug
+			`${appConfig.apiBase}inicontent/databases/${database.value.slug
 			}/${table.value.slug}`,
 			{
 				method: "PUT",
@@ -430,12 +427,12 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-								{
-									label: "or",
-									value: "@where.or",
-									children: schemaToOptions(table.value.schema, "@where.or"),
-								},
-							]
+							{
+								label: "or",
+								value: "@where.or",
+								children: schemaToOptions(table.value.schema, "@where.or"),
+							},
+						]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
@@ -459,6 +456,19 @@ function generateFlowSelectOptions(
 			label: method.toUpperCase(),
 			value: method.toUpperCase(),
 		}));
+
+	let schema: Schema = []
+	if (table.value.schema) {
+		schema = flattenSchema(table.value.schema) as Schema;
+		if (value?.startsWith('@data.')) {
+			const field = schema.find(({ id }) => id === value.slice(6))
+			if (field?.options)
+				field.options.map(_value => result.push((isObject(_value) ? _value : {
+					label: _value,
+					value: _value,
+				}) as any))
+		}
+	}
 
 	result.push({
 		label: "@null",
@@ -499,7 +509,6 @@ function generateFlowSelectOptions(
 		}
 	}
 	if (table.value.schema) {
-		const schema = flattenSchema(table.value.schema);
 		result.push({
 			key: "@where",
 			label: "@where",
@@ -507,16 +516,16 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-							{
-								key: "@where.or",
-								label: "or",
-								type: "group",
-								children: schema.map(({ id, key }) => ({
-									label: `@where.or.${key}`,
-									value: `@where.or.${id}`,
-								})),
-							},
-						]
+						{
+							key: "@where.or",
+							label: "or",
+							type: "group",
+							children: schema.map(({ id, key }) => ({
+								label: `@where.or.${key}`,
+								value: `@where.or.${id}`,
+							})),
+						},
+					]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
