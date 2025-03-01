@@ -1,19 +1,17 @@
 <template>
     <NTag round :bordered="false">
-        <NFlex>
-            <NIcon v-if="value" style="cursor: pointer;" @click="copyID">
+        <template #icon v-if="value">
+            <NIcon style="cursor: pointer;" size="medium" @click="copyID">
                 <IconCopy />
             </NIcon>
-            <NPerformantEllipsis tooltip style="max-width: 50px;">
-                {{ value }}
-            </NPerformantEllipsis>
-        </NFlex>
+        </template>
+        {{ value }}
     </NTag>
 </template>
 
 <script lang="ts" setup>
 import { IconCopy } from "@tabler/icons-vue";
-import { NTag, NIcon, NFlex, NPerformantEllipsis } from "naive-ui";
+import { NTag, NIcon } from "naive-ui";
 
 const { value } = defineProps<{ value?: string | number }>();
 
