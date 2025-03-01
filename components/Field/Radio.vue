@@ -14,34 +14,29 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils";
-import {
-    NFlex,
-    NRadio,
-    NRadioGroup,
-    type FormItemRule,
-} from "naive-ui";
+import { NFlex, NRadio, NRadioGroup, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<string | number>();
 
 const rule: FormItemRule = {
-    required: field.required,
-    trigger: ["blur", "input"],
-    validator() {
-        if (!modelValue.value && field.required)
-            return new Error(`${t(field.key)} ${t("isRequired")}`);
-    },
+	required: field.required,
+	trigger: ["blur", "input"],
+	validator() {
+		if (!modelValue.value && field.required)
+			return new Error(`${t(field.key)} ${t("isRequired")}`);
+	},
 };
 
 const options = computed(() =>
-    field.options
-        ? isArrayOfObjects(field.options)
-            ? field.options
-            : (field.options as string[]).map((value) => ({
-                value: value,
-                label: t(value),
-            }))
-        : [],
+	field.options
+		? isArrayOfObjects(field.options)
+			? field.options
+			: (field.options as string[]).map((value) => ({
+					value: value,
+					label: t(value),
+				}))
+		: [],
 );
 </script>

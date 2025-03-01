@@ -26,13 +26,19 @@
 				</NDropdown>
 			</template>
 			<template #header-extra>
-				<NButton size="small" round @click="handleAddNewItem">
-					<template #icon>
-						<NIcon>
-							<IconPlus />
-						</NIcon>
-					</template>
-				</NButton>
+				<NFlex>
+					<component v-if="field.extraActions" :is="field.extraActions"></component>
+					<NButtonGroup>
+						<NButton size="small" round @click="handleAddNewItem">
+							<template #icon>
+								<NIcon>
+									<IconPlus />
+								</NIcon>
+							</template>
+						</NButton>
+						<component v-if="field.extraButtons" :is="field.extraButtons"></component>
+					</NButtonGroup>
+				</NFlex>
 			</template>
 			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
@@ -40,9 +46,9 @@
 					:title="field.children[0].type === 'string' ? (_item as Item)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
 					:name="`${field.id}.${index}`">
 					<template #header-extra>
-						<NButton size="small" round type="error" quaternary :disabled="field.disabledItems?.includes(
-							index,
-						)" @click="modelValue.splice(index, 1)">
+						<NButton size="small" round type="error" quaternary
+							:disabled="Array.isArray(field.disabledItems) && field.disabledItems.includes(index)"
+							@click="modelValue.splice(index, 1)">
 							<template #icon>
 								<NIcon>
 									<IconTrash />
@@ -57,7 +63,7 @@
 								? {
 									inputProps: {
 										disabled:
-											field.disabledItems?.includes(
+											(Array.isArray(field.disabledItems) ? field.disabledItems : field.disabledItems[child.key])?.includes(
 												index,
 											),
 									},
@@ -103,6 +109,8 @@ import {
 	NDropdown,
 	type DataTableColumns,
 	type DropdownOption,
+	NButtonGroup,
+	NFlex,
 } from "naive-ui";
 import { isArrayOfObjects, isStringified } from "inibase/utils";
 import {
@@ -120,7 +128,6 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<(string | number | Item)[]>();
-
 const parentExpanded = ref();
 
 const expandedNames = ref();
@@ -134,7 +141,7 @@ function handleAddNewItem() {
 		modelValue.value = [
 			field.onCreate
 				? field.onCreate instanceof Function
-					? field.onCreate(newElementIndex)
+					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
 		];
@@ -143,7 +150,7 @@ function handleAddNewItem() {
 		modelValue.value.push(
 			field.onCreate
 				? field.onCreate instanceof Function
-					? field.onCreate(newElementIndex)
+					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
 		);
@@ -202,15 +209,14 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 	},
 ]);
 
-
 const columns = ref<DataTableColumns>();
 const tableWidth = ref<number>(0);
 
 watchEffect(() => {
-
 	columns.value = [
-		...((field.children as Schema).map((child) => ({
-			width: t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200,
+		...(field.children as Schema).map((child) => ({
+			width:
+				t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200,
 			title: () => [
 				t(child.key),
 				child.required
@@ -228,7 +234,11 @@ watchEffect(() => {
 				h(LazyField, {
 					field: {
 						...child,
-						...(field.disabledItems?.includes(index)
+						...(field.disabledItems &&
+							(Array.isArray(field.disabledItems)
+								? field.disabledItems
+								: field.disabledItems[child.key]
+							)?.includes(index)
 							? {
 								inputProps: {
 									disabled: true,
@@ -248,7 +258,7 @@ watchEffect(() => {
 					},
 					modelValue: (modelValue.value as Item[])[index][child.key],
 				}),
-		}))),
+		})),
 		field.disableActions === true
 			? {}
 			: {
@@ -266,7 +276,9 @@ watchEffect(() => {
 								h(
 									NButton,
 									{
-										disabled: field.disabledItems?.includes(index),
+										disabled:
+											Array.isArray(field.disabledItems) &&
+											field.disabledItems?.includes(index),
 										strong: true,
 										secondary: true,
 										circle: true,
@@ -288,5 +300,5 @@ watchEffect(() => {
 		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
 		40,
 	);
-})
+});
 </script>

@@ -1,7 +1,7 @@
 <template>
-	<NDrawer v-if="Drawer" :show="Drawer.show || false" @update:show="(show) => Drawer.show = show" :width="$device.isMobile ? '100%' : drawerWidth" resizable
-		:placement="Language === 'ar' ? 'left' : 'right'" @update:width="width => (drawerWidth = width)"
-		:trap-focus="false">
+	<NDrawer v-if="Drawer" :show="Drawer.show || false" @update:show="(show) => Drawer.show = show"
+		:width="$device.isMobile ? '100%' : drawerWidth" resizable :placement="Language === 'ar' ? 'left' : 'right'"
+		@update:width="width => (drawerWidth = width)" :trap-focus="false">
 		<NDrawerContent closable>
 			<template #header>
 				<span v-if="Drawer.id">
@@ -47,7 +47,7 @@
 			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
 				<slot @after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate">
 					<Form ref="formRef" v-model="Drawer.data" :table="Drawer.table" @after-create="onAfterUpdateCreate"
-						@after-update="onAfterUpdateCreate" />
+						@after-update="onAfterUpdateCreate" v-model:schema="Drawer.schema"></Form>
 				</slot>
 			</NSpin>
 		</NDrawerContent>

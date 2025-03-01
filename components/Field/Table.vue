@@ -2,19 +2,34 @@
 	<FieldWrapper :field :rule v-model="modelValue">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
-			:consistent-menu-width="false" max-tag-count="responsive" @focus="loadOptions()" @search="loadOptions"
-			v-bind="field.inputProps
+			:consistent-menu-width="false" max-tag-count="responsive" @update:show="(show) => show && loadOptions()"
+			:reset-menu-on-options-change="false" @scroll="handleScroll" @search="loadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
-				: {}" />
+				: {}">
+			<template #action>
+				<NFlex justify="center">
+					<NButton disabled round strong secondary type="primary">
+						<template #icon>
+							<NIcon>
+								<IconPlus />
+							</NIcon>
+						</template>
+						{{ t('new') }}
+					</NButton>
+				</NFlex>
+			</template>
+		</NSelect>
 	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import Inison from "inison";
-import { NSelect } from "naive-ui";
+import { NButton, NFlex, NIcon, NSelect, type FormItemRule } from "naive-ui";
 import { isArrayOfObjects, isObject } from "inibase/utils";
+import type { pageInfo } from "inibase";
+import { IconPlus } from "@tabler/icons-vue";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -41,7 +56,7 @@ const selectValue = computed<null | string | string[]>(() =>
 		: null,
 );
 
-const rule = {
+const rule: FormItemRule = {
 	type: !field.isArray ? "string" : "array",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
@@ -98,7 +113,8 @@ const searchIn = table?.defaultSearchableColumns
 			getPath(table.schema ?? [], columnID),
 		)
 	: field.searchIn;
-
+const pagination = ref<pageInfo>();
+const where = ref<string>();
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;
 	const searchOrObject =
@@ -110,46 +126,87 @@ async function loadOptions(searchValue?: string | number) {
 					return result;
 				}, {}) ?? false)
 			: false;
-	let where: string | undefined;
+	let _where = "";
 	if (field.where) {
 		if (searchOrObject)
-			where = Inison.stringify({
+			_where = Inison.stringify({
 				...(typeof field.where === "string"
 					? Inison.unstringify(field.where)
 					: field.where),
 				or: searchOrObject,
 			});
 		else
-			where =
+			_where =
 				typeof field.where === "string"
 					? field.where
 					: Inison.stringify(field.where);
 	} else if (searchOrObject)
-		where = Inison.stringify({
+		_where = Inison.stringify({
 			or: searchOrObject,
 		});
-	const data =
-		(
-			await $fetch<apiResponse<Item[]>>(
-				`${appConfig.apiBase}${database.value.slug}/${field.table}`,
-				{
-					params: {
-						where,
-					},
-					cache: "no-cache",
-				},
-			)
-		).result?.map(singleOption) ?? [];
+	if (_where) {
+		if (!where.value || where.value !== _where) where.value = _where;
+		else {
+			Loading.value[`options_${field.key}`] = false;
+			return;
+		}
+	}
+	const request = await $fetch<apiResponse<tableOption[]>>(
+		`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+		{
+			params: {
+				where: where.value,
+			},
+			cache: "no-cache",
+		},
+	);
+	pagination.value = request.options;
+
 	if (modelValue.value) {
 		const currentSelectedOptions = (options.value ?? []).filter(({ value }) =>
 			selectValue.value?.includes(value),
 		);
 		options.value = [
 			...currentSelectedOptions,
-			...data.filter(({ value }) => !selectValue.value?.includes(value)),
+			...(request.result
+				?.map(singleOption)
+				.filter(({ value }) => !selectValue.value?.includes(value)) ?? []),
 		];
-	} else options.value = data;
+	} else options.value = request.result?.map(singleOption) ?? [];
 	Loading.value[`options_${field.key}`] = false;
+}
+
+async function handleScroll(e: Event) {
+	const currentTarget = e.currentTarget as HTMLElement;
+	if (
+		!pagination.value ||
+		!pagination.value.page ||
+		!pagination.value.totalPages
+	)
+		return;
+	if (
+		currentTarget.scrollTop + currentTarget.offsetHeight >=
+			currentTarget.scrollHeight &&
+		pagination.value.page < pagination.value.totalPages
+	) {
+		Loading.value[`options_${field.key}`] = true;
+		const request = await $fetch<apiResponse<tableOption[]>>(
+			`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+			{
+				params: {
+					where: where.value,
+					options: {
+						page: pagination.value.page + 1,
+					},
+				},
+				cache: "no-cache",
+			},
+		);
+		if (request.result) request.result = request.result.map(singleOption);
+		pagination.value = request.options;
+		if (options.value) options.value.push(...request.result);
+		Loading.value[`options_${field.key}`] = false;
+	}
 }
 
 if (

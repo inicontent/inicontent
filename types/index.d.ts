@@ -9,8 +9,8 @@ import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvide
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
 import type languages from "~/composables/Translation/languages";
 
-type onCreateCallback = (index: number) => onCreateType;
-type onCreateType = string | number | boolean | Data;
+type onCreateCallback = (index: number) => any;
+type onCreateType = string | number | boolean | Data | onCreateType[];
 type singleLanguageTranslations = {
 	[key: string]: string | singleLanguageTranslations;
 };
@@ -39,10 +39,10 @@ declare global {
 		| "array-asset"
 		| "array-table"
 		| "custom";
-	type FieldType = dbFieldType;
-	type Field = dbField & {
-		type: CMS_FieldType | FieldType | FieldType[];
-		children?: CMS_FieldType | FieldType | FieldType[] | Schema;
+	type DB_FieldType = dbFieldType;
+	type Field = Omit<dbField, "type" | "children"> & {
+		type: CMS_FieldType | DB_FieldType | DB_FieldType[];
+		children?: DB_FieldType | DB_FieldType[] | Schema;
 		subType?: CMS_FieldType;
 		accept?: string[];
 		isArray?: boolean;
@@ -51,8 +51,8 @@ declare global {
 		options?: ((string | number) | { label: string; value: string | number })[];
 		labelProps?: any;
 		inputProps?: any;
-		onCreate?: onCreateType | onCreateType[] | onCreateCallback;
-		disabledItems?: number[];
+		onCreate?: (index: number) => any | any;
+		disabledItems?: number[] | Record<string, number[]>;
 		isTable?: boolean;
 		disableActions?: boolean;
 		defaultValue?: any;
@@ -76,6 +76,9 @@ declare global {
 		query?: any;
 		where?: string | Record<string, any>;
 		description?: string;
+		render?: VNode;
+		extraActions?: VNode;
+		extraButtons?: VNode;
 	};
 	type Schema = Field[];
 	type FlowType = (
@@ -191,6 +194,7 @@ declare global {
 		id?: string;
 		table?: string;
 		data?: Item;
+		schema?: Schema;
 	};
 }
 declare module "nuxt/schema" {
@@ -203,7 +207,7 @@ declare module "nuxt/schema" {
 
 export type {
 	CMS_FieldType,
-	FieldType,
+	DB_FieldType,
 	Field,
 	Schema,
 	Table,
@@ -215,7 +219,6 @@ export type {
 	ThemeConfig,
 	LanguagesType,
 	TranslationsType,
-	SearchType,
 	TableRef,
 	FormRef,
 	DrawerRef,

@@ -79,10 +79,10 @@
 										@click.prevent="() => {
 											if (!isMobile)
 												Drawer = {
+													data: {},
 													...Drawer,
 													table: table.slug,
 													id: undefined,
-													data: {},
 													show: true,
 												};
 											else
@@ -199,7 +199,7 @@ const columns = ref<DataTableColumns>();
 
 defineExpose<TableRef>({
 	search: searchArray as searchType,
-	columns: columns,
+	columns,
 	delete: DELETE,
 });
 
@@ -854,7 +854,9 @@ function updateColumns() {
 		40,
 	);
 }
-watch(Language, updateColumns, { immediate: true });
+
+watch(Language, updateColumns);
+updateColumns();
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,

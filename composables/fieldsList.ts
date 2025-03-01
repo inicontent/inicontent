@@ -38,7 +38,7 @@ function renderIcon(icon: Icon) {
 
 type fieldListOptionType = {
 	type?: string;
-	key: CMS_FieldType | FieldType;
+	key: CMS_FieldType | DB_FieldType;
 	label: string;
 	icon: () => VNodeChild;
 	disabled?: boolean;

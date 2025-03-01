@@ -47,18 +47,17 @@
 
 <script lang="ts" setup>
 import {
-	NDynamicTags,
-	NIcon,
-	NInput,
-	NFlex,
-	NTag,
-	NButton,
-	NTooltip,
-	type FormItemRule,
-	type FormInst,
+    NDynamicTags,
+    NIcon,
+    NInput,
+    NFlex,
+    NTag,
+    NButton,
+    NTooltip,
+    type FormItemRule,
+    type FormInst,
 } from "naive-ui";
 import { IconPlus } from "@tabler/icons-vue";
-import type { FieldType } from "inibase";
 import { validateFieldType } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
@@ -66,45 +65,45 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string[]>();
 
 const fieldChildrenLabels = field.children
-	? flatFieldsList
-			.filter(({ key }) =>
-				([] as string[])
-					.concat(field.children as string | string[])
-					.includes(key),
-			)
-			.map(({ label }) => label)
-			.join(" | ")
-	: undefined;
+    ? flatFieldsList
+        .filter(({ key }) =>
+            ([] as string[])
+                .concat(field.children as string | string[])
+                .includes(key),
+        )
+        .map(({ label }) => label)
+        .join(" | ")
+    : undefined;
 
 const rule: FormItemRule = {
-	type: "array",
-	required: field.required,
-	min: field.min,
-	max: field.max,
-	validator() {
-		if (!Array.isArray(modelValue.value) || modelValue.value.length === 0)
-			return field.required
-				? new Error(`${t(field.key)} ${t("isRequired")}`)
-				: true;
-		for (const value of modelValue.value)
-			if (!validateFieldType(value, field.children as FieldType | FieldType[]))
-				return new Error(
-					`${t(field.key)} ${t("isNotValid")}${fieldChildrenLabels ? `, ${t("expected")} ${fieldChildrenLabels}` : ""}`,
-				);
-		return true;
-	},
+    type: "array",
+    required: field.required,
+    min: field.min,
+    max: field.max,
+    validator() {
+        if (!Array.isArray(modelValue.value) || modelValue.value.length === 0)
+            return field.required
+                ? new Error(`${t(field.key)} ${t("isRequired")}`)
+                : true;
+        for (const value of modelValue.value)
+            if (!validateFieldType(value, field.children as DB_FieldType | DB_FieldType[]))
+                return new Error(
+                    `${t(field.key)} ${t("isNotValid")}${fieldChildrenLabels ? `, ${t("expected")} ${fieldChildrenLabels}` : ""}`,
+                );
+        return true;
+    },
 };
 const dynamicTags = ref<FormInst>();
 const inputValue = ref();
 function addValue() {
-	if (inputValue.value) {
-		modelValue.value = [...(modelValue.value ?? []), inputValue.value];
-		inputValue.value = undefined;
-	}
+    if (inputValue.value) {
+        modelValue.value = [...(modelValue.value ?? []), inputValue.value];
+        inputValue.value = undefined;
+    }
 }
 watch(modelValue, () => {
-	try {
-		dynamicTags.value?.validate();
-	} catch {}
+    try {
+        dynamicTags.value?.validate();
+    } catch { }
 });
 </script>

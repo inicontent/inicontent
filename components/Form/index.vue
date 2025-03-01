@@ -7,6 +7,7 @@
 </template>
 
 <script lang="ts" setup>
+import { isArrayOfObjects } from "inibase/utils";
 import { NForm, type FormInst } from "naive-ui";
 
 const props = defineProps<{
@@ -25,7 +26,7 @@ defineSlots<{
 	default(data?: Item, schema?: Schema): any;
 }>();
 
-const modelValue = defineModel<Item>();
+const modelValue = defineModel<Item>({ default: reactive({}) });
 
 defineExpose<FormRef>({
 	create: CREATE,
@@ -40,6 +41,37 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
+
+
+function countItems(items: Schema): number {
+	return items.reduce((count, item) => {
+		return count + 1 + (item.children && isArrayOfObjects(item.children) ? countItems(item.children) : 0);
+	}, 0);
+}
+
+function mergeItems(existing: Schema, updated: Schema): Schema {
+	const updatedMap = new Map(updated.map(item => [item.id, item]));
+
+	return existing
+		.filter(item => updatedMap.has(item.id)) // Keep only items that exist in updated
+		.map(item => {
+			const updatedItem = updatedMap.get(item.id);
+			if (!updatedItem) return item; // Safety check
+
+			return {
+				...item, // Preserve extra properties
+				...updatedItem, // Update existing properties
+				children:
+					(item.children && isArrayOfObjects(item.children)) || (updatedItem.children && isArrayOfObjects(updatedItem.children))
+						? mergeItems((item.children as Schema | undefined) ?? [], (updatedItem.children as Schema | undefined) ?? []) // Recursively update children
+						: undefined,
+			};
+		})
+		.concat(
+			updated.filter(item => !existing.some(e => e.id === item.id)) // Add new items
+		);
+}
+
 
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
@@ -56,13 +88,16 @@ async function fetchSchemaAndData() {
 			},
 		);
 		// Update the schema
-		if (response.result?.schema)
-			schema.value = response.result.schema?.filter(
+		if (response.result?.schema) {
+			const filteredSchema = response.result.schema?.filter(
 				(field) =>
 					!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
 						field.key,
 					),
 			);
+			if (countItems(schema.value) !== countItems(filteredSchema))
+				schema.value = mergeItems(schema.value, filteredSchema);
+		}
 
 		// Update data only if the API sends changes
 		if (response.result?.data) {
@@ -131,8 +166,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -157,8 +191,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
