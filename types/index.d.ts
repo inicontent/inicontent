@@ -51,8 +51,8 @@ declare global {
 		options?: ((string | number) | { label: string; value: string | number })[];
 		labelProps?: any;
 		inputProps?: any;
-		onCreate?: (index: number) => any | any;
-		disabledItems?: number[] | Record<string, number[]>;
+		onCreate?: any;
+		onDelete?: (index: number) => void;
 		isTable?: boolean;
 		disableActions?: boolean;
 		defaultValue?: any;
@@ -76,9 +76,11 @@ declare global {
 		query?: any;
 		where?: string | Record<string, any>;
 		description?: string;
-		render?: VNode;
-		extraActions?: VNode;
-		extraButtons?: VNode;
+		render?: any;
+		extraActions?: VNode | undefined;
+		extraButtons?: VNode | undefined;
+		itemExtraActions?: (index: number) => VNode | undefined;
+		itemExtraButtons?: (index: number) => VNode | undefined;
 	};
 	type Schema = Field[];
 	type FlowType = (

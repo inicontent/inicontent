@@ -46,29 +46,29 @@
 					:title="field.children[0].type === 'string' ? (_item as Item)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
 					:name="`${field.id}.${index}`">
 					<template #header-extra>
-						<NButton size="small" round type="error" quaternary
-							:disabled="Array.isArray(field.disabledItems) && field.disabledItems.includes(index)"
-							@click="modelValue.splice(index, 1)">
-							<template #icon>
-								<NIcon>
-									<IconTrash />
-								</NIcon>
-							</template>
-						</NButton>
+						<NFlex>
+							<component v-if="field.itemExtraActions" :is="field.itemExtraActions(index)"></component>
+							<NButtonGroup>
+								<NButton size="small" round type="error" quaternary
+									:disabled="typeof field.inputProps === 'function' ? field.inputProps(index)?.disabled : field.inputProps?.disabled"
+									@click="handleDeleteItem(index)">
+									<template #icon>
+										<NIcon>
+											<IconTrash />
+										</NIcon>
+									</template>
+								</NButton>
+								<component v-if="field.itemExtraButtons" :is="field.itemExtraButtons(index)">
+								</component>
+							</NButtonGroup>
+						</NFlex>
 					</template>
 					<div class="collapseContentPadding">
 						<LazyFieldS v-model="(modelValue[index] as Item)" :schema="(field.children as Schema).map((child) => ({
 							...child,
-							...(field.disabledItems
-								? {
-									inputProps: {
-										disabled:
-											(Array.isArray(field.disabledItems) ? field.disabledItems : field.disabledItems[child.key])?.includes(
-												index,
-											),
-									},
-								}
-								: {}),
+							...(typeof child.inputProps === 'function' ? { inputProps: child.inputProps(index) } : {}),
+							...(typeof child.labelProps === 'function' ? { labelProps: child.labelProps(index) } : {}),
+							...(typeof child.render === 'function' ? { render: child.render(index) } : {})
 						}))" />
 					</div>
 				</NCollapseItem>
@@ -84,13 +84,19 @@
 			</NDropdown>
 		</template>
 		<template #header-extra v-if="!field.disableActions">
-			<NButton size="small" round @click="handleAddNewItem">
-				<template #icon>
-					<NIcon>
-						<IconPlus />
-					</NIcon>
-				</template>
-			</NButton>
+			<NFlex>
+				<component v-if="field.extraActions" :is="field.extraActions"></component>
+				<NButtonGroup>
+					<NButton size="small" round @click="handleAddNewItem">
+						<template #icon>
+							<NIcon>
+								<IconPlus />
+							</NIcon>
+						</template>
+					</NButton>
+					<component v-if="field.extraButtons" :is="field.extraButtons"></component>
+				</NButtonGroup>
+			</NFlex>
 		</template>
 		<NDataTable v-if="field.children" :columns :data="(modelValue as Item[])" :scroll-x="tableWidth" />
 	</NCard>
@@ -156,6 +162,11 @@ function handleAddNewItem() {
 		);
 	}
 	expandedNames.value = `${field.id}.${newElementIndex}`;
+}
+
+function handleDeleteItem(index: number) {
+	if (field.onDelete) field.onDelete(index);
+	modelValue.value?.splice(index, 1);
 }
 
 async function handleSelect(value: string) {
@@ -234,17 +245,6 @@ watchEffect(() => {
 				h(LazyField, {
 					field: {
 						...child,
-						...(field.disabledItems &&
-							(Array.isArray(field.disabledItems)
-								? field.disabledItems
-								: field.disabledItems[child.key]
-							)?.includes(index)
-							? {
-								inputProps: {
-									disabled: true,
-								},
-							}
-							: {}),
 						labelProps: {
 							style: {
 								marginTop: "24px",
@@ -277,13 +277,14 @@ watchEffect(() => {
 									NButton,
 									{
 										disabled:
-											Array.isArray(field.disabledItems) &&
-											field.disabledItems?.includes(index),
+											typeof field.inputProps === "function"
+												? field.inputProps(index)?.disabled
+												: field.inputProps?.disabled,
 										strong: true,
 										secondary: true,
 										circle: true,
 										type: "error",
-										onClick: () => modelValue.value?.splice(index, 1),
+										onClick: () => handleDeleteItem(index),
 									},
 									{
 										icon: () => h(NIcon, () => h(IconTrash)),
