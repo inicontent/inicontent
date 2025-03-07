@@ -185,6 +185,10 @@ body {
 	transform: scaleX(-1) rotate(-90deg);
 }
 
+.rtl .n-collapse-item-arrow .tabler-icon-chevron-right {
+	transform: unset !important;
+}
+
 /* Fix DataTable RTL fixed column */
 .rtl .n-data-table .n-data-table-td.n-data-table-td--fixed-right,
 .rtl .n-data-table .n-data-table-th.n-data-table-th--fixed-right {
