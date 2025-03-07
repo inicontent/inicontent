@@ -36,7 +36,7 @@
 		"@tiptap/extension-table-row": "^2.10.4",
 		"@tiptap/extension-text-align": "^2.10.3",
 		"@tiptap/extension-underline": "^2.10.3",
-		"inibase": "^1.1.7",
+		"inibase": "^1.1.13",
 		"inidot": "latest",
 		"inison": "^1.0.1",
 		"naive-ui": "2.41.0",
