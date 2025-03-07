@@ -34,11 +34,6 @@
 import { NEmpty } from "naive-ui";
 
 const field = defineModel<Field>("field", { required: true });
-
-const modelValue = defineModel<any>();
-
-const database = useState<Database>("database");
-
 const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
 	const fieldType = (field.value.subType ?? field.value.type) as
 		| DB_FieldType
@@ -46,6 +41,9 @@ const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
 	if (Array.isArray(fieldType)) return getField(field.value).key;
 	return fieldType;
 });
+
+const modelValue = defineModel<any>();
+const database = useState<Database>("database");
 
 watchEffect(() => {
 	if (field.value.defaultValue && !modelValue.value)

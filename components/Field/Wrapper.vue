@@ -1,9 +1,5 @@
 <template>
-	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="(field.labelProps
-		? typeof field.labelProps === 'function'
-			? field.labelProps(modelValue) ?? {}
-			: field.labelProps
-		: {})">
+	<NFormItem :label="t(field.key)" :rule :path="field.id" v-bind="field.labelProps">
 		<slot></slot>
 		<template #label>
 			<NFlex v-if="field.description" align="center" :size="0">

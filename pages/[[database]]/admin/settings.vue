@@ -1,62 +1,62 @@
 <template>
-    <n-grid cols="12" :x-gap="12" item-responsive responsive="screen">
-        <n-grid-item span="12 l:11">
-            <n-card :title="t('settings')" hoverable>
-                <template #header-extra>
-                    <n-flex>
-                        <n-tooltip :delay="500">
-                            <template #trigger>
-                                <n-popconfirm :show-icon="false" @positive-click="deleteDatabase">
-                                    <template #trigger>
-                                        <n-button type="error" tertiary round :loading="Loading.deleteDatabase">
-                                            <template #icon>
-                                                <NIcon>
-                                                    <IconTrash />
-                                                </NIcon>
-                                            </template>
-                                        </n-button>
-                                    </template>
-                                    {{ t("theFollowingActionIsIrreversible") }}
-                                </n-popconfirm>
-                            </template>
-                            {{ t("deleteDatabase") }}
-                        </n-tooltip>
-                        <n-button @click="updateDatabase" type="primary" secondary round
-                            :loading="Loading.updateDatabase">
-                            <template #icon>
-                                <NIcon>
-                                    <IconDeviceFloppy />
-                                </NIcon>
-                            </template>
-                            {{ t("save") }}
-                        </n-button>
-                    </n-flex>
-                </template>
-                <n-flex vertical>
-                    <n-card id="general" :title="t('generalSettings')" hoverable>
-                        <n-form ref="databaseRef" :model="databaseCopy">
-                            <FieldS v-model="databaseCopy" :schema="databaseSchema" />
-                        </n-form>
-                    </n-card>
-                    <n-card id="translation" :title="t('translationSettings')" hoverable>
-                        <n-form ref="databaseRef" :model="databaseCopy">
-                            <FieldS v-model="databaseCopy" :schema="translationSchema" />
-                        </n-form>
-                    </n-card>
-                    <n-card id="email" :title="t('emailSettings')" hoverable>
-                        <n-empty :description="t('soon')" />
-                    </n-card>
-                </n-flex>
-            </n-card>
-        </n-grid-item>
-        <n-grid-item v-if="!$device.isMobile" span="0 l:1">
-            <n-anchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
-                <n-anchor-link :title="t('generalSettings')" href="#general" />
-                <n-anchor-link :title="t('translationSettings')" href="#translation" />
-                <n-anchor-link :title="t('emailSettings')" href="#email" />
-            </n-anchor>
-        </n-grid-item>
-    </n-grid>
+	<n-grid cols="12" :x-gap="12" item-responsive responsive="screen">
+		<n-grid-item span="12 l:11">
+			<n-card :title="t('settings')" hoverable>
+				<template #header-extra>
+					<n-flex>
+						<n-tooltip :delay="500">
+							<template #trigger>
+								<n-popconfirm :show-icon="false" @positive-click="deleteDatabase">
+									<template #trigger>
+										<n-button type="error" tertiary round :loading="Loading.deleteDatabase">
+											<template #icon>
+												<NIcon>
+													<IconTrash />
+												</NIcon>
+											</template>
+										</n-button>
+									</template>
+									{{ t("theFollowingActionIsIrreversible") }}
+								</n-popconfirm>
+							</template>
+							{{ t("deleteDatabase") }}
+						</n-tooltip>
+						<n-button @click="updateDatabase" type="primary" secondary round
+							:loading="Loading.updateDatabase">
+							<template #icon>
+								<NIcon>
+									<IconDeviceFloppy />
+								</NIcon>
+							</template>
+							{{ t("save") }}
+						</n-button>
+					</n-flex>
+				</template>
+				<n-flex vertical>
+					<n-card id="general" :title="t('generalSettings')" hoverable>
+						<n-form ref="databaseRef" :model="databaseCopy">
+							<FieldS v-model="databaseCopy" :schema="databaseSchema" />
+						</n-form>
+					</n-card>
+					<n-card id="translation" :title="t('translationSettings')" hoverable>
+						<n-form ref="databaseRef" :model="databaseCopy">
+							<FieldS v-model="databaseCopy" :schema="translationSchema" />
+						</n-form>
+					</n-card>
+					<n-card id="email" :title="t('emailSettings')" hoverable>
+						<n-empty :description="t('soon')" />
+					</n-card>
+				</n-flex>
+			</n-card>
+		</n-grid-item>
+		<n-grid-item v-if="!$device.isMobile" span="0 l:1">
+			<n-anchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
+				<n-anchor-link :title="t('generalSettings')" href="#general" />
+				<n-anchor-link :title="t('translationSettings')" href="#translation" />
+				<n-anchor-link :title="t('emailSettings')" href="#email" />
+			</n-anchor>
+		</n-grid-item>
+	</n-grid>
 </template>
 
 <script lang="ts" setup>
@@ -154,7 +154,8 @@ const databaseSchema: Schema = [
 			},
 		],
 		onCreate: { id: `temp-${randomID()}` },
-		disabledItems: [0, 1, 2],
+		inputProps: (index: number) =>
+			[0, 1, 2].includes(index) ? { disabled: true } : {},
 		required: false,
 	},
 ];

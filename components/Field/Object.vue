@@ -33,11 +33,11 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<Record<string | number, any>>();
 
-const localVModelValue = ref<Record<string | number, any>>(
+const localModelValue = ref<Record<string | number, any>>(
 	toRaw(modelValue.value ?? {}),
 );
 watch(
-	localVModelValue,
+	localModelValue,
 	(v) => {
 		modelValue.value = v;
 	},

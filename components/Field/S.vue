@@ -1,5 +1,5 @@
 <template>
-	<Field v-for="field of formatedSchema" :field="field" v-model="localVModelValue[field.key]" />
+	<Field v-for="field of formatedSchema" :field="field" v-model="localModelValue[field.key]" />
 </template>
 
 <script lang="ts" setup>
@@ -11,12 +11,11 @@ const formatedSchema = computed(() =>
 );
 
 const modelValue = defineModel<Record<string | number, any>>();
-
-const localVModelValue = ref<Record<string | number, any>>(
-	toRaw(modelValue.value ?? {}),
+const localModelValue = ref<Record<string | number, any>>(
+	modelValue.value ? toRaw(modelValue.value) : {},
 );
 watch(
-	localVModelValue,
+	localModelValue,
 	(v) => {
 		modelValue.value = v;
 	},
