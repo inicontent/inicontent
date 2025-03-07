@@ -9,7 +9,7 @@
 					</n-button>
 				</n-form>
 			</n-tab-pane>
-			<n-tab-pane name="signup" :tab="t('signup')">
+			<n-tab-pane name="signup" :tab="t('signup')" :disabled="!table.allowedMethods?.includes('c')">
 				<n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
 					<FieldS v-model="SignupForm" :schema="SignupColumns" />
 					<n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
@@ -49,6 +49,7 @@ const route = useRoute();
 const tabsInstRef = ref<TabsInst | null>(null);
 const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
 const database = useState<Database>("database");
+const table = useState<Table>("table");
 const user = useState<User>("users");
 const SignupForm = useState(() => ({}));
 const SignupFormRef = ref<FormInst | null>(null);
