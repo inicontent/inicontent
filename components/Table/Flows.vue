@@ -340,7 +340,12 @@ import {
 	type SelectGroupOption,
 	NTooltip,
 } from "naive-ui";
-import { flattenSchema, isArrayOfObjects, isObject, isValidID } from "inibase/utils";
+import {
+	flattenSchema,
+	isArrayOfObjects,
+	isObject,
+	isValidID,
+} from "inibase/utils";
 onMounted(() => {
 	document.onkeydown = (e) => {
 		if (
@@ -366,7 +371,8 @@ const database = useState<Database>("database"),
 		Loading.value.updateTable = true;
 		const bodyContent = structuredClone(toRaw(tableCopy.value));
 		const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}inicontent/databases/${database.value.slug
+			`${appConfig.apiBase}inicontent/databases/${
+				database.value.slug
 			}/${table.value.slug}`,
 			{
 				method: "PUT",
@@ -392,7 +398,7 @@ function schemaToOptions(schema: Schema, prefix = "@data") {
 			value: `${prefix}.${field.id}`,
 		};
 		if (isArrayOfObjects(field.children))
-			option.children = schemaToOptions(field.children);
+			option.children = schemaToOptions(field.children, prefix);
 		options.push(option);
 	}
 	return options;
@@ -427,12 +433,12 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-							{
-								label: "or",
-								value: "@where.or",
-								children: schemaToOptions(table.value.schema, "@where.or"),
-							},
-						]
+								{
+									label: t("or"),
+									value: "@where.or",
+									children: schemaToOptions(table.value.schema, "@where.or"),
+								},
+							]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
@@ -457,22 +463,34 @@ function generateFlowSelectOptions(
 			value: method.toUpperCase(),
 		}));
 
-	let schema: Schema = []
+	let schema: Schema = [];
 	if (table.value.schema) {
 		schema = flattenSchema(table.value.schema) as Schema;
-		if (value?.startsWith('@data.')) {
-			const field = schema.find(({ id }) => id === value.slice(6))
+		if (value) {
+			let userSchema = database.value.tables?.find(
+				({ slug }) => slug === "users",
+			)?.schema;
+			if (userSchema) userSchema = flattenSchema(userSchema);
+			const field = (value.startsWith("@user.") ? userSchema : schema)?.find(
+				({ id }) => id === value.slice(6),
+			);
 			if (field?.options)
-				field.options.map(_value => result.push((isObject(_value) ? _value : {
-					label: _value,
-					value: _value,
-				}) as any))
+				field.options.map((_value) =>
+					result.push(
+						(isObject(_value)
+							? _value
+							: {
+									label: _value,
+									value: _value,
+								}) as any,
+					),
+				);
 		}
 	}
 
 	result.push({
 		label: "@null",
-		value: "null",
+		value: "undefined",
 	});
 
 	if (
@@ -508,7 +526,7 @@ function generateFlowSelectOptions(
 			});
 		}
 	}
-	if (table.value.schema) {
+	if (schema) {
 		result.push({
 			key: "@where",
 			label: "@where",
@@ -516,16 +534,16 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-						{
-							key: "@where.or",
-							label: "or",
-							type: "group",
-							children: schema.map(({ id, key }) => ({
-								label: `@where.or.${key}`,
-								value: `@where.or.${id}`,
-							})),
-						},
-					]
+							{
+								key: "@where.or",
+								label: "or",
+								type: "group",
+								children: schema.map(({ id, key }) => ({
+									label: `@where.or.${key}`,
+									value: `@where.or.${id}`,
+								})),
+							},
+						]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
@@ -572,7 +590,7 @@ function formatValue(
 
 			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
 
-			return item[property] ?? defaultValue;
+			return (item as any)[property] ?? defaultValue;
 		}
 	}
 	return value || defaultValue;
