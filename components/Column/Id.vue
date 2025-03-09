@@ -1,23 +1,23 @@
 <template>
-    <NTag round :bordered="false">
-        <template #icon v-if="value">
-            <NIcon style="cursor: pointer;" size="medium" @click="copyID">
-                <IconCopy />
-            </NIcon>
-        </template>
-        {{ value }}
-    </NTag>
+    <NFlex :wrap="false" align="center">
+        <NIcon v-if="value" style="cursor: pointer;" size="medium" @click="copyID">
+            <IconCopy />
+        </NIcon>
+        <NPerformantEllipsis>
+            {{ value }}
+        </NPerformantEllipsis>
+    </NFlex>
 </template>
 
 <script lang="ts" setup>
 import { IconCopy } from "@tabler/icons-vue";
-import { NTag, NIcon } from "naive-ui";
+import { NFlex, NIcon, NPerformantEllipsis } from "naive-ui";
 
 const { value } = defineProps<{ value?: string | number }>();
 
 async function copyID() {
-    if (!value) return;
-    await copyToClipboard(value);
-    window.$message.success(t("copiedSuccessfully"));
+	if (!value) return;
+	await copyToClipboard(value);
+	window.$message.success(t("copiedSuccessfully"));
 }
 </script>
