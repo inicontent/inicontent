@@ -80,8 +80,7 @@
 											if (!isMobile)
 												openDrawer(table.slug)
 											else
-												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
-												);
+												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
 										}">
 										<template #icon>
 											<NIcon>
@@ -110,8 +109,10 @@
 
 <script setup lang="ts">
 import {
+	IconColumns3,
 	IconCopy,
 	IconEye,
+	IconEyeOff,
 	IconFileArrowRight,
 	IconPencil,
 	IconPlus,
@@ -143,6 +144,7 @@ import {
 	type DataTableGetCsvHeader,
 	NTime,
 	type DropdownOption,
+	NPerformantEllipsis,
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
 import {
@@ -677,6 +679,10 @@ watchEffect(() => {
 	};
 });
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const hiddenColumns = useCookie<Record<string, string[]>>("hiddenColumns", {
+	default: () => ({}) as Record<string, string[]>,
+	sameSite: true,
+});
 
 function setColumns() {
 	columns.value = [
@@ -707,30 +713,67 @@ function setColumns() {
 									checkedRowKeys.value = [];
 								},
 							},
+							{
+								label: t("columns"),
+								key: "columns",
+								icon: () => h(NIcon, () => h(IconColumns3)),
+								children: table.value.schema?.map(({ id, key }) => ({
+									label: t(key),
+									key: id,
+									icon: () =>
+										h(NIcon, () =>
+											h(
+												hiddenColumns.value[table.value.slug].includes(
+													id as string,
+												)
+													? IconEyeOff
+													: h(IconEye),
+											),
+										),
+									onSelect: () => {
+										if (
+											hiddenColumns.value[table.value.slug].includes(
+												id as string,
+											)
+										)
+											hiddenColumns.value[table.value.slug] =
+												hiddenColumns.value[table.value.slug].filter(
+													(itemID) => itemID !== id,
+												);
+										else
+											hiddenColumns.value[table.value.slug].push(id as string);
+									},
+								})),
+							},
 						],
 					},
 				]
 			: []),
-		...(table.value.schema ?? []).map((field) => ({
-			title: () =>
-				h(NFlex, { align: "center", justify: "start" }, () => [
-					getField(field).icon(),
-					t(field.key),
-				]),
-			width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
-			key: field.key,
-			sorter: !!data.value?.result,
-			ellipsis: {
-				tooltip: true,
-			},
-			resizable:
-				(!Array.isArray(field.type) && field.type !== "array") ||
-				(Array.isArray(field.type) && !field.type.includes("array")),
-			sortOrder: sortObject.value[field.key]
-				? `${sortObject.value[field.key]}end`
-				: undefined,
-			render: (row: Item) => h(Column, { value: row[field.key], field }),
-		})),
+		...(table.value.schema
+			?.filter(
+				({ id }) =>
+					!hiddenColumns.value[table.value.slug]?.includes(id as string),
+			)
+			.map((field) => ({
+				title: () =>
+					h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
+						getField(field).icon(),
+						h(NPerformantEllipsis, () => t(field.key)),
+					]),
+				width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
+				key: field.key,
+				sorter: !!data.value?.result,
+				ellipsis: {
+					tooltip: true,
+				},
+				resizable:
+					(!Array.isArray(field.type) && field.type !== "array") ||
+					(Array.isArray(field.type) && !field.type.includes("array")),
+				sortOrder: sortObject.value[field.key]
+					? `${sortObject.value[field.key]}end`
+					: undefined,
+				render: (row: Item) => h(Column, { value: row[field.key], field }),
+			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []
 			: [
