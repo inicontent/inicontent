@@ -25,17 +25,18 @@
 		"nuxt.config.ts"
 	],
 	"dependencies": {
-		"@fontsource-variable/cairo": "^5.1.0",
+		"@fontsource-variable/cairo": "^5.2.5",
 		"@nuxtjs/device": "3.2.2",
-		"@tabler/icons-vue": "^3.22.0",
-		"@tiptap/extension-color": "^2.10.3",
-		"@tiptap/extension-highlight": "^2.10.3",
-		"@tiptap/extension-table": "^2.10.4",
-		"@tiptap/extension-table-cell": "^2.10.4",
-		"@tiptap/extension-table-header": "^2.10.4",
-		"@tiptap/extension-table-row": "^2.10.4",
-		"@tiptap/extension-text-align": "^2.10.3",
-		"@tiptap/extension-underline": "^2.10.3",
+		"@nuxtjs/tailwindcss": "^6.13.1",
+		"@tabler/icons-vue": "^3.31.0",
+		"@tiptap/extension-color": "^2.11.5",
+		"@tiptap/extension-highlight": "^2.11.5",
+		"@tiptap/extension-table": "^2.11.5",
+		"@tiptap/extension-table-cell": "^2.11.5",
+		"@tiptap/extension-table-header": "^2.11.5",
+		"@tiptap/extension-table-row": "^2.11.5",
+		"@tiptap/extension-text-align": "^2.11.5",
+		"@tiptap/extension-underline": "^2.11.5",
 		"inibase": "^1.1.13",
 		"inidot": "latest",
 		"inison": "^1.0.1",
@@ -47,8 +48,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@nuxtjs/tailwindcss": "^6.13.1",
-		"lefthook": "^1.8.4"
+		"lefthook": "^1.11.3"
 	},
 	"packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
 }
