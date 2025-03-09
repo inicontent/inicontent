@@ -25,17 +25,9 @@ const table = computed(() =>
 
 const { isMobile } = useDevice();
 
-const Drawer = useState<DrawerRef>("drawer", () => ({}));
-
 async function handleClick(item: Item) {
 	if (item.id && field.table) {
-		if (!isMobile)
-			Drawer.value = {
-				...Drawer.value,
-				id: item.id,
-				table: field.table,
-				show: true,
-			};
+		if (!isMobile) openDrawer(field.table, item.id);
 		else
 			await navigateTo(
 				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/${field.table}/${item.id}/edit`,

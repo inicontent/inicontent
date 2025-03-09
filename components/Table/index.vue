@@ -78,13 +78,7 @@
 										:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
 										@click.prevent="() => {
 											if (!isMobile)
-												Drawer = {
-													data: {},
-													...Drawer,
-													table: table.slug,
-													id: undefined,
-													show: true,
-												};
+												openDrawer(table.slug)
 											else
 												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`,
 												);
@@ -362,7 +356,6 @@ watch(whereQuery, (v) => {
 			});
 });
 
-const Drawer = useState<DrawerRef>("drawer", () => ({}));
 const dataRef = ref<DataTableInst>();
 const checkedRowKeys = ref<string[]>([]);
 const pagination = reactive({
@@ -645,13 +638,7 @@ async function createDropdownOnSelect(value: string) {
 		switch (value) {
 			case "paste": {
 				if (!isMobile)
-					Drawer.value = {
-						...Drawer.value,
-						table: table.value.slug,
-						id: undefined,
-						data: unstringifiedItem,
-						show: true,
-					};
+					openDrawer(table.value.slug, undefined, unstringifiedItem);
 				else
 					await navigateTo(
 						`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/new?data=${itemFromClipboard}`,
@@ -691,7 +678,7 @@ watchEffect(() => {
 });
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
-function updateColumns() {
+function setColumns() {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
 			? [
@@ -798,13 +785,11 @@ function updateColumns() {
 																onClick: (e) => {
 																	e.preventDefault();
 																	if (!isMobile)
-																		Drawer.value = {
-																			...Drawer.value,
-																			id: row.id,
-																			table: table.value.slug as string,
-																			data: structuredClone(toRaw(row)),
-																			show: true,
-																		};
+																		openDrawer(
+																			table.value.slug,
+																			row.id,
+																			structuredClone(toRaw(row)),
+																		);
 																	else
 																		navigateTo(
 																			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
@@ -850,13 +835,14 @@ function updateColumns() {
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(
-		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
+		(accumulator: number, { width }) =>
+			accumulator + ((width as number | undefined) ?? 0),
 		40,
 	);
 }
 
-watch(Language, updateColumns);
-updateColumns();
+watch(Language, setColumns);
+onMounted(setColumns);
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,

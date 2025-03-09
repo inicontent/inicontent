@@ -12,21 +12,21 @@ import { NForm, type FormInst } from "naive-ui";
 
 const props = defineProps<{
 	table?: string;
-	onBeforeCreate?: (data?: Item) => Item;
-	onAfterCreate?: (data?: Item) => Item;
-	onBeforeUpdate?: (data?: Item) => Item;
-	onAfterUpdate?: (data?: Item) => Item;
+	onBeforeCreate?: (data?: Item) => any;
+	onAfterCreate?: (data?: Item) => any;
+	onBeforeUpdate?: (data?: Item) => any;
+	onAfterUpdate?: (data?: Item) => any;
 	onBeforeDelete?: (data?: Item) => void;
 	onAfterDelete?: (data?: Item) => void;
 }>();
 
-const schema = defineModel<Schema>("schema", { default: reactive([]) });
+const schema = defineModel<Schema>("schema", { default: () => reactive([]) });
 
 defineSlots<{
 	default(data?: Item, schema?: Schema): any;
 }>();
 
-const modelValue = defineModel<Item>({ default: reactive({}) });
+const modelValue = defineModel<Item>({ default: () => reactive({}) });
 
 defineExpose<FormRef>({
 	create: CREATE,

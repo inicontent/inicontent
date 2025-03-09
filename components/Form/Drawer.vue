@@ -1,57 +1,65 @@
 <template>
-	<NDrawer v-if="Drawer" :show="Drawer.show || false" @update:show="(show) => Drawer.show = show"
-		:width="$device.isMobile ? '100%' : drawerWidth" resizable :placement="Language === 'ar' ? 'left' : 'right'"
-		@update:width="width => (drawerWidth = width)" :trap-focus="false">
-		<NDrawerContent closable>
-			<template #header>
-				<span v-if="Drawer.id">
-					{{ t('edit') }}
-					<NuxtLink
-						:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${Drawer.table}/${Drawer.id}/edit`">
-						<NText type="primary">
-							{{ itemLabel || t(Drawer.table) }}
-							<NIcon size="small">
-								<IconExternalLink />
-							</NIcon>
-						</NText>
-					</NuxtLink>
-				</span>
-				<span v-else>
-					{{ t('new') }} {{ t(Drawer.table) }}
-				</span>
-			</template>
+	<template v-for="(drawer, index) in Drawers" :key="index">
+		<NDrawer :show="drawer.show || false" @update:show="(show) => drawer.show = show" :width="drawer.width"
+			@update:width="(width) => {
+				if (index === 0) defaultWidth = width
+				drawer.width = width
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :trap-focus="false">
+			<NDrawerContent closable>
+				<template #header>
+					<span v-if="drawer.id">
+						{{ t('edit') }}
+						<NuxtLink
+							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
+							<NText type="primary">
+								{{ itemsLabels[index] }}
+								<NIcon size="small">
+									<IconExternalLink />
+								</NIcon>
+							</NText>
+						</NuxtLink>
+					</span>
+					<span v-else>
+						{{ t('new') }} {{ t(drawer.table) }}
+					</span>
+				</template>
 
-			<template #footer>
-				<NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
-					<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth()">
-						<template #icon>
-							<NIcon>
-								<IconChevronRight v-if="typeof drawerWidth === 'string' || drawerWidth >= screenHalf" />
-								<IconChevronLeft v-else />
-							</NIcon>
-						</template>
-					</NButton>
+				<template #footer>
+					<NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
+						<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
+							<template #icon>
+								<NIcon>
+									<IconChevronRight
+										v-if="drawer.width && (typeof drawer.width === 'string' || drawer.width >= screenHalf)" />
+									<IconChevronLeft v-else />
+								</NIcon>
+							</template>
+						</NButton>
 
-					<NButton round secondary type="primary"
-						:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
-						@click="Drawer.id ? formRef?.update() : formRef?.create()">
-						<template #icon>
-							<NIcon>
-								<IconDeviceFloppy />
-							</NIcon>
-						</template>
-						{{ Drawer.id ? t('update') : t('create') }}
-					</NButton>
-				</NFlex>
-			</template>
-			<NSpin :show="!!Loading.CREATE || !!Loading.UPDATE">
-				<slot @after-create="onAfterUpdateCreate" @after-update="onAfterUpdateCreate">
-					<Form ref="formRef" v-model="Drawer.data" :table="Drawer.table" @after-create="onAfterUpdateCreate"
-						@after-update="onAfterUpdateCreate" v-model:schema="Drawer.schema"></Form>
+						<NButton round secondary type="primary"
+							:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
+							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
+							<template #icon>
+								<NIcon>
+									<IconDeviceFloppy />
+								</NIcon>
+							</template>
+							{{ drawer.id ? t('update') : t('create') }}
+						</NButton>
+					</NFlex>
+				</template>
+				<div class="drawerSpin" v-if="!drawer.schema || !!Loading.CREATE || !!Loading.UPDATE">
+					<NSpin></NSpin>
+				</div>
+
+				<slot @after-create="onAfterUpdateCreate(index)" @after-update="onAfterUpdateCreate(index)">
+					<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
+						@after-create="() => onAfterUpdateCreate(index)"
+						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
 				</slot>
-			</NSpin>
-		</NDrawerContent>
-	</NDrawer>
+			</NDrawerContent>
+		</NDrawer>
+	</template>
 </template>
 
 <script setup lang="ts">
@@ -71,73 +79,49 @@ import {
 	NSpin,
 } from "naive-ui";
 
-const appConfig = useAppConfig();
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const drawerWidth = useCookie<number | string>("drawerWidth", {
-	sameSite: true,
-});
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
-const table = computed<Table | undefined>(() =>
-	Drawer.value
-		? database.value.tables?.find(({ slug }) => slug === Drawer.value.table)
-		: undefined,
-);
 
-const Drawer = useState<DrawerRef>("drawer", () => ({}));
-
-const formRef = ref<FormRef>();
-const slots = defineSlots<{
-	default(props: {
-		onAfterCreate: () => Promise<void>;
-		onAfterUpdate: () => Promise<void>;
-	}): any;
-}>();
+const Drawers = useState<DrawerRef>("drawers", () => []);
+const defaultWidth = useCookie<number | string>("width", {
+	sameSite: true,
+});
+const formRefs = ref<FormRef[]>([]);
 
 const screenHalf = window.screen.width / 2;
 
-async function loadDrawer() {
-	Drawer.value.show = false;
-	const key = `Drawer_${Drawer.value.table}_${Drawer.value.id}`;
-	Loading.value[key] = true;
-	Drawer.value.data = (
-		await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/${Drawer.value.table}/${Drawer.value.id}`,
-		)
-	).result;
-	Loading.value[key] = false;
-	Drawer.value.show = true;
-}
-
-async function onAfterUpdateCreate() {
-	Object.assign(Drawer.value, {
-		id: null,
-		data: null,
+async function onAfterUpdateCreate(index: number) {
+	Object.assign(Drawers.value[index], {
+		id: undefined,
+		data: {},
 		table: null,
 		show: false,
 	});
 	await refreshNuxtData();
+	return Drawers.value[index];
 }
 
-watch(Drawer, (value, originalValue) => {
-	if (
-		value?.show &&
-		value.id &&
-		((value.data && !Object.keys(value.data).length) ||
-			value.table !== originalValue.table ||
-			value.id !== originalValue.id)
-	)
-		loadDrawer();
-});
-
-const toggleDrawerWidth = () => {
-	if (typeof drawerWidth.value === "string") drawerWidth.value = 251;
-	else drawerWidth.value = drawerWidth.value >= screenHalf ? 251 : "100%";
+const toggleDrawerWidth = (index: number) => {
+	const drawer = Drawers.value[index];
+	if (typeof drawer.width === "string") drawer.width = 251;
+	else
+		drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%";
 };
 
-const itemLabel = useState("itemLabel");
+const itemsLabels = ref<string[]>([]);
 watchEffect(() => {
-	if (table.value && Drawer.value)
-		itemLabel.value = renderLabel(table.value, Drawer.value.data);
+	for (let index = 0; index < Drawers.value.length; index++) {
+		const drawer = Drawers.value[index];
+		const table = drawer.table
+			? database.value.tables?.find(({ slug }) => slug === drawer.table)
+			: undefined;
+
+		if (table) {
+			itemsLabels.value[index] = renderLabel(table, drawer.data);
+			continue;
+		}
+		itemsLabels.value[index] = "--";
+	}
 });
 </script>

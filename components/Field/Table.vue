@@ -10,13 +10,12 @@
 				: {}">
 			<template #action>
 				<NFlex justify="center">
-					<NButton disabled round strong secondary type="primary">
+					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table)">
 						<template #icon>
 							<NIcon>
 								<IconPlus />
 							</NIcon>
 						</template>
-						{{ t('new') }}
 					</NButton>
 				</NFlex>
 			</template>

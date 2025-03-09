@@ -222,6 +222,23 @@ body {
 	--gray-3: rgba(255, 255, 255, 0.35);
 }
 
+.drawerSpin {
+	position: absolute;
+	top: 51px;
+	left: 0;
+	width: 100%;
+	height: calc(100vh - 51px - 67px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: #ffffffc4;
+	z-index: 1;
+}
+
+.dark .drawerSpin {
+	background: #00000021;
+}
+
 @media print {
 	* {
 		max-height: unset !important;

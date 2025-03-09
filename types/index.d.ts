@@ -82,7 +82,7 @@ declare global {
 		itemExtraActions?: (index: number) => VNode | undefined;
 		itemExtraButtons?: (index: number) => VNode | undefined;
 	};
-	type Schema = Field[];
+	type Schema = (Field & dbField)[];
 	type FlowType = (
 		| [
 				"set",
@@ -197,7 +197,8 @@ declare global {
 		table?: string;
 		data?: Item;
 		schema?: Schema;
-	};
+		width?: number | string;
+	}[];
 }
 declare module "nuxt/schema" {
 	interface appConfig {
