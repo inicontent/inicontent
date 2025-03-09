@@ -102,7 +102,8 @@ async function fetchSchemaAndData() {
 						field.key,
 					),
 			);
-			if (countItems(schema.value) !== countItems(filteredSchema))
+			if (!schema.value) schema.value = filteredSchema;
+			else if (countItems(schema.value) !== countItems(filteredSchema))
 				schema.value = mergeItems(schema.value, filteredSchema);
 		}
 

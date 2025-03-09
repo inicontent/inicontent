@@ -48,8 +48,8 @@
 						</NButton>
 					</NFlex>
 				</template>
-				<div class="drawerSpin" v-if="!drawer.schema || !!Loading.CREATE || !!Loading.UPDATE">
-					<NSpin></NSpin>
+				<div class="drawerSpin" v-if="!drawer.schema?.length || !!Loading.CREATE || !!Loading.UPDATE">
+					<NSpin />
 				</div>
 
 				<slot @after-create="onAfterUpdateCreate(index)" @after-update="onAfterUpdateCreate(index)">
