@@ -10,7 +10,7 @@
 				: {}">
 			<template #action>
 				<NFlex justify="center">
-					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table)">
+					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table as string)">
 						<template #icon>
 							<NIcon>
 								<IconPlus />
@@ -36,13 +36,10 @@ const modelValue = defineModel<Item | Item[]>();
 const options = ref<tableOption[]>();
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
-watch(
-	modelValue,
-	(v) => {
-		if (v) options.value = ([] as Item[]).concat(v).map(singleOption);
-	},
-	{ immediate: true },
-);
+
+if (modelValue.value && !options.value)
+	options.value = ([] as Item[]).concat(modelValue.value).map(singleOption);
+
 const selectValue = computed<null | string | string[]>(() =>
 	modelValue.value
 		? field.isArray && Array.isArray(modelValue.value)
@@ -101,16 +98,20 @@ async function onUpdateSelectValue(
 			: option.raw
 		: undefined;
 	await nextTick();
-	if (modelValue.value && modelValue.value.length === options.value?.length)
-		options.value = options.value?.filter(({ value }) =>
+	if (
+		options.value &&
+		modelValue.value &&
+		modelValue.value.length === options.value.length
+	)
+		options.value = options.value.filter(({ value }) =>
 			Array.isArray(_id) ? _id.includes(value) : _id === value,
 		);
 }
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
+		getPath(table.schema ?? [], columnID),
+	)
 	: field.searchIn;
 const pagination = ref<pageInfo>();
 const where = ref<string>();
@@ -119,11 +120,11 @@ async function loadOptions(searchValue?: string | number) {
 	const searchOrObject =
 		searchValue && searchIn
 			? (searchIn.reduce((result, searchKey) => {
-					Object.assign(result, {
-						[searchKey]: `*%${searchValue}%`,
-					});
-					return result;
-				}, {}) ?? false)
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				});
+				return result;
+			}, {}) ?? false)
 			: false;
 	let _where = "";
 	if (field.where) {
@@ -185,7 +186,7 @@ async function handleScroll(e: Event) {
 		return;
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-			currentTarget.scrollHeight &&
+		currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true;

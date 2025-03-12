@@ -1,5 +1,5 @@
 <template>
-    <NFlex :wrap="false" align="center">
+    <NFlex :wrap="false" align="center" :size="5">
         <NIcon v-if="value" style="cursor: pointer;" size="medium" @click="copyID">
             <IconCopy />
         </NIcon>

@@ -59,7 +59,7 @@
 												</NDropdown>
 												<NCascader size="small" style="height: fit-content;"
 													:options="generateFlowCascaderOptions(true, true)"
-													check-strategy="child" expand-trigger="hover" show-path
+													check-strategy="child" expand-trigger="click" show-path
 													separator="." filterable v-model:value="flow[index][1]" />
 												<NSelect size="small"
 													style="border-radius: 0 50px 50px 0!important;overflow: hidden;"
@@ -92,7 +92,7 @@
 												<NCascader size="small"
 													style="border-radius: 0 50px 50px 0!important;overflow: hidden;height: fit-content;"
 													:options="generateFlowCascaderOptions()" check-strategy="parent"
-													expand-trigger="hover" show-path separator="." filterable
+													expand-trigger="click" show-path separator="." filterable
 													v-model:value="flow[index][1]" multiple :max-tag-count="1" />
 											</template>
 											<template v-else>
@@ -106,7 +106,7 @@
 													:options="[
 														...generateFlowCascaderOptions(true, true, true),
 														{ label: '@method', value: '@method' },
-													]" check-strategy="child" expand-trigger="hover" show-path separator="." filterable
+													]" check-strategy="child" expand-trigger="click" show-path separator="." filterable
 													v-model:value="flow[index][0]" />
 												<NSelect size="small" style="width: 136px;"
 													:consistent-menu-width="false" filterable
@@ -138,20 +138,10 @@
 													@update:value="(value) => flow[index][2] = value === 'null' ? null : value" />
 											</template>
 										</NInputGroup>
-										<NDropdown show-arrow :options="addNewRuleDropdownOptions" @select="(value) => {
-											switch (value) {
-												case 'if':
-													flow.push([null, null, null]);
-													break;
-												case 'set':
-													flow.push(['set', null, null]);
-													break;
-												default:
-													flow.push([value, null]);
-													break;
-											}
-										}">
-											<NButton style="margin: auto" round dashed>
+										<NDropdown show-arrow :options="addRuleDropdownOptions"
+											@select="(value) => pushRuleToFlow(flow, value)">
+											<NButton style="margin: auto" round dashed
+												@click="pushRuleToFlow(flow, 'if')">
 												<template #icon>
 													<NIcon>
 														<IconPlus />
@@ -371,8 +361,7 @@ const database = useState<Database>("database"),
 		Loading.value.updateTable = true;
 		const bodyContent = structuredClone(toRaw(tableCopy.value));
 		const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}inicontent/databases/${
-				database.value.slug
+			`${appConfig.apiBase}inicontent/databases/${database.value.slug
 			}/${table.value.slug}`,
 			{
 				method: "PUT",
@@ -433,12 +422,12 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-								{
-									label: t("or"),
-									value: "@where.or",
-									children: schemaToOptions(table.value.schema, "@where.or"),
-								},
-							]
+							{
+								label: t("or"),
+								value: "@where.or",
+								children: schemaToOptions(table.value.schema, "@where.or"),
+							},
+						]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
@@ -480,9 +469,9 @@ function generateFlowSelectOptions(
 						(isObject(_value)
 							? _value
 							: {
-									label: _value,
-									value: _value,
-								}) as any,
+								label: _value,
+								value: _value,
+							}) as any,
 					),
 				);
 		}
@@ -534,16 +523,16 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-							{
-								key: "@where.or",
-								label: "or",
-								type: "group",
-								children: schema.map(({ id, key }) => ({
-									label: `@where.or.${key}`,
-									value: `@where.or.${id}`,
-								})),
-							},
-						]
+						{
+							key: "@where.or",
+							label: "or",
+							type: "group",
+							children: schema.map(({ id, key }) => ({
+								label: `@where.or.${key}`,
+								value: `@where.or.${id}`,
+							})),
+						},
+					]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
@@ -681,7 +670,7 @@ function ruleDropdownProps(flow: FlowType, index: number) {
 	};
 }
 
-const addNewRuleDropdownOptions = [
+const addRuleDropdownOptions = [
 	{
 		key: "if",
 		label: t("condition"),
@@ -701,6 +690,20 @@ const addNewRuleDropdownOptions = [
 		label: t("throwError"),
 	},
 ];
+
+function pushRuleToFlow(flow: any, value: "if" | "set" | "unset" | "error") {
+	switch (value) {
+		case 'if':
+			flow.push([null, null, null]);
+			break;
+		case 'set':
+			flow.push(['set', null, null]);
+			break;
+		default:
+			flow.push([value, null]);
+			break;
+	}
+}
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("flows")}`,

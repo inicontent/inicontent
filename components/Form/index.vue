@@ -16,8 +16,8 @@ const props = defineProps<{
 	onAfterCreate?: (data?: Item) => any;
 	onBeforeUpdate?: (data?: Item) => any;
 	onAfterUpdate?: (data?: Item) => any;
-	onBeforeDelete?: (data?: Item) => void;
-	onAfterDelete?: (data?: Item) => void;
+	onBeforeDelete?: (data?: Item) => any;
+	onAfterDelete?: (data?: Item) => any;
 }>();
 
 const schema = defineModel<Schema>("schema", { default: () => reactive([]) });

@@ -75,7 +75,7 @@ onBeforeUpdate(() => {
 
 const appConfig = useAppConfig();
 const route = useRoute();
-const user = useState<User>("users");
+const user = useState<User>("user");
 const table = useState<Table>("table");
 const isMenuOpen = useState("isMenuOpen", () => false);
 const database = useState<Database>("database");

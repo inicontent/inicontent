@@ -1,10 +1,10 @@
 <template>
 	<template v-for="(drawer, index) in Drawers" :key="index">
-		<NDrawer :show="drawer.show || false" @update:show="(show) => drawer.show = show" :width="drawer.width"
-			@update:width="(width) => {
+		<NDrawer @esc="drawer.show = false" :show="drawer.show || false"
+			@update:show="(show) => onUpdateShow(index, show)" :width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :trap-focus="false">
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
@@ -37,6 +37,7 @@
 						</NButton>
 
 						<NButton round secondary type="primary"
+							:disabled="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
 							<template #icon>
@@ -52,7 +53,7 @@
 					<NSpin />
 				</div>
 
-				<slot @after-create="onAfterUpdateCreate(index)" @after-update="onAfterUpdateCreate(index)">
+				<slot @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
 					<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
 						@after-create="() => onAfterUpdateCreate(index)"
 						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
@@ -83,6 +84,16 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 
+defineSlots<{
+	default({
+		onAfterCreate,
+		onAfterUpdate,
+	}: { onAfterCreate: () => any; onAfterUpdate: () => any }): {
+		onAfterCreate: () => any;
+		onAfterUpdate: () => any;
+	};
+}>();
+
 const Drawers = useState<DrawerRef>("drawers", () => []);
 const defaultWidth = useCookie<number | string>("width", {
 	sameSite: true,
@@ -91,13 +102,14 @@ const formRefs = ref<FormRef[]>([]);
 
 const screenHalf = window.screen.width / 2;
 
+function onUpdateShow(index: number, show: boolean) {
+	Drawers.value[index].show = show;
+	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 200);
+}
+
 async function onAfterUpdateCreate(index: number) {
-	Object.assign(Drawers.value[index], {
-		id: undefined,
-		data: {},
-		table: null,
-		show: false,
-	});
+	Drawers.value[index].show = false;
+	setTimeout(() => Drawers.value.splice(index, 1), 100);
 	await refreshNuxtData();
 	return Drawers.value[index];
 }

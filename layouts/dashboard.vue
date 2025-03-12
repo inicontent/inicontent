@@ -38,7 +38,7 @@
 							<NButtonGroup>
 								<template v-if="user?.id">
 									<template v-if="user?.role ===
-										'd7b3d61a582e53ee29b5a1d02a436d55'">
+										appConfig.idOne">
 										<NTooltip :delay="500">
 											<template #trigger>
 												<NButton round size="small">{{ humanFileSize(
@@ -199,7 +199,7 @@ defineTranslation({
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
 const appConfig = useAppConfig();
 const route = useRoute();
-const user = useState<User | undefined>("users");
+const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 const fromPath = useCookie("from");
 
@@ -210,11 +210,13 @@ const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColorSuppl: "#CB7900",
 }));
 
-const showBreadcrumb =
-	computed(() => database.value?.slug &&
+const showBreadcrumb = computed(
+	() =>
+		database.value?.slug &&
 		!["index", "auth", "dashboard", "database", "database-auth"].includes(
 			String(route.matched[0].name),
-		));
+		),
+);
 
 const breadcrumbArray = computed(() =>
 	route.path
@@ -232,7 +234,7 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-					(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
+						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		);
@@ -274,7 +276,7 @@ const userDropdownOptions = [
 						() =>
 							user.value?.username
 								? user.value.username.charAt(0).toUpperCase() +
-								user.value.username.slice(1)
+									user.value.username.slice(1)
 								: "--",
 					),
 			),
@@ -301,17 +303,19 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
+					(user.value as User).id
 				}/edit`,
 			);
 			break;
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${
+					database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{},
 			);
-			fromPath.value = undefined
+			fromPath.value = undefined;
 			user.value = undefined;
 			await navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/auth`,

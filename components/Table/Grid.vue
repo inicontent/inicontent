@@ -17,7 +17,7 @@
 								@mouseleave="Hover[table.slug] = false">
 								<NIcon>
 									<IconArrowRight
-										v-if="Hover[table.slug] || (table.slug === 'assets' && user?.role !== 'd7b3d61a582e53ee29b5a1d02a436d55')" />
+										v-if="Hover[table.slug] || (table.slug === 'assets' && (!user || user.role !== appConfig.idOne))" />
 									<IconDots v-else />
 								</NIcon>
 							</NButton>
@@ -108,7 +108,7 @@ const showPopover = ref(false);
 
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const user = useState<User>("users");
+const user = useState<User>("user");
 const Hover = ref<Record<string, boolean>>({});
 const newTableSlug = ref();
 const route = useRoute();

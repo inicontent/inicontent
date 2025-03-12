@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-	const user = useState<User>("users");
+	const user = useState<User>("user");
 	const database = useState<Database>("database");
 	const fromPath = useCookie("from");
 	if (user.value) {
