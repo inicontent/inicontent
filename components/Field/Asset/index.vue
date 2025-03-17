@@ -38,25 +38,22 @@
 
 <script lang="ts" setup>
 import { IconUpload } from "@tabler/icons-vue";
+import { isArrayOfObjects, isObject } from "inibase/utils";
 import {
-	NFlex,
-	NIcon,
+	type FormItemRule,
 	NDrawer,
 	NDrawerContent,
+	NFlex,
+	NIcon,
 	NRadio,
 	NUpload,
 	NUploadDragger,
-	type FormItemRule,
 	type UploadFileInfo,
 } from "naive-ui";
-import { isArrayOfObjects, isObject } from "inibase/utils";
 
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<string | Asset | (string | Asset)[]>();
-watch(modelValue, () => {
-	fileList.value = getFileList();
-});
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
@@ -138,6 +135,7 @@ function importAssetCallback(assets: Asset | Asset[]) {
 
 function handleSelectAsset(asset?: Asset) {
 	if (!asset) return;
+
 	const value =
 		field.type === "url" || field.children === "url" ? asset.publicURL : asset;
 
@@ -162,69 +160,75 @@ function handleSelectAsset(asset?: Asset) {
 			else modelValue.value.push(value);
 		} else modelValue.value = [value];
 	}
+
+	fileList.value = getFileList();
 }
 
 function getFileList() {
-	return ([] as (Asset | string)[])
-		.concat(modelValue.value ?? [])
-		.map((asset) =>
-			typeof asset === "string"
-				? {
-						id: asset,
-						name: asset.split("/").pop(),
-						status: "finished",
-						url: asset,
-						type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-						thumbnailUrl:
-							field.accept?.includes("image") && !field.params?.includes("fit")
-								? `${asset}`
-								: undefined,
-					}
-				: {
-						id: asset.id,
-						name: asset.id,
-						status: "finished",
-						url: (asset as Asset).publicURL,
-						type: asset.type,
-						thumbnailUrl:
-							asset.type?.startsWith("image/") && !field.params?.includes("fit")
-								? `${(asset as Asset).publicURL}`
-								: undefined,
-					},
-		) as UploadFileInfo[];
+	if (!modelValue.value) return;
+
+	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
+		typeof asset === "string"
+			? {
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+					thumbnailUrl:
+						field.accept?.includes("image") && !field.params?.includes("fit")
+							? `${asset}`
+							: undefined,
+				}
+			: {
+					id: asset.id,
+					name: asset.name || asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+					thumbnailUrl:
+						asset.type?.startsWith("image/") && !field.params?.includes("fit")
+							? `${(asset as Asset).publicURL}`
+							: undefined,
+				},
+	) as UploadFileInfo[];
 }
 
 const fileList = ref<undefined | UploadFileInfo[]>(getFileList());
-function setModelValue(value?: UploadFileInfo[]) {
+async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 	fileList.value = value;
 
 	if (value) {
-		if (
-			value.length &&
-			value.length ===
+		if (value.length) {
+			if (
+				value.length ===
 				value.filter(({ status }) => status === "finished").length
-		) {
-			const finalFileList = value
-				.filter(({ status }) => status === "finished")
-				.map(({ name, url, type, file }) => ({
-					id: name,
-					type,
-					publicURL: url,
-					size: file?.size ?? 0,
-					createdAt: file?.lastModified ?? 0,
-				})) as Asset[];
-			if (finalFileList.length)
-				modelValue.value = field.isArray ? finalFileList : finalFileList[0];
-			else modelValue.value = undefined;
-		}
+			) {
+				const finalFileList = value
+					.filter(({ status }) => status === "finished")
+					.map(({ id, name, url, type, file }) => ({
+						id: fileIdObject.value[id],
+						name,
+						type,
+						publicURL: url,
+						size: file?.size ?? 0,
+						createdAt: file?.lastModified ?? 0,
+					})) as Asset[];
+				if (finalFileList.length) {
+					modelValue.value = field.isArray ? finalFileList : finalFileList[0];
+					await nextTick();
+					fileList.value = getFileList();
+				} else modelValue.value = undefined;
+			}
+		} else modelValue.value = undefined;
 	} else modelValue.value = undefined;
 }
-
+const fileIdObject = ref<Record<string, string>>({});
 function onFinish({
 	file,
 	event,
 }: {
-	file: UploadFileInfo;
+	file: UploadFileInfo & { _id?: string };
 	event?: ProgressEvent;
 }) {
 	const result = (
@@ -232,8 +236,8 @@ function onFinish({
 	).result;
 	file.url = result.publicURL;
 	file.type = result.type;
-	file.name = result.id as string;
-	// file.id = result.id as string;
+	file.name = (result.name || result.id) as string;
+	fileIdObject.value[file.id] = result.id as string;
 	return file;
 }
 
@@ -243,8 +247,9 @@ function onPreview({ url }: UploadFileInfo) {
 }
 
 const getChecked = (asset: Asset) =>
+	!!modelValue.value &&
 	([] as (Asset | string)[])
-		.concat(modelValue.value ?? [])
+		.concat(modelValue.value)
 		.findIndex((value) =>
 			typeof value === "string"
 				? value === asset.publicURL
