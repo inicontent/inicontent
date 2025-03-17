@@ -27,8 +27,8 @@
 import Inison from "inison";
 import { NButton, NFlex, NIcon, NSelect, type FormItemRule } from "naive-ui";
 import { isArrayOfObjects, isObject } from "inibase/utils";
-import type { pageInfo } from "inibase";
 import { IconPlus } from "@tabler/icons-vue";
+import type { pageInfo } from "inibase";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -36,9 +36,14 @@ const modelValue = defineModel<Item | Item[]>();
 const options = ref<tableOption[]>();
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
-
-if (modelValue.value && !options.value)
-	options.value = ([] as Item[]).concat(modelValue.value).map(singleOption);
+watch(
+	modelValue,
+	(value) => {
+		if (value && !options.value)
+			options.value = ([] as Item[]).concat(value).map(singleOption);
+	},
+	{ immediate: true },
+);
 
 const selectValue = computed<null | string | string[]>(() =>
 	modelValue.value
@@ -110,8 +115,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-		getPath(table.schema ?? [], columnID),
-	)
+			getPath(table.schema ?? [], columnID),
+		)
 	: field.searchIn;
 const pagination = ref<pageInfo>();
 const where = ref<string>();
@@ -120,11 +125,11 @@ async function loadOptions(searchValue?: string | number) {
 	const searchOrObject =
 		searchValue && searchIn
 			? (searchIn.reduce((result, searchKey) => {
-				Object.assign(result, {
-					[searchKey]: `*%${searchValue}%`,
-				});
-				return result;
-			}, {}) ?? false)
+					Object.assign(result, {
+						[searchKey]: `*%${searchValue}%`,
+					});
+					return result;
+				}, {}) ?? false)
 			: false;
 	let _where = "";
 	if (field.where) {
@@ -186,7 +191,7 @@ async function handleScroll(e: Event) {
 		return;
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-		currentTarget.scrollHeight &&
+			currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true;

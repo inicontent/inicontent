@@ -116,10 +116,18 @@ onMounted(() => {
 		// Select the element with the class "printable"
 		let element = document.querySelector(".printable");
 
-		// Traverse up the DOM and add a class to each parent element
-		while (element?.parentElement) {
-			element.parentElement.classList.add("printable-parent");
-			element = element.parentElement;
+		// Check if the element and its parent exist
+		if (element?.parentElement) {
+			// Add the class "printable-direct-parent" to the direct parent
+			element.parentElement.classList.add("printable-direct-parent");
+
+			// Traverse up the DOM starting from the direct parent's parent
+			let parent = element.parentElement.parentElement;
+			while (parent) {
+				// Add the class "printable-parent" to all other ancestors
+				parent.classList.add("printable-parent");
+				parent = parent.parentElement;
+			}
 		}
 	};
 
@@ -127,9 +135,12 @@ onMounted(() => {
 	window.onafterprint = () => {
 		// Remove the "printable-parent" class after printing
 		const elements = document.querySelectorAll(".printable-parent");
-		for (let i = 0; i < elements.length; i++) {
+		for (let i = 0; i < elements.length; i++)
 			elements[i].classList.remove("printable-parent");
-		}
+
+		document
+			.querySelector(".printable-direct-parent")
+			?.classList.remove("printable-parent");
 	};
 });
 

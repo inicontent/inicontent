@@ -12,19 +12,15 @@
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onFinish :onPreview
 			:list-type="!field.isTable ? 'image' : 'image-card'">
-			<template v-if="!field.isTable">
-				<NUploadDragger>
-					<NIcon size="48" depth="3">
-						<IconUpload />
-					</NIcon>
-				</NUploadDragger>
-			</template>
-			<template v-else>
-				<NFlex align="center" size="small">
-					<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
-						:callback="importAssetCallback" />
-				</NFlex>
-			</template>
+			<NUploadDragger v-if="!field.isTable">
+				<NIcon size="48" depth="3">
+					<IconUpload />
+				</NIcon>
+			</NUploadDragger>
+			<NFlex v-else align="center" size="small">
+				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
+					:callback="importAssetCallback" />
+			</NFlex>
 		</NUpload>
 
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>

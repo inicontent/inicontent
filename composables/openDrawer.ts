@@ -36,8 +36,9 @@ export default function (table: string, id = undefined, data: any = {}) {
 			for (let index = 0; index < Drawers.value.length; index++) {
 				const drawer = Drawers.value[index];
 				if (typeof drawer.width === "string") continue;
-				width = drawer.width ?? 251;
-				drawer.width = Math.min(window.screen.width, width + width * 0.1);
+				if (drawer.width) width = drawer.width;
+				if (typeof width === "number")
+					drawer.width = Math.min(window.screen.width, width + width * 0.1);
 			}
 		}
 		// If drawer doesn't exist, create it

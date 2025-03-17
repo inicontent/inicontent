@@ -1,111 +1,114 @@
 <template>
-	<LazyFormDrawer v-if="!isMobile">
-		<template #default="{ onAfterCreate, onAfterUpdate }">
-			<slot name="form" :onAfterCreate :onAfterUpdate></slot>
-		</template>
-	</LazyFormDrawer>
-	<NCard :title="t(table.slug) ?? '--'" style="background:none" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
-		content-style="padding: 0" :bordered="false">
-		<template #header-extra>
-			<NFlex align="center">
-				<slot name="navbarExtraActions"></slot>
-				<slot name="navbarActions">
-					<NButtonGroup>
-						<slot name="navbarExtraButtons"></slot>
-						<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)"
-							style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
-							placement="bottom-end" trigger="click" scrollable>
-							<template #trigger>
+	<div>
+		<LazyFormDrawer v-if="!isMobile">
+			<template #default="{ onAfterCreate, onAfterUpdate }">
+				<slot name="form" :onAfterCreate :onAfterUpdate></slot>
+			</template>
+		</LazyFormDrawer>
+		<NCard :title="t(table.slug) ?? '--'" style="background:none"
+			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
+			<template #header-extra>
+				<NFlex align="center">
+					<slot name="navbarExtraActions"></slot>
+					<slot name="navbarActions">
+						<NButtonGroup>
+							<slot name="navbarExtraButtons"></slot>
+							<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)"
+								style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
+								placement="bottom-end" trigger="click" scrollable>
+								<template #trigger>
+									<NTooltip :delay="500">
+										<template #trigger>
+											<NButton round>
+												<template #icon>
+													<NIcon>
+														<IconSearch />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										{{ t("search") }}
+									</NTooltip>
+								</template>
+								<template #footer>
+									<NFlex justify="end">
+										<NButtonGroup>
+											<NButton round type="error" secondary :loading="Loading.data"
+												:disabled="isSearchDisabled" @click="searchArray = undefined">
+												<template #icon>
+													<NIcon>
+														<IconX />
+													</NIcon>
+												</template>
+												{{ t("reset") }}
+											</NButton>
+											<NButton round type="primary" secondary :loading="Loading.data"
+												:disabled="isSearchDisabled" @click="executeSearch">
+												<template #icon>
+													<NIcon>
+														<IconSearch />
+													</NIcon>
+												</template>
+												{{ t("search") }}
+											</NButton>
+										</NButtonGroup>
+									</NFlex>
+								</template>
+								<TableSearch v-model="localSearchArray" :callback="executeSearch" />
+							</NPopover>
+							<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
+								@select="toolsDropdownOnSelect" trigger="click">
 								<NTooltip :delay="500">
 									<template #trigger>
 										<NButton round>
 											<template #icon>
 												<NIcon>
-													<IconSearch />
+													<IconTools />
 												</NIcon>
 											</template>
 										</NButton>
 									</template>
-									{{ t("search") }}
+									{{ t("tools") }}
 								</NTooltip>
-							</template>
-							<template #footer>
-								<NFlex justify="end">
-									<NButtonGroup>
-										<NButton round type="error" secondary :loading="Loading.data"
-											:disabled="isSearchDisabled" @click="searchArray = undefined">
-											<template #icon>
-												<NIcon>
-													<IconX />
-												</NIcon>
-											</template>
-											{{ t("reset") }}
-										</NButton>
-										<NButton round type="primary" secondary :loading="Loading.data"
-											:disabled="isSearchDisabled" @click="executeSearch">
-											<template #icon>
-												<NIcon>
-													<IconSearch />
-												</NIcon>
-											</template>
-											{{ t("search") }}
-										</NButton>
-									</NButtonGroup>
-								</NFlex>
-							</template>
-							<TableSearch v-model="localSearchArray" :callback="executeSearch" />
-						</NPopover>
-						<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
-							@select="toolsDropdownOnSelect" trigger="click">
-							<NTooltip :delay="500">
-								<template #trigger>
-									<NButton round>
-										<template #icon>
-											<NIcon>
-												<IconTools />
-											</NIcon>
-										</template>
-									</NButton>
-								</template>
-								{{ t("tools") }}
-							</NTooltip>
-						</NDropdown>
+							</NDropdown>
 
-						<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
-							size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
-							<NTooltip placement="top" :delay="500">
-								<template #trigger>
-									<NButton round :disabled="!table.schema" tag="a"
-										:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-										@click.prevent="() => {
-											if (!isMobile)
-												openDrawer(table.slug)
-											else
-												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
-										}">
-										<template #icon>
-											<NIcon>
-												<IconPlus />
-											</NIcon>
-										</template>
-									</NButton>
-								</template>
-								{{ t("newItem") }}
-							</NTooltip>
-						</NDropdown>
-					</NButtonGroup>
-				</slot>
-			</NFlex>
-		</template>
-		<slot name="default" :data>
-			<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef" :columns
-				:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-				:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-				:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" />
-			<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
-				:show="showDropdown" :onClickoutside @select="handleSelect" />
-		</slot>
-	</NCard>
+							<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
+								size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
+								<NTooltip placement="top" :delay="500">
+									<template #trigger>
+										<NButton round :disabled="!table.schema" tag="a"
+											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+											@click.prevent="() => {
+												if (!isMobile)
+													openDrawer(table.slug)
+												else
+													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
+											}">
+											<template #icon>
+												<NIcon>
+													<IconPlus />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("newItem") }}
+								</NTooltip>
+							</NDropdown>
+						</NButtonGroup>
+					</slot>
+				</NFlex>
+			</template>
+			<slot name="default" :data>
+				<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataRef"
+					:columns :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+					:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys"
+					@update:sorter="handleSorterChange" :get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader"
+					:rowProps @scroll="handleScroll" />
+				<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
+					:show="showDropdown" :onClickoutside @select="handleSelect" />
+			</slot>
+		</NCard>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -349,14 +352,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
 		: router.push({
-			query: Query ?? {},
-		});
+				query: Query ?? {},
+			});
 });
 
 const dataRef = ref<DataTableInst>();
@@ -427,7 +430,6 @@ const { data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 			Loading.value.data = false;
 			pagination.pageCount = totalPages ?? 0;
 			pagination.itemCount = total ?? 0;
-			setColumns();
 		},
 	},
 );
@@ -530,12 +532,12 @@ function handleSorterChange({
 	}
 	queryOptions.value = Object.keys(sortObject.value).length
 		? Inison.stringify({
-			...Inison.unstringify(queryOptions.value),
-			sort: sortObject.value,
-		})
+				...Inison.unstringify(queryOptions.value),
+				sort: sortObject.value,
+			})
 		: Inison.stringify(
-			(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
-		);
+				(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
+			);
 }
 
 const tableWidth = ref<number>(0);
@@ -663,7 +665,7 @@ watchEffect(() => {
 		Object.keys(localSearchArray.value).length === 1 &&
 		(
 			localSearchArray.value[
-			Object.keys(localSearchArray.value)[0] as "and" | "or"
+				Object.keys(localSearchArray.value)[0] as "and" | "or"
 			]?.[0] as any
 		)[0] === null
 	);
@@ -685,69 +687,68 @@ const hiddenColumns = useCookie<Record<string, string[]>>("hiddenColumns", {
 	default: () => ({}) as Record<string, string[]>,
 	sameSite: true,
 });
-
 function setColumns() {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
 			? [
-				{
-					type: "selection",
-					fixed: "left",
-					options: [
-						{
-							label: t("delete"),
-							key: "delete",
-							disabled: checkedRowKeys.value.length === 0,
-							icon: () => h(NIcon, () => h(IconTrash)),
-							onSelect: async () => {
-								await DELETE(checkedRowKeys.value);
-								checkedRowKeys.value = [];
-							},
-						},
-						{
-							label: t("clearTable"),
-							key: "clear",
-							disabled:
-								checkedRowKeys.value.length !== data.value?.result?.length,
-							icon: () => h(NIcon, () => h(IconTableMinus)),
-							onSelect: async () => {
-								await DELETE();
-								checkedRowKeys.value = [];
-							},
-						},
-						{
-							label: t("columns"),
-							key: "columns",
-							icon: () => h(NIcon, () => h(IconColumns3)),
-							children: table.value.schema?.map(({ id, key }) => ({
-								label: t(key),
-								key: id,
-								// icon: () =>
-								// 	h(NIcon, () =>
-								// 		hiddenColumns.value[table.value.slug].includes(
-								// 			id as string,
-								// 		)
-								// 			? h(IconEyeOff)
-								// 			: h(IconEye),
-								// 	),
-								onSelect: () => {
-									if (
-										hiddenColumns.value[table.value.slug].includes(
-											id as string,
-										)
-									)
-										hiddenColumns.value[table.value.slug] =
-											hiddenColumns.value[table.value.slug].filter(
-												(itemID) => itemID !== id,
-											);
-									else
-										hiddenColumns.value[table.value.slug].push(id as string);
+					{
+						type: "selection",
+						fixed: "left",
+						options: [
+							{
+								label: t("delete"),
+								key: "delete",
+								disabled: checkedRowKeys.value.length === 0,
+								icon: () => h(NIcon, () => h(IconTrash)),
+								onSelect: async () => {
+									await DELETE(checkedRowKeys.value);
+									checkedRowKeys.value = [];
 								},
-							})),
-						},
-					],
-				},
-			]
+							},
+							{
+								label: t("clearTable"),
+								key: "clear",
+								disabled:
+									checkedRowKeys.value.length !== data.value?.result?.length,
+								icon: () => h(NIcon, () => h(IconTableMinus)),
+								onSelect: async () => {
+									await DELETE();
+									checkedRowKeys.value = [];
+								},
+							},
+							{
+								label: t("columns"),
+								key: "columns",
+								icon: () => h(NIcon, () => h(IconColumns3)),
+								children: table.value.schema?.map(({ id, key }) => ({
+									label: t(key),
+									key: id,
+									// icon: () =>
+									// 	h(NIcon, () =>
+									// 		hiddenColumns.value[table.value.slug].includes(
+									// 			id as string,
+									// 		)
+									// 			? h(IconEyeOff)
+									// 			: h(IconEye),
+									// 	),
+									onSelect: () => {
+										if (
+											hiddenColumns.value[table.value.slug].includes(
+												id as string,
+											)
+										)
+											hiddenColumns.value[table.value.slug] =
+												hiddenColumns.value[table.value.slug].filter(
+													(itemID) => itemID !== id,
+												);
+										else
+											hiddenColumns.value[table.value.slug].push(id as string);
+									},
+								})),
+							},
+						],
+					},
+				]
 			: []),
 		...(table.value.schema
 			?.filter(
@@ -772,109 +773,112 @@ function setColumns() {
 				sortOrder: sortObject.value[field.key]
 					? `${sortObject.value[field.key]}end`
 					: undefined,
-				render: (row: Item) => h(Column, { value: row[field.key], field }),
+				render: (row: Item) =>
+					field.render
+						? field.render(row)
+						: h(Column, { value: row[field.key], field }),
 			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []
 			: [
-				{
-					title: t("actions"),
-					align: "center",
-					width:
-						150 +
-						(slots.itemExtraButtons
-							? (slots.itemExtraButtons as any)().length * 20
-							: 0),
-					key: "actions",
-					fixed: "right",
-					render: (row: any) =>
-						slots.itemActions
-							? slots.itemActions(row)
-							: [
-								slots.itemExtraActions
-									? slots.itemExtraActions(row)
-									: undefined,
-								h(NButtonGroup, () =>
-									[
-										slots.itemExtraButtons
-											? slots.itemExtraButtons(row)
+					{
+						title: t("actions"),
+						align: "center",
+						width:
+							150 +
+							(slots.itemExtraButtons
+								? (slots.itemExtraButtons as any)().length * 20
+								: 0),
+						key: "actions",
+						fixed: "right",
+						render: (row: any) =>
+							slots.itemActions
+								? slots.itemActions(row)
+								: [
+										slots.itemExtraActions
+											? slots.itemExtraActions(row)
 											: undefined,
-										table.value.allowedMethods?.includes("r")
-											? h(
-												NButton,
-												{
-													secondary: true,
-													circle: true,
-													type: "primary",
-												},
-												{
-													icon: () =>
-														h(
-															NuxtLink,
-															{
-																to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-															},
-															() => h(NIcon, () => h(IconEye)),
-														),
-												},
-											)
-											: null,
-										table.value.allowedMethods?.includes("u")
-											? h(
-												NButton,
-												{
-													tag: "a",
-													href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-													onClick: (e) => {
-														e.preventDefault();
-														if (!isMobile)
-															openDrawer(
-																table.value.slug,
-																row.id,
-																structuredClone(toRaw(row)),
-															);
-														else
-															navigateTo(
-																`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-															);
-													},
-													secondary: true,
-													circle: true,
-													type: "info",
-												},
-												{ icon: () => h(NIcon, () => h(IconPencil)) },
-											)
-											: null,
-										table.value.allowedMethods?.includes("d")
-											? h(
-												NPopconfirm,
-												{
-													onPositiveClick: () => DELETE(row.id),
-												},
-												{
-													trigger: () =>
-														h(
+										h(NButtonGroup, () =>
+											[
+												slots.itemExtraButtons
+													? slots.itemExtraButtons(row)
+													: undefined,
+												table.value.allowedMethods?.includes("r")
+													? h(
 															NButton,
 															{
-																strong: true,
 																secondary: true,
 																circle: true,
-																type: "error",
+																type: "primary",
 															},
 															{
-																icon: () => h(NIcon, () => h(IconTrash)),
+																icon: () =>
+																	h(
+																		NuxtLink,
+																		{
+																			to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+																		},
+																		() => h(NIcon, () => h(IconEye)),
+																	),
 															},
-														),
-													default: () =>
-														t("theFollowingActionIsIrreversible"),
-												},
-											)
-											: null,
-									].filter((i) => i !== null),
-								),
-							],
-				},
-			]),
+														)
+													: null,
+												table.value.allowedMethods?.includes("u")
+													? h(
+															NButton,
+															{
+																tag: "a",
+																href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																onClick: (e) => {
+																	e.preventDefault();
+																	if (!isMobile)
+																		openDrawer(
+																			table.value.slug,
+																			row.id,
+																			structuredClone(toRaw(row)),
+																		);
+																	else
+																		navigateTo(
+																			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+																		);
+																},
+																secondary: true,
+																circle: true,
+																type: "info",
+															},
+															{ icon: () => h(NIcon, () => h(IconPencil)) },
+														)
+													: null,
+												table.value.allowedMethods?.includes("d")
+													? h(
+															NPopconfirm,
+															{
+																onPositiveClick: () => DELETE(row.id),
+															},
+															{
+																trigger: () =>
+																	h(
+																		NButton,
+																		{
+																			strong: true,
+																			secondary: true,
+																			circle: true,
+																			type: "error",
+																		},
+																		{
+																			icon: () => h(NIcon, () => h(IconTrash)),
+																		},
+																	),
+																default: () =>
+																	t("theFollowingActionIsIrreversible"),
+															},
+														)
+													: null,
+											].filter((i) => i !== null),
+										),
+									],
+					},
+				]),
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(
@@ -883,7 +887,7 @@ function setColumns() {
 		40,
 	);
 }
-
+onMounted(setColumns);
 watch(Language, setColumns);
 
 useHead({

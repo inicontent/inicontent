@@ -223,7 +223,7 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 const columns = ref<DataTableColumns>();
 const tableWidth = ref<number>(0);
 
-watchEffect(() => {
+function setColumns() {
 	columns.value = [
 		...(field.children as Schema).map((child) => ({
 			width:
@@ -252,6 +252,15 @@ watchEffect(() => {
 							showLabel: false,
 						},
 						isTable: true,
+						...(typeof child.inputProps === "function"
+							? { inputProps: child.inputProps(index) }
+							: {}),
+						...(typeof child.labelProps === "function"
+							? { labelProps: child.labelProps(index) }
+							: {}),
+						...(typeof child.render === "function"
+							? { render: child.render(index) }
+							: {}),
 					},
 					"onUpdate:modelValue": (newValue) => {
 						(modelValue.value as Item[])[index][child.key] = newValue;
@@ -301,5 +310,9 @@ watchEffect(() => {
 		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
 		40,
 	);
+}
+watch(Language, setColumns);
+onMounted(() => {
+	if (isArrayOfObjects(field.children)) setColumns();
 });
 </script>

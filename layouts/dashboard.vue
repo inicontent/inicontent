@@ -1,7 +1,7 @@
 <template>
 	<NuxtLayout name="default">
 		<NLayout position="absolute">
-			<NScrollbar style="max-height: 65px" xScrollable trigger="none">
+			<NScrollbar id="iniHeader" style="max-height: 65px" xScrollable trigger="none">
 				<NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
 					<NPageHeader>
 						<template #avatar>
