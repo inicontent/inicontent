@@ -887,8 +887,7 @@ function setColumns() {
 		40,
 	);
 }
-onMounted(setColumns);
-watch(Language, setColumns);
+watch(Language, setColumns, { immediate: true });
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
