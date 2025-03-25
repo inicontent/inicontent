@@ -240,6 +240,11 @@ defineTranslation({
 		reset: "إفراغ",
 		tools: "الأدوات",
 		clearTable: "إفراغ الجدول",
+		export: "تصدير",
+		import: "إستيراد",
+		exportCurrentData: "تصدير البيانات الحالية",
+		exportAllData: "تصدير كل البيانات",
+		columns: "الأعمدة",
 	},
 });
 
@@ -469,24 +474,39 @@ const toolsDropdownOptions = [
 		children: [
 			{
 				icon: () => h(NIcon, () => h(IconFileArrowRight)),
-				label: t("export_current_data"),
-				key: "export_current_data",
+				label: t("exportCurrentData"),
+				key: "exportCurrentData",
 			},
 			{
 				icon: () => h(NIcon, () => h(IconTableExport)),
 				disabled: !!currentJob.value,
-				label: t("export_all_data"),
-				key: "export_all_data",
+				label: t("exportAllData"),
+				key: "exportAllData",
 			},
 		],
+	},
+	{
+		label: t("columns"),
+		key: "columns",
+		icon: () => h(NIcon, () => h(IconColumns3)),
+		children: table.value.schema?.map(({ id, key }) => ({
+			label: t(key),
+			key: id,
+			icon: () =>
+				h(NIcon, () =>
+					hiddenColumns.value?.[table.value.slug]?.includes(id as string)
+						? h(IconEyeOff)
+						: h(IconEye),
+				),
+		})),
 	},
 ];
 
 async function toolsDropdownOnSelect(
-	value: "import" | "export_current_data" | "export_all_data",
+	value: "import" | "exportCurrentData" | "exportAllData",
 ) {
 	switch (value) {
-		case "export_all_data": {
+		case "exportAllData": {
 			await $fetch(
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
 				{ method: "POST" },
@@ -494,13 +514,23 @@ async function toolsDropdownOnSelect(
 			table.value.currentJob = "export";
 			break;
 		}
-		case "export_current_data": {
+		case "exportCurrentData": {
 			dataRef.value?.downloadCsv({
 				fileName: table.value.slug,
 				keepOriginalData: false,
 			});
 			break;
 		}
+	}
+
+	if (hiddenColumns?.value[table.value.slug]?.includes(value))
+		hiddenColumns.value[table.value.slug] = hiddenColumns.value[
+			table.value.slug
+		].filter((itemID) => itemID !== value);
+	else {
+		if (!hiddenColumns.value[table.value.slug])
+			hiddenColumns.value[table.value.slug] = [];
+		hiddenColumns.value[table.value.slug].push(value);
 	}
 }
 
@@ -717,36 +747,6 @@ function setColumns() {
 									checkedRowKeys.value = [];
 								},
 							},
-							{
-								label: t("columns"),
-								key: "columns",
-								icon: () => h(NIcon, () => h(IconColumns3)),
-								children: table.value.schema?.map(({ id, key }) => ({
-									label: t(key),
-									key: id,
-									// icon: () =>
-									// 	h(NIcon, () =>
-									// 		hiddenColumns.value[table.value.slug].includes(
-									// 			id as string,
-									// 		)
-									// 			? h(IconEyeOff)
-									// 			: h(IconEye),
-									// 	),
-									onSelect: () => {
-										if (
-											hiddenColumns.value[table.value.slug].includes(
-												id as string,
-											)
-										)
-											hiddenColumns.value[table.value.slug] =
-												hiddenColumns.value[table.value.slug].filter(
-													(itemID) => itemID !== id,
-												);
-										else
-											hiddenColumns.value[table.value.slug].push(id as string);
-									},
-								})),
-							},
 						],
 					},
 				]
@@ -754,7 +754,7 @@ function setColumns() {
 		...(table.value.schema
 			?.filter(
 				({ id }) =>
-					!hiddenColumns.value[table.value.slug]?.includes(id as string),
+					!hiddenColumns.value?.[table.value.slug]?.includes(id as string),
 			)
 			.map((field) => ({
 				title: () =>
@@ -888,6 +888,7 @@ function setColumns() {
 		40,
 	);
 }
+watch(() => hiddenColumns.value, setColumns, { deep: true });
 watch(Language, setColumns, { immediate: true });
 
 useHead({
