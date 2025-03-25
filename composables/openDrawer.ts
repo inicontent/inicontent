@@ -21,7 +21,7 @@ async function loadDrawer(index: number) {
 	drawer.show = true;
 }
 
-export default function (table: string, id = undefined, data: any = {}) {
+export default function (table: string, id?: string | number, data: any = {}) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const defaultWidth = useCookie<number | string>("width", {
 		sameSite: true,

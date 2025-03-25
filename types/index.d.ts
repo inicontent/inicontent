@@ -3,6 +3,7 @@ import type {
 	FieldType as dbFieldType,
 	pageInfo,
 	ComparisonOperator,
+	TableObject,
 } from "inibase";
 import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
@@ -109,12 +110,7 @@ declare global {
 		onRequest?: FlowType[];
 		onResponse?: FlowType[];
 		currentJob?: "export" | "import";
-		config?: {
-			compression: boolean;
-			cache: boolean;
-			prepend: boolean;
-			decodeID: boolean;
-		};
+		config?: TableObject["config"] & { log?: boolean };
 	};
 	type Item = {
 		id?: string;
@@ -193,7 +189,7 @@ declare global {
 
 	type DrawerRef = {
 		show?: boolean;
-		id?: string;
+		id?: string | number;
 		table?: string;
 		data?: Item;
 		schema?: Schema;

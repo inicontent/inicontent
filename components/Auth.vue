@@ -77,22 +77,22 @@ const SignupColumns: Schema = database.value?.tables
 				field.key,
 			),
 	) ?? [
-		{
-			key: "username",
-			type: "string",
-			required: true,
-		},
-		{
-			key: "email",
-			type: "email",
-			required: true,
-		},
-		{
-			key: "password",
-			type: "password",
-			required: true,
-		},
-	];
+	{
+		key: "username",
+		type: "string",
+		required: true,
+	},
+	{
+		key: "email",
+		type: "email",
+		required: true,
+	},
+	{
+		key: "password",
+		type: "password",
+		required: true,
+	},
+];
 
 async function SignupSubmit(e: Event) {
 	e.preventDefault();

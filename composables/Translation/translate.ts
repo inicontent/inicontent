@@ -8,7 +8,6 @@ function formatUnfoundTranslation(
 	if (input.includes(".")) input = input.split(".").pop() ?? "";
 
 	if (language !== "en" || input.toUpperCase() === input) return input;
-	if (input.length === 2) return input.toUpperCase();
 
 	const lowercaseWords = [
 		"is",
@@ -20,7 +19,15 @@ function formatUnfoundTranslation(
 		"a",
 		"as",
 		"at",
+		"to",
+		"in",
+		"on",
 	];
+
+	if (input.length === 2)
+		return lowercaseWords.includes(input.toLowerCase())
+			? input.toLowerCase()
+			: input.toUpperCase();
 
 	// Split by capital letters and underscores
 	const words = input.split(/_(?![A-Z]+)|(?<=[a-z])(?=[A-Z])/);

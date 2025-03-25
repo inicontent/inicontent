@@ -22,7 +22,7 @@
 					<div>
 						<NText strong>{{ t("link") }}: </NText>
 						<NA :href="CurrentAsset.publicURL" target="_blank">{{ decodeURIComponent(CurrentAsset.publicURL)
-							}}
+						}}
 						</NA>
 					</div>
 					<div>
@@ -214,7 +214,7 @@ const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 </script>
 
 
-<style lang="css">
+<style scoped>
 .assetContainer {
 	position: relative;
 	border-radius: 15px 15px 0 0;

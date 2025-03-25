@@ -108,6 +108,7 @@
 					:show="showDropdown" :onClickoutside @select="handleSelect" />
 			</slot>
 		</NCard>
+		<LazyTableLogs v-if="table.config?.log" />
 	</div>
 </template>
 

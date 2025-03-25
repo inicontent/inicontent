@@ -297,7 +297,7 @@ const table = useState<Table>("table");
 function changeFieldType(
 	{ id, key, required, children }: any,
 	newType: string,
-): Field {
+): any {
 	switch (newType) {
 		case "object":
 		case "array":
@@ -381,7 +381,7 @@ const uniqueGroupOptions = computed(() => {
 });
 </script>
 
-<style lang="css" scoped>
+<style scoped>
 .rtl .handle {
 	margin-left: 10px
 }

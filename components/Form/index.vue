@@ -8,6 +8,7 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils";
+import Inison from "inison";
 import { NForm, type FormInst } from "naive-ui";
 
 const props = defineProps<{
@@ -27,6 +28,7 @@ defineSlots<{
 }>();
 
 const modelValue = defineModel<Item>({ default: () => reactive({}) });
+const defaultModelValue = structuredClone(toRaw(modelValue.value));
 
 defineExpose<FormRef>({
 	create: CREATE,
@@ -84,7 +86,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 async function fetchSchemaAndData() {
 	Loading.value.SCHEMA = true;
 
-	const bodyContent = toRaw(modelValue.value);
+	const bodyContent = structuredClone(toRaw(modelValue.value));
 
 	try {
 		const response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
@@ -173,21 +175,24 @@ async function UPDATE() {
 				modelValue.value = props.onBeforeUpdate(bodyContent);
 
 			Loading.value.UPDATE = true;
-			const data = await $fetch<apiResponse<Item>>(
+			const data = await $fetch<apiResponse<Item | boolean>>(
 				`${appConfig.apiBase}${database.value.slug}/${
 					props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
 					body: bodyContent,
+					params: { options: Inison.stringify({ return: false }) },
 				},
 			);
 			Loading.value.UPDATE = false;
 
-			if (data.result?.id) {
-				modelValue.value = data.result;
+			if (
+				(typeof data.result === "boolean" && data.result === true) ||
+				(typeof data.result !== "boolean" && data.result?.id)
+			) {
 				window.$message.success(data.message);
-				if (props.onAfterUpdate) return props.onAfterUpdate(data.result);
+				if (props.onAfterUpdate) return props.onAfterUpdate(bodyContent);
 			} else window.$message.error(data.message);
 		} else window.$message.error(t("inputsAreInvalid"));
 	});

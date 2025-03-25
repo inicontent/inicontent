@@ -168,6 +168,8 @@ defineTranslation({
 		prepend: "إضافة مقدمة",
 		recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
 		cache: "التخزين المؤقت",
+		log: "سجل التتبع",
+		enableActivityLog: "تفعيل سجل عمليات الجدول",
 	},
 });
 
@@ -340,35 +342,6 @@ function renderSingleLabel(
 	);
 }
 
-// TO-DO: Make it reactive
-const generateLabelOptions = computed(() => {
-	let RETURN: {
-		label: string;
-		value: string | number;
-	}[] = [];
-	if (!flattenCopySchema.value) return RETURN;
-
-	for (const field of flattenCopySchema.value) {
-		if (field.id?.toString().startsWith("temp-")) continue;
-		if (Array.isArray(field.type)) {
-			if (field.type.includes("array")) continue;
-		} else if (
-			(Array.isArray(field.type) &&
-				(field.type.includes("array") || field.type.includes("object"))) ||
-			(field.type === "array" &&
-				field.children &&
-				isArrayOfObjects(field.children)) ||
-			field.type === "table"
-		)
-			continue;
-		RETURN.push({
-			label: field.key,
-			value: `@${field.id}`,
-		});
-	}
-	return RETURN;
-});
-
 const searchInSelectOptions = computed(() =>
 	generateSearchInOptions(table.value?.schema?.slice(1, -2), undefined, true),
 );
@@ -431,6 +404,11 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+	},
+	{
+		key: "log",
+		type: "boolean",
+		description: "enableActivityLog",
 	},
 ]);
 

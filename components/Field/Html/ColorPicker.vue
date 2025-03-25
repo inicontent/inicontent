@@ -1,9 +1,9 @@
 <template>
-    <div class="colorPicker">
-        <div v-for="colorsGroup in colors">
-            <span v-for="color in colorsGroup" :style="{ background: color }" @click="modelValue = color"></span>
-        </div>
-    </div>
+	<div class="colorPicker">
+		<div v-for="colorsGroup in colors">
+			<span v-for="color in colorsGroup" :style="{ background: color }" @click="modelValue = color"></span>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -97,31 +97,31 @@ const colors = [
 ];
 </script>
 
-<style lang="css" scoped>
+<style scoped>
 .colorPicker {
-    display: flex;
-    flex-direction: column-reverse;
-    border-radius: 5px;
-    overflow: hidden;
-    border: 2px solid #fff;
+	display: flex;
+	flex-direction: column-reverse;
+	border-radius: 5px;
+	overflow: hidden;
+	border: 2px solid #fff;
 }
 
 .dark .colorPicker {
-    border-color: #000;
+	border-color: #000;
 }
 
 .colorPicker div {
-    display: flex;
+	display: flex;
 }
 
 .colorPicker div span {
-    width: 20px;
-    height: 20px;
+	width: 20px;
+	height: 20px;
 }
 
 .colorPicker div span:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 8px #00000011;
-    border-radius: 5px;
+	transform: scale(1.2);
+	box-shadow: 0 0 8px #00000011;
+	border-radius: 5px;
 }
 </style>
