@@ -86,7 +86,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 async function fetchSchemaAndData() {
 	Loading.value.SCHEMA = true;
 
-	const bodyContent = structuredClone(toRaw(modelValue.value));
+	const bodyContent = toRaw(modelValue.value);
 
 	try {
 		const response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
