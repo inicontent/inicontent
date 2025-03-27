@@ -24,20 +24,25 @@
 							</template>
 						</NFlex>
 					</template>
-					<NFlex vertical>
+					<NFlex vertical style="line-height: 2.5;">
 						<template v-for="action in log.actions">
-							<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} {{ action[1] }}</NText>
+							<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} <NTag :bordered="false" round
+									type="warning">{{
+										action[1] }}</NTag>
+							</NText>
 							<NText v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }} <NTag
-									:bordered="false" round>{{ action[1] }}</NTag>
+									:bordered="false" round type="error">{{ action[1] }}</NTag>
 							</NText>
 							<NText v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <NTag
-									:bordered="false" round>{{ action[1] }}</NTag>
+									:bordered="false" round type="success">{{ action[1] }}</NTag>
 							</NText>
-							<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false" round>{{
-								action[1] }}</NTag> {{ t("as") }} <NTag :bordered="false" round>{{ action[2] }}
+							<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false" round
+									type="info">{{
+										action[1] }}</NTag> {{ t("as") }} <NTag :bordered="false" round>{{ action[2] }}
 								</NTag>
 							</NText>
-							<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false" round>
+							<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false" round
+									type="info">
 									{{ action[1] }}</NTag> {{
 										t("to") }}
 								<NTag :bordered="false" round>{{ action[2] }}</NTag>
