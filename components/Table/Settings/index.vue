@@ -210,7 +210,8 @@ async function updateTable() {
 				...rest,
 			}))(tableCopy.value);
 			Loading.value.updateTable = true;
-
+			// TO-DO: Fix
+			const oldAllowedMethods = bodyContent.allowedMethods;
 			if (bodyContent.localLabel)
 				bodyContent.label = bodyContent.localLabel
 					.map(({ value }: { value: string }) => value)
@@ -236,6 +237,7 @@ async function updateTable() {
 				database.value.tables &&
 				data?.result
 			) {
+				data.result.allowedMethods = oldAllowedMethods;
 				database.value.tables[tableIndex] = data.result;
 				table.value = data.result;
 				tableCopy.value = data.result;
