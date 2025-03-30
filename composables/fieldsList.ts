@@ -1,7 +1,7 @@
 import { NIcon } from "naive-ui";
 import {
 	IconKey,
-	IconNumber,
+	IconNumbers,
 	IconAt,
 	IconLink,
 	IconUpload,
@@ -141,13 +141,13 @@ export default function fieldsList(): fieldListOptionType[] {
 		{
 			label: t("fields.number"),
 			key: "number",
-			icon: renderIcon(IconNumber),
+			icon: renderIcon(IconNumbers),
 			children: [
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
 					label: t("fields.number"),
 					key: "number",
-					icon: renderIcon(IconNumber),
+					icon: renderIcon(IconNumbers),
 				},
 				{
 					label: t("fields.slider"),
