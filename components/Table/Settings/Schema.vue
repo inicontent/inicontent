@@ -31,6 +31,17 @@
 								</NDropdown>
 							</template>
 							<template v-else-if="!isDisabled(element.key)">
+								<NPopselect v-model:value="schema[index].width" :options="widthOptions">
+									<NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
+										size="small" type="info">
+										<template v-if="!$device.isMobile" #icon>
+											<NIcon>
+												<IconArrowAutofitWidth />
+											</NIcon>
+										</template>
+										1/{{ element.width ?? 1 }}
+									</NButton>
+								</NPopselect>
 								<NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
 									size="small" :type="element.required ? 'error' : 'tertiary'"
 									@click="schema[index].required = !schema[index].required">
@@ -184,6 +195,7 @@ import {
 	IconPhoto,
 	IconVideo,
 	type Icon,
+	IconArrowAutofitWidth,
 } from "@tabler/icons-vue";
 import {
 	NCollapse,
@@ -199,6 +211,7 @@ import {
 	NInputNumber,
 	NTooltip,
 	type SelectOption,
+	NPopselect,
 } from "naive-ui";
 import draggable from "vuedraggable/src/vuedraggable";
 import { isArrayOfObjects } from "inibase/utils";
@@ -210,10 +223,9 @@ defineTranslation({
 		allowedFiles: "الملفات المسموح بها",
 		options: "الخيارات",
 		valuesType: "نوع القيم",
-		showAsTable: "إظهار كجدول",
-		labelText: "النص الظاهري",
+		// showAsTable: "إظهار كجدول",
 		tableName: "إسم الجدول",
-		labelImage: "الصورة", // TO-DO: support image in table field
+		// labelImage: "الصورة", // TO-DO: support image in table field
 		expandByDefault: "توسيع بشكل افتراضي",
 		dragToMove: "اسحب للتحريك",
 		fileType: {
@@ -240,6 +252,29 @@ defineTranslation({
 		extendWhere: "توسيع البحث",
 	},
 });
+
+const widthOptions = [
+	{
+		label: "1/1",
+		value: 1,
+	},
+	{
+		label: "1/2",
+		value: 2,
+	},
+	{
+		label: "1/3",
+		value: 3,
+	},
+	{
+		label: "1/4",
+		value: 4,
+	},
+	{
+		label: "1/5",
+		value: 5,
+	},
+];
 
 function isDisabled(key?: string) {
 	if (key) {

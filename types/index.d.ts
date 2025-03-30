@@ -82,6 +82,7 @@ declare global {
 		extraButtons?: VNode | undefined;
 		itemExtraActions?: (index: number) => VNode | undefined;
 		itemExtraButtons?: (index: number) => VNode | undefined;
+		width?: number;
 	};
 	type Schema = (Field & dbField)[];
 	type FlowType = (

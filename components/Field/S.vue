@@ -1,8 +1,12 @@
 <template>
-	<Field v-for="field of formatedSchema" :field="field" v-model="localModelValue[field.key]" />
+	<NFlex>
+		<Field v-for="field of formatedSchema" :field="field" v-model="localModelValue[field.key]" />
+	</NFlex>
 </template>
 
 <script lang="ts" setup>
+import { NFlex } from "naive-ui";
+
 // TO-DO:
 // Add fields: Mention, Range, Slider
 const schema = defineModel<Schema>("schema");
