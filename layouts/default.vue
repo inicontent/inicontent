@@ -33,6 +33,7 @@ import {
 	unstableDataTableRtl,
 	unstableDialogRtl,
 	unstablePaginationRtl,
+	unstableNotificationRtl,
 	darkTheme,
 	createDiscreteApi,
 	type ConfigProviderProps,
@@ -63,6 +64,7 @@ const rtlStyles: any = [
 	unstableDataTableRtl,
 	unstableDialogRtl,
 	unstablePaginationRtl,
+	unstableNotificationRtl,
 ];
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
