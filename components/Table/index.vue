@@ -153,6 +153,7 @@ import {
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
 import {
+	flattenSchema,
 	FormatObjectCriteriaValue,
 	isArrayOfObjects,
 	isObject,
@@ -383,10 +384,6 @@ const pagination = reactive({
 			page: currentPage !== 1 ? currentPage : undefined,
 		};
 		router.push({ query: Query });
-		queryOptions.value = Inison.stringify({
-			...Inison.unstringify(queryOptions.value),
-			page: pagination.page,
-		});
 		await refresh();
 	},
 	async onUpdatePageSize(pageSize: number) {
@@ -408,11 +405,42 @@ const pagination = reactive({
 		}
 	},
 });
-const queryOptions = ref(
+
+const sortObject = ref<Record<string, "asc" | "desc">>({});
+
+const queryColumns = computed(() =>
+	table.value.schema
+		? [
+				"*",
+				...flattenSchema(table.value.schema)
+					.filter((field) => !!field.table && field.table !== "assets")
+					.flatMap(({ key, table }) => {
+						const _table = database.value.tables?.find(
+							({ slug }) => slug === table,
+						);
+						if (!_table || !_table.schema) return;
+						const _tableFlattenSchema = flattenSchema(_table.schema);
+						return _table?.label
+							?.split(/(@\w+)/g)
+							.filter((value: string) => value.startsWith("@"))
+							.map(
+								(label: string) =>
+									`${key}.${
+										_tableFlattenSchema.find(({ id }) => id === label.slice(1))
+											?.key ?? "*"
+									}`,
+							);
+					}),
+			]
+		: [],
+);
+
+const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		columns: [],
+		columns: queryColumns.value,
+		sort: Object.keys(sortObject.value).length ? sortObject.value : undefined,
 	}),
 );
 
@@ -551,24 +579,12 @@ const getCsvHeader: DataTableGetCsvHeader = (col) => {
 	return (col.key as string) || "Unknown";
 };
 
-const sortObject = ref<Record<string, "asc" | "desc">>({});
-
 function handleSorterChange({
 	columnKey,
 	order,
 }: { columnKey: string; order: string }) {
 	if (!order) delete sortObject.value[columnKey];
-	else {
-		sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
-	}
-	queryOptions.value = Object.keys(sortObject.value).length
-		? Inison.stringify({
-				...Inison.unstringify(queryOptions.value),
-				sort: sortObject.value,
-			})
-		: Inison.stringify(
-				(({ sort, ...rest }) => rest)(Inison.unstringify(queryOptions.value)),
-			);
+	else sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
 }
 
 const tableWidth = ref<number>(0);
