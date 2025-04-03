@@ -1,3 +1,6 @@
+import { flattenSchema } from "inibase/utils";
+import Inison from "inison";
+
 async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const drawer = Drawers.value[index];
@@ -10,9 +13,51 @@ async function loadDrawer(index: number) {
 		drawer.show = false;
 		const key = `Drawer_${drawer.table}_${drawer.id}`;
 		Loading.value[key] = true;
+
+		const schema = database.value.tables?.find(
+			({ slug }) => slug === drawer.table,
+		)?.schema;
 		drawer.data = (
 			await $fetch<apiResponse>(
 				`${appConfig.apiBase}${database.value.slug}/${drawer.table}/${drawer.id}`,
+				{
+					params: schema
+						? {
+								options: Inison.stringify({
+									columns: schema
+										? [
+												"*",
+												...flattenSchema(schema)
+													.filter(
+														(field) =>
+															!!field.table && field.table !== "assets",
+													)
+													.flatMap(({ key, table }) => {
+														const _table = database.value.tables?.find(
+															({ slug }) => slug === table,
+														);
+														if (!_table || !_table.schema) return;
+														const _tableFlattenSchema = flattenSchema(
+															_table.schema,
+														);
+														return _table?.label
+															?.split(/(@\w+)/g)
+															.filter((value: string) => value.startsWith("@"))
+															.map(
+																(label: string) =>
+																	`${key}.${
+																		_tableFlattenSchema.find(
+																			({ id }) => id === label.slice(1),
+																		)?.key ?? "*"
+																	}`,
+															);
+													}),
+											]
+										: [],
+								}),
+							}
+						: undefined,
+				},
 			)
 		).result;
 		Loading.value[key] = false;
