@@ -123,17 +123,6 @@ async function fetchSchemaAndData() {
 	}
 }
 
-function debounce<T extends (...args: any[]) => void>(
-	func: T,
-	wait: number,
-): (...args: Parameters<T>) => void {
-	let timeout: ReturnType<typeof setTimeout>;
-	return (...args: Parameters<T>): void => {
-		clearTimeout(timeout);
-		timeout = setTimeout(() => func(...args), wait);
-	};
-}
-
 // Debounced version of fetchSchemaAndData
 const debouncedFetchSchemaAndData = debounce(async () => {
 	await fetchSchemaAndData();

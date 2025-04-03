@@ -3,7 +3,7 @@
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable filterable :loading="Loading[`options_${field.key}`]" :multiple="!!field.isArray"
 			:consistent-menu-width="false" max-tag-count="responsive" @update:show="(show) => show && loadOptions()"
-			:reset-menu-on-options-change="false" @scroll="handleScroll" @search="loadOptions" v-bind="field.inputProps
+			:reset-menu-on-options-change="false" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
@@ -120,10 +120,17 @@ const searchIn = table?.defaultSearchableColumns
 	: field.searchIn;
 const pagination = ref<pageInfo>();
 const where = ref<string>();
+
+const debouncedLoadOptions = debounce(async (searchValue) => {
+	await loadOptions(searchValue);
+}, 1000);
+
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;
 	const searchOrObject =
-		searchValue && searchIn
+		searchValue &&
+		(typeof searchValue !== "string" || searchValue.trim().length) &&
+		searchIn
 			? (searchIn.reduce((result, searchKey) => {
 					Object.assign(result, {
 						[searchKey]: `*%${searchValue}%`,
@@ -155,7 +162,8 @@ async function loadOptions(searchValue?: string | number) {
 			Loading.value[`options_${field.key}`] = false;
 			return;
 		}
-	}
+	} else where.value = undefined;
+
 	const request = await $fetch<apiResponse<tableOption[]>>(
 		`${appConfig.apiBase}${database.value.slug}/${field.table}`,
 		{
