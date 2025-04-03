@@ -1,15 +1,15 @@
 <template>
-    <FieldWrapper :field :rule v-model="modelValue">
-        <NCheckboxGroup v-model:value="modelValue" v-bind="field.inputProps
-            ? typeof field.inputProps === 'function'
-                ? field.inputProps(modelValue) ?? {}
-                : field.inputProps
-            : {}">
-            <NFlex>
-                <NCheckbox v-for="{ label, value } in options" :value :label />
-            </NFlex>
-        </NCheckboxGroup>
-    </FieldWrapper>
+	<FieldWrapper :field :rule v-model="modelValue">
+		<NCheckboxGroup v-model:value="modelValue" v-bind="field.inputProps
+			? typeof field.inputProps === 'function'
+				? field.inputProps(modelValue) ?? {}
+				: field.inputProps
+			: {}">
+			<NFlex>
+				<NCheckbox v-for="{ label, value } in options" :value :label />
+			</NFlex>
+		</NCheckboxGroup>
+	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
@@ -18,7 +18,7 @@ import { NFlex, NCheckbox, NCheckboxGroup, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<string | number>();
+const modelValue = defineModel<string | number | (string | number)[]>();
 
 const rule: FormItemRule = {
 	type: "array",
