@@ -5,8 +5,8 @@
 				<slot name="form" :onAfterCreate :onAfterUpdate></slot>
 			</template>
 		</LazyFormDrawer>
-		<NCard :title="t(table.slug) ?? '--'" style="background:none"
-			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
+		<NCard :title="t(table.slug) ?? '--'" id="tableCard" :header-style="{ paddingRight: 0, paddingLeft: 0 }"
+			content-style="padding: 0" :bordered="false">
 			<template #header-extra>
 				<NFlex align="center">
 					<slot name="navbarExtraActions"></slot>
@@ -19,7 +19,7 @@
 								<template #trigger>
 									<NTooltip :delay="500">
 										<template #trigger>
-											<NButton round>
+											<NButton round :disabled="!whereQuery && (!data?.result || !table?.schema)">
 												<template #icon>
 													<NIcon>
 														<IconSearch />
@@ -116,6 +116,7 @@
 import {
 	IconColumns3,
 	IconCopy,
+	IconDots,
 	IconEye,
 	IconEyeOff,
 	IconFileArrowRight,
@@ -734,6 +735,85 @@ const hiddenColumns = useCookie<Record<string, string[]>>("hiddenColumns", {
 	default: () => ({}) as Record<string, string[]>,
 	sameSite: true,
 });
+
+function itemButtons(row: Item) {
+	return h(NButtonGroup, { vertical: isMobile }, () =>
+		[
+			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
+			table.value.allowedMethods?.includes("r")
+				? h(
+						NButton,
+						{
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(IconEye)),
+								),
+						},
+					)
+				: null,
+			table.value.allowedMethods?.includes("u")
+				? h(
+						NButton,
+						{
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault();
+								if (!isMobile)
+									openDrawer(
+										table.value.slug,
+										row.id,
+										structuredClone(toRaw(row)),
+									);
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+									);
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
+						},
+						{ icon: () => h(NIcon, () => h(IconPencil)) },
+					)
+				: null,
+			table.value.allowedMethods?.includes("d")
+				? h(
+						NPopconfirm,
+						{
+							onPositiveClick: () => DELETE(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
+				: null,
+		].filter((i) => i !== null),
+	);
+}
+
 function setColumns() {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
@@ -801,11 +881,12 @@ function setColumns() {
 					{
 						title: t("actions"),
 						align: "center",
-						width:
-							150 +
-							(slots.itemExtraButtons
-								? (slots.itemExtraButtons as any)().length * 20
-								: 0),
+						width: isMobile
+							? 100
+							: 150 +
+								(slots.itemExtraButtons
+									? (slots.itemExtraButtons as any)().length * 20
+									: 0),
 						key: "actions",
 						fixed: "right",
 						render: (row: any) =>
@@ -815,84 +896,29 @@ function setColumns() {
 										slots.itemExtraActions
 											? slots.itemExtraActions(row)
 											: undefined,
-										h(NButtonGroup, () =>
-											[
-												slots.itemExtraButtons
-													? slots.itemExtraButtons(row)
-													: undefined,
-												table.value.allowedMethods?.includes("r")
-													? h(
-															NButton,
-															{
-																secondary: true,
-																circle: true,
-																type: "primary",
-															},
-															{
-																icon: () =>
-																	h(
-																		NuxtLink,
-																		{
-																			to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-																		},
-																		() => h(NIcon, () => h(IconEye)),
-																	),
-															},
-														)
-													: null,
-												table.value.allowedMethods?.includes("u")
-													? h(
-															NButton,
-															{
-																tag: "a",
-																href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-																onClick: (e) => {
-																	e.preventDefault();
-																	if (!isMobile)
-																		openDrawer(
-																			table.value.slug,
-																			row.id,
-																			structuredClone(toRaw(row)),
-																		);
-																	else
-																		navigateTo(
-																			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-																		);
+										isMobile
+											? h(
+													NPopover,
+													{
+														scrollable: true,
+														style: "max-height: 240px;border-radius:34px",
+														contentStyle: "padding: 0",
+													},
+													{
+														trigger: () =>
+															h(
+																NButton,
+																{
+																	circle: true,
+																	secondary: true,
+																	type: "primary",
 																},
-																secondary: true,
-																circle: true,
-																type: "info",
-															},
-															{ icon: () => h(NIcon, () => h(IconPencil)) },
-														)
-													: null,
-												table.value.allowedMethods?.includes("d")
-													? h(
-															NPopconfirm,
-															{
-																onPositiveClick: () => DELETE(row.id),
-															},
-															{
-																trigger: () =>
-																	h(
-																		NButton,
-																		{
-																			strong: true,
-																			secondary: true,
-																			circle: true,
-																			type: "error",
-																		},
-																		{
-																			icon: () => h(NIcon, () => h(IconTrash)),
-																		},
-																	),
-																default: () =>
-																	t("theFollowingActionIsIrreversible"),
-															},
-														)
-													: null,
-											].filter((i) => i !== null),
-										),
+																{ icon: () => h(NIcon, () => h(IconDots)) },
+															),
+														default: () => itemButtons(row),
+													},
+												)
+											: itemButtons(row),
 									],
 					},
 				]),
@@ -905,7 +931,7 @@ function setColumns() {
 	);
 }
 watch(() => hiddenColumns.value, setColumns, { deep: true });
-watch(Language, setColumns, { immediate: true });
+watch([Language, checkedRowKeys], setColumns, { immediate: true });
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
@@ -914,3 +940,16 @@ useHead({
 	],
 });
 </script>
+
+<style scoped>
+#tableCard {
+	background: none;
+}
+
+@media (max-width: 768px) {
+	#tableCard>:global(.n-card-header) {
+		flex-direction: column;
+		gap: 8px;
+	}
+}
+</style>
