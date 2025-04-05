@@ -247,6 +247,8 @@ defineTranslation({
 		exportCurrentData: "تصدير البيانات الحالية",
 		exportAllData: "تصدير كل البيانات",
 		columns: "الأعمدة",
+		an_export_job_is_running_in_background: "هناك عملية تصدير جارية",
+		an_export_job_is_done: "عملية التصدير إنتهت",
 	},
 });
 
@@ -269,11 +271,11 @@ async function jobNotification() {
 			notificationRef.value = window.$notification.info({
 				title: t(`an_${currentJob.value}_job_is_running_in_background`),
 				onClose() {
+					notificationRef.value?.destroy();
 					notificationRef.value = undefined;
+					table.value.currentJob = undefined;
 				},
-				meta() {
-					return h(NTime);
-				},
+				meta: () => h(NTime),
 			});
 
 		const jobTimer = setInterval(async () => {
@@ -286,6 +288,7 @@ async function jobNotification() {
 
 				if (currentJobProgress === 100) {
 					clearInterval(jobTimer);
+					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`);
 					if (currentJob.value === "export")
 						notificationRef.value.action = () =>
 							h(
@@ -298,6 +301,8 @@ async function jobNotification() {
 											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download`,
 										);
 										notificationRef.value?.destroy();
+										notificationRef.value = undefined;
+										table.value.currentJob = undefined;
 									},
 								},
 								{
@@ -305,7 +310,8 @@ async function jobNotification() {
 								},
 							);
 					setTimeout(() => {
-						(notificationRef.value as NotificationReactive).content = undefined;
+						if (notificationRef.value)
+							notificationRef.value.content = undefined;
 					}, 500);
 				} else
 					notificationRef.value.content = () =>
@@ -489,7 +495,7 @@ async function DELETE(id?: string | string[]) {
 	}
 }
 
-const toolsDropdownOptions = [
+const toolsDropdownOptions = computed(() => [
 	{
 		icon: () => h(NIcon, () => h(IconTableImport)),
 		label: t("import"),
@@ -529,7 +535,7 @@ const toolsDropdownOptions = [
 				),
 		})),
 	},
-];
+]);
 
 async function toolsDropdownOnSelect(
 	value: "import" | "exportCurrentData" | "exportAllData",
@@ -947,7 +953,7 @@ useHead({
 }
 
 @media (max-width: 768px) {
-	#tableCard>:global(.n-card-header) {
+	:global(#tableCard > .n-card-header) {
 		flex-direction: column;
 		gap: 8px;
 	}
