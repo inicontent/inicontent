@@ -1,7 +1,10 @@
 import { flattenSchema } from "inibase/utils";
 
-export default function renderLabel(table?: Table, item?: Item | null): string {
+export default function renderLabel(table?: Table, item?: Item): string {
 	if (!table || !table.label || !table.schema) return `#${item?.id ?? "--"}`;
+
+	if (table.customLabel) return table.customLabel(item);
+
 	const flattenTableSchema = flattenSchema(table.schema);
 	return table.label.replace(/@(\w+)/g, (_match, capturedString: string) => {
 		const field = flattenTableSchema.find(({ id }) => id === capturedString);

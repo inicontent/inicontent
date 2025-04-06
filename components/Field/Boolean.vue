@@ -17,7 +17,6 @@ const modelValue = defineModel<boolean>();
 
 const rule: FormItemRule = {
 	required: field.required,
-	trigger: ["blur", "input"],
 	validator() {
 		if (!modelValue.value && field.required)
 			return new Error(`${t(field.key)} ${t("isRequired")}`);

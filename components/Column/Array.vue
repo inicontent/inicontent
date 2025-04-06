@@ -10,7 +10,9 @@
             <NCollapseItem v-for="(singleValue, index) in ([] as Record<string, any>[]).concat(value)"
                 :title="`${t(field.key)} ${index + 1}`">
                 <NFlex vertical>
-                    <NFlex v-for="child in (field.children as Schema)" align="center" inline>
+                    <NFlex
+                        v-for="child in (field.children as Schema).filter(({ key }) => typeof singleValue[key] !== 'undefined')"
+                        align="center" inline>
                         <strong>{{ child.key }}:</strong>
                         <LazyColumn :field="child" :value="singleValue[child.key]" />
                     </NFlex>

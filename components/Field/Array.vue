@@ -117,6 +117,7 @@ import {
 	type DropdownOption,
 	NButtonGroup,
 	NFlex,
+	NPerformantEllipsis,
 } from "naive-ui";
 import { isArrayOfObjects, isStringified } from "inibase/utils";
 import {
@@ -226,20 +227,20 @@ const tableWidth = ref<number>(0);
 function setColumns() {
 	columns.value = [
 		...(field.children as Schema).map((child) => ({
-			width:
-				t(child.key) && child.key.length > 10 ? child.key.length * 15 : 200,
-			title: () => [
-				t(child.key),
-				child.required
-					? h(
+			width: t(child.key).length > 10 ? t(child.key).length * 14 : 150,
+			title: () =>
+				h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
+					getField(child).icon(),
+					h(NPerformantEllipsis, () => t(child.key)),
+					child.required
+						? h(
 							NText,
 							{
 								type: "error",
 							},
 							() => " *",
-						)
-					: null,
-			],
+						) : undefined
+				]),
 			key: child.id,
 			render: (_item: any, index: number) =>
 				h(LazyField, {
@@ -271,46 +272,48 @@ function setColumns() {
 		field.disableActions === true
 			? {}
 			: {
-					title: t("actions"),
-					fixed: "right",
-					align: "center",
-					width: 100,
-					key: "actions",
-					render(_row: any, index: number) {
-						return h(
-							NTooltip,
-							{ delay: 500 },
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											disabled:
-												typeof field.inputProps === "function"
-													? field.inputProps(index)?.disabled
-													: field.inputProps?.disabled,
-											strong: true,
-											secondary: true,
-											circle: true,
-											type: "error",
-											onClick: () => handleDeleteItem(index),
-										},
-										{
-											icon: () => h(NIcon, () => h(IconTrash)),
-										},
-									),
-								default: () => t("delete"),
-							},
-						);
-					},
+				title: t("actions"),
+				fixed: "right",
+				align: "center",
+				width: 100,
+				key: "actions",
+				render(_row: any, index: number) {
+					return h(
+						NTooltip,
+						{ delay: 500 },
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										disabled:
+											typeof field.inputProps === "function"
+												? field.inputProps(index)?.disabled
+												: field.inputProps?.disabled,
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+										onClick: () => handleDeleteItem(index),
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("delete"),
+						},
+					);
 				},
+			},
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(
-		(accumulator: number, value: any) => accumulator + (value.width ?? 0),
+		(accumulator: number, { width }) =>
+			accumulator + ((width as number | undefined) ?? 0),
 		40,
 	);
 }
+
 watch(Language, setColumns);
 onMounted(() => {
 	if (isArrayOfObjects(field.children)) setColumns();

@@ -66,6 +66,7 @@ defineTranslation({
 	ar: {
 		import: "إستيراد",
 		gallery: "قائمة الملفات",
+		assetLink: "رابط الملف",
 	},
 });
 

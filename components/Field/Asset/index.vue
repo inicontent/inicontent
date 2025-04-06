@@ -8,9 +8,9 @@
 		</template>
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
-			:accept="generateAcceptedFileType(field.accept)"
+			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
-			response-type="json" :fileList @update:file-list="setModelValue" :onFinish :onPreview
+			response-type="json" :fileList @update:file-list="setModelValue" :onFinish
 			:list-type="!field.isTable ? 'image' : 'image-card'">
 			<NUploadDragger v-if="!field.isTable">
 				<NIcon size="48" depth="3">
@@ -25,10 +25,10 @@
 
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
 			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
-				<AssetCard targetID="assetsModal">
+				<AssetCard targetID="assetsModal" :where="assetWhere">
 					<template v-slot="{ asset }">
-						<NRadio v-if="asset.type !== 'dir'" :checked="getChecked(asset)"
-							@update:checked="handleSelectAsset(asset)" />
+						<component v-if="asset.type !== 'dir'" :is="field.isArray ? NCheckbox : NRadio"
+							:checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
 					</template>
 				</AssetCard>
 			</NDrawerContent>
@@ -46,6 +46,7 @@ import {
 	NFlex,
 	NIcon,
 	NRadio,
+	NCheckbox,
 	NUpload,
 	NUploadDragger,
 	type UploadFileInfo,
@@ -61,7 +62,6 @@ const appConfig = useAppConfig();
 const rule: FormItemRule = {
 	type: field.isArray ? "array" : "object",
 	required: field.required,
-	trigger: ["input", "change"],
 	min: field.isArray ? field.min : undefined,
 	max: field.isArray ? field.max : undefined,
 	validator() {
@@ -90,10 +90,10 @@ const rule: FormItemRule = {
 const database = useState<Database>("database");
 const showAssetsModal = ref(false);
 
-function generateAcceptedFileType(types: Field["accept"]) {
-	if (!types) return undefined;
+const acceptedFileType = computed(() => {
+	if (!field.accept) return undefined;
 	const RETURN = [];
-	for (const type of types) {
+	for (const type of field.accept) {
 		switch (type) {
 			case "image":
 				RETURN.push("image/*");
@@ -113,7 +113,36 @@ function generateAcceptedFileType(types: Field["accept"]) {
 		}
 	}
 	return RETURN.join(",");
-}
+});
+
+const assetWhere = computed(() => {
+	if (!field.accept) return undefined;
+	let whereType = "[]";
+	for (const type of field.accept) {
+		switch (type) {
+			case "image":
+				whereType += "image/png,image/jpeg,image/webp,image/avif,";
+				break;
+			case "video":
+				whereType +=
+					"video/mp4, video/mpeg, video/quicktime, video/x-msvideo, video/x-flv, video/webm, video/ogg, video/3gpp, video/3gpp2, video/x-matroska, video/vnd.mpegurl, video/h264, video/x-ms-wmv, video/x-ms-asf,";
+				break;
+			case "audio":
+				whereType +=
+					"audio/mpeg, audio/wav, audio/ogg, audio/aac, audio/flac, audio/mp4, audio/x-wav, audio/midi, audio/x-midi, audio/x-pn-wav, audio/x-aiff, audio/x-flac, audio/webm, audio/3gpp, audio/3gpp2, audio/amr, audio/x-ms-wma, audio/vnd.rn-realaudio, audio/vnd.wave,";
+				break;
+			case "document":
+				whereType +=
+					"application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, text/plain, application/rtf, application/vnd.oasis.opendocument.text,";
+				break;
+			case "archive":
+				whereType +=
+					"application/zip, application/x-rar-compressed, application/x-7z-compressed, application/x-tar, application/gzip,";
+				break;
+		}
+	}
+	return { type: whereType.slice(0, -1) };
+});
 
 function importAssetCallback(assets: Asset | Asset[]) {
 	const isModelValueTable = field.type !== "url" && field.children !== "url";
@@ -133,7 +162,7 @@ function importAssetCallback(assets: Asset | Asset[]) {
 	else modelValue.value = value[0];
 }
 
-function handleSelectAsset(asset?: Asset) {
+async function handleSelectAsset(asset?: Asset) {
 	if (!asset) return;
 
 	const value =
@@ -153,13 +182,15 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-						(value) => value.id === asset.id,
-					)
+					(value) => value.id === asset.id,
+				)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
 		} else modelValue.value = [value];
 	}
+
+	await nextTick();
 
 	fileList.value = getFileList();
 }
@@ -170,27 +201,27 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-					id: asset,
-					name: asset.split("/").pop(),
-					status: "finished",
-					url: asset,
-					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-					thumbnailUrl:
-						field.accept?.includes("image") && !field.params?.includes("fit")
-							? `${asset}`
-							: undefined,
-				}
+				id: asset,
+				name: asset.split("/").pop(),
+				status: "finished",
+				url: asset,
+				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+				thumbnailUrl:
+					field.accept?.includes("image") && !field.params?.includes("fit")
+						? `${asset}`
+						: undefined,
+			}
 			: {
-					id: asset.id,
-					name: asset.name || asset.id,
-					status: "finished",
-					url: (asset as Asset).publicURL,
-					type: asset.type,
-					thumbnailUrl:
-						asset.type?.startsWith("image/") && !field.params?.includes("fit")
-							? `${(asset as Asset).publicURL}`
-							: undefined,
-				},
+				id: asset.id,
+				name: asset.name || asset.id,
+				status: "finished",
+				url: (asset as Asset).publicURL,
+				type: asset.type,
+				thumbnailUrl:
+					asset.type?.startsWith("image/") && !field.params?.includes("fit")
+						? `${(asset as Asset).publicURL}`
+						: undefined,
+			},
 	) as UploadFileInfo[];
 }
 
@@ -239,11 +270,6 @@ function onFinish({
 	file.name = (result.name || result.id) as string;
 	fileIdObject.value[file.id] = result.id as string;
 	return file;
-}
-
-function onPreview({ url }: UploadFileInfo) {
-	if (url && !!field.isArray) return window.open(url, "blank")?.focus();
-	return undefined;
 }
 
 const getChecked = (asset: Asset) =>

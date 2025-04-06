@@ -21,21 +21,20 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
-	required: field.required,
-	trigger: ["blur", "input"],
-	validator() {
-		if (!modelValue.value && field.required && !alreadyRun)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
-	},
+    required: field.required,
+    validator() {
+        if (!modelValue.value && field.required && !alreadyRun)
+            return new Error(`${t(field.key)} ${t("isRequired")}`);
+    },
 };
 
 const alreadyRun = ref(false);
 if (
-	modelValue.value !== undefined &&
-	modelValue.value !== "" &&
-	modelValue.value !== null
+    modelValue.value !== undefined &&
+    modelValue.value !== "" &&
+    modelValue.value !== null
 ) {
-	alreadyRun.value = true;
-	modelValue.value = undefined;
+    alreadyRun.value = true;
+    modelValue.value = undefined;
 }
 </script>

@@ -112,6 +112,8 @@ declare global {
 		onResponse?: FlowType[];
 		currentJob?: "export" | "import";
 		config?: TableObject["config"] & { log?: boolean };
+		customLabel?: (item?: Item) => string;
+		customLabelColumns?: string[];
 	};
 	type Item = {
 		id?: string;

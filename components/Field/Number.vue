@@ -21,15 +21,14 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<number>();
 
 const rule: FormItemRule = {
-	required: field.required,
-	trigger: ["blur", "input"],
-	validator() {
-		if (modelValue.value === null || modelValue.value === undefined)
-			return field.required
-				? new Error(`${t(field.key)} ${t("isRequired")}`)
-				: true;
-		if (!isNumber(modelValue.value))
-			return new Error(`${t(field.key)} ${t("isNotValid")}`);
-	},
+    required: field.required,
+    validator() {
+        if (modelValue.value === null || modelValue.value === undefined)
+            return field.required
+                ? new Error(`${t(field.key)} ${t("isRequired")}`)
+                : true;
+        if (!isNumber(modelValue.value))
+            return new Error(`${t(field.key)} ${t("isNotValid")}`);
+    },
 };
 </script>

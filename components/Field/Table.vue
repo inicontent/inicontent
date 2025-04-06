@@ -77,6 +77,7 @@ const rule: FormItemRule = {
 			return new Error(`${t(field.key)} ${t("isNotValid")}`);
 	},
 };
+
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
@@ -93,6 +94,7 @@ function singleOption(option: Item): tableOption {
 		raw: option,
 	};
 }
+
 async function onUpdateSelectValue(
 	_id: string | string[],
 	option: tableOption | tableOption[],
@@ -118,6 +120,7 @@ const searchIn = table?.defaultSearchableColumns
 			getPath(table.schema ?? [], columnID),
 		)
 	: field.searchIn;
+
 const pagination = ref<pageInfo>();
 const where = ref<string>();
 
@@ -169,6 +172,9 @@ async function loadOptions(searchValue?: string | number) {
 		{
 			params: {
 				where: where.value,
+				options: Inison.stringify({
+					columns: generateQueryColumns(table?.schema),
+				}),
 			},
 			cache: "no-cache",
 		},
@@ -208,9 +214,10 @@ async function handleScroll(e: Event) {
 			{
 				params: {
 					where: where.value,
-					options: {
+					options: Inison.stringify({
 						page: pagination.value.page + 1,
-					},
+						columns: queryColumns,
+					}),
 				},
 				cache: "no-cache",
 			},

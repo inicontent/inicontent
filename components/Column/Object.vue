@@ -4,7 +4,8 @@
             <NButton size="small" circle>{{ `\{${Object.keys(value).length}\}` }}</NButton>
         </template>
         <NFlex vertical>
-            <NFlex v-for="child in (field.children as Schema)" align="center" inline>
+            <NFlex v-for="child in (field.children as Schema).filter(({ key }) => typeof value[key] !== 'undefined')"
+                align="center" inline>
                 <strong>{{ child.key }}:</strong>
                 <Column :field="child" :value="value[child.key]" />
             </NFlex>

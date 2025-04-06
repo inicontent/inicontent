@@ -6,20 +6,25 @@
 				<NTimelineItem v-for="log in data.result" :key="log.id" :type="getTypeFromAction(log.actions[0][0])">
 					<template #header>
 						<NFlex align="center" size="small">
-							{{ renderLabel(usersTable, log.madeBy) }}
+							<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
 							<template v-if="log.actions[0][0] === 'create'">
-								{{ t('created') }} {{ t("newItem") }}
+								{{ t('created') }} {{ t("newItem") }}:
+								<NButtonGroup>
+									<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+										size="small" type="primary">{{ renderLabel(table, item) }}
+									</NButton>
+								</NButtonGroup>
 							</template>
 							<template v-else-if="log.actions[0][0] === 'delete'">
 								{{ t('deleted') }} {{ t("anItem") }}
 							</template>
 							<template v-else>
 								{{ t('updated') }}
-								<NButtonGroup v-if="Array.isArray(log.item)">
-									<NButton v-for="item in log.item" secondary size="small" type="primary">{{ item }}
+								<NButtonGroup>
+									<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+										size="small" type="primary">{{ renderLabel(table, item) }}
 									</NButton>
 								</NButtonGroup>
-								<NButton v-else size="small" round secondary type="primary">{{ log.item }}</NButton>
 								{{ t('asFollow') }}:
 							</template>
 						</NFlex>
@@ -60,6 +65,8 @@
 </template>
 
 <script lang="ts" setup>
+import { flattenSchema } from "inibase/utils";
+import Inison from "inison";
 import {
 	NH3,
 	NSpin,
@@ -87,7 +94,7 @@ type Actions = [ActionName, string, any?][];
 interface Log extends Item {
 	actions: Actions;
 	madeBy?: User;
-	item: string | number | (string | number)[];
+	item: Item | Item[];
 }
 
 defineTranslation({
@@ -110,17 +117,35 @@ defineTranslation({
 	},
 });
 
-const props = defineProps<{ item?: string | number }>();
-
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const database = useState<Database>("database");
+
 const usersTable = database.value.tables?.find(({ slug }) => slug === "users");
+
 const table = useState<Table>("table");
+
+const logsSchema: Schema = [
+	{
+		key: "item",
+		type: ["table", "array"],
+		children: "table",
+		table: table.value.slug,
+		required: true,
+	},
+	{ key: "actions", type: "json", required: true },
+	{ key: "madeBy", type: "table", table: "users" },
+];
+
 const { data, status } = await useLazyFetch<apiResponse<Log[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
+		query: {
+			options: Inison.stringify({
+				columns: generateQueryColumns(logsSchema, "item"),
+			}),
+		},
 		onRequest() {
 			Loading.value.logs = true;
 		},

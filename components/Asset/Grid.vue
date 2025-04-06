@@ -11,6 +11,10 @@
 							<LazyAssetIcon :type="CurrentAsset.type" class="icon" />
 						</NA>
 					</NIcon>
+					<div v-if="CurrentAsset.name">
+						<NText strong>{{ t("name") }}: </NText>
+						<NText>{{ CurrentAsset.name }}</NText>
+					</div>
 					<div>
 						<NText strong>{{ t("size") }}: </NText>
 						<NText>{{ humanFileSize(CurrentAsset.size) }}</NText>
@@ -39,8 +43,11 @@
 				</NGridItem>
 			</template>
 			<template v-else #default>
-				<NGridItem
-					v-for="(asset) in (modelValue as Asset[]).toSorted((a, b) => a.type === b.type ? 0 : a.type === 'dir' ? -1 : 1)">
+				<NGridItem v-for="(asset) in (modelValue as Asset[]).sort((a, b) => {
+					if (a.type === 'dir' && b.type !== 'dir') return -1;
+					if (a.type !== 'dir' && b.type === 'dir') return 1;
+					return 0;
+				})">
 					<div @contextmenu="handleContextMenu($event, asset)">
 						<NFlex vertical class="assetContainer">
 							<NFlex class="assetActions">
@@ -48,7 +55,7 @@
 							</NFlex>
 							<NImage v-if="asset.type.startsWith('image/')" class="asset" :src="`${asset.publicURL}`"
 								preview-disabled :intersection-observer-options="{
-									root: `#${targetId ?? 'container'}`
+									root: `#${targetID ?? 'container'}`
 								}" lazy :preview-src="asset.publicURL" @click="handleOnClickAsset($event, asset)" />
 							<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
 								<LazyAssetIcon :type="asset.type" class="icon" />
@@ -58,7 +65,6 @@
 							</NPerformantEllipsis>
 						</NFlex>
 					</div>
-
 				</NGridItem>
 			</template>
 		</NGrid>
@@ -90,7 +96,7 @@ import {
 
 const path = defineModel<string>("path");
 const { isAssetRoute, table } = defineProps<{
-	targetId?: string;
+	targetID?: string;
 	isAssetRoute?: boolean;
 	table: Table;
 }>();

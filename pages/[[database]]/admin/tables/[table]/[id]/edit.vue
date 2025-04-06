@@ -3,10 +3,13 @@
 </template>
 
 <script lang="ts" setup>
+import Inison from "inison";
+
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table"],
 	layout: "table",
 });
+
 const route = useRoute();
 const appConfig = useAppConfig();
 const database = useState<Database>("database");
@@ -17,6 +20,11 @@ const { data } = await useFetch<Item>(
 		table.value.slug
 	}/${route.params.id}`,
 	{
+		query: {
+			options: Inison.stringify({
+				columns: generateQueryColumns(table.value.schema),
+			}),
+		},
 		transform: (input) => input.result,
 	},
 );

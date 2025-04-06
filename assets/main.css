@@ -250,6 +250,25 @@ body {
 	background: #00000021 !important;
 }
 
+/* Fix NDropdown|NPopover|NDatePicker RTL */
+.v-binder-follower-content:has(> .n-base-select-menu.n-base-select-menu--rtl) {
+	left: 47px;
+}
+
+.rtl .v-binder-follower-content:has(> .n-popover-shared),
+.rtl .v-binder-follower-content:has(> .n-date-panel) {
+	left: 0;
+}
+
+/* Fix image height in NUpload */
+.n-upload-file-list
+	.n-upload-file.n-upload-file--image-type
+	.n-upload-file-info
+	.n-upload-file-info__thumbnail
+	img {
+	height: 100%;
+}
+
 @media print {
 	* {
 		max-height: unset !important;

@@ -1,4 +1,3 @@
-import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
 
 async function loadDrawer(index: number) {
@@ -24,36 +23,7 @@ async function loadDrawer(index: number) {
 					params: schema
 						? {
 								options: Inison.stringify({
-									columns: schema
-										? [
-												"*",
-												...flattenSchema(schema)
-													.filter(
-														(field) =>
-															!!field.table && field.table !== "assets",
-													)
-													.flatMap(({ key, table }) => {
-														const _table = database.value.tables?.find(
-															({ slug }) => slug === table,
-														);
-														if (!_table || !_table.schema) return;
-														const _tableFlattenSchema = flattenSchema(
-															_table.schema,
-														);
-														return _table?.label
-															?.split(/(@\w+)/g)
-															.filter((value: string) => value.startsWith("@"))
-															.map(
-																(label: string) =>
-																	`${key}.${
-																		_tableFlattenSchema.find(
-																			({ id }) => id === label.slice(1),
-																		)?.key ?? "*"
-																	}`,
-															);
-													}),
-											]
-										: [],
+									columns: generateQueryColumns(schema),
 								}),
 							}
 						: undefined,

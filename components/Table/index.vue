@@ -366,14 +366,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-				query: {
-					...(Query ?? {}),
-					search: v,
-				},
-			})
+			query: {
+				...(Query ?? {}),
+				search: v,
+			},
+		})
 		: router.push({
-				query: Query ?? {},
-			});
+			query: Query ?? {},
+		});
 });
 
 const dataRef = ref<DataTableInst>();
@@ -415,39 +415,12 @@ const pagination = reactive({
 
 const sortObject = ref<Record<string, "asc" | "desc">>({});
 
-const queryColumns = computed(() =>
-	table.value.schema
-		? [
-				"*",
-				...flattenSchema(table.value.schema)
-					.filter((field) => !!field.table && field.table !== "assets")
-					.flatMap(({ key, table }) => {
-						const _table = database.value.tables?.find(
-							({ slug }) => slug === table,
-						);
-						if (!_table || !_table.schema) return;
-						const _tableFlattenSchema = flattenSchema(_table.schema);
-						return _table?.label
-							?.split(/(@\w+)/g)
-							.filter((value: string) => value.startsWith("@"))
-							.map(
-								(label: string) =>
-									`${key}.${
-										_tableFlattenSchema.find(({ id }) => id === label.slice(1))
-											?.key ?? "*"
-									}`,
-							);
-					}),
-			]
-		: [],
-);
-
 const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		columns: queryColumns.value,
-		sort: Object.keys(sortObject.value).length ? sortObject.value : undefined,
+		columns: generateQueryColumns(table.value.schema),
+		sort: Object.keys(sortObject.value).length ? sortObject.value : "",
 	}),
 );
 
@@ -506,6 +479,8 @@ const toolsDropdownOptions = computed(() => [
 		icon: () => h(NIcon, () => h(IconTableExport)),
 		label: t("export"),
 		key: "export",
+		disabled:
+			!whereQuery.value && (!data.value?.result || !table.value?.schema),
 		children: [
 			{
 				icon: () => h(NIcon, () => h(IconFileArrowRight)),
@@ -713,13 +688,14 @@ async function createDropdownOnSelect(value: string) {
 function handleScroll() {
 	showDropdown.value = false; // Hide dropdown on scroll
 }
+
 watchEffect(() => {
 	isSearchDisabled.value = !!(
 		localSearchArray.value &&
 		Object.keys(localSearchArray.value).length === 1 &&
 		(
 			localSearchArray.value[
-				Object.keys(localSearchArray.value)[0] as "and" | "or"
+			Object.keys(localSearchArray.value)[0] as "and" | "or"
 			]?.[0] as any
 		)[0] === null
 	);
@@ -748,73 +724,73 @@ function itemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(IconEye)),
-								),
-						},
-					)
+					NButton,
+					{
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(IconEye)),
+							),
+					},
+				)
 				: null,
 			table.value.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault();
-								if (!isMobile)
-									openDrawer(
-										table.value.slug,
-										row.id,
-										structuredClone(toRaw(row)),
-									);
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-									);
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault();
+							if (!isMobile)
+								openDrawer(
+									table.value.slug,
+									row.id,
+									structuredClone(toRaw(row)),
+								);
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+								);
 						},
-						{ icon: () => h(NIcon, () => h(IconPencil)) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(IconPencil)) },
+				)
 				: null,
 			table.value.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => DELETE(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () => h(NIcon, () => h(IconTrash)),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => DELETE(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () => h(NIcon, () => h(IconTrash)),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	);
@@ -824,34 +800,34 @@ function setColumns() {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
 			? [
-					{
-						type: "selection",
-						fixed: "left",
-						options: [
-							{
-								label: t("delete"),
-								key: "delete",
-								disabled: checkedRowKeys.value.length === 0,
-								icon: () => h(NIcon, () => h(IconTrash)),
-								onSelect: async () => {
-									await DELETE(checkedRowKeys.value);
-									checkedRowKeys.value = [];
-								},
+				{
+					type: "selection",
+					fixed: "left",
+					options: [
+						{
+							label: t("delete"),
+							key: "delete",
+							disabled: checkedRowKeys.value.length === 0,
+							icon: () => h(NIcon, () => h(IconTrash)),
+							onSelect: async () => {
+								await DELETE(checkedRowKeys.value);
+								checkedRowKeys.value = [];
 							},
-							{
-								label: t("clearTable"),
-								key: "clear",
-								disabled:
-									checkedRowKeys.value.length !== data.value?.result?.length,
-								icon: () => h(NIcon, () => h(IconTableMinus)),
-								onSelect: async () => {
-									await DELETE();
-									checkedRowKeys.value = [];
-								},
+						},
+						{
+							label: t("clearTable"),
+							key: "clear",
+							disabled:
+								checkedRowKeys.value.length !== data.value?.result?.length,
+							icon: () => h(NIcon, () => h(IconTableMinus)),
+							onSelect: async () => {
+								await DELETE();
+								checkedRowKeys.value = [];
 							},
-						],
-					},
-				]
+						},
+					],
+				},
+			]
 			: []),
 		...(table.value.schema
 			?.filter(
@@ -865,7 +841,7 @@ function setColumns() {
 						h(NPerformantEllipsis, () => t(field.key)),
 					]),
 				width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
-				key: field.key,
+				key: field.id,
 				sorter: !!data.value?.result,
 				ellipsis: {
 					tooltip: true,
@@ -879,55 +855,61 @@ function setColumns() {
 				render: (row: Item) =>
 					field.render
 						? field.render(row)
-						: h(Column, { value: row[field.key], field }),
+						: h(Column, {
+							value:
+								field.key === "id"
+									? renderLabel(table.value, row)
+									: row[field.key],
+							field,
+						}),
 			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []
 			: [
-					{
-						title: t("actions"),
-						align: "center",
-						width: isMobile
-							? 100
-							: 150 +
-								(slots.itemExtraButtons
-									? (slots.itemExtraButtons as any)().length * 20
-									: 0),
-						key: "actions",
-						fixed: "right",
-						render: (row: any) =>
-							slots.itemActions
-								? slots.itemActions(row)
-								: [
-										slots.itemExtraActions
-											? slots.itemExtraActions(row)
-											: undefined,
-										isMobile
-											? h(
-													NPopover,
+				{
+					title: t("actions"),
+					align: "center",
+					width: isMobile
+						? 100
+						: 150 +
+						(slots.itemExtraButtons
+							? (slots.itemExtraButtons as any)().length * 20
+							: 0),
+					key: "actions",
+					fixed: "right",
+					render: (row: any) =>
+						slots.itemActions
+							? slots.itemActions(row)
+							: [
+								slots.itemExtraActions
+									? slots.itemExtraActions(row)
+									: undefined,
+								isMobile
+									? h(
+										NPopover,
+										{
+											scrollable: true,
+											style: "max-height: 240px;border-radius:34px",
+											contentStyle: "padding: 0",
+										},
+										{
+											trigger: () =>
+												h(
+													NButton,
 													{
-														scrollable: true,
-														style: "max-height: 240px;border-radius:34px",
-														contentStyle: "padding: 0",
+														circle: true,
+														secondary: true,
+														type: "primary",
 													},
-													{
-														trigger: () =>
-															h(
-																NButton,
-																{
-																	circle: true,
-																	secondary: true,
-																	type: "primary",
-																},
-																{ icon: () => h(NIcon, () => h(IconDots)) },
-															),
-														default: () => itemButtons(row),
-													},
-												)
-											: itemButtons(row),
-									],
-					},
-				]),
+													{ icon: () => h(NIcon, () => h(IconDots)) },
+												),
+											default: () => itemButtons(row),
+										},
+									)
+									: itemButtons(row),
+							],
+				},
+			]),
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(

@@ -22,7 +22,6 @@ const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
 	required: field.required,
-	trigger: ["blur", "input"],
 	validator() {
 		if (!modelValue.value)
 			return field.required

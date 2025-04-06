@@ -1,5 +1,5 @@
 <template>
-	<NCard id="assetsContainer" style="height: fit-content;">
+	<NCard id="assetsContainer" style="height: fit-content;" :bordered="targetID === 'assetsContainer'">
 		<template #header>
 			<span v-if="isAssetRoute">{{ t("assets") }}</span>
 			<NBreadcrumb v-else>
@@ -62,7 +62,7 @@
 			</NUpload>
 		</template>
 		<NFlex vertical align="center">
-			<AssetGrid v-model="assets" :isAssetRoute :table :targetId>
+			<AssetGrid v-model="assets" :isAssetRoute :table :targetID>
 				<template v-slot="slotProps">
 					<slot v-bind="slotProps"></slot>
 				</template>
@@ -110,10 +110,13 @@ defineTranslation({
 	},
 });
 
-defineProps({
-	targetId: {
+const { where } = defineProps({
+	targetID: {
 		type: String,
 		default: "assetsContainer",
+	},
+	where: {
+		type: Object,
 	},
 });
 const modelValue = defineModel<string>();
@@ -180,6 +183,7 @@ const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
 						page: page.value,
 						perPage: pageSize.value,
 					}),
+					where: where ? Inison.stringify(where) : "",
 				},
 			},
 		),

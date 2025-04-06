@@ -16,8 +16,8 @@ import { NFlex, NIcon, NPerformantEllipsis } from "naive-ui";
 const { value } = defineProps<{ value?: string | number }>();
 
 async function copyID() {
-	if (!value) return;
-	await copyToClipboard(value);
-	window.$message.success(t("copiedSuccessfully"));
+    if (!value) return;
+    await copyToClipboard(value);
+    window.$message.success(t("copiedSuccessfully"));
 }
 </script>
