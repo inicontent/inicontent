@@ -1,3 +1,5 @@
+import { flattenSchema } from "inibase/utils";
+
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
 	const appConfig = useAppConfig();

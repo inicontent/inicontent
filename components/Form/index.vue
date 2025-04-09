@@ -68,13 +68,15 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 				...item, // Preserve extra properties
 				...updatedItem, // Update existing properties
 				children:
-					(item.children && isArrayOfObjects(item.children)) ||
-					(updatedItem.children && isArrayOfObjects(updatedItem.children))
+					item.children &&
+					isArrayOfObjects(item.children) &&
+					updatedItem.children &&
+					isArrayOfObjects(updatedItem.children)
 						? mergeItems(
 								(item.children as Schema | undefined) ?? [],
 								(updatedItem.children as Schema | undefined) ?? [],
 							) // Recursively update children
-						: undefined,
+						: updatedItem.children || item.children,
 			};
 		})
 		.concat(

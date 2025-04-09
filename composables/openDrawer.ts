@@ -13,20 +13,18 @@ async function loadDrawer(index: number) {
 		const key = `Drawer_${drawer.table}_${drawer.id}`;
 		Loading.value[key] = true;
 
-		const schema = database.value.tables?.find(
+		const table = database.value.tables?.find(
 			({ slug }) => slug === drawer.table,
-		)?.schema;
+		);
 		drawer.data = (
 			await $fetch<apiResponse>(
 				`${appConfig.apiBase}${database.value.slug}/${drawer.table}/${drawer.id}`,
 				{
-					params: schema
-						? {
-								options: Inison.stringify({
-									columns: generateQueryColumns(schema),
-								}),
-							}
-						: undefined,
+					params: {
+						options: Inison.stringify({
+							columns: table?.columns ?? "",
+						}),
+					},
 				},
 			)
 		).result;

@@ -126,24 +126,15 @@ const usersTable = database.value.tables?.find(({ slug }) => slug === "users");
 
 const table = useState<Table>("table");
 
-const logsSchema: Schema = [
-	{
-		key: "item",
-		type: ["table", "array"],
-		children: "table",
-		table: table.value.slug,
-		required: true,
-	},
-	{ key: "actions", type: "json", required: true },
-	{ key: "madeBy", type: "table", table: "users" },
-];
-
 const { data, status } = await useLazyFetch<apiResponse<Log[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
 		query: {
 			options: Inison.stringify({
-				columns: generateQueryColumns(logsSchema, "item"),
+				columns: [
+					...(table.value.columns?.map((column) => `item.${column}`) ?? []),
+					...(usersTable?.columns?.map((column) => `madeBy.${column}`) ?? []),
+				],
 			}),
 		},
 		onRequest() {

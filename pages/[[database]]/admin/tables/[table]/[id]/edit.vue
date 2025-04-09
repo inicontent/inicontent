@@ -22,7 +22,7 @@ const { data } = await useFetch<Item>(
 	{
 		query: {
 			options: Inison.stringify({
-				columns: generateQueryColumns(table.value.schema),
+				columns: table.value.columns ?? "",
 			}),
 		},
 		transform: (input) => input.result,

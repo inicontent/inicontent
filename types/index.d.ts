@@ -114,6 +114,7 @@ declare global {
 		config?: TableObject["config"] & { log?: boolean };
 		customLabel?: (item?: Item) => string;
 		customLabelColumns?: string[];
+		columns?: string[];
 	};
 	type Item = {
 		id?: string;

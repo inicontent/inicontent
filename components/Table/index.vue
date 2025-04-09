@@ -366,14 +366,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
 		: router.push({
-			query: Query ?? {},
-		});
+				query: Query ?? {},
+			});
 });
 
 const dataRef = ref<DataTableInst>();
@@ -419,7 +419,7 @@ const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		columns: generateQueryColumns(table.value.schema),
+		columns: table.value.columns ?? "",
 		sort: Object.keys(sortObject.value).length ? sortObject.value : "",
 	}),
 );
@@ -695,7 +695,7 @@ watchEffect(() => {
 		Object.keys(localSearchArray.value).length === 1 &&
 		(
 			localSearchArray.value[
-			Object.keys(localSearchArray.value)[0] as "and" | "or"
+				Object.keys(localSearchArray.value)[0] as "and" | "or"
 			]?.[0] as any
 		)[0] === null
 	);
@@ -724,73 +724,73 @@ function itemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(IconEye)),
-							),
-					},
-				)
+						NButton,
+						{
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(IconEye)),
+								),
+						},
+					)
 				: null,
 			table.value.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault();
-							if (!isMobile)
-								openDrawer(
-									table.value.slug,
-									row.id,
-									structuredClone(toRaw(row)),
-								);
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
-								);
+						NButton,
+						{
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault();
+								if (!isMobile)
+									openDrawer(
+										table.value.slug,
+										row.id,
+										structuredClone(toRaw(row)),
+									);
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/${row.id}/edit`,
+									);
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(IconPencil)) },
-				)
+						{ icon: () => h(NIcon, () => h(IconPencil)) },
+					)
 				: null,
 			table.value.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => DELETE(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () => h(NIcon, () => h(IconTrash)),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => DELETE(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
 	);
@@ -800,34 +800,34 @@ function setColumns() {
 	columns.value = [
 		...(table.value.allowedMethods !== "r"
 			? [
-				{
-					type: "selection",
-					fixed: "left",
-					options: [
-						{
-							label: t("delete"),
-							key: "delete",
-							disabled: checkedRowKeys.value.length === 0,
-							icon: () => h(NIcon, () => h(IconTrash)),
-							onSelect: async () => {
-								await DELETE(checkedRowKeys.value);
-								checkedRowKeys.value = [];
+					{
+						type: "selection",
+						fixed: "left",
+						options: [
+							{
+								label: t("delete"),
+								key: "delete",
+								disabled: checkedRowKeys.value.length === 0,
+								icon: () => h(NIcon, () => h(IconTrash)),
+								onSelect: async () => {
+									await DELETE(checkedRowKeys.value);
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-						{
-							label: t("clearTable"),
-							key: "clear",
-							disabled:
-								checkedRowKeys.value.length !== data.value?.result?.length,
-							icon: () => h(NIcon, () => h(IconTableMinus)),
-							onSelect: async () => {
-								await DELETE();
-								checkedRowKeys.value = [];
+							{
+								label: t("clearTable"),
+								key: "clear",
+								disabled:
+									checkedRowKeys.value.length !== data.value?.result?.length,
+								icon: () => h(NIcon, () => h(IconTableMinus)),
+								onSelect: async () => {
+									await DELETE();
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-					],
-				},
-			]
+						],
+					},
+				]
 			: []),
 		...(table.value.schema
 			?.filter(
@@ -856,60 +856,60 @@ function setColumns() {
 					field.render
 						? field.render(row)
 						: h(Column, {
-							value:
-								field.key === "id"
-									? renderLabel(table.value, row)
-									: row[field.key],
-							field,
-						}),
+								value:
+									field.key === "id"
+										? renderLabel(table.value, row)
+										: row[field.key],
+								field,
+							}),
 			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []
 			: [
-				{
-					title: t("actions"),
-					align: "center",
-					width: isMobile
-						? 100
-						: 150 +
-						(slots.itemExtraButtons
-							? (slots.itemExtraButtons as any)().length * 20
-							: 0),
-					key: "actions",
-					fixed: "right",
-					render: (row: any) =>
-						slots.itemActions
-							? slots.itemActions(row)
-							: [
-								slots.itemExtraActions
-									? slots.itemExtraActions(row)
-									: undefined,
-								isMobile
-									? h(
-										NPopover,
-										{
-											scrollable: true,
-											style: "max-height: 240px;border-radius:34px",
-											contentStyle: "padding: 0",
-										},
-										{
-											trigger: () =>
-												h(
-													NButton,
+					{
+						title: t("actions"),
+						align: "center",
+						width: isMobile
+							? 100
+							: 150 +
+								(slots.itemExtraButtons
+									? (slots.itemExtraButtons as any)().length * 20
+									: 0),
+						key: "actions",
+						fixed: "right",
+						render: (row: any) =>
+							slots.itemActions
+								? slots.itemActions(row)
+								: [
+										slots.itemExtraActions
+											? slots.itemExtraActions(row)
+											: undefined,
+										isMobile
+											? h(
+													NPopover,
 													{
-														circle: true,
-														secondary: true,
-														type: "primary",
+														scrollable: true,
+														style: "max-height: 240px;border-radius:34px",
+														contentStyle: "padding: 0",
 													},
-													{ icon: () => h(NIcon, () => h(IconDots)) },
-												),
-											default: () => itemButtons(row),
-										},
-									)
-									: itemButtons(row),
-							],
-				},
-			]),
+													{
+														trigger: () =>
+															h(
+																NButton,
+																{
+																	circle: true,
+																	secondary: true,
+																	type: "primary",
+																},
+																{ icon: () => h(NIcon, () => h(IconDots)) },
+															),
+														default: () => itemButtons(row),
+													},
+												)
+											: itemButtons(row),
+									],
+					},
+				]),
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(

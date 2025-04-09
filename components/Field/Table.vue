@@ -173,7 +173,7 @@ async function loadOptions(searchValue?: string | number) {
 			params: {
 				where: where.value,
 				options: Inison.stringify({
-					columns: generateQueryColumns(table?.schema),
+					columns: table?.columns ?? "",
 				}),
 			},
 			cache: "no-cache",
@@ -216,7 +216,7 @@ async function handleScroll(e: Event) {
 					where: where.value,
 					options: Inison.stringify({
 						page: pagination.value.page + 1,
-						columns: queryColumns,
+						columns: table?.columns ?? "",
 					}),
 				},
 				cache: "no-cache",
