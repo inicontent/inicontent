@@ -250,7 +250,7 @@ body {
 	background: #00000021 !important;
 }
 
-/* Fix NDropdown|NPopover|NDatePicker RTL */
+/* Fix NDropdown|NPopover|NDatePicker|NCascader RTL */
 .v-binder-follower-content:has(> .n-base-select-menu.n-base-select-menu--rtl) {
 	left: 47px;
 }
@@ -258,6 +258,10 @@ body {
 .rtl .v-binder-follower-content:has(> .n-popover-shared),
 .rtl .v-binder-follower-content:has(> .n-date-panel) {
 	left: 0;
+}
+
+.rtl .n-cascader-menu .n-cascader-option {
+	padding: 0 18px 0 0;
 }
 
 /* Fix image height in NUpload */

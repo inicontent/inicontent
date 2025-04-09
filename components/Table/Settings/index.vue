@@ -49,10 +49,19 @@
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
 										<template #input="{ submit, deactivate }">
-											<NCascader size="small" clearable filterable show expand-trigger="hover"
-												check-strategy="child" :cascard="false" :options="searchInSelectOptions"
-												@update:value="submit($event)"
+											<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
+												:options="searchInSelectOptions" @update:value="submit($event)"
 												@update:show="(value) => value ? '' : deactivate()" />
+										</template>
+										<template #trigger="{ activate, disabled }">
+											<NButton size="small" tertiary round
+												@click="activate(), focusSingleLabelSelect()" :disabled>
+												<template #icon>
+													<NIcon>
+														<IconPlus />
+													</NIcon>
+												</template>
+											</NButton>
 										</template>
 									</NDynamicTags>
 								</NFormItem>
@@ -114,7 +123,7 @@ import {
 	IconPlus,
 	IconTrash,
 } from "@tabler/icons-vue";
-import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
+import { flattenSchema, isValidID } from "inibase/utils";
 import {
 	type FormInst,
 	NAnchor,
@@ -136,6 +145,7 @@ import {
 	NTag,
 	NButtonGroup,
 	NCascader,
+	NSelect,
 } from "naive-ui";
 
 onMounted(() => {
@@ -290,9 +300,13 @@ async function deleteTable() {
 const flattenCopySchema = computed<Schema>(() =>
 	tableCopy.value.schema ? flattenSchema(tableCopy.value.schema) : [],
 );
+const singleLabelSelect = ref();
+function focusSingleLabelSelect() {
+	setTimeout(() => singleLabelSelect.value?.focusInput(), 200);
+}
 tableCopy.value.localLabel = tableCopy.value.label
 	?.split(/(@\w+)/g)
-	.filter((value: string) => value != "")
+	.filter((value: string) => value.trim() != "")
 	.map((label: string) => {
 		if (label.startsWith("@"))
 			return {
@@ -306,6 +320,18 @@ tableCopy.value.localLabel = tableCopy.value.label
 			value: label,
 		};
 	});
+watch(
+	() => tableCopy.value?.localLabel,
+	(newValue) => {
+		if (newValue?.length) {
+			const localLabelWithNoEmptys = newValue.filter(
+				({ label }) => label.trim() !== "",
+			);
+			if (localLabelWithNoEmptys.length !== newValue.length)
+				tableCopy.value.localLabel = localLabelWithNoEmptys;
+		}
+	},
+);
 function onAppendToLabel(label: string) {
 	if (!label.startsWith("@") && isValidID(label)) label = `@${label}`;
 	if (label.startsWith("@") && isValidID(label.slice(1)))
@@ -334,6 +360,8 @@ function renderSingleLabel(
 					? "primary"
 					: "default",
 			closable: true,
+			round: true,
+			bordered: false,
 			onClose: () => {
 				tableCopy.value.localLabel?.splice(index, 1);
 			},
@@ -358,6 +386,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 2,
 	},
 	{
 		key: "icon",
@@ -368,6 +397,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 2,
 	},
 	{
 		key: "compression",
@@ -377,6 +407,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 5,
 	},
 	{
 		key: "cache",
@@ -386,6 +417,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 5,
 	},
 	{
 		key: "prepend",
@@ -396,6 +428,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 5,
 	},
 	{
 		key: "decodeID",
@@ -406,11 +439,13 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
+		width: 5,
 	},
 	{
 		key: "log",
 		type: "boolean",
 		description: "enableActivityLog",
+		width: 5,
 	},
 ]);
 
