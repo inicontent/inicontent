@@ -1,25 +1,33 @@
 <template>
-    <NTooltip trigger="hover" :delay="500">
+    <NTooltip v-if="!isRelativeDateNotifShown" trigger="hover"
+        @update:show="(show) => !show ? isRelativeDateNotifShown = true : ''" :delay="500">
         <template #trigger>
-            <NTime style="cursor: pointer;" @click="isRelative = !isRelative" :time="Number(value)"
+            <NTime style="cursor: pointer;" @contextmenu.prevent="isRelative = !isRelative" :time="Number(value)"
                 :type="isRelative ? 'relative' : 'date'">
                 {{ value }}
             </NTime>
         </template>
-        {{ t('clickToToggleDate') }}
+        {{ t('rightClickToToggleDate') }}
     </NTooltip>
+    <NTime v-else style="cursor: pointer;" @contextmenu.prevent="isRelative = !isRelative" :time="Number(value)"
+        :type="isRelative ? 'relative' : 'date'">
+        {{ value }}
+    </NTime>
 </template>
 
 <script lang="ts" setup>
 import { NTime, NTooltip } from "naive-ui";
 
 const isRelative = useState("isRelative", () => false);
-
+const isRelativeDateNotifShown = useState(
+	"isRelativeDateNotifShown",
+	() => false,
+);
 const { value } = defineProps<{ value?: number }>();
 
 defineTranslation({
 	ar: {
-		clickToToggleDate: "إضغط لتغيير طريقة عرض التاريخ",
+		rightClickToToggleDate: "انقر بزر الماوس الأيمن لتغيير طريقة عرض التاريخ",
 	},
 });
 </script>

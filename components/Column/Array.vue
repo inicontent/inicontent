@@ -8,7 +8,7 @@
         </template>
         <NCollapse accordion arrow-placement="right">
             <NCollapseItem v-for="(singleValue, index) in ([] as Record<string, any>[]).concat(value)"
-                :title="`${t(field.key)} ${index + 1}`">
+                :title="getCollapseItemTitle(field, (singleValue as Item), index)">
                 <NFlex vertical>
                     <NFlex
                         v-for="child in (field.children as Schema).filter(({ key }) => typeof singleValue[key] !== 'undefined')"

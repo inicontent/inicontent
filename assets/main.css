@@ -30,6 +30,11 @@ body {
 	width: 100%;
 }
 
+.n-select[round="true"] * {
+	border-radius: 15px;
+	overflow: hidden;
+}
+
 .rtl,
 .rtl * {
 	/* --n-label-padding: 0 0 0 12px !important; */

@@ -152,7 +152,7 @@ import {
 	type DropdownOption,
 	NPerformantEllipsis,
 } from "naive-ui";
-import { NuxtLink, Column } from "#components";
+import { NuxtLink, Column, ColumnEdit } from "#components";
 import {
 	FormatObjectCriteriaValue,
 	isArrayOfObjects,
@@ -607,7 +607,8 @@ function rowProps(row: Item) {
 				target.closest("a[href]") || // Link
 				target.closest("img") || // Image
 				target.closest("button") || // Button
-				target.closest('[role="button"]') // ARIA role button
+				target.closest('[role="button"]') || // ARIA role button
+				target.closest("time") // Date
 			) {
 				showDropdown.value = false;
 				return;
@@ -854,13 +855,50 @@ function setColumns() {
 				render: (row: Item) =>
 					field.render
 						? field.render(row)
-						: h(Column, {
-								value:
-									field.key === "id"
-										? renderLabel(table.value, row)
-										: row[field.key],
-								field,
-							}),
+						: table.value.allowedMethods?.includes("u") &&
+								![
+									"id",
+									"createdAt",
+									"createdBy",
+									"updatedAt",
+									"updatedBy",
+								].includes(field.key)
+							? h(ColumnEdit, {
+									loading: row.id && Loading.value[`${row.id}-${field.key}`],
+									modelValue: row[field.key],
+									"onUpdate:modelValue": async (value: any) => {
+										if (!row.id) return;
+										Loading.value[`${row.id}-${field.key}`] = true;
+										row[field.key] = value;
+										const data = await $fetch<apiResponse<Item | boolean>>(
+											`${appConfig.apiBase}${database.value.slug}/${
+												table.value?.slug
+											}/${row.id}`,
+											{
+												method: "PUT",
+												body: row,
+												params: {
+													options: Inison.stringify({ return: false }),
+												},
+											},
+										);
+										if (
+											(typeof data.result === "boolean" &&
+												data.result !== true) ||
+											(typeof data.result !== "boolean" && !data.result?.id)
+										)
+											window.$message.error(data.message);
+										Loading.value[`${row.id}-${field.key}`] = false;
+									},
+									field,
+								})
+							: h(Column, {
+									value:
+										field.key === "id"
+											? renderLabel(table.value, row)
+											: row[field.key],
+									field,
+								}),
 			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []

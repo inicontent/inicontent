@@ -43,8 +43,7 @@
 			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
 				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
-					:title="field.children[0].type === 'string' ? (_item as Item)[field.children[0].key] || `${t(field.key)} ${index + 1}` : `${t(field.key)} ${index + 1}`"
-					:name="`${field.id}.${index}`">
+					:title="getCollapseItemTitle(field, (_item as Item), index)" :name="`${field.id}.${index}`">
 					<template #header-extra>
 						<NFlex>
 							<component v-if="field.itemExtraActions" :is="field.itemExtraActions(index)"></component>
@@ -234,12 +233,13 @@ function setColumns() {
 					h(NPerformantEllipsis, () => t(child.key)),
 					child.required
 						? h(
-							NText,
-							{
-								type: "error",
-							},
-							() => " *",
-						) : undefined
+								NText,
+								{
+									type: "error",
+								},
+								() => " *",
+							)
+						: undefined,
 				]),
 			key: child.id,
 			render: (_item: any, index: number) =>
@@ -272,39 +272,39 @@ function setColumns() {
 		field.disableActions === true
 			? {}
 			: {
-				title: t("actions"),
-				fixed: "right",
-				align: "center",
-				width: 100,
-				key: "actions",
-				render(_row: any, index: number) {
-					return h(
-						NTooltip,
-						{ delay: 500 },
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										disabled:
-											typeof field.inputProps === "function"
-												? field.inputProps(index)?.disabled
-												: field.inputProps?.disabled,
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-										onClick: () => handleDeleteItem(index),
-									},
-									{
-										icon: () => h(NIcon, () => h(IconTrash)),
-									},
-								),
-							default: () => t("delete"),
-						},
-					);
+					title: t("actions"),
+					fixed: "right",
+					align: "center",
+					width: 100,
+					key: "actions",
+					render(_row: any, index: number) {
+						return h(
+							NTooltip,
+							{ delay: 500 },
+							{
+								trigger: () =>
+									h(
+										NButton,
+										{
+											disabled:
+												typeof field.inputProps === "function"
+													? field.inputProps(index)?.disabled
+													: field.inputProps?.disabled,
+											strong: true,
+											secondary: true,
+											circle: true,
+											type: "error",
+											onClick: () => handleDeleteItem(index),
+										},
+										{
+											icon: () => h(NIcon, () => h(IconTrash)),
+										},
+									),
+								default: () => t("delete"),
+							},
+						);
+					},
 				},
-			},
 	] as DataTableColumns;
 
 	tableWidth.value = columns.value.reduce(

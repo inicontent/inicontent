@@ -28,7 +28,6 @@ defineSlots<{
 }>();
 
 const modelValue = defineModel<Item>({ default: () => reactive({}) });
-const defaultModelValue = structuredClone(toRaw(modelValue.value));
 
 defineExpose<FormRef>({
 	create: CREATE,
