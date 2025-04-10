@@ -154,7 +154,6 @@ import {
 } from "naive-ui";
 import { NuxtLink, Column } from "#components";
 import {
-	flattenSchema,
 	FormatObjectCriteriaValue,
 	isArrayOfObjects,
 	isObject,

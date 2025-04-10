@@ -8,6 +8,7 @@ import type {
 import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
+import type { DataTableColumns } from "naive-ui";
 import type languages from "~/composables/Translation/languages";
 
 type onCreateCallback = (index: number) => any;
