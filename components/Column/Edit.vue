@@ -1,9 +1,9 @@
 <template>
-    <NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
-        :class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">
-        <Column v-if="!isEdit" :field="field" :value="modelValue" />
-        <Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
-    </NSpin>
+	<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
+		:class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">
+		<Column v-if="!isEdit" :field="field" :value="modelValue" />
+		<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
+	</NSpin>
 </template>
 
 <script lang="ts" setup>
@@ -32,8 +32,7 @@ const inputField = {
 		show: true,
 		round: true,
 		ref: inputRef,
-		onUpdateValue: handleChange,
-		onBlur: () => handleChange(),
+		onBlur: handleChange,
 	},
 };
 const isEdit = ref(false);
@@ -48,8 +47,9 @@ function onClick() {
 		}
 	});
 }
-function handleChange(value?: any) {
-	if (value) modelValue.value = value;
+
+function handleChange() {
+	modelValue.value = inputValue.value;
 	isEdit.value = false;
 }
 </script>
@@ -57,6 +57,6 @@ function handleChange(value?: any) {
 <style scoped>
 .editable,
 .editable * {
-    cursor: context-menu !important;
+	cursor: context-menu !important;
 }
 </style>

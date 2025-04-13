@@ -90,7 +90,7 @@ import {
 
 definePageMeta({
 	layout: "dashboard",
-	middleware: ["database", "user", "dashboard"],
+	middleware: ["database", "user", "dashboard", "global"],
 });
 
 const route = useRoute();

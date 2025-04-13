@@ -16,6 +16,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			statusMessage: "database",
 		});
 
+	formatDatabase();
+
 	useState<ThemeConfig>("ThemeConfig", () => ({
 		primaryColor: "#FF9800",
 		primaryColorHover: "#F7A42A",

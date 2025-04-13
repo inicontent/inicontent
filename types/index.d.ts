@@ -50,7 +50,11 @@ declare global {
 		isArray?: boolean;
 		searchIn?: string[];
 		image?: string;
-		options?: ((string | number) | { label: string; value: string | number })[];
+		options?: (
+			| (string | number)
+			| { label: string; value: string | number }
+			| [string | number, string]
+		)[];
 		labelProps?: any;
 		inputProps?: any;
 		onCreate?: any;
@@ -85,7 +89,7 @@ declare global {
 		itemExtraButtons?: (index: number) => VNode | undefined;
 		width?: number;
 	};
-	type Schema = (Field & dbField)[];
+	type Schema = Field[];
 	type FlowType = (
 		| [
 				"set",
@@ -180,7 +184,7 @@ declare global {
 
 	type TableRef = {
 		search?: searchType;
-		columns?: DataTableColumns;
+		columns?: DataTableColumns<any>;
 		delete: (id?: string | string[]) => Promise<void>;
 	};
 

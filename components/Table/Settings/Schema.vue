@@ -104,11 +104,18 @@
 						</NFormItem>
 					</template>
 					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
+						<NFormItem :label="t('labelsColoring')" label-placement="left">
+							<NSwitch :value="isArrayOfArrays(element.options)"
+								@update:value="(value) => toggleLabelsColoring(schema[index], value)" />
+						</NFormItem>
 						<NFormItem :label="t('options')">
-							<NSelect
+							<NDataTable v-if="isArrayOfArrays(element.options)"
+								:columns="lablesColoringColumns(schema[index])" :data="element.options" />
+							<NSelect v-else
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
 								filterable multiple tag :show-arrow="false" :show="false" />
+
 						</NFormItem>
 						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
 							label-placement="left">
@@ -212,9 +219,11 @@ import {
 	NTooltip,
 	type SelectOption,
 	NPopselect,
+	NDataTable,
+	NColorPicker,
 } from "naive-ui";
 import draggable from "vuedraggable/src/vuedraggable";
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
 
 defineTranslation({
 	ar: {
@@ -414,6 +423,59 @@ const uniqueGroupOptions = computed(() => {
 		value: group,
 	}));
 });
+
+function toggleLabelsColoring(schemaItem: Field, value: boolean) {
+	if (!schemaItem.options) schemaItem.options = [""];
+	if (value) {
+		// Convert array of strings to array of arrays of two strings
+		if (
+			Array.isArray(schemaItem.options) &&
+			schemaItem.options.every((option) => typeof option === "string")
+		) {
+			schemaItem.options = schemaItem.options.map((option) => [option, ""]);
+		}
+	} else {
+		// Convert array of arrays of two strings back to array of strings
+		if (
+			Array.isArray(schemaItem.options) &&
+			schemaItem.options.every(
+				(option) => Array.isArray(option) && option.length === 2,
+			)
+		) {
+			schemaItem.options = schemaItem.options.map((option) => option[0]);
+		}
+	}
+}
+
+function lablesColoringColumns(schemaItem: Field) {
+	return [
+		{
+			title: t("label"),
+			key: "label",
+			render(row: [string | number, string], index: number) {
+				return h(NInput, {
+					value: row[0].toString(),
+					onUpdateValue(v) {
+						(schemaItem.options as [string | number, string][])[index][0] = v;
+					},
+				});
+			},
+		},
+		{
+			title: t("color"),
+			key: "color",
+			render(row: [string | number, string], index: number) {
+				return h(NColorPicker, {
+					showAlpha: false,
+					value: row[1].toString(),
+					onUpdateValue(v) {
+						(schemaItem.options as [string | number, string][])[index][1] = v;
+					},
+				});
+			},
+		},
+	];
+}
 </script>
 
 <style scoped>

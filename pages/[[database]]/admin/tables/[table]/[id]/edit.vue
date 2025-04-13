@@ -6,7 +6,7 @@
 import Inison from "inison";
 
 definePageMeta({
-	middleware: ["database", "user", "dashboard", "table"],
+	middleware: ["database", "user", "dashboard", "table", "global"],
 	layout: "table",
 });
 

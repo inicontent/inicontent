@@ -112,11 +112,11 @@ import {
 	NText,
 	NTooltip,
 	NDropdown,
-	type DataTableColumns,
-	type DropdownOption,
 	NButtonGroup,
 	NFlex,
 	NPerformantEllipsis,
+	type DataTableColumns,
+	type DropdownOption,
 } from "naive-ui";
 import { isArrayOfObjects, isStringified } from "inibase/utils";
 import {
@@ -220,7 +220,7 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 	},
 ]);
 
-const columns = ref<DataTableColumns>();
+const columns = ref<DataTableColumns<any>>();
 const tableWidth = ref<number>(0);
 
 function setColumns() {
@@ -305,7 +305,7 @@ function setColumns() {
 						);
 					},
 				},
-	] as DataTableColumns;
+	] as DataTableColumns<any>;
 
 	tableWidth.value = columns.value.reduce(
 		(accumulator: number, { width }) =>

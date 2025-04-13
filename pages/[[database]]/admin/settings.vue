@@ -78,7 +78,7 @@ import {
 } from "naive-ui";
 
 definePageMeta({
-	middleware: ["database", "user", "dashboard"],
+	middleware: ["database", "user", "dashboard", "global"],
 	layout: "table",
 });
 

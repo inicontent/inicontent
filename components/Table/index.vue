@@ -143,14 +143,14 @@ import {
 	NPopover,
 	NProgress,
 	NTooltip,
+	NTime,
+	NPerformantEllipsis,
 	type DataTableColumns,
 	type DataTableInst,
 	type NotificationReactive,
 	type DataTableGetCsvCell,
 	type DataTableGetCsvHeader,
-	NTime,
 	type DropdownOption,
-	NPerformantEllipsis,
 } from "naive-ui";
 import { NuxtLink, Column, ColumnEdit } from "#components";
 import {
@@ -201,7 +201,7 @@ const columns = ref<DataTableColumns>();
 
 defineExpose<TableRef>({
 	search: searchArray as searchType,
-	columns,
+	columns: columns as any,
 	delete: DELETE,
 });
 
@@ -864,7 +864,7 @@ function setColumns() {
 									"updatedBy",
 								].includes(field.key)
 							? h(ColumnEdit, {
-									loading: row.id && Loading.value[`${row.id}-${field.key}`],
+									loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
 									modelValue: row[field.key],
 									"onUpdate:modelValue": async (value: any) => {
 										if (!row.id) return;
