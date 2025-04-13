@@ -829,7 +829,18 @@ function setColumns() {
 					},
 				]
 			: []),
-		...(table.value.schema
+		...((table.value.defaultTableColumns && table.value.schema
+			? [
+					table.value.schema[0],
+					...table.value.schema.filter(({ id }) =>
+						(table.value.defaultTableColumns as string[]).includes(
+							id as string,
+						),
+					),
+					...table.value.schema.slice(-2),
+				]
+			: table.value.schema
+		)
 			?.filter(
 				({ id }) =>
 					!hiddenColumns.value?.[table.value.slug]?.includes(id as string),

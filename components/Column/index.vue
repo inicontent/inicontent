@@ -8,8 +8,8 @@
         <ColumnId v-else-if="detectedFieldType === 'id'" :value />
         <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
             <ColumnAsset v-if="field.table === 'assets'" :value />
-            <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field="field" />
-            <ColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :value />
+            <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
+            <ColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :value :field />
         </NScrollbar>
         <ColumnColor v-else-if="detectedFieldType === 'color'" :value />
         <ColumnUrl v-else-if="detectedFieldType === 'url'" :value />
@@ -18,8 +18,8 @@
         <ColumnPassword v-else-if="detectedFieldType === 'password'" :value />
         <ColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
         <ColumnDate v-else-if="detectedFieldType === 'date'" :value />
-        <ColumnObject v-else-if="detectedFieldType === 'object'" :value :field="field" />
-        <ColumnArray v-else-if="detectedFieldType === 'array'" :value :field="field" />
+        <ColumnObject v-else-if="detectedFieldType === 'object'" :value :field />
+        <ColumnArray v-else-if="detectedFieldType === 'array'" :value :field />
         <ColumnText
             v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'multiple'].includes(detectedFieldType)"
             :value />
@@ -32,7 +32,7 @@ import { NText, NScrollbar } from "naive-ui";
 const { field, value } = defineProps<{ field: Field; value?: any }>();
 
 let detectedFieldType = (field.subType ?? field.type) as
-	| DB_FieldType
-	| CMS_FieldType;
+    | DB_FieldType
+    | CMS_FieldType;
 if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
 </script>

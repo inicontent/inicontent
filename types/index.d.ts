@@ -111,6 +111,7 @@ declare global {
 		label?: string;
 		icon?: string;
 		defaultSearchableColumns?: string[];
+		defaultTableColumns?: string[];
 		allowedMethods?: string;
 		schema?: Schema;
 		onRequest?: FlowType[];

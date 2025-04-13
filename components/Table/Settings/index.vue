@@ -45,6 +45,12 @@
 										v-model:value="tableCopy.defaultSearchableColumns"
 										:options="searchInSelectOptions" />
 								</NFormItem>
+								<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
+									<NCascader multiple clearable filterable expand-trigger="hover"
+										check-strategy="child" :cascard="false"
+										v-model:value="tableCopy.defaultTableColumns"
+										:options="searchInSelectOptions" />
+								</NFormItem>
 								<NFormItem path="localLabel" :label="t('label')">
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
@@ -180,6 +186,7 @@ defineTranslation({
 		cache: "التخزين المؤقت",
 		log: "سجل التتبع",
 		enableActivityLog: "تفعيل سجل عمليات الجدول",
+		defaultTableColumns: "الأعمدة الإفتراضية للجدول",
 	},
 });
 
@@ -298,7 +305,7 @@ async function deleteTable() {
 }
 
 const flattenCopySchema = computed<Schema>(() =>
-	tableCopy.value.schema ? flattenSchema(tableCopy.value.schema) : [],
+	tableCopy.value.schema ? flattenSchema(tableCopy.value.schema as any) : [],
 );
 const singleLabelSelect = ref();
 function focusSingleLabelSelect() {

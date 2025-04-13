@@ -49,9 +49,22 @@ function onClick() {
 }
 
 function handleChange() {
-	modelValue.value = inputValue.value;
+	if (inputValue.value !== modelValue.value)
+		modelValue.value = inputValue.value;
 	isEdit.value = false;
 }
+
+onMounted(() => {
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === "Escape") isEdit.value = false;
+	}
+
+	window.addEventListener("keydown", handleKeydown);
+
+	onUnmounted(() => {
+		window.removeEventListener("keydown", handleKeydown);
+	});
+});
 </script>
 
 <style scoped>

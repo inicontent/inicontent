@@ -78,6 +78,7 @@
 							</NButton>
 						</NFlex>
 					</template>
+
 					<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
 						<template #feedback>
 							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }}
@@ -104,6 +105,10 @@
 						</NFormItem>
 					</template>
 					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
+						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
+							label-placement="left">
+							<NSwitch v-model:value="schema[index].custom" />
+						</NFormItem>
 						<NFormItem :label="t('labelsColoring')" label-placement="left">
 							<NSwitch :value="isArrayOfArrays(element.options)"
 								@update:value="(value) => toggleLabelsColoring(schema[index], value)" />
@@ -115,11 +120,6 @@
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
 								filterable multiple tag :show-arrow="false" :show="false" />
-
-						</NFormItem>
-						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
-							label-placement="left">
-							<NSwitch v-model:value="schema[index].custom" />
 						</NFormItem>
 					</template>
 					<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
@@ -201,8 +201,8 @@ import {
 	IconMusic,
 	IconPhoto,
 	IconVideo,
-	type Icon,
 	IconArrowAutofitWidth,
+	type Icon,
 } from "@tabler/icons-vue";
 import {
 	NCollapse,
@@ -217,10 +217,10 @@ import {
 	NSwitch,
 	NInputNumber,
 	NTooltip,
-	type SelectOption,
 	NPopselect,
 	NDataTable,
 	NColorPicker,
+	type SelectOption,
 } from "naive-ui";
 import draggable from "vuedraggable/src/vuedraggable";
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
@@ -259,6 +259,7 @@ defineTranslation({
 		ie: "على سبيل المثال",
 		useInison: "إستعمل Inison",
 		extendWhere: "توسيع البحث",
+		labelsColoring: "تفعيل الألوان",
 	},
 });
 

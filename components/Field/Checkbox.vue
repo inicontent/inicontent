@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
 import { NFlex, NCheckbox, NCheckboxGroup, type FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
@@ -31,12 +31,17 @@ const rule: FormItemRule = {
 
 const options = computed(() =>
 	field.options
-		? isArrayOfObjects(field.options)
-			? field.options
-			: (field.options as string[]).map((value) => ({
+		? isArrayOfArrays(field.options)
+			? (field.options as [string | number, string][]).map(([value]) => ({
 					value: value,
 					label: t(value),
 				}))
+			: isArrayOfObjects(field.options)
+				? field.options
+				: (field.options as string[]).map((value) => ({
+						value: value,
+						label: t(value),
+					}))
 		: [],
 );
 </script>

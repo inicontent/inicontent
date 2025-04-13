@@ -403,7 +403,7 @@ function generateFlowCascaderOptions(
 			({ slug }) => slug === "users",
 		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema);
+			userSchema = flattenSchema(userSchema as any);
 			result.push({
 				label: "@user",
 				value: "@user",
@@ -454,12 +454,12 @@ function generateFlowSelectOptions(
 
 	let schema: Schema = [];
 	if (table.value.schema) {
-		schema = flattenSchema(table.value.schema) as Schema;
+		schema = flattenSchema(table.value.schema as any) as Schema;
 		if (value) {
 			let userSchema = database.value.tables?.find(
 				({ slug }) => slug === "users",
 			)?.schema;
-			if (userSchema) userSchema = flattenSchema(userSchema);
+			if (userSchema) userSchema = flattenSchema(userSchema as any);
 			const field = (value.startsWith("@user.") ? userSchema : schema)?.find(
 				({ id }) => id === value.slice(6),
 			);
@@ -503,7 +503,7 @@ function generateFlowSelectOptions(
 			({ slug }) => slug === "users",
 		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema);
+			userSchema = flattenSchema(userSchema as any);
 			result.push({
 				key: "@user",
 				label: "@user",
@@ -572,7 +572,7 @@ function formatValue(
 				? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
 				: table.value.schema;
 		if (schema) {
-			schema = flattenSchema(schema, true);
+			schema = flattenSchema(schema as any, true);
 			const item = schema.find(({ id }) => id === lastItem);
 
 			if (!item) return undefined;

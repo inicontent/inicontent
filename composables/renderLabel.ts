@@ -5,7 +5,7 @@ export default function renderLabel(table?: Table, item?: Item): string {
 
 	if (table.customLabel) return table.customLabel(item);
 
-	const flattenTableSchema = flattenSchema(table.schema);
+	const flattenTableSchema = flattenSchema(table.schema as any);
 	return table.label.replace(/@(\w+)/g, (_match, capturedString: string) => {
 		const field = flattenTableSchema.find(({ id }) => id === capturedString);
 		if (!field || !item || !item[field.key]) return "--";
