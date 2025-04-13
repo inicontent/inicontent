@@ -105,9 +105,19 @@
 						</NFormItem>
 					</template>
 					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
-						<NFormItem :label="t('options')">
-							<NDataTable v-if="isArrayOfArrays(element.options)"
-								:columns="lablesColoringColumns(schema[index])" :data="element.options" />
+						<NFormItem :label="t('options')" class="formItemFlex">
+							<template v-if="isArrayOfArrays(element.options)">
+								<NDataTable :columns="labelsColoringColumns(schema[index])" :data="element.options" />
+								<NButton type="primary" secondary style="width:100%"
+									@click="(schema[index].options as [string, string][]).push(['', ''])">
+									<template #icon>
+										<NIcon>
+											<IconPlus />
+										</NIcon>
+									</template>
+									{{ t('add') }}
+								</NButton>
+							</template>
 							<NSelect v-else
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
@@ -164,11 +174,6 @@
 						</NFormItem>
 					</template>
 
-					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
-						:label="t('regex')">
-						<NInput v-model:value="schema[index].regex" />
-					</NFormItem>
-
 					<NFormItem :label="t('unique')" label-placement="left"
 						v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
 						<NSwitch :value="schema[index].unique ? true : false"
@@ -179,6 +184,11 @@
 						<NSelect :value="typeof schema[index].unique === 'boolean' ? undefined : schema[index].unique"
 							@update:value="(value) => schema[index].unique = value" :options="uniqueGroupOptions" tag
 							filterable clearable />
+					</NFormItem>
+
+					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+						:label="t('regex')">
+						<NInput v-model:value="schema[index].regex" />
 					</NFormItem>
 
 					<LazyTableSettingsSchema
@@ -260,6 +270,9 @@ defineTranslation({
 		useInison: "إستعمل Inison",
 		extendWhere: "توسيع البحث",
 		labelsColoring: "تفعيل الألوان",
+		optionLabel: "إسم الخيار",
+		optionColor: "لون الخيار",
+		add: "إضافة",
 	},
 });
 
@@ -426,7 +439,8 @@ const uniqueGroupOptions = computed(() => {
 });
 
 function toggleLabelsColoring(schemaItem: Field, value: boolean) {
-	if (!schemaItem.options) schemaItem.options = [""];
+	if (!schemaItem.options || schemaItem.options.length === 0)
+		schemaItem.options = [""];
 	if (value) {
 		// Convert array of strings to array of arrays of two strings
 		if (
@@ -443,15 +457,17 @@ function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 				(option) => Array.isArray(option) && option.length === 2,
 			)
 		) {
-			schemaItem.options = schemaItem.options.map((option) => option[0]);
+			schemaItem.options = schemaItem.options
+				.map((option) => option[0])
+				.filter((option) => option !== "");
 		}
 	}
 }
 
-function lablesColoringColumns(schemaItem: Field) {
+function labelsColoringColumns(schemaItem: Field) {
 	return [
 		{
-			title: t("label"),
+			title: t("optionLabel"),
 			key: "label",
 			render(row: [string | number, string], index: number) {
 				return h(NInput, {
@@ -463,7 +479,7 @@ function lablesColoringColumns(schemaItem: Field) {
 			},
 		},
 		{
-			title: t("color"),
+			title: t("optionColor"),
 			key: "color",
 			render(row: [string | number, string], index: number) {
 				return h(NColorPicker, {
@@ -473,6 +489,33 @@ function lablesColoringColumns(schemaItem: Field) {
 						(schemaItem.options as [string | number, string][])[index][1] = v;
 					},
 				});
+			},
+		},
+		{
+			title: t("actions"),
+			key: "actions",
+			align: "center",
+			render(row: [string | number, string], index: number) {
+				return h(
+					NButton,
+					{
+						type: "error",
+						size: "small",
+						circle: true,
+						secondary: true,
+						onClick() {
+							if (!schemaItem.options || schemaItem.options.length === 1) {
+								schemaItem.options = [["", ""]];
+								return;
+							}
+							(schemaItem.options as [string | number, string][]).splice(
+								index,
+								1,
+							);
+						},
+					},
+					{ icon: () => h(NIcon, () => h(IconTrash)) },
+				);
 			},
 		},
 	];
@@ -490,5 +533,10 @@ function lablesColoringColumns(schemaItem: Field) {
 
 .notSortable .handle {
 	display: none;
+}
+
+:global(.formItemFlex .n-form-item-blank) {
+	flex-direction: column;
+	gap: 12px
 }
 </style>
