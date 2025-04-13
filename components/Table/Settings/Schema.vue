@@ -231,9 +231,11 @@ import {
 	NDataTable,
 	NColorPicker,
 	type SelectOption,
+	type DataTableColumns,
 } from "naive-ui";
 import draggable from "vuedraggable/src/vuedraggable";
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
+import type { Data } from "inibase";
 
 defineTranslation({
 	ar: {
@@ -464,7 +466,7 @@ function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 	}
 }
 
-function labelsColoringColumns(schemaItem: Field) {
+function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 	return [
 		{
 			title: t("optionLabel"),
