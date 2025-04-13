@@ -105,14 +105,6 @@
 						</NFormItem>
 					</template>
 					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
-						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
-							label-placement="left">
-							<NSwitch v-model:value="schema[index].custom" />
-						</NFormItem>
-						<NFormItem :label="t('labelsColoring')" label-placement="left">
-							<NSwitch :value="isArrayOfArrays(element.options)"
-								@update:value="(value) => toggleLabelsColoring(schema[index], value)" />
-						</NFormItem>
 						<NFormItem :label="t('options')">
 							<NDataTable v-if="isArrayOfArrays(element.options)"
 								:columns="lablesColoringColumns(schema[index])" :data="element.options" />
@@ -120,6 +112,14 @@
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => schema[index].options = [...new Set(value)]"
 								filterable multiple tag :show-arrow="false" :show="false" />
+						</NFormItem>
+						<NFormItem :label="t('labelsColoring')" label-placement="left">
+							<NSwitch :value="isArrayOfArrays(element.options)"
+								@update:value="(value) => toggleLabelsColoring(schema[index], value)" />
+						</NFormItem>
+						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
+							label-placement="left">
+							<NSwitch v-model:value="schema[index].custom" />
 						</NFormItem>
 					</template>
 					<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
@@ -164,6 +164,11 @@
 						</NFormItem>
 					</template>
 
+					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+						:label="t('regex')">
+						<NInput v-model:value="schema[index].regex" />
+					</NFormItem>
+
 					<NFormItem :label="t('unique')" label-placement="left"
 						v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
 						<NSwitch :value="schema[index].unique ? true : false"
@@ -174,11 +179,6 @@
 						<NSelect :value="typeof schema[index].unique === 'boolean' ? undefined : schema[index].unique"
 							@update:value="(value) => schema[index].unique = value" :options="uniqueGroupOptions" tag
 							filterable clearable />
-					</NFormItem>
-
-					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
-						:label="t('regex')">
-						<NInput v-model:value="schema[index].regex" />
 					</NFormItem>
 
 					<LazyTableSettingsSchema
