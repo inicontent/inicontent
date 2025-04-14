@@ -849,7 +849,7 @@ function setColumns() {
 						h(NPerformantEllipsis, () => t(field.key)),
 					]),
 				width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
-				key: field.id,
+				key: field.key,
 				sorter: !!data.value?.result,
 				ellipsis: {
 					tooltip: true,
@@ -964,7 +964,7 @@ function setColumns() {
 	);
 }
 watch(() => hiddenColumns.value, setColumns, { deep: true });
-watch([Language, checkedRowKeys], setColumns, { immediate: true });
+watch([Language, checkedRowKeys, data], setColumns);
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)}`,
