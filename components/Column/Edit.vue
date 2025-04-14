@@ -1,14 +1,19 @@
 <template>
-	<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
-		:class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">
-		<Column v-if="!isEdit" :field="field" :value="modelValue" />
-		<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
-	</NSpin>
+	<NTooltip :show="tooltipShow && !isEdit" @update:show="(show) => tooltipShow = show" :delay="500">
+		<template #trigger>
+			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
+				:class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">
+				<Column v-if="!isEdit" :field="field" :value="modelValue" />
+				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
+			</NSpin>
+		</template>
+		{{ t('clickToEdit') }}
+	</NTooltip>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils";
-import { NSpin } from "naive-ui";
+import { NSpin, NTooltip } from "naive-ui";
 
 const { field, loading, ...props } = defineProps<{
 	field: Field;
@@ -18,10 +23,18 @@ const { field, loading, ...props } = defineProps<{
 
 const emit = defineEmits(["update:modelValue"]);
 
+defineTranslation({
+	ar: {
+		clickToEdit: "اضغط للتعديل",
+	},
+});
+
 const modelValue = computed({
 	get: () => props.modelValue,
 	set: (newValue) => emit("update:modelValue", newValue),
 });
+
+const tooltipShow = ref(false);
 
 const inputValue = ref(modelValue.value);
 const inputRef = ref();
@@ -52,11 +65,15 @@ function handleChange() {
 	if (inputValue.value !== modelValue.value)
 		modelValue.value = inputValue.value;
 	isEdit.value = false;
+	tooltipShow.value = false;
 }
 
 onMounted(() => {
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === "Escape") isEdit.value = false;
+		if (event.key === "Escape") {
+			isEdit.value = false;
+			tooltipShow.value = false;
+		}
 	}
 
 	window.addEventListener("keydown", handleKeydown);

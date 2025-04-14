@@ -830,15 +830,12 @@ function setColumns() {
 				]
 			: []),
 		...((table.value.defaultTableColumns && table.value.schema
-			? [
-					table.value.schema[0],
-					...table.value.schema.filter(({ id }) =>
-						(table.value.defaultTableColumns as string[]).includes(
-							id as string,
-						),
-					),
-					...table.value.schema.slice(-2),
-				]
+			? (table.value.defaultTableColumns as string[])
+					.map(
+						(id) =>
+							table.value.schema?.find((field) => field.id === id) as Field,
+					)
+					.filter(Boolean)
 			: table.value.schema
 		)
 			?.filter(

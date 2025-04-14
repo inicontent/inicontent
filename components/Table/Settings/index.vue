@@ -380,7 +380,7 @@ function renderSingleLabel(
 }
 
 const searchInSelectOptions = computed(() =>
-	generateSearchInOptions(table.value?.schema?.slice(1, -2), undefined, true),
+	generateSearchInOptions(table.value?.schema, undefined, true),
 );
 
 const generalSettingsSchema = reactive<Schema>([
