@@ -1,5 +1,5 @@
 <template>
-	<div v-if="data?.result || status === 'pending'">
+	<div v-if="data?.result">
 		<NH3>{{ t('latestActivities') }}</NH3>
 		<NSpin :show="Loading.logs">
 			<NScrollbar v-if="data?.result" style="max-height: 340px">
@@ -76,7 +76,6 @@ import {
 	NTimelineItem,
 	NText,
 	NTime,
-	NEmpty,
 	NFlex,
 	NTag,
 	NButtonGroup,
@@ -133,6 +132,7 @@ const { data, status } = await useLazyFetch<apiResponse<Log[]>>(
 		query: {
 			options: Inison.stringify({
 				columns: [
+					"*",
 					...(table.value.columns?.map((column) => `item.${column}`) ?? []),
 					...(usersTable?.columns?.map((column) => `madeBy.${column}`) ?? []),
 				],
