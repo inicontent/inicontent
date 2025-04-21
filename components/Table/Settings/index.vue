@@ -38,40 +38,50 @@
 					<NFlex vertical>
 						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
 							<NForm ref="settingsFormRef" :model="tableCopy">
-								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 2)" />
+								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
 								<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
 									<NCascader multiple clearable filterable expand-trigger="hover"
 										check-strategy="child" :cascard="false"
 										v-model:value="tableCopy.defaultSearchableColumns"
 										:options="searchInSelectOptions" />
 								</NFormItem>
-								<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
-									<NCascader multiple clearable filterable expand-trigger="hover"
-										check-strategy="child" :cascard="false"
-										v-model:value="tableCopy.defaultTableColumns"
-										:options="searchInSelectOptions" />
-								</NFormItem>
-								<NFormItem path="localLabel" :label="t('label')">
-									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
-										:render-tag="renderSingleLabel">
-										<template #input="{ submit, deactivate }">
-											<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
-												:options="searchInSelectOptions" @update:value="submit($event)"
-												@update:show="(value) => value ? '' : deactivate()" />
-										</template>
-										<template #trigger="{ activate, disabled }">
-											<NButton size="small" tertiary round
-												@click="activate(), focusSingleLabelSelect()" :disabled>
-												<template #icon>
-													<NIcon>
-														<IconPlus />
-													</NIcon>
-												</template>
-											</NButton>
-										</template>
-									</NDynamicTags>
-								</NFormItem>
-								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(2)" />
+								<template v-if="tableCopy.displayAs === 'table'">
+									<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
+										<NCascader multiple clearable filterable expand-trigger="hover"
+											check-strategy="child" :cascard="false"
+											v-model:value="tableCopy.defaultTableColumns"
+											:options="searchInSelectOptions" />
+									</NFormItem>
+									<NFormItem path="localLabel" :label="t('label')">
+										<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+											:render-tag="renderSingleLabel">
+											<template #input="{ submit, deactivate }">
+												<NSelect ref="singleLabelSelect" size="small" clearable filterable show
+													tag :options="searchInSelectOptions" @update:value="submit($event)"
+													@update:show="(value) => value ? '' : deactivate()" />
+											</template>
+											<template #trigger="{ activate, disabled }">
+												<NButton size="small" tertiary round
+													@click="activate(), focusSingleLabelSelect()" :disabled>
+													<template #icon>
+														<NIcon>
+															<IconPlus />
+														</NIcon>
+													</template>
+												</NButton>
+											</template>
+										</NDynamicTags>
+									</NFormItem>
+								</template>
+								<template v-else>
+									<NFormItem path="groupBy" :label="t('groupBy')">
+										<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
+											:cascard="false" v-model:value="tableCopy.groupBy"
+											:options="groupBySelectOptions" />
+									</NFormItem>
+									<FieldMention :field="labelField" v-model="tableCopy.label" />
+								</template>
+								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
 							</NForm>
 						</NCard>
 						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
@@ -129,29 +139,29 @@ import {
 	IconPlus,
 	IconTrash,
 } from "@tabler/icons-vue";
-import { flattenSchema, isValidID } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
 import {
 	type FormInst,
 	NAnchor,
 	NAnchorLink,
 	NButton,
+	NButtonGroup,
 	NCard,
+	NCascader,
 	NDropdown,
+	NDynamicTags,
 	NEmpty,
 	NFlex,
 	NForm,
-	NGridItem,
+	NFormItem,
 	NGrid,
+	NGridItem,
 	NIcon,
 	NPopconfirm,
-	NTooltip,
-	NSpin,
-	NDynamicTags,
-	NFormItem,
-	NTag,
-	NButtonGroup,
-	NCascader,
 	NSelect,
+	NSpin,
+	NTag,
+	NTooltip,
 } from "naive-ui";
 
 onMounted(() => {
@@ -187,6 +197,11 @@ defineTranslation({
 		log: "سجل التتبع",
 		enableActivityLog: "تفعيل سجل عمليات الجدول",
 		defaultTableColumns: "الأعمدة الإفتراضية للجدول",
+		displayAs: "إظهار كـ",
+		table: "جدول",
+		kanban: "كانبان",
+		cards: "بطاقات",
+		groupBy: "تقسيم حسب",
 	},
 });
 
@@ -218,7 +233,7 @@ const tableCopy = ref<
 	Table & {
 		localLabel?: { value: string; label: string }[];
 	}
->(toRaw(table.value));
+>({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" });
 
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
@@ -227,8 +242,12 @@ async function updateTable() {
 				...rest,
 			}))(tableCopy.value);
 			Loading.value.updateTable = true;
+
 			// TO-DO: Fix
 			const oldAllowedMethods = bodyContent.allowedMethods;
+
+			if (bodyContent.displayAs === "table") delete bodyContent.displayAs;
+
 			if (bodyContent.localLabel)
 				bodyContent.label = bodyContent.localLabel
 					.map(({ value }: { value: string }) => value)
@@ -311,22 +330,25 @@ const singleLabelSelect = ref();
 function focusSingleLabelSelect() {
 	setTimeout(() => singleLabelSelect.value?.focusInput(), 200);
 }
-tableCopy.value.localLabel = tableCopy.value.label
-	?.split(/(@\w+)/g)
-	.filter((value: string) => value.trim() != "")
-	.map((label: string) => {
-		if (label.startsWith("@"))
-			return {
-				label:
-					flattenCopySchema.value.find(({ id }) => id === label.slice(1))
-						?.key ?? "",
-				value: label,
-			};
-		return {
-			label,
-			value: label,
-		};
-	});
+tableCopy.value.localLabel =
+	tableCopy.value.displayAs !== "kanban"
+		? tableCopy.value.label
+				?.split(/(@\w+)/g)
+				.filter((value: string) => value.trim() != "")
+				.map((label: string) => {
+					if (label.startsWith("@"))
+						return {
+							label:
+								flattenCopySchema.value.find(({ id }) => id === label.slice(1))
+									?.key ?? "",
+							value: label,
+						};
+					return {
+						label,
+						value: label,
+					};
+				})
+		: undefined;
 watch(
 	() => tableCopy.value?.localLabel,
 	(newValue) => {
@@ -383,6 +405,22 @@ const searchInSelectOptions = computed(() =>
 	generateSearchInOptions(table.value?.schema, undefined, true),
 );
 
+const groupBySelectOptions = computed(() =>
+	generateSearchInOptions(
+		table.value?.schema,
+		table.value?.schema
+			?.filter(
+				({ id, subType, options }) =>
+					id &&
+					(!subType ||
+						!["select", "radio"].includes(subType) ||
+						!options?.length),
+			)
+			.map(({ id }) => String(id)),
+		true,
+	),
+);
+
 const generalSettingsSchema = reactive<Schema>([
 	{
 		key: "slug",
@@ -393,7 +431,7 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
-		width: 2,
+		width: 3,
 	},
 	{
 		key: "icon",
@@ -404,7 +442,19 @@ const generalSettingsSchema = reactive<Schema>([
 					disabled: true,
 				}
 			: {},
-		width: 2,
+		width: 3,
+	},
+	{
+		key: "displayAs",
+		type: "string",
+		subType: "select",
+		options: ["table", "kanban", "cards"],
+		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+			? {
+					disabled: true,
+				}
+			: {},
+		width: 3,
 	},
 	{
 		key: "compression",
@@ -455,6 +505,60 @@ const generalSettingsSchema = reactive<Schema>([
 		width: 5,
 	},
 ]);
+
+function generateMentionOptions(
+	schema?: Schema,
+	prefix?: string,
+): {
+	label: string;
+	value: string | number;
+}[] {
+	let RETURN: {
+		label: string;
+		value: string | number;
+	}[] = [];
+
+	if (!schema) return RETURN;
+
+	for (const field of schema) {
+		if (!field.id || field.id.toString().startsWith("temp-")) continue;
+		if (
+			(Array.isArray(field.type) && field.type.includes("array")) ||
+			(field.type === "array" &&
+				field.children &&
+				isArrayOfObjects(field.children))
+		)
+			continue;
+		if (field.children && isArrayOfObjects(field.children))
+			RETURN = [
+				...RETURN,
+				...generateMentionOptions(field.children, field.key),
+			];
+		else
+			RETURN.push({
+				label: (prefix ? `${prefix}/` : "") + field.key,
+				value: field.id,
+			});
+	}
+	return RETURN;
+}
+
+const labelField: Field = {
+	key: "label",
+	type: "string",
+	subType: "mention",
+	options: generateMentionOptions(tableCopy.value?.schema),
+	inputProps: {
+		filter: (pattern: string, option: { value: string }) => {
+			if (!pattern) return true;
+			return option.value.startsWith(pattern);
+		},
+		type: "textarea",
+		autosize: {
+			minRows: 3,
+		},
+	},
+};
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,

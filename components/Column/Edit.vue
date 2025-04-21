@@ -1,5 +1,6 @@
 <template>
-	<NTooltip :show="tooltipShow && !isEdit" @update:show="(show) => tooltipShow = show" :delay="500">
+	<NTooltip placement="bottom" :show="tooltipShow && !isEdit" @update:show="(show) => tooltipShow = show"
+		:delay="500">
 		<template #trigger>
 			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
 				:class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">

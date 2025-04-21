@@ -485,6 +485,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 			key: "color",
 			render(row: [string | number, string], index: number) {
 				return h(NColorPicker, {
+					modes: ["hex"],
 					showAlpha: false,
 					value: row[1].toString(),
 					onUpdateValue(v) {

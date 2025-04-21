@@ -121,6 +121,8 @@ declare global {
 		customLabel?: (item?: Item) => string;
 		customLabelColumns?: string[];
 		columns?: string[];
+		displayAs?: "table" | "kanban" | "cards";
+		groupBy?: string;
 	};
 	type Item = {
 		id?: string;

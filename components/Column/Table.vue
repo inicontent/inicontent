@@ -19,9 +19,7 @@ const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>();
 const route = useRoute();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
-const table = computed(() =>
-	database.value.tables?.find(({ slug }) => slug === field.table),
-);
+const table = database.value.tables?.find(({ slug }) => slug === field.table);
 
 const { isMobile } = useDevice();
 
