@@ -1,58 +1,58 @@
 <template>
-    <div>
-        <ClientOnly>
-            <Teleport to="#navbarExtraButtons">
-                <NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
-                    :style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click" scrollable>
-                    <template #trigger>
-                        <NTooltip :delay="500">
-                            <template #trigger>
-                                <NButton round :disabled="!whereQuery && (!data?.result || !table?.schema)">
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconSearch />
-                                        </NIcon>
-                                    </template>
-                                </NButton>
-                            </template>
-                            {{ t("search") }}
-                        </NTooltip>
-                    </template>
-                    <template #footer>
-                        <NFlex justify="end">
-                            <NButtonGroup>
-                                <NButton round type="error" secondary :loading="Loading.data"
-                                    :disabled="isSearchDisabled" @click="searchArray = undefined">
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconX />
-                                        </NIcon>
-                                    </template>
-                                    {{ t("reset") }}
-                                </NButton>
-                                <NButton round type="primary" secondary :loading="Loading.data"
-                                    :disabled="isSearchDisabled" @click="executeSearch">
-                                    <template #icon>
-                                        <NIcon>
-                                            <IconSearch />
-                                        </NIcon>
-                                    </template>
-                                    {{ t("search") }}
-                                </NButton>
-                            </NButtonGroup>
-                        </NFlex>
-                    </template>
-                    <TableSearch v-model="localSearchArray" :callback="executeSearch" />
-                </NPopover>
-            </Teleport>
-        </ClientOnly>
-        <NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
-            :data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-            :row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-            :get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" />
-        <NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
-            :show="showDropdown" :onClickoutside @select="handleSelect" />
-    </div>
+	<div>
+		<ClientOnly>
+			<Teleport to="#navbarExtraButtons">
+				<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
+					:style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click" scrollable>
+					<template #trigger>
+						<NTooltip :delay="500">
+							<template #trigger>
+								<NButton round :disabled="!whereQuery && (!data?.result || !table?.schema)">
+									<template #icon>
+										<NIcon>
+											<IconSearch />
+										</NIcon>
+									</template>
+								</NButton>
+							</template>
+							{{ t("search") }}
+						</NTooltip>
+					</template>
+					<template #footer>
+						<NFlex justify="end">
+							<NButtonGroup>
+								<NButton round type="error" secondary :loading="Loading.data"
+									:disabled="isSearchDisabled" @click="searchArray = undefined">
+									<template #icon>
+										<NIcon>
+											<IconX />
+										</NIcon>
+									</template>
+									{{ t("reset") }}
+								</NButton>
+								<NButton round type="primary" secondary :loading="Loading.data"
+									:disabled="isSearchDisabled" @click="executeSearch">
+									<template #icon>
+										<NIcon>
+											<IconSearch />
+										</NIcon>
+									</template>
+									{{ t("search") }}
+								</NButton>
+							</NButtonGroup>
+						</NFlex>
+					</template>
+					<TableSearch v-model="localSearchArray" :callback="executeSearch" />
+				</NPopover>
+			</Teleport>
+		</ClientOnly>
+		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
+			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
+			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
+			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" />
+		<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
+			:show="showDropdown" :onClickoutside @select="handleSelect" />
+	</div>
 </template>
 <script setup lang="ts">
 import {
@@ -63,7 +63,6 @@ import {
 	NFlex,
 	NIcon,
 	NPerformantEllipsis,
-	NPopconfirm,
 	NPopover,
 	NTooltip,
 	type DataTableColumns,
@@ -75,7 +74,6 @@ import {
 import {
 	IconCopy,
 	IconEye,
-	IconPencil,
 	IconTrash,
 	IconTableMinus,
 	IconDots,
@@ -87,31 +85,26 @@ import {
 import { isObject, isArrayOfObjects } from "inibase/utils";
 import Inison from "inison";
 
-import { NuxtLink, ColumnEdit, Column } from "#components";
+import { ColumnEdit, Column } from "#components";
 
 const dataTableRef = ref<DataTableInst>();
 defineExpose({ dataTableRef });
 
 const props = defineProps<{
-	table: string;
 	slots: any;
 }>();
 
 const columns = defineModel<DataTableColumns>("columns");
 const searchArray = defineModel<searchType>("searchArray");
 const data = defineModel<apiResponse<Item[]>>("data");
-const refresh = defineModel<() => Promise<void>>("refresh");
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
+const table = useState<Table>("table");
 const route = useRoute();
 const router = useRouter();
 const appConfig = useAppConfig();
 const { isMobile } = useDevice();
-
-const table = computed(() =>
-	database.value.tables?.find(({ slug }) => slug === props.table),
-);
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
 
@@ -206,7 +199,7 @@ const pagination = reactive({
 			page: currentPage !== 1 ? currentPage : undefined,
 		};
 		router.push({ query: Query });
-		await refresh.value?.();
+		await refresh();
 	},
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize));
@@ -223,52 +216,49 @@ const pagination = reactive({
 				perPage: pageSize,
 				page: pagination.page === 1 ? undefined : pagination.page,
 			};
-			await refresh.value?.();
+			await refresh();
 		}
 	},
 });
 
-const sortObject = ref<Record<string, "asc" | "desc">>({});
+const sort = ref<Record<string, "asc" | "desc">>({});
 
 const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		columns: table.value?.columns ?? "",
-		sort: Object.keys(sortObject.value).length ? sortObject.value : "",
+		// columns: table.value?.columns ?? "",
+		sort: Object.keys(sort.value).length ? sort.value : "",
 	}),
 );
 
-const { data: _data, refresh: _refresh } = await useLazyFetch<
-	apiResponse<Item[]>
->(`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, {
-	query: {
-		options: queryOptions,
-		where: whereQuery,
-	},
-	onRequest() {
-		Loading.value.data = true;
-	},
-	onResponse({
-		response: {
-			_data: {
-				options: { total, totalPages },
-			},
+const { data: _data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
+	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+	{
+		query: {
+			options: queryOptions,
+			where: whereQuery,
 		},
-	}) {
-		Loading.value.data = false;
-		pagination.pageCount = totalPages ?? 0;
-		pagination.itemCount = total ?? 0;
+		onRequest() {
+			Loading.value.data = true;
+		},
+		onResponse({
+			response: {
+				_data: {
+					options: { total, totalPages },
+				},
+			},
+		}) {
+			Loading.value.data = false;
+			pagination.pageCount = totalPages ?? 0;
+			pagination.itemCount = total ?? 0;
+		},
 	},
-});
+);
 
 watch(_data, (v) => {
 	data.value = v || undefined;
 });
-refresh.value = _refresh;
-// watch(_refresh, (v) => {
-// 	refresh.value = () => v;
-// });
 
 const dataTablePagination = computed(() => ({
 	disabled: !_data.value?.options.total,
@@ -376,8 +366,8 @@ function handleSorterChange({
 	columnKey,
 	order,
 }: { columnKey: string; order: string }) {
-	if (!order) delete sortObject.value[columnKey];
-	else sortObject.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
+	if (!order) delete sort.value[columnKey];
+	else sort.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
 }
 
 const checkedRowKeys = ref<string[]>([]);
@@ -387,16 +377,6 @@ const hiddenColumns = useCookie<Record<string, string[]>>("hiddenColumns", {
 	default: () => ({}) as Record<string, string[]>,
 	sameSite: true,
 });
-// if (table.value?.defaultTableColumns)
-//     if (!hiddenColumns.value[table.value?.slug as string])
-//         hiddenColumns.value[table.value?.slug as string] = [];
-// hiddenColumns.value[table.value?.slug as string].push(
-//     ...(table.value?.schema as Schema)
-//         .filter(
-//             ({ id }) => !table.value?.defaultTableColumns?.includes(id as string),
-//         )
-//         .map(({ id }) => id as string),
-// );
 
 function handleScroll() {
 	showDropdown.value = false; // Hide dropdown on scroll
@@ -431,6 +411,7 @@ async function setColumns() {
 								icon: () => h(NIcon, () => h(IconTrash)),
 								onSelect: async () => {
 									await deleteItem(checkedRowKeys.value);
+									await refresh();
 									checkedRowKeys.value = [];
 								},
 							},
@@ -442,6 +423,7 @@ async function setColumns() {
 								icon: () => h(NIcon, () => h(IconTableMinus)),
 								onSelect: async () => {
 									await deleteItem();
+									await refresh();
 									checkedRowKeys.value = [];
 								},
 							},
@@ -532,8 +514,8 @@ async function setColumns() {
 				resizable:
 					(!Array.isArray(field.type) && field.type !== "array") ||
 					(Array.isArray(field.type) && !field.type.includes("array")),
-				sortOrder: sortObject.value[field.key]
-					? `${sortObject.value[field.key]}end`
+				sortOrder: sort.value[field.key]
+					? `${sort.value[field.key]}end`
 					: undefined,
 				render: (row: Item) =>
 					field.render

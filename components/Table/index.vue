@@ -52,12 +52,9 @@
 				</NFlex>
 			</template>
 			<slot name="default" :data>
-				<ClientOnly>
-					<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" :table="table.slug"
-						v-model:columns="columns" v-model:data="data" ref="dataRef" :slots />
-					<LazyTableViewsTable v-else :table="table.slug" v-model:columns="columns" v-model:data="data"
-						v-model:refresh="refresh" ref="tableViewRef" :slots />
-				</ClientOnly>
+				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
+					:slots />
+				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data" ref="tableViewRef" :slots />
 			</slot>
 		</NCard>
 		<LazyTableLogs v-if="table.config?.log" />
@@ -105,11 +102,10 @@ const searchArray = ref<searchType | undefined>(
 
 const columns = ref<DataTableColumns>();
 const data = ref();
-const refresh = ref<() => Promise<void>>();
 
 const database = useState<Database>("database");
-
 const table = useState<Table>("table");
+
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
@@ -124,10 +120,8 @@ async function deleteItem(id?: string | string[]) {
 				id && Array.isArray(id) ? { where: Inison.stringify(id) } : undefined,
 		},
 	);
-	if (deleteResponse.result) {
-		window.$message.success(deleteResponse.message);
-		refresh.value?.();
-	} else {
+	if (deleteResponse.result) window.$message.success(deleteResponse.message);
+	else {
 		window.$message.error(deleteResponse.message);
 		Loading.value.data = false;
 	}

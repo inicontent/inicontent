@@ -1,6 +1,6 @@
 <template>
-    <NTooltip v-if="!isRelativeDateNotifShown" trigger="hover"
-        @update:show="(show) => !show ? isRelativeDateNotifShown = true : ''" :delay="500">
+    <NTooltip :delay="isRelativeDateNotifShown ? 2000 : 500" trigger="hover"
+        @update:show="(show) => !show ? isRelativeDateNotifShown = true : ''">
         <template #trigger>
             <NTime style="cursor: pointer;" @contextmenu.prevent="isRelative = !isRelative" :time="Number(value)"
                 :type="isRelative ? 'relative' : 'date'">
@@ -9,10 +9,6 @@
         </template>
         {{ t('rightClickToToggleDate') }}
     </NTooltip>
-    <NTime v-else style="cursor: pointer;" @contextmenu.prevent="isRelative = !isRelative" :time="Number(value)"
-        :type="isRelative ? 'relative' : 'date'">
-        {{ value }}
-    </NTime>
 </template>
 
 <script lang="ts" setup>
