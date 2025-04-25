@@ -16,13 +16,12 @@ const database = useState<Database>("database");
 const table = useState<Table>("table");
 
 const { data } = await useFetch<Item>(
-	`${appConfig.apiBase}${database.value.slug}/${
-		table.value.slug
+	`${appConfig.apiBase}${database.value.slug}/${table.value.slug
 	}/${route.params.id}`,
 	{
 		query: {
 			options: Inison.stringify({
-				columns: table.value.columns ?? "",
+				columns: table.value.columns,
 			}),
 		},
 		transform: (input) => input.result,

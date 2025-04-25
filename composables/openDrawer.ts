@@ -22,7 +22,7 @@ async function loadDrawer(index: number) {
 				{
 					params: {
 						options: Inison.stringify({
-							columns: table?.columns ?? "",
+							columns: table?.columns,
 						}),
 					},
 				},

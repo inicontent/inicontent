@@ -11,11 +11,11 @@
         </template>
         {{ t('gallery') }}
     </NTooltip>
-    <NPopover trigger="manual" v-model:show="showPopover">
+    <NPopover trigger="click">
         <template #trigger>
             <NTooltip :delay="500" placement="bottom">
                 <template #trigger>
-                    <NButton circle secondary size="tiny" @click.prevent.stop="showPopover = !showPopover">
+                    <NButton circle secondary size="tiny" @click.prevent.stop="importInputRef?.focus()">
                         <template #icon>
                             <NIcon>
                                 <IconLink />
@@ -27,8 +27,8 @@
             </NTooltip>
         </template>
         <NInputGroup>
-            <NInput :input-props="{ type: 'url' }" v-model:value="assetURLs" :placeholder="t('assetLink')" clearable
-                @keydown.enter.prevent="importAsset">
+            <NInput :input-props="{ type: 'url' }" ref="importInputRef" v-model:value="assetURLs"
+                :placeholder="t('assetLink')" clearable @keydown.enter.prevent="importAsset">
                 <template #suffix>
                     <NIcon>
                         <IconLink />
@@ -77,7 +77,8 @@ const { field, callback } = defineProps<{
 
 const showAssetsModal = defineModel<boolean>("showAssetsModal");
 
-const showPopover = ref(false);
+const importInputRef = ref<InstanceType<typeof NInput> | null>(null);
+
 const appConfig = useAppConfig();
 const assetURLs = ref();
 const database = useState<Database>("database");
@@ -98,7 +99,7 @@ async function importAsset() {
 	if (data.result) {
 		assetURLs.value = undefined;
 		callback(data.result);
-		showPopover.value = false;
+		importInputRef.value?.clear();
 	} else window.$message.error(data.message);
 	Loading.value.import = false;
 }

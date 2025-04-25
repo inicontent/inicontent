@@ -2,7 +2,7 @@ import { isArrayOfArrays } from "inibase/utils";
 import type { TagColor } from "naive-ui/es/tag/src/common-props";
 
 export function getColorObj(
-	value: string,
+	value: string | number,
 	fieldOptions?: (
 		| string
 		| number
@@ -40,10 +40,8 @@ function getContrastColor(rgb: string) {
 	return brightness > 128 ? "black" : "white";
 }
 
-export function getDynamicStyle(value: string) {
-	return (node: HTMLElement) => {
-		const bgColor = getComputedBgColor(node);
-		const textColor = getContrastColor(bgColor);
-		return { color: textColor, backgroundColor: value };
-	};
-}
+export const getDynamicStyle = (node: HTMLElement) => {
+	const bgColor = getComputedBgColor(node);
+	const textColor = getContrastColor(bgColor);
+	return { color: textColor, backgroundColor: bgColor };
+};

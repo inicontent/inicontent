@@ -146,9 +146,9 @@ async function loadOptions(searchValue?: string | number) {
 	if (field.where) {
 		if (searchOrObject)
 			_where = Inison.stringify({
-				...(typeof field.where === "string"
+				...((typeof field.where === "string"
 					? Inison.unstringify(field.where)
-					: field.where),
+					: field.where) as any),
 				or: searchOrObject,
 			});
 		else
@@ -174,7 +174,7 @@ async function loadOptions(searchValue?: string | number) {
 			params: {
 				where: where.value,
 				options: Inison.stringify({
-					columns: table?.columns ?? "",
+					columns: table?.columns,
 				}),
 			},
 			cache: "no-cache",
@@ -217,7 +217,7 @@ async function handleScroll(e: Event) {
 					where: where.value,
 					options: Inison.stringify({
 						page: pagination.value.page + 1,
-						columns: table?.columns ?? "",
+						columns: table?.columns,
 					}),
 				},
 				cache: "no-cache",

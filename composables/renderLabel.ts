@@ -1,7 +1,7 @@
 import { flattenSchema } from "inibase/utils";
 
 export default function renderLabel(table?: Table, item?: Item): string {
-	if (!table || !table.label || !table.schema) return `#${item?.id ?? "--"}`;
+	if (!table || !table.label || !table.schema) return `${item?.id ?? "--"}`;
 
 	if (table.customLabel) return table.customLabel(item);
 

@@ -126,6 +126,7 @@ async function deleteItem(id?: string | string[]) {
 		Loading.value.data = false;
 	}
 }
+provide("deleteItem", deleteItem);
 
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
@@ -133,80 +134,78 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(IconEye)),
-								),
-						},
-					)
+					NButton,
+					{
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(IconEye)),
+							),
+					},
+				)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault();
-								if (!isMobile)
-									openDrawer(
-										table.value?.slug as string,
-										row.id,
-										structuredClone(toRaw(row)),
-									);
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									);
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault();
+							if (!isMobile)
+								openDrawer(
+									table.value?.slug as string,
+									row.id,
+									structuredClone(toRaw(row)),
+								);
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+								);
 						},
-						{ icon: () => h(NIcon, () => h(IconPencil)) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(IconPencil)) },
+				)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => deleteItem(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () => h(NIcon, () => h(IconTrash)),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => deleteItem(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () => h(NIcon, () => h(IconTrash)),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	);
 }
 provide("renderItemButtons", renderItemButtons);
-
-provide("deleteItem", deleteItem);
 
 defineExpose<TableRef>({
 	search: searchArray as searchType,
@@ -228,6 +227,27 @@ const slots = defineSlots<{
 	itemExtraButtons(props: Item): any;
 	item(props: Item): any;
 }>();
+
+function isSlotEmpty(slotName: keyof typeof slots): boolean {
+	const slot = slots[slotName];
+
+	if (!slot) return false;
+
+	// Always pass an empty object as argument – it's safe for most slot functions
+	const vnodes: VNode[] = (slot as any)({});
+
+	// Check if all nodes are comments or have undefined children
+	return vnodes.every(
+		(vnode) => vnode.type === Comment || vnode.children === undefined,
+	);
+}
+
+provide("isSlotEmpty", isSlotEmpty);
+
+if (!isSlotEmpty("default"))
+	data.value = await $fetch<apiResponse<Item[]>>(
+		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+	);
 
 onBeforeRouteLeave(() => {
 	clearNuxtState("drawer");

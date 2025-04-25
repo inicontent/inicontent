@@ -85,7 +85,8 @@ export default function () {
 				.filter((col): col is string => col !== undefined);
 
 			table.columns = columns.length ? ["*", ...columns] : ["*"];
-		}
+		} else table.columns = [];
+
 		return table;
 	};
 

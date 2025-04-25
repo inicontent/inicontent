@@ -160,9 +160,13 @@ function importAssetCallback(assets: Asset | Asset[]) {
 			...value,
 		];
 	else modelValue.value = value[0];
+
+	nextTick(() => {
+		fileList.value = getFileList();
+	});
 }
 
-async function handleSelectAsset(asset?: Asset) {
+function handleSelectAsset(asset?: Asset) {
 	if (!asset) return;
 
 	const value =
@@ -182,17 +186,17 @@ async function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-					(value) => value.id === asset.id,
-				)
+						(value) => value.id === asset.id,
+					)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
 		} else modelValue.value = [value];
 	}
 
-	await nextTick();
-
-	fileList.value = getFileList();
+	nextTick(() => {
+		fileList.value = getFileList();
+	});
 }
 
 function getFileList() {
@@ -201,27 +205,27 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-				id: asset,
-				name: asset.split("/").pop(),
-				status: "finished",
-				url: asset,
-				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-				thumbnailUrl:
-					field.accept?.includes("image") && !field.params?.includes("fit")
-						? `${asset}`
-						: undefined,
-			}
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+					thumbnailUrl:
+						field.accept?.includes("image") && !field.params?.includes("fit")
+							? `${asset}`
+							: undefined,
+				}
 			: {
-				id: asset.id,
-				name: asset.name || asset.id,
-				status: "finished",
-				url: (asset as Asset).publicURL,
-				type: asset.type,
-				thumbnailUrl:
-					asset.type?.startsWith("image/") && !field.params?.includes("fit")
-						? `${(asset as Asset).publicURL}`
-						: undefined,
-			},
+					id: asset.id,
+					name: asset.name || asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+					thumbnailUrl:
+						asset.type?.startsWith("image/") && !field.params?.includes("fit")
+							? `${(asset as Asset).publicURL}`
+							: undefined,
+				},
 	) as UploadFileInfo[];
 }
 

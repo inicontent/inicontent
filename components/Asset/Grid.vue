@@ -94,7 +94,9 @@ import {
 	NTime,
 } from "naive-ui";
 
-const path = defineModel<string>("path");
+const path = defineModel<string>("path", {
+	default: "",
+});
 const { isAssetRoute, table } = defineProps<{
 	targetID?: string;
 	isAssetRoute?: boolean;
@@ -123,11 +125,11 @@ const CurrentAsset = ref<Asset>();
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-			{
-				method: "DELETE",
-			},
-		),
+		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+		{
+			method: "DELETE",
+		},
+	),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -169,7 +171,7 @@ function dropdownOnSelect(key: string) {
 			{
 				const d = window.$dialog.create({
 					showIcon: false,
-					title: `${t("delete")}: ${(CurrentAsset.value as Asset).id}`,
+					title: `${t("delete")}: ${CurrentAsset.value?.name || CurrentAsset.value?.id}`,
 					content: t("theFollowingActionIsIrreversible"),
 					positiveText: t("delete"),
 					async onPositiveClick() {
