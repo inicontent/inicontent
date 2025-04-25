@@ -2,7 +2,7 @@
 	<div class="kanban-scroll">
 		<div class="kanban-columns">
 			<NCard v-for="(column, index) in visibleColumns" :key="index" hoverable class="kanban-column">
-				<NTag size="large" :color="column.color" :style="getDynamicStyle"
+				<NTag size="large" :color="column.color"
 					style="width: 100%; justify-content: space-between; flex-direction: row-reverse; margin-bottom: 20px"
 					:bordered="false" round>
 					{{ column.label }}

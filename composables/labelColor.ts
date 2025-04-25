@@ -28,20 +28,20 @@ export function getColorObj(
 	return {};
 }
 
-function getComputedBgColor(element: HTMLElement) {
-	return window.getComputedStyle(element).backgroundColor;
-}
+function getContrastColor(hex: string) {
+    // Remove '#' if present
+    hex = hex.replace(/^#/, "");
 
-function getContrastColor(rgb: string) {
-	const result = rgb.match(/\d+/g)?.map(Number);
-	if (!result) return "black";
-	const [r, g, b] = result;
-	const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-	return brightness > 128 ? "black" : "white";
-}
+    // Parse short hex (e.g., #abc) into full hex (e.g., #aabbcc)
+    if (hex.length === 3) {
+        hex = hex.split("").map(c => c + c).join("");
+    }
 
-export const getDynamicStyle = (node: HTMLElement) => {
-	const bgColor = getComputedBgColor(node);
-	const textColor = getContrastColor(bgColor);
-	return { color: textColor, backgroundColor: bgColor };
-};
+    // Convert hex to RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128 ? "black" : "white";
+}

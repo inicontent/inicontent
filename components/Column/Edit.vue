@@ -24,7 +24,8 @@ const { field, loading, ...props } = defineProps<{
 
 const emit = defineEmits(["update:modelValue"]);
 
-const isEditable = !isArrayOfObjects(field.children) && !field.table
+const isEditable =
+	!isArrayOfObjects(field.children) && !field.table && field.type !== "html";
 
 defineTranslation({
 	ar: {
@@ -43,6 +44,11 @@ const inputValue = ref(modelValue.value);
 const inputRef = ref();
 const inputField = {
 	...field,
+	subType: field.subType
+		? ["radio", "checkbox"].includes(field.subType)
+			? "select"
+			: field.subType
+		: undefined,
 	labelProps: { showLabel: false, showFeedback: false },
 	inputProps: {
 		show: true,

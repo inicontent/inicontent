@@ -166,14 +166,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query;
 	return v
 		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
 		: router.push({
-			query: Query ?? {},
-		});
+				query: Query ?? {},
+			});
 });
 const isSearchDisabled = computed(
 	() =>
@@ -182,7 +182,7 @@ const isSearchDisabled = computed(
 			Object.keys(localSearchArray.value).length === 1 &&
 			(
 				localSearchArray.value[
-				Object.keys(localSearchArray.value)[0] as "and" | "or"
+					Object.keys(localSearchArray.value)[0] as "and" | "or"
 				]?.[0] as any
 			)[0] === null
 		),
@@ -390,97 +390,97 @@ async function setColumns() {
 	columns.value = [
 		...(table.value?.allowedMethods !== "r"
 			? [
-				{
-					type: "selection",
-					fixed: "left",
-					options: [
-						{
-							label: t("delete"),
-							key: "delete",
-							disabled: checkedRowKeys.value.length === 0,
-							icon: () => h(NIcon, () => h(IconTrash)),
-							onSelect: async () => {
-								await deleteItem(checkedRowKeys.value);
-								await refresh();
-								checkedRowKeys.value = [];
+					{
+						type: "selection",
+						fixed: "left",
+						options: [
+							{
+								label: t("delete"),
+								key: "delete",
+								disabled: checkedRowKeys.value.length === 0,
+								icon: () => h(NIcon, () => h(IconTrash)),
+								onSelect: async () => {
+									await deleteItem(checkedRowKeys.value);
+									await refresh();
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-						{
-							label: t("clearTable"),
-							key: "clear",
-							disabled:
-								checkedRowKeys.value.length !== _data.value?.result?.length,
-							icon: () => h(NIcon, () => h(IconTableMinus)),
-							onSelect: async () => {
-								await deleteItem();
-								await refresh();
-								checkedRowKeys.value = [];
+							{
+								label: t("clearTable"),
+								key: "clear",
+								disabled:
+									checkedRowKeys.value.length !== _data.value?.result?.length,
+								icon: () => h(NIcon, () => h(IconTableMinus)),
+								onSelect: async () => {
+									await deleteItem();
+									await refresh();
+									checkedRowKeys.value = [];
+								},
 							},
-						},
-						{
-							label: t("columns"),
-							key: "columns",
-							icon: () => h(NIcon, () => h(IconColumns3)),
-							children: table.value?.schema?.map(({ id, key }) => ({
-								label: t(key),
-								key: id,
-								icon: () =>
-									h(
-										NIcon,
-										{
-											onClick() {
-												if (
-													hiddenColumns?.value[
-														table.value?.slug as string
-													]?.includes(id as string)
-												)
-													hiddenColumns.value[table.value?.slug as string] =
-														hiddenColumns.value[
-															table.value?.slug as string
-														].filter((itemID) => itemID !== id);
-												else {
+							{
+								label: t("columns"),
+								key: "columns",
+								icon: () => h(NIcon, () => h(IconColumns3)),
+								children: table.value?.schema?.map(({ id, key }) => ({
+									label: t(key),
+									key: id,
+									icon: () =>
+										h(
+											NIcon,
+											{
+												onClick() {
 													if (
-														!hiddenColumns.value[table.value?.slug as string]
+														hiddenColumns?.value[
+															table.value?.slug as string
+														]?.includes(id as string)
 													)
 														hiddenColumns.value[table.value?.slug as string] =
-															[];
-													hiddenColumns.value[
-														table.value?.slug as string
-													].push(id as string);
-												}
+															hiddenColumns.value[
+																table.value?.slug as string
+															].filter((itemID) => itemID !== id);
+													else {
+														if (
+															!hiddenColumns.value[table.value?.slug as string]
+														)
+															hiddenColumns.value[table.value?.slug as string] =
+																[];
+														hiddenColumns.value[
+															table.value?.slug as string
+														].push(id as string);
+													}
+												},
 											},
-										},
-										() =>
-											hiddenColumns.value?.[
-												table.value?.slug as string
-											]?.includes(id as string)
-												? h(IconEyeOff)
-												: h(IconEye),
-									),
-							})),
-						},
-					],
-				},
-			]
+											() =>
+												hiddenColumns.value?.[
+													table.value?.slug as string
+												]?.includes(id as string)
+													? h(IconEyeOff)
+													: h(IconEye),
+										),
+								})),
+							},
+						],
+					},
+				]
 			: []),
 		...((table.value?.defaultTableColumns && table.value?.schema
 			? [
-				...(hiddenColumns.value?.[table.value?.slug as string]
-					? table.value.schema.filter(
-						({ id }) =>
-							!hiddenColumns.value?.[table.value?.slug as string]?.includes(
-								id as string,
-							) &&
-							!table.value?.defaultTableColumns?.includes(id as string),
-					)
-					: []),
-				...(table.value.defaultTableColumns as string[])
-					.map(
-						(id) =>
-							table.value?.schema?.find((field) => field.id === id) as Field,
-					)
-					.filter(Boolean),
-			]
+					...(hiddenColumns.value?.[table.value?.slug as string]
+						? table.value.schema.filter(
+								({ id }) =>
+									!hiddenColumns.value?.[table.value?.slug as string]?.includes(
+										id as string,
+									) &&
+									!table.value?.defaultTableColumns?.includes(id as string),
+							)
+						: []),
+					...(table.value.defaultTableColumns as string[])
+						.map(
+							(id) =>
+								table.value?.schema?.find((field) => field.id === id) as Field,
+						)
+						.filter(Boolean),
+				]
 			: table.value?.schema
 		)
 			?.filter(
@@ -511,96 +511,94 @@ async function setColumns() {
 					field.render
 						? field.render(row)
 						: table.value?.allowedMethods?.includes("u") &&
-							![
-								"id",
-								"createdAt",
-								"createdBy",
-								"updatedAt",
-								"updatedBy",
-							].includes(field.key)
+								![
+									"id",
+									"createdAt",
+									"createdBy",
+									"updatedAt",
+									"updatedBy",
+								].includes(field.key)
 							? h(ColumnEdit, {
-								loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
-								modelValue: row[field.key],
-								"onUpdate:modelValue": async (value: any) => {
-									if (!row.id) return;
-									Loading.value[`${row.id}-${field.key}`] = true;
-									row[field.key] = value;
-									const __data = await $fetch<apiResponse<Item | boolean>>(
-										`${appConfig.apiBase}${database.value.slug}/${table.value?.slug
-										}/${row.id}`,
-										{
-											method: "PUT",
-											body: row,
-											params: {
-												options: Inison.stringify({ return: false }),
+									loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
+									modelValue: row[field.key],
+									"onUpdate:modelValue": async (value: any) => {
+										if (!row.id) return;
+										Loading.value[`${row.id}-${field.key}`] = true;
+										row[field.key] = value;
+										const __data = await $fetch<apiResponse<Item | boolean>>(
+											`${appConfig.apiBase}${database.value.slug}/${
+												table.value?.slug
+											}/${row.id}`,
+											{
+												method: "PUT",
+												body: row,
+												params: {
+													options: Inison.stringify({ return: false }),
+												},
 											},
-										},
-									);
-									if (
-										(typeof __data?.result === "boolean" &&
-											__data.result !== true) ||
-										(typeof __data.result !== "boolean" && !__data.result?.id)
-									)
-										window.$message.error(__data.message);
-									Loading.value[`${row.id}-${field.key}`] = false;
-								},
-								field,
-							})
+										);
+										if (
+											(typeof __data?.result === "boolean" &&
+												__data.result !== true) ||
+											(typeof __data.result !== "boolean" && !__data.result?.id)
+										)
+											window.$message.error(__data.message);
+										Loading.value[`${row.id}-${field.key}`] = false;
+									},
+									field,
+								})
 							: h(Column, {
-								value:
-									field.key === "id"
-										? renderLabel(table.value, row)
-										: row[field.key],
-								field,
-							}),
+									value: row[field.key],
+									field,
+								}),
 			})) ?? []),
 		...(isSlotEmpty("itemActions")
 			? []
 			: [
-				{
-					title: t("actions"),
-					align: "center",
-					width: isMobile
-						? 100
-						: 150 +
-						(props.slots.itemExtraButtons
-							? (props.slots.itemExtraButtons as any)().length * 20
-							: 0),
-					key: "actions",
-					fixed: "right",
-					render: (row: any) =>
-						props.slots.itemActions
-							? props.slots.itemActions(row)
-							: [
-								props.slots.itemExtraActions
-									? props.slots.itemExtraActions(row)
-									: undefined,
-								isMobile
-									? h(
-										NPopover,
-										{
-											scrollable: true,
-											style: "max-height: 240px;border-radius:34px",
-											contentStyle: "padding: 0",
-										},
-										{
-											trigger: () =>
-												h(
-													NButton,
+					{
+						title: t("actions"),
+						align: "center",
+						width: isMobile
+							? 100
+							: 150 +
+								(props.slots.itemExtraButtons
+									? (props.slots.itemExtraButtons as any)().length * 20
+									: 0),
+						key: "actions",
+						fixed: "right",
+						render: (row: any) =>
+							props.slots.itemActions
+								? props.slots.itemActions(row)
+								: [
+										props.slots.itemExtraActions
+											? props.slots.itemExtraActions(row)
+											: undefined,
+										isMobile
+											? h(
+													NPopover,
 													{
-														circle: true,
-														secondary: true,
-														type: "primary",
+														scrollable: true,
+														style: "max-height: 240px;border-radius:34px",
+														contentStyle: "padding: 0",
 													},
-													{ icon: () => h(NIcon, () => h(IconDots)) },
-												),
-											default: () => renderItemButtons(row),
-										},
-									)
-									: renderItemButtons(row),
-							],
-				},
-			]),
+													{
+														trigger: () =>
+															h(
+																NButton,
+																{
+																	circle: true,
+																	secondary: true,
+																	type: "primary",
+																},
+																{ icon: () => h(NIcon, () => h(IconDots)) },
+															),
+														default: () => renderItemButtons(row),
+													},
+												)
+											: renderItemButtons(row),
+									],
+					},
+				]),
 	] as DataTableColumns;
 
 	await nextTick();

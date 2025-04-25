@@ -119,6 +119,10 @@ const toggleDrawerWidth = (index: number) => {
 	if (typeof drawer.width === "string") drawer.width = 251;
 	else
 		drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%";
+	nextTick(() => {
+		if (drawer.width)
+			defaultWidth.value = drawer.width;
+	});
 };
 
 const itemsLabels = ref<string[]>([]);
