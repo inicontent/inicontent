@@ -1,9 +1,9 @@
 <template>
-	<NTooltip placement="bottom" :show="tooltipShow && !isEdit" @update:show="(show) => tooltipShow = show"
-		:delay="500">
+	<NTooltip placement="bottom" :show="tooltipShow && !isEdit && isEditable"
+		@update:show="(show) => tooltipShow = show" :delay="500">
 		<template #trigger>
 			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
-				:class="{ 'editable': !isEdit && !isArrayOfObjects(field.children) && !field.table }">
+				:class="{ 'editable': !isEdit && isEditable }">
 				<Column v-if="!isEdit" :field="field" :value="modelValue" />
 				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
 			</NSpin>
@@ -23,6 +23,8 @@ const { field, loading, ...props } = defineProps<{
 }>();
 
 const emit = defineEmits(["update:modelValue"]);
+
+const isEditable = !isArrayOfObjects(field.children) && !field.table
 
 defineTranslation({
 	ar: {
@@ -51,7 +53,10 @@ const inputField = {
 };
 const isEdit = ref(false);
 
-function onClick() {
+function onClick(e: MouseEvent) {
+	if (!isEditable) return;
+	e.preventDefault();
+	e.stopPropagation();
 	if (isArrayOfObjects(field.children) || field.table) return;
 	isEdit.value = true;
 	nextTick(() => {
