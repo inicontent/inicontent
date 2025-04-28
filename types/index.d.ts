@@ -4,6 +4,7 @@ import type {
 	pageInfo,
 	ComparisonOperator,
 	TableObject,
+	Data,
 } from "inibase";
 import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
@@ -40,6 +41,7 @@ declare global {
 		| "array-select"
 		| "array-asset"
 		| "array-table"
+		| "locale"
 		| "custom";
 	type DB_FieldType = dbFieldType;
 	type Field = Omit<dbField, "type" | "children"> & {
@@ -124,12 +126,8 @@ declare global {
 		displayAs?: "table" | "kanban" | "cards";
 		groupBy?: string;
 	};
-	type Item = {
-		id?: string;
-		createdAt?: number;
-		updatedAt?: number;
-		user?: User;
-		[key: string]: any;
+	type Item = Data & {
+		createdBy?: User;
 	};
 	type User = Item & {
 		username: string;
@@ -137,17 +135,16 @@ declare global {
 		password: string;
 		role: string;
 	};
-	type Database = {
+	type Database = Item & {
 		slug?: string;
-		id?: string;
 		icon?: Asset;
 		primaryColor?: string;
 		primaryDarkColor?: string;
 		domains?: string[];
-		locales?: string[];
+		primaryLanguage: string;
+		secondaryLanguages?: string[];
 		roles?: { name: string; id: string }[];
 		tables?: Table[];
-		user?: User;
 		size?: number;
 	};
 	type apiResponse<T = any> = {
@@ -160,7 +157,6 @@ declare global {
 		type: string;
 		size: number;
 		publicURL: string;
-		createdBy?: User;
 	};
 	type ThemeConfig = {
 		primaryColor: string;

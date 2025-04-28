@@ -1,17 +1,37 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-	"organizeImports": {
-		"enabled": false
+	"$schema": "https://biomejs.dev/schemas/2.0.0-beta.1/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
 	},
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
+	"files": {
+		"includes": [
+			"**",
+			"!**/node_modules/**",
+			"!**/dist/**",
+			"!**/.output/**",
+			"!**/.nuxt/**",
+			"!**/public/**"
+		],
+		"ignoreUnknown": false
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"style": {
+				"useSingleVarDeclarator": "off",
+				"noParameterAssign": "off",
+				"useConst": "off",
+				"useImportType": "off"
+			},
 			"performance": {
 				"noDelete": "off"
 			},
@@ -19,25 +39,13 @@
 				"noExplicitAny": "off",
 				"noConfusingVoidType": "off",
 				"noDoubleEquals": "off"
-			},
-			"style": {
-				"useSingleVarDeclarator": "off",
-				"noParameterAssign": "off"
 			}
 		}
 	},
-	"overrides": [
-		{
-			"include": ["*.vue"],
-			"linter": {
-				"rules": {
-					"style": {
-						"useConst": "off",
-						"useImportType": "off"
-					}
-				}
-			}
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "asNeeded"
 		}
-	],
-	"javascript": { "formatter": { "quoteStyle": "double" } }
+	}
 }

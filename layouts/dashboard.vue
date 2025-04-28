@@ -36,61 +36,26 @@
 						</template>
 						<template #extra>
 							<NButtonGroup>
-								<template v-if="user?.id">
-									<template v-if="user?.role ===
-										appConfig.idOne">
-										<NTooltip :delay="500">
-											<template #trigger>
-												<NButton round size="small">{{ humanFileSize(
-													database?.size,
-												) }}</NButton>
-											</template>
-											{{ t("totalDatabaseSize") }}
-										</NTooltip>
-										<NTooltip :delay="500">
-											<template #trigger>
-												<NButton round size="small">
-													<template #icon>
-														<NuxtLink
-															:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/settings`">
-															<NIcon>
-																<IconSettings />
-															</NIcon>
-														</NuxtLink>
-													</template>
-												</NButton>
-											</template>
-											{{ t("databaseSettings") }}
-										</NTooltip>
-									</template>
-									<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-										<NButton round size="small">
-											<template #icon>
-												<NIcon>
-													<IconUser />
-												</NIcon>
-											</template>
-										</NButton>
-									</NDropdown>
-								</template>
-								<NTooltip :delay="500">
+								<NTooltip v-if="user?.role ===
+									appConfig.idOne" :delay="500">
 									<template #trigger>
-										<NButton round size="small" @click="Theme =
-											Theme === 'dark'
-												? 'light'
-												: 'dark'">
-											<template #icon>
-												<NIcon>
-													<IconMoon v-if="Theme === 'light'" />
-													<IconSun v-else />
-												</NIcon>
-											</template>
-										</NButton>
+										<NButton round size="small">{{ humanFileSize(
+											database?.size,
+										) }}</NButton>
 									</template>
-									{{ t("toggleTheme") }}
+									{{ t("totalDatabaseSize") }}
 								</NTooltip>
-								<NDropdown :value="Language" :options="languagesDropdownOptions"
-									@select="(v) => Language = v">
+								<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+									<NButton round size="small">
+										<template #icon>
+											<NIcon>
+												<IconSettings />
+											</NIcon>
+										</template>
+									</NButton>
+								</NDropdown>
+								<NDropdown v-if="languagesDropdownOptions?.length" :value="Language"
+									:options="languagesDropdownOptions" @select="(v) => Language = v">
 									<NButton round size="small">
 										<template #icon>
 											<NIcon>
@@ -116,12 +81,12 @@
 <script setup lang="ts">
 import {
 	IconLanguage,
+	IconLogin,
 	IconLogout,
 	IconMoon,
 	IconPencil,
 	IconSettings,
 	IconSun,
-	IconUser,
 } from "@tabler/icons-vue";
 import { isValidID } from "inibase/utils";
 import {
@@ -164,7 +129,6 @@ defineTranslation({
 		assets: "الملفات",
 		tables: "الجداول",
 		totalDatabaseSize: "حجم قاعدة البيانات",
-		databaseSettings: "إعدادات قاعدة البيانات",
 		isRequired: "إجباري",
 		isNotValid: "غير صالح",
 		username: "إسم المستخدم",
@@ -280,25 +244,49 @@ const userDropdownOptions = [
 								: "--",
 					),
 			),
+		show: !!user.value?.id,
 	},
 	{
 		key: "header-divider",
 		type: "divider",
+		show: !!user.value?.id,
+	},
+	{
+		label: t("settings"),
+		key: "settings",
+		icon: () => h(NIcon, () => h(IconSettings)),
+		show: user.value?.role === appConfig.idOne,
+	},
+	{
+		label: t("toggleTheme"),
+		key: "theme",
+		icon: () => h(NIcon, () => h(Theme.value === "light" ? IconMoon : IconSun)),
 	},
 	{
 		label: t("profile"),
 		key: "edit",
 		icon: () => h(NIcon, () => h(IconPencil)),
-		show: database.value?.tables
-			?.find(({ slug }) => slug === "users")
-			?.allowedMethods?.includes("u"),
+		show:
+			!!user.value?.id &&
+			database.value?.tables
+				?.find(({ slug }) => slug === "users")
+				?.allowedMethods?.includes("u"),
 	},
 	{
 		label: t("logout"),
 		key: "logout",
 		icon: () => h(NIcon, () => h(IconLogout)),
+		show: !!user.value?.id,
+	},
+	{
+		label: t("auth"),
+		key: "auth",
+		icon: () => h(NIcon, () => h(IconLogin)),
+		show: !user.value?.id,
+		disabled: (route.name as string | undefined)?.endsWith("-auth"),
 	},
 ];
+
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
@@ -307,6 +295,14 @@ async function onSelectUserDropdown(v: string) {
 					(user.value as User).id
 				}/edit`,
 			);
+			break;
+		case "settings":
+			navigateTo(
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
+			);
+			break;
+		case "theme":
+			Theme.value = Theme.value === "dark" ? "light" : "dark";
 			break;
 		case "logout":
 			await $fetch(
@@ -323,14 +319,10 @@ async function onSelectUserDropdown(v: string) {
 			break;
 	}
 }
-const languagesDropdownOptions = [
-	{
-		label: "عربي",
-		key: "ar",
-	},
-	{
-		label: "English",
-		key: "en",
-	},
-];
+const languagesDropdownOptions = database.value.secondaryLanguages?.map(
+	(language) => ({
+		label: t(`languages.${language}`),
+		key: language,
+	}),
+);
 </script>

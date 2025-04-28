@@ -22,7 +22,12 @@
     <LazyFieldPassword v-else-if="detectedFieldType === 'password'" v-model="modelValue" :field />
     <LazyFieldBoolean v-else-if="detectedFieldType === 'boolean'" v-model="modelValue" :field />
     <LazyFieldDate v-else-if="detectedFieldType === 'date'" v-model="modelValue" :field />
-    <LazyFieldSelect v-else-if="detectedFieldType === 'select'" v-model="modelValue" :field />
+    <LazyFieldSelect v-else-if="['locale', 'select'].includes(detectedFieldType)" v-model="modelValue" :field="detectedFieldType === 'locale' ? {
+        ...field, subType: 'select', options: translationLanguages.map((language) => ({
+            label: t(`languages.${language}`),
+            value: language,
+        }))
+    } : field" />
     <LazyFieldTags v-else-if="detectedFieldType === 'tags'" v-model="modelValue" :field />
     <LazyFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field />
     <LazyFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field />

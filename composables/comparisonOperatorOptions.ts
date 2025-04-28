@@ -10,6 +10,8 @@ export default () => {
 				lessOrEqualTo: "أصغر من او يساوي",
 				contains: "يحتوي",
 				doesNotContain: "لا يحتوي",
+				isOneOf: "يضم",
+				isNotOneOf: "لا يضم",
 			},
 		},
 	});

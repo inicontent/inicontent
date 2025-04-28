@@ -34,9 +34,9 @@ import {
 
 defineTranslation({
 	ar: {
-		authentication: "صفحة الدخول",
 		signin: "تسجيل الدخول",
 		signup: "إنشاء حساب",
+		authentication: "صفحة الدخول",
 	},
 });
 const appConfig = useAppConfig();

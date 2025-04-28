@@ -109,7 +109,7 @@ const table = useState<Table>("table");
 const appConfig = useAppConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-async function deleteItem(id?: string | string[]) {
+async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;
 	Loading.value.data = true;
 	const deleteResponse = await $fetch<apiResponse>(
@@ -121,10 +121,8 @@ async function deleteItem(id?: string | string[]) {
 		},
 	);
 	if (deleteResponse.result) window.$message.success(deleteResponse.message);
-	else {
-		window.$message.error(deleteResponse.message);
-		Loading.value.data = false;
-	}
+	else window.$message.error(deleteResponse.message);
+	Loading.value.data = false;
 }
 provide("deleteItem", deleteItem);
 
@@ -134,73 +132,73 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(IconEye)),
-							),
-					},
-				)
+						NButton,
+						{
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(IconEye)),
+								),
+						},
+					)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault();
-							if (!isMobile)
-								openDrawer(
-									table.value?.slug as string,
-									row.id,
-									structuredClone(toRaw(row)),
-								);
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-								);
+						NButton,
+						{
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault();
+								if (!isMobile)
+									openDrawer(
+										table.value?.slug as string,
+										row.id,
+										structuredClone(toRaw(row)),
+									);
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+									);
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(IconPencil)) },
-				)
+						{ icon: () => h(NIcon, () => h(IconPencil)) },
+					)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => deleteItem(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () => h(NIcon, () => h(IconTrash)),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => deleteItem(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () => h(NIcon, () => h(IconTrash)),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
 	);

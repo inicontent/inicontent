@@ -164,24 +164,17 @@ const translationSchema: Schema = [
 	{
 		key: "primaryLanguage",
 		type: "string",
-		subType: "select",
-		options: translationLanguages.map((language) => ({
-			label: t(`languages.${language}`),
-			value: language,
-		})),
+		subType: "locale",
 		required: true,
 	},
 	{
 		key: "secondaryLanguages",
 		type: "array",
 		children: "string",
-		subType: "select",
-		options: translationLanguages.map((language) => ({
-			label: t(`languages.${language}`),
-			value: language,
-		})),
+		subType: "locale",
 	},
 ];
+
 async function updateDatabase() {
 	databaseRef.value?.validate(async (errors) => {
 		if (!errors) {

@@ -1,5 +1,5 @@
 <template>
-	<NIcon v-html="iconHtml"></NIcon>
+	<NIcon v-html="iconHtml" v-bind="$attrs"></NIcon>
 </template>
 
 <script setup lang="ts">
