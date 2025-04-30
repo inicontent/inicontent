@@ -1,81 +1,79 @@
 <template>
 	<NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
 		v-model:expanded-names="expandedNames">
-		<draggable :list="schema" item-key="id" handle=".handle">
+		<Draggable :list="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item" :move="onMoveCallback">
 			<template #item="{ element, index }: { element: Field, index: number }">
-				<NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)">
-					<template #header>
-						<NTooltip v-if="!isDisabled(element.key)" :delay="500">
-							<template #trigger>
-								<NIcon class="handle" :size="18">
-									<IconMenu2 />
-								</NIcon>
-							</template>
-							{{ t('dragToMove') }}
-						</NTooltip>
-						{{ element.key ? t(element.key) : "--" }}
-					</template>
+				<NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)"
+					:title="element.key ? t(element.key) : '--'">
 					<template #header-extra>
 						<NFlex>
-							<template
-								v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)">
-								<NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable
-									@select="(type) => pushToChildrenSchema(type, index)">
-									<NButton :disabled="!element.key" circle size="small">
+							<NButtonGroup>
+								<template
+									v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)">
+									<NDropdown :options="fieldsList()" style="max-height: 200px;" scrollable
+										@select="(type) => pushToChildrenSchema(type, index)">
+										<NButton :disabled="!element.key" secondary round size="small">
+											<template #icon>
+												<NIcon>
+													<IconPlus />
+												</NIcon>
+											</template>
+										</NButton>
+									</NDropdown>
+								</template>
+								<NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
+									style="max-height: 200px" trigger="click" scrollable
+									@select="(type) => schema[index] = changeFieldType(element, type)">
+									<NButton round strong secondary size="small" type="primary"
+										:disabled="isDisabled(element.key)">
 										<template #icon>
-											<NIcon>
-												<IconPlus />
-											</NIcon>
+											<component :is="getField(element).icon" />
+										</template>
+										<template v-if="!$device.isMobile" #default>
+											{{ getField(element).label }}
 										</template>
 									</NButton>
 								</NDropdown>
-							</template>
-							<template v-else-if="!isDisabled(element.key)">
-								<NPopselect v-model:value="schema[index].width" :options="widthOptions">
-									<NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
-										size="small" type="info">
-										<template v-if="!$device.isMobile" #icon>
-											<NIcon>
-												<IconArrowAutofitWidth />
-											</NIcon>
-										</template>
-										1/{{ element.width ?? 1 }}
-									</NButton>
-								</NPopselect>
-								<NButton :round="!$device.isMobile" :circle="$device.isMobile" strong secondary
-									size="small" :type="element.required ? 'error' : 'tertiary'"
-									@click="schema[index].required = !schema[index].required">
+							</NButtonGroup>
+
+							<NButtonGroup v-if="!isDisabled(element.key)">
+								<NTooltip>
+									<template #trigger>
+										<NPopselect v-model:value="schema[index].width" :options="widthOptions">
+											<NButton round strong secondary size="small" type="info">
+												<template v-if="!$device.isMobile" #icon>
+													<NIcon>
+														<IconArrowAutofitWidth />
+													</NIcon>
+												</template>
+												1/{{ element.width ?? 1 }}
+											</NButton>
+										</NPopselect>
+									</template>
+									{{ t('width') }}
+								</NTooltip>
+								<NTooltip>
+									<template #trigger>
+										<NButton round secondary size="small"
+											:type="element.required ? 'error' : 'tertiary'"
+											@click="schema[index].required = !schema[index].required">
+											<template #icon>
+												<NIcon>
+													<IconAsterisk />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t('required') }}
+								</NTooltip>
+								<NButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
 									<template #icon>
 										<NIcon>
-											<IconAsterisk />
+											<IconTrash />
 										</NIcon>
 									</template>
-									<template v-if="!$device.isMobile" #default>
-										{{ t('required') }}
-									</template>
 								</NButton>
-							</template>
-							<NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
-								style="max-height: 200px" trigger="click" scrollable
-								@select="(type) => schema[index] = changeFieldType(element, type)">
-								<NButton round strong secondary size="small" type="primary"
-									:disabled="isDisabled(element.key)">
-									<template #icon>
-										<component :is="getField(element).icon" />
-									</template>
-									<template v-if="!$device.isMobile" #default>
-										{{ getField(element).label }}
-									</template>
-								</NButton>
-							</NDropdown>
-							<NButton v-if="!isDisabled(element.key)" circle secondary size="small" type="error"
-								@click="schema.splice(index, 1)">
-								<template #icon>
-									<NIcon>
-										<IconTrash />
-									</NIcon>
-								</template>
-							</NButton>
+							</NButtonGroup>
 						</NFlex>
 					</template>
 
@@ -196,14 +194,13 @@
 						v-model="element.children" v-model:expanded-names="expandedChildNames" />
 				</NCollapseItem>
 			</template>
-		</draggable>
+		</Draggable>
 	</NCollapse>
 </template>
 
 <script lang="ts" setup>
 import {
 	IconPlus,
-	IconMenu2,
 	IconAsterisk,
 	IconTrash,
 	IconFileDescription,
@@ -213,7 +210,7 @@ import {
 	IconVideo,
 	IconArrowAutofitWidth,
 	type Icon,
-} from "@tabler/icons-vue";
+} from "@tabler/icons-vue"
 import {
 	NCollapse,
 	NCollapseItem,
@@ -226,16 +223,16 @@ import {
 	NSelect,
 	NSwitch,
 	NInputNumber,
-	NTooltip,
 	NPopselect,
 	NDataTable,
 	NColorPicker,
+	NButtonGroup,
+	NTooltip,
 	type SelectOption,
 	type DataTableColumns,
-} from "naive-ui";
-import draggable from "vuedraggable/src/vuedraggable";
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
-import type { Data } from "inibase";
+} from "naive-ui"
+import Draggable from "vuedraggable"
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 
 defineTranslation({
 	ar: {
@@ -275,8 +272,9 @@ defineTranslation({
 		optionLabel: "إسم الخيار",
 		optionColor: "لون الخيار",
 		add: "إضافة",
+		width: "العرض",
 	},
-});
+})
 
 const widthOptions = [
 	{
@@ -299,60 +297,64 @@ const widthOptions = [
 		label: "1/5",
 		value: 5,
 	},
-];
+]
+
+function onMoveCallback(evt: {
+	draggedContext: { index: number; futureIndex: number }
+}) {
+	const schemaLength = schema.value.length
+	const disabledIndexes = [0, schemaLength - 1, schemaLength - 2]
+	return (
+		!disabledIndexes.includes(evt.draggedContext.index) &&
+		!disabledIndexes.includes(evt.draggedContext.futureIndex)
+	)
+}
 
 function isDisabled(key?: string) {
 	if (key) {
-		const defaultFields: string[] = ["id", "createdAt", "updatedAt"];
+		const defaultFields: string[] = ["id", "createdAt", "updatedAt"]
 		switch (table.value.slug) {
 			case "users":
-				defaultFields.push(
-					"username",
-					"email",
-					"password",
-					"role",
-					"createdBy",
-				);
-				break;
+				defaultFields.push("username", "email", "password", "role", "createdBy")
+				break
 			case "pages":
-				defaultFields.push("slug", "content", "seo");
-				break;
+				defaultFields.push("slug", "content", "seo")
+				break
 			case "components":
-				defaultFields.push("component", "config", "hideOn");
-				break;
+				defaultFields.push("component", "config", "hideOn")
+				break
 			default:
-				break;
+				break
 		}
-		return defaultFields.includes(key);
+		return defaultFields.includes(key)
 	}
-	return false;
+	return false
 }
-const expandedNames = defineModel<string[]>("expandedNames");
-const expandedChildNames = ref<string[]>();
+const expandedNames = defineModel<string[]>("expandedNames")
+const expandedChildNames = ref<string[]>()
 function pushToChildrenSchema(type: string, index: number) {
-	if (!schema.value[index].children)
-		schema.value[index].children = [] as Schema;
-	(schema.value[index].children as Schema).push({
-		id: `temp-${randomID()}`,
-		key: null,
-		required: false,
-		...handleSelectedSchemaType(type),
-	} as any);
-	expandedNames.value = [schema.value[index].id as string];
+	if (!schema.value[index].children) schema.value[index].children = [] as Schema
+		; (schema.value[index].children as Schema).push({
+			id: `temp-${randomID()}`,
+			key: null,
+			required: false,
+			...handleSelectedSchemaType(type),
+		} as any)
+	expandedNames.value = [schema.value[index].id as string]
 	const newElementId = (
 		(schema.value[index].children as Schema).at(-1) as Field
-	).id as string;
-	expandedChildNames.value = [newElementId];
+	).id as string
+	expandedChildNames.value = [newElementId]
 	setTimeout(
 		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
 		300,
-	);
+	)
 }
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
-});
-const database = useState<Database>("database");
-const table = useState<Table>("table");
+})
+const database = useState<Database>("database")
+const table = useState<Table>("table")
 
 function changeFieldType(
 	{ id, key, required, children }: any,
@@ -361,19 +363,19 @@ function changeFieldType(
 	switch (newType) {
 		case "object":
 		case "array":
-			return { id, key, type: newType, required, children };
+			return { id, key, type: newType, required, children }
 		default:
 			return {
 				id,
 				key,
 				...(handleSelectedSchemaType(newType) as any),
 				required,
-			};
+			}
 	}
 }
 
 function renderIcon(icon: Icon) {
-	return () => h(NIcon, () => h(icon));
+	return () => h(NIcon, () => h(icon))
 }
 
 const fileTypeSelectOptions = [
@@ -402,14 +404,14 @@ const fileTypeSelectOptions = [
 		value: "archive",
 		icon: renderIcon(IconFileZip),
 	},
-];
+]
 function selectRenderLabelWithIcon(
 	option: SelectOption & { icon: CallableFunction },
 ) {
 	return h(NFlex, { align: "center" }, () => [
 		option.icon(),
 		option.label as string,
-	]);
+	])
 }
 
 const valuesTypeSelectOptions = flatFieldsList
@@ -420,36 +422,36 @@ const valuesTypeSelectOptions = flatFieldsList
 		label: field.label,
 		value: field.key,
 		icon: field.icon,
-	}));
+	}))
 
 const tableSelectOptions = computed(() =>
 	database.value.tables?.map(({ slug }) => ({
 		label: t(slug),
 		value: slug,
 	})),
-);
+)
 
 const uniqueGroupOptions = computed(() => {
 	// Extract all unique group names from the schema
 	const groups = schema.value
 		.map((field) => (typeof field.unique === "string" ? field.unique : null))
-		.filter((group) => group !== null);
+		.filter((group) => group !== null)
 	return [...new Set(groups)].map((group) => ({
 		label: group,
 		value: group,
-	}));
-});
+	}))
+})
 
 function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 	if (!schemaItem.options || schemaItem.options.length === 0)
-		schemaItem.options = [""];
+		schemaItem.options = [""]
 	if (value) {
 		// Convert array of strings to array of arrays of two strings
 		if (
 			Array.isArray(schemaItem.options) &&
 			schemaItem.options.every((option) => typeof option === "string")
 		) {
-			schemaItem.options = schemaItem.options.map((option) => [option, ""]);
+			schemaItem.options = schemaItem.options.map((option) => [option, ""])
 		}
 	} else {
 		// Convert array of arrays of two strings back to array of strings
@@ -461,7 +463,7 @@ function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 		) {
 			schemaItem.options = schemaItem.options
 				.map((option) => option[0])
-				.filter((option) => option !== "");
+				.filter((option) => option !== "")
 		}
 	}
 }
@@ -475,9 +477,9 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 				return h(NInput, {
 					value: row[0].toString(),
 					onUpdateValue(v) {
-						(schemaItem.options as [string | number, string][])[index][0] = v;
+						; (schemaItem.options as [string | number, string][])[index][0] = v
 					},
-				});
+				})
 			},
 		},
 		{
@@ -489,9 +491,9 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					showAlpha: false,
 					value: row[1].toString(),
 					onUpdateValue(v) {
-						(schemaItem.options as [string | number, string][])[index][1] = v;
+						; (schemaItem.options as [string | number, string][])[index][1] = v
 					},
-				});
+				})
 			},
 		},
 		{
@@ -508,36 +510,24 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 						secondary: true,
 						onClick() {
 							if (!schemaItem.options || schemaItem.options.length === 1) {
-								schemaItem.options = [["", ""]];
-								return;
+								schemaItem.options = [["", ""]]
+								return
 							}
-							(schemaItem.options as [string | number, string][]).splice(
+							; (schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
-							);
+							)
 						},
 					},
 					{ icon: () => h(NIcon, () => h(IconTrash)) },
-				);
+				)
 			},
 		},
-	];
+	]
 }
 </script>
 
 <style scoped>
-.rtl .handle {
-	margin-left: 10px
-}
-
-.ltr .handle {
-	margin-right: 10px
-}
-
-.notSortable .handle {
-	display: none;
-}
-
 :global(.formItemFlex .n-form-item-blank) {
 	flex-direction: column;
 	gap: 12px

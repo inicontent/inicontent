@@ -70,7 +70,7 @@ import {
 	type DataTableGetCsvHeader,
 	type DataTableInst,
 	type DropdownOption,
-} from "naive-ui";
+} from "naive-ui"
 import {
 	IconCopy,
 	IconEye,
@@ -81,89 +81,89 @@ import {
 	IconEyeOff,
 	IconSearch,
 	IconX,
-} from "@tabler/icons-vue";
-import { isObject, isArrayOfObjects } from "inibase/utils";
-import Inison from "inison";
+} from "@tabler/icons-vue"
+import { isObject, isArrayOfObjects } from "inibase/utils"
+import Inison from "inison"
 
-import { ColumnEdit, Column } from "#components";
+import { ColumnEdit, Column } from "#components"
 
-const dataTableRef = ref<DataTableInst>();
-defineExpose({ dataTableRef });
+const dataTableRef = ref<DataTableInst>()
+defineExpose({ dataTableRef })
 
 const props = defineProps<{
-	slots: any;
-}>();
+	slots: any
+}>()
 
-const columns = defineModel<DataTableColumns>("columns");
-const searchArray = defineModel<searchType>("searchArray");
-const data = defineModel<apiResponse<Item[]>>("data");
+const columns = defineModel<DataTableColumns>("columns")
+const searchArray = defineModel<searchType>("searchArray")
+const data = defineModel<apiResponse<Item[]>>("data")
 
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
-const table = useState<Table>("table");
-const route = useRoute();
-const router = useRouter();
-const appConfig = useAppConfig();
-const { isMobile } = useDevice();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const database = useState<Database>("database")
+const table = useState<Table>("table")
+const route = useRoute()
+const router = useRouter()
+const appConfig = useAppConfig()
+const { isMobile } = useDevice()
 
-const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
+const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
 
 const deleteItem = inject("deleteItem") as (
 	ids?: string | string[],
-) => Promise<apiResponse<Item[]>>;
+) => Promise<apiResponse<Item[]>>
 
-const isSlotEmpty = inject("isSlotEmpty") as (slotName: string) => boolean;
+const isSlotEmpty = inject("isSlotEmpty") as (slotName: string) => boolean
 
 const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
-);
+)
 
 const localSearchArray = ref<searchType>(
 	searchArray.value || { and: [[null, "=", null]] },
-);
+)
 function executeSearch() {
-	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value));
+	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value))
 }
 watch(
 	localSearchArray,
 	(value) => {
 		if (!value || !Object.keys(value).length)
-			localSearchArray.value = { and: [[null, "=", null]] };
+			localSearchArray.value = { and: [[null, "=", null]] }
 	},
 	{ deep: true },
-);
+)
 watch(
 	searchArray,
 	(value) => {
 		if (!value) {
-			if (whereQuery.value) whereQuery.value = undefined;
+			if (whereQuery.value) whereQuery.value = undefined
 		} else {
-			const generatedSearchInput = generateSearchInput(value);
+			const generatedSearchInput = generateSearchInput(value)
 			if (generatedSearchInput) {
-				whereQuery.value = Inison.stringify(generatedSearchInput);
-				pagination.onUpdatePage(1);
+				whereQuery.value = Inison.stringify(generatedSearchInput)
+				pagination.onUpdatePage(1)
 			}
 		}
 	},
 	{ deep: true },
-);
+)
 
 function generateSearchInput(searchArray: any) {
-	const RETURN: Record<string, any> = {};
+	const RETURN: Record<string, any> = {}
 	for (const condition in searchArray) {
 		for (const item of searchArray[condition]) {
-			if (!RETURN[condition]) RETURN[condition] = {};
+			if (!RETURN[condition]) RETURN[condition] = {}
 			if (Array.isArray(item) && item[0])
 				RETURN[condition][item[0]] =
-					`${item[1] === "=" ? "" : item[1]}${item[2]}`;
-			else RETURN[condition] = generateSearchInput(item);
+					`${item[1] === "=" ? "" : item[1]}${item[2]}`
+			else RETURN[condition] = generateSearchInput(item)
 		}
 	}
-	return Object.keys(RETURN).length ? RETURN : undefined;
+	return Object.keys(RETURN).length ? RETURN : undefined
 }
 
 watch(whereQuery, (v) => {
-	const { search, page, ...Query }: any = route.query;
+	const { search, page, ...Query }: any = route.query
 	return v
 		? router.push({
 				query: {
@@ -173,8 +173,8 @@ watch(whereQuery, (v) => {
 			})
 		: router.push({
 				query: Query ?? {},
-			});
-});
+			})
+})
 const isSearchDisabled = computed(
 	() =>
 		!!(
@@ -186,7 +186,7 @@ const isSearchDisabled = computed(
 				]?.[0] as any
 			)[0] === null
 		),
-);
+)
 
 const pagination = reactive({
 	page: route.query.page ? Number(route.query.page) : 1,
@@ -194,36 +194,36 @@ const pagination = reactive({
 	pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
-		pagination.page = currentPage;
-		let { page, ...Query }: any = route.query;
+		pagination.page = currentPage
+		let { page, ...Query }: any = route.query
 		Query = {
 			...Query,
 			page: currentPage !== 1 ? currentPage : undefined,
-		};
-		router.push({ query: Query });
-		await refresh();
+		}
+		router.push({ query: Query })
+		await refresh()
 	},
 	async onUpdatePageSize(pageSize: number) {
-		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize));
-		pagination.pageSize = pageSize;
-		let { perPage, page, ...Query }: any = route.query;
+		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize))
+		pagination.pageSize = pageSize
+		let { perPage, page, ...Query }: any = route.query
 		if (pageSize !== 15) {
 			pagination.page = Math.round(
 				OLD_pageSize < pageSize
 					? page / (pageSize / OLD_pageSize)
 					: page * (pageSize / OLD_pageSize),
-			);
+			)
 			Query = {
 				...Query,
 				perPage: pageSize,
 				page: pagination.page === 1 ? undefined : pagination.page,
-			};
-			await refresh();
+			}
+			await refresh()
 		}
 	},
-});
+})
 
-const sort = ref<Record<string, "asc" | "desc">>({});
+const sort = ref<Record<string, "asc" | "desc">>({})
 
 const queryOptions = computed(() =>
 	Inison.stringify({
@@ -232,7 +232,9 @@ const queryOptions = computed(() =>
 		columns: table.value?.columns,
 		sort: Object.keys(sort.value).length ? sort.value : "",
 	}),
-);
+)
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const { data: _data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
@@ -240,9 +242,10 @@ const { data: _data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 		query: {
 			options: queryOptions,
 			where: whereQuery,
+			locale: Language.value,
 		},
 		onRequest() {
-			Loading.value.data = true;
+			Loading.value.data = true
 		},
 		onResponse({
 			response: {
@@ -251,16 +254,16 @@ const { data: _data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
 				},
 			},
 		}) {
-			Loading.value.data = false;
-			pagination.pageCount = totalPages ?? 0;
-			pagination.itemCount = total ?? 0;
+			Loading.value.data = false
+			pagination.pageCount = totalPages ?? 0
+			pagination.itemCount = total ?? 0
 		},
 	},
-);
+)
 
 watch(_data, (v) => {
-	data.value = v || undefined;
-});
+	data.value = v || undefined
+})
 
 const dataTablePagination = computed(() => ({
 	disabled: !_data.value?.options.total,
@@ -272,26 +275,26 @@ const dataTablePagination = computed(() => ({
 	pageSizes: [15, 30, 60, 100, 500],
 	prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
 	...pagination,
-}));
+}))
 
-const currentItem = ref<Item>();
-const showDropdown = ref(false);
-const x = ref(0);
-const y = ref(0);
+const currentItem = ref<Item>()
+const showDropdown = ref(false)
+const x = ref(0)
+const y = ref(0)
 async function handleSelect(value: string) {
-	showDropdown.value = false;
-	if (!currentItem.value) return;
+	showDropdown.value = false
+	if (!currentItem.value) return
 	switch (value) {
 		case "copy": {
-			await copyToClipboard(Inison.stringify(currentItem.value));
-			window.$message.success(t("copiedSuccessfully"));
-			currentItem.value = undefined;
+			await copyToClipboard(Inison.stringify(currentItem.value))
+			window.$message.success(t("copiedSuccessfully"))
+			currentItem.value = undefined
 		}
 	}
 }
 function onClickoutside(e: MouseEvent) {
-	const isRightClick = e.button === 2;
-	if (!isRightClick) showDropdown.value = false;
+	const isRightClick = e.button === 2
+	if (!isRightClick) showDropdown.value = false
 }
 const dropdownOptions: DropdownOption[] = [
 	{
@@ -299,11 +302,11 @@ const dropdownOptions: DropdownOption[] = [
 		key: "copy",
 		icon: () => h(NIcon, () => h(IconCopy)),
 	},
-];
+]
 function rowProps(row: Item) {
 	return {
 		onContextmenu: async (e: MouseEvent) => {
-			const target = e.target as HTMLElement;
+			const target = e.target as HTMLElement
 			// If it's a link or an image, do not show the dropdown
 			if (
 				target.closest("a[href]") || // Link
@@ -312,15 +315,15 @@ function rowProps(row: Item) {
 				target.closest('[role="button"]') || // ARIA role button
 				target.closest("time") // Date
 			) {
-				showDropdown.value = false;
-				return;
+				showDropdown.value = false
+				return
 			}
 
 			// Check if text is selected and the mouse is above the selection
-			const selection = window.getSelection();
+			const selection = window.getSelection()
 			if (selection && selection.toString().trim() !== "") {
-				const range = selection.getRangeAt(0); // Get the range of the selected text
-				const rect = range.getBoundingClientRect(); // Get the bounding rectangle of the selection
+				const range = selection.getRangeAt(0) // Get the range of the selected text
+				const rect = range.getBoundingClientRect() // Get the bounding rectangle of the selection
 
 				// Check if the mouse is within the bounding rectangle of the selection
 				if (
@@ -329,62 +332,62 @@ function rowProps(row: Item) {
 					e.clientY >= rect.top &&
 					e.clientY <= rect.bottom
 				) {
-					showDropdown.value = false;
-					return;
+					showDropdown.value = false
+					return
 				}
 			}
 
-			e.preventDefault();
-			showDropdown.value = false;
-			await nextTick();
-			currentItem.value = (({ id, createdAt, updatedAt, ...rest }) => rest)(
-				row,
-			);
-			showDropdown.value = true;
-			x.value = e.clientX + 8;
-			y.value = e.clientY + 6;
+			e.preventDefault()
+			showDropdown.value = false
+			await nextTick()
+			currentItem.value = (({ id, createdAt, updatedAt, ...rest }) => rest)(row)
+			showDropdown.value = true
+			x.value = e.clientX + 8
+			y.value = e.clientY + 6
 		},
-	};
+	}
 }
 
 const getCsvCell: DataTableGetCsvCell = (value) => {
-	if (["boolean", "string", "number"].includes(typeof value)) return value;
-	if (!value) return null;
-	if (isObject(value) && Object.hasOwn(value, "id")) return value.id;
+	if (["boolean", "string", "number"].includes(typeof value)) return value
+	if (!value) return null
+	if (isObject(value) && Object.hasOwn(value, "id")) return value.id
 	if (
 		Array.isArray(value) &&
 		isArrayOfObjects(value) &&
 		value.every((_v) => Object.hasOwn(_v, "id"))
 	)
-		value = value.map((_v) => _v.id);
-	return `"${Inison.stringify(value)}"`;
-};
+		value = value.map((_v) => _v.id)
+	return `"${Inison.stringify(value)}"`
+}
 
 const getCsvHeader: DataTableGetCsvHeader = (col) => {
-	return (col.key as string) || "Unknown";
-};
+	return (col.key as string) || "Unknown"
+}
 
 function handleSorterChange({
 	columnKey,
 	order,
-}: { columnKey: string; order: string }) {
-	if (!order) delete sort.value[columnKey];
-	else sort.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
+}: {
+	columnKey: string
+	order: string
+}) {
+	if (!order) delete sort.value[columnKey]
+	else sort.value[columnKey] = order.slice(0, -3) as "asc" | "desc"
 }
 
-const checkedRowKeys = ref<string[]>([]);
+const checkedRowKeys = ref<string[]>([])
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const hiddenColumns = useCookie<Record<string, string[]>>("hiddenColumns", {
-	default: () => ({}) as Record<string, string[]>,
+const tablesConfig = useCookie<TablesCookie>("tablesConfig", {
+	default: () => ({}),
 	sameSite: true,
-});
+})
 
 function handleScroll() {
-	showDropdown.value = false; // Hide dropdown on scroll
+	showDropdown.value = false // Hide dropdown on scroll
 }
 
-const tableWidth = ref<number>(0);
+const tableWidth = ref<number>(0)
 
 async function setColumns() {
 	columns.value = [
@@ -400,9 +403,9 @@ async function setColumns() {
 								disabled: checkedRowKeys.value.length === 0,
 								icon: () => h(NIcon, () => h(IconTrash)),
 								onSelect: async () => {
-									await deleteItem(checkedRowKeys.value);
-									await refresh();
-									checkedRowKeys.value = [];
+									await deleteItem(checkedRowKeys.value)
+									await refresh()
+									checkedRowKeys.value = []
 								},
 							},
 							{
@@ -412,9 +415,9 @@ async function setColumns() {
 									checkedRowKeys.value.length !== _data.value?.result?.length,
 								icon: () => h(NIcon, () => h(IconTableMinus)),
 								onSelect: async () => {
-									await deleteItem();
-									await refresh();
-									checkedRowKeys.value = [];
+									await deleteItem()
+									await refresh()
+									checkedRowKeys.value = []
 								},
 							},
 							{
@@ -430,30 +433,31 @@ async function setColumns() {
 											{
 												onClick() {
 													if (
-														hiddenColumns?.value[
+														tablesConfig?.value[
 															table.value?.slug as string
-														]?.includes(id as string)
+														]?.columns?.includes(id as string)
 													)
-														hiddenColumns.value[table.value?.slug as string] =
-															hiddenColumns.value[
-																table.value?.slug as string
-															].filter((itemID) => itemID !== id);
+														tablesConfig.value[
+															table.value?.slug as string
+														].columns = tablesConfig.value[
+															table.value?.slug as string
+														].columns?.filter((itemID) => itemID !== id)
 													else {
 														if (
-															!hiddenColumns.value[table.value?.slug as string]
+															!tablesConfig?.value[table.value?.slug as string]
 														)
-															hiddenColumns.value[table.value?.slug as string] =
-																[];
-														hiddenColumns.value[
+															tablesConfig.value[table.value?.slug as string] =
+																{ columns: [] }
+														tablesConfig.value[
 															table.value?.slug as string
-														].push(id as string);
+														].columns?.push(id as string)
 													}
 												},
 											},
 											() =>
-												hiddenColumns.value?.[
+												tablesConfig.value[
 													table.value?.slug as string
-												]?.includes(id as string)
+												]?.columns?.includes(id as string)
 													? h(IconEyeOff)
 													: h(IconEye),
 										),
@@ -465,12 +469,12 @@ async function setColumns() {
 			: []),
 		...((table.value?.defaultTableColumns && table.value?.schema
 			? [
-					...(hiddenColumns.value?.[table.value?.slug as string]
+					...(tablesConfig.value[table.value?.slug as string]?.columns
 						? table.value.schema.filter(
 								({ id }) =>
-									!hiddenColumns.value?.[table.value?.slug as string]?.includes(
-										id as string,
-									) &&
+									!tablesConfig.value[
+										table.value?.slug as string
+									]?.columns?.includes(id as string) &&
 									!table.value?.defaultTableColumns?.includes(id as string),
 							)
 						: []),
@@ -485,7 +489,7 @@ async function setColumns() {
 		)
 			?.filter(
 				({ id }) =>
-					!hiddenColumns.value?.[table.value?.slug as string]?.includes(
+					!tablesConfig.value[table.value?.slug as string]?.columns?.includes(
 						id as string,
 					),
 			)
@@ -522,9 +526,9 @@ async function setColumns() {
 									loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
 									modelValue: row[field.key],
 									"onUpdate:modelValue": async (value: any) => {
-										if (!row.id) return;
-										Loading.value[`${row.id}-${field.key}`] = true;
-										row[field.key] = value;
+										if (!row.id) return
+										Loading.value[`${row.id}-${field.key}`] = true
+										row[field.key] = value
 										const __data = await $fetch<apiResponse<Item | boolean>>(
 											`${appConfig.apiBase}${database.value.slug}/${
 												table.value?.slug
@@ -533,17 +537,18 @@ async function setColumns() {
 												method: "PUT",
 												body: row,
 												params: {
-													options: Inison.stringify({ return: false }),
+													return: false,
+													locale: Language.value,
 												},
 											},
-										);
+										)
 										if (
 											(typeof __data?.result === "boolean" &&
 												__data.result !== true) ||
 											(typeof __data.result !== "boolean" && !__data.result?.id)
 										)
-											window.$message.error(__data.message);
-										Loading.value[`${row.id}-${field.key}`] = false;
+											window.$message.error(__data.message)
+										Loading.value[`${row.id}-${field.key}`] = false
 									},
 									field,
 								})
@@ -599,16 +604,16 @@ async function setColumns() {
 									],
 					},
 				]),
-	] as DataTableColumns;
+	] as DataTableColumns
 
-	await nextTick();
+	await nextTick()
 
 	tableWidth.value = columns.value.reduce(
 		(accumulator: number, { width }) =>
 			accumulator + ((width as number | undefined) ?? 0),
 		40,
-	);
+	)
 }
-watch(() => hiddenColumns.value, setColumns, { deep: true });
-watch([Language, checkedRowKeys, _data], setColumns);
+watch(() => tablesConfig.value, setColumns, { deep: true })
+watch([Language, checkedRowKeys, _data], setColumns)
 </script>

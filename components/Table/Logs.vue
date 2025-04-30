@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import Inison from "inison";
+import Inison from "inison"
 import {
 	NH3,
 	NSpin,
@@ -80,7 +80,7 @@ import {
 	NTag,
 	NButtonGroup,
 	NButton,
-} from "naive-ui";
+} from "naive-ui"
 
 type ActionName =
 	| "set"
@@ -89,12 +89,12 @@ type ActionName =
 	| "update"
 	| "unset"
 	| "delete"
-	| "create";
-type Actions = [ActionName, string, any?][];
+	| "create"
+type Actions = [ActionName, string, any?][]
 interface Log extends Item {
-	actions: Actions;
-	madeBy?: User;
-	item: Item | Item[];
+	actions: Actions
+	madeBy?: User
+	item: Item | Item[]
 }
 
 defineTranslation({
@@ -115,18 +115,18 @@ defineTranslation({
 		as: "كـ",
 		item: "عنصر",
 	},
-});
+})
 
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const database = useState<Database>("database");
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const database = useState<Database>("database")
 
-const usersTable = database.value.tables?.find(({ slug }) => slug === "users");
+const usersTable = database.value.tables?.find(({ slug }) => slug === "users")
 
-const table = useState<Table>("table");
+const table = useState<Table>("table")
 
-const { data, status } = await useLazyFetch<apiResponse<Log[]>>(
+const { data } = await useLazyFetch<apiResponse<Log[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
 		query: {
@@ -137,25 +137,26 @@ const { data, status } = await useLazyFetch<apiResponse<Log[]>>(
 					...(usersTable?.columns?.map((column) => `madeBy.${column}`) ?? []),
 				],
 			}),
+			locale: Language.value,
 		},
 		onRequest() {
-			Loading.value.logs = true;
+			Loading.value.logs = true
 		},
 		onResponse() {
-			Loading.value.logs = false;
+			Loading.value.logs = false
 		},
 	},
-);
+)
 function getTypeFromAction(
 	ActionName: ActionName,
 ): "error" | "info" | "success" {
 	switch (ActionName) {
 		case "create":
-			return "success";
+			return "success"
 		case "delete":
-			return "error";
+			return "error"
 		default:
-			return "info";
+			return "info"
 	}
 }
 </script>

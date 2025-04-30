@@ -9,7 +9,7 @@
 								<template #trigger>
 									<NPopconfirm :show-icon="false" @positive-click="deleteTable">
 										<template #trigger>
-											<NButton :disabled="isUnDeletable" type="error" tertiary round
+											<NButton :disabled="isUnDeletable" type="error" secondary round
 												:loading="Loading.deleteTable">
 												<template #icon>
 													<NIcon>
@@ -86,35 +86,19 @@
 						</NCard>
 						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
 							<template #header-extra>
-								<NButtonGroup>
-									<NTooltip :delay="500">
-										<template #trigger>
-											<NButton tertiary round :type="showDraggable ? 'primary' : 'default'"
-												@click="showDraggable =
-													!showDraggable">
-												<template #icon>
-													<NIcon>
-														<IconArrowsSort />
-													</NIcon>
-												</template>
-											</NButton>
+								<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
+									@select="pushToSchema">
+									<NButton secondary type="primary" round>
+										<template #icon>
+											<NIcon>
+												<IconPlus />
+											</NIcon>
 										</template>
-										{{ t("changeOrder") }}
-									</NTooltip>
-									<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
-										@select="pushToSchema">
-										<NButton secondary type="primary" round>
-											<template #icon>
-												<NIcon>
-													<IconPlus />
-												</NIcon>
-											</template>
-										</NButton>
-									</NDropdown>
-								</NButtonGroup>
+									</NButton>
+								</NDropdown>
 							</template>
 							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-							<NForm :class="{ notSortable: !showDraggable }" size="small">
+							<NForm size="small">
 								<TableSettingsSchema v-model="tableCopy.schema"
 									v-model:expanded-names="expandedNames" />
 							</NForm>
@@ -133,13 +117,8 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	IconArrowsSort,
-	IconDeviceFloppy,
-	IconPlus,
-	IconTrash,
-} from "@tabler/icons-vue";
-import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils";
+import { IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-vue"
+import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils"
 import {
 	type FormInst,
 	NAnchor,
@@ -162,7 +141,7 @@ import {
 	NSpin,
 	NTag,
 	NTooltip,
-} from "naive-ui";
+} from "naive-ui"
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -172,11 +151,11 @@ onMounted(() => {
 				(e.key.toLowerCase() === "s" || e.key === "س")
 			)
 		)
-			return;
-		e.preventDefault();
-		updateTable();
-	};
-});
+			return
+		e.preventDefault()
+		updateTable()
+	}
+})
 
 defineTranslation({
 	ar: {
@@ -201,57 +180,57 @@ defineTranslation({
 		table: "جدول",
 		kanban: "كانبان",
 		cards: "بطاقات",
+		list: "قائمة",
 		groupBy: "تقسيم حسب",
 	},
-});
+})
 
-const expandedNames = ref<string[]>();
+const expandedNames = ref<string[]>()
 function pushToSchema(type: string) {
 	tableCopy.value.schema?.splice(-2, 0, {
 		id: `temp-${randomID()}`,
 		key: "",
 		required: false,
 		...(handleSelectedSchemaType(type) as any),
-	});
-	const newElementId = tableCopy.value.schema?.at(-3)?.id as string | undefined;
-	if (newElementId) expandedNames.value = [newElementId];
+	})
+	const newElementId = tableCopy.value.schema?.at(-3)?.id as string | undefined
+	if (newElementId) expandedNames.value = [newElementId]
 	setTimeout(
 		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
 		300,
-	);
+	)
 }
 
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const route = useRoute();
-const router = useRouter();
-const showDraggable = ref(false);
-const database = useState<Database>("database");
-const table = useState<Table>("table");
-const settingsFormRef = ref<FormInst | null>(null);
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const route = useRoute()
+const router = useRouter()
+const database = useState<Database>("database")
+const table = useState<Table>("table")
+const settingsFormRef = ref<FormInst | null>(null)
 const tableCopy = ref<
 	Table & {
-		localLabel?: { value: string; label: string }[];
+		localLabel?: { value: string; label: string }[]
 	}
->({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" });
-
+>({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" })
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
 			const bodyContent = (({ onRequest, onResponse, ...rest }) => ({
 				...rest,
-			}))(tableCopy.value);
-			Loading.value.updateTable = true;
+			}))(tableCopy.value)
+			Loading.value.updateTable = true
 
 			// TO-DO: Fix
-			const oldAllowedMethods = bodyContent.allowedMethods;
+			const oldAllowedMethods = bodyContent.allowedMethods
 
-			if (bodyContent.displayAs === "table") delete bodyContent.displayAs;
+			if (bodyContent.displayAs === "table") bodyContent.displayAs = "" as any
 
 			if (bodyContent.localLabel)
 				bodyContent.label = bodyContent.localLabel
 					.map(({ value }: { value: string }) => value)
-					.join(" ");
+					.join(" ")
 
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
@@ -262,119 +241,133 @@ async function updateTable() {
 				{
 					method: "PUT",
 					body: bodyContent,
+					params: {
+						locale: Language.value,
+					},
 				},
-			);
+			)
 			const tableIndex = database.value.tables?.findIndex(
 				({ slug }) => slug === route.params.table,
-			);
+			)
 			if (
 				tableIndex !== undefined &&
 				tableIndex !== -1 &&
 				database.value.tables &&
 				data?.result
 			) {
-				data.result.allowedMethods = oldAllowedMethods;
-				database.value.tables[tableIndex] = data.result;
-				table.value = data.result;
-				tableCopy.value = data.result;
+				data.result.allowedMethods = oldAllowedMethods
+				data.result.displayAs = data.result.displayAs || "table"
+				database.value.tables[tableIndex] = data.result
+				table.value = data.result
+				tableCopy.value = data.result
 
 				if (route.params.table !== data.result.slug)
 					router.replace({
 						params: { table: data.result.slug },
-					});
-				window.$message.success(data?.message ?? t("success"));
-			} else window.$message.error(data?.message ?? t("error"));
+					})
+				window.$message.success(data?.message ?? t("success"))
+			} else window.$message.error(data?.message ?? t("error"))
 
-			Loading.value.updateTable = false;
-		} else window.$message.error(t("inputsAreInvalid"));
-	});
+			Loading.value.updateTable = false
+		} else window.$message.error(t("inputsAreInvalid"))
+	})
 }
 
 const isUnDeletable = computed(() =>
 	["users", "pages", "components"].includes(table.value?.slug),
-);
+)
 
 async function deleteTable() {
-	Loading.value.deleteTable = true;
+	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
 		`${appConfig.apiBase}inicontent/databases/${
 			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
+			params: {
+				locale: Language.value,
+			},
 		},
-	);
+	)
 	if (data?.result) {
 		const tableIndex = database.value.tables?.findIndex(
 			({ slug }) => slug === route.params.table,
-		);
+		)
 		if (tableIndex !== undefined && tableIndex !== -1)
-			database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
-		Loading.value.deleteTable = false;
-		window.$message.success(data?.message ?? t("success"));
+			database.value.tables = database.value.tables?.toSpliced(tableIndex, 1)
+		Loading.value.deleteTable = false
+		window.$message.success(data?.message ?? t("success"))
 		setTimeout(
 			async () =>
 				await navigateTo(
 					`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables`,
 				),
 			800,
-		);
-	} else window.$message.error(data?.message ?? t("error"));
-	Loading.value.deleteTable = false;
+		)
+	} else window.$message.error(data?.message ?? t("error"))
+	Loading.value.deleteTable = false
 }
 
 const flattenCopySchema = computed<Schema>(() =>
 	tableCopy.value.schema ? flattenSchema(tableCopy.value.schema as any) : [],
-);
-const singleLabelSelect = ref();
+)
+const singleLabelSelect = ref()
 function focusSingleLabelSelect() {
-	setTimeout(() => singleLabelSelect.value?.focusInput(), 200);
+	setTimeout(() => singleLabelSelect.value?.focusInput(), 200)
 }
-tableCopy.value.localLabel =
-	tableCopy.value.displayAs !== "kanban"
-		? tableCopy.value.label
-				?.split(/(@\w+)/g)
-				.filter((value: string) => value.trim() != "")
-				.map((label: string) => {
-					if (label.startsWith("@"))
-						return {
-							label:
-								flattenCopySchema.value.find(({ id }) => id === label.slice(1))
-									?.key ?? "",
-							value: label,
-						};
-					return {
-						label,
-						value: label,
-					};
-				})
-		: undefined;
+watch(
+	() => tableCopy.value.displayAs,
+	(view) => {
+		tableCopy.value.localLabel =
+			view !== "kanban"
+				? tableCopy.value.label
+						?.split(/(@\w+)/g)
+						.filter((value: string) => value.trim() != "")
+						.map((label: string) => {
+							if (label.startsWith("@"))
+								return {
+									label:
+										flattenCopySchema.value.find(
+											({ id }) => id === label.slice(1),
+										)?.key ?? "",
+									value: label,
+								}
+							return {
+								label,
+								value: label,
+							}
+						})
+				: undefined
+	},
+	{ immediate: true },
+)
 watch(
 	() => tableCopy.value?.localLabel,
 	(newValue) => {
 		if (newValue?.length) {
 			const localLabelWithNoEmptys = newValue.filter(
 				({ label }) => label.trim() !== "",
-			);
+			)
 			if (localLabelWithNoEmptys.length !== newValue.length)
-				tableCopy.value.localLabel = localLabelWithNoEmptys;
+				tableCopy.value.localLabel = localLabelWithNoEmptys
 		}
 	},
-);
+)
 function onAppendToLabel(label: string) {
-	if (!label.startsWith("@") && isValidID(label)) label = `@${label}`;
+	if (!label.startsWith("@") && isValidID(label)) label = `@${label}`
 	if (label.startsWith("@") && isValidID(label.slice(1)))
 		return {
 			label:
 				flattenCopySchema.value.find(({ id }) => id === label.slice(1))?.key ??
 				"undefined",
 			value: label,
-		};
+		}
 
 	return {
 		label: label,
 		value: label,
-	};
+	}
 }
 function renderSingleLabel(
 	labelObject: { label: string; value: string },
@@ -392,18 +385,18 @@ function renderSingleLabel(
 			round: true,
 			bordered: false,
 			onClose: () => {
-				tableCopy.value.localLabel?.splice(index, 1);
+				tableCopy.value.localLabel?.splice(index, 1)
 			},
 		},
 		{
 			default: () => labelObject.label,
 		},
-	);
+	)
 }
 
 const searchInSelectOptions = computed(() =>
 	generateSearchInOptions(table.value?.schema, undefined, true),
-);
+)
 
 const groupBySelectOptions = computed(() =>
 	generateSearchInOptions(
@@ -419,7 +412,7 @@ const groupBySelectOptions = computed(() =>
 			.map(({ id }) => String(id)),
 		true,
 	),
-);
+)
 
 const generalSettingsSchema = reactive<Schema>([
 	{
@@ -448,7 +441,12 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "displayAs",
 		type: "string",
 		subType: "select",
-		options: ["table", "kanban", "cards"],
+		options: [
+			{ label: t("table"), value: "table" },
+			{ label: t("kanban"), value: "kanban" },
+			{ label: t("list"), value: "list", disabled: true },
+			{ label: t("cards"), value: "cards", disabled: true },
+		],
 		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
 			? {
 					disabled: true,
@@ -504,43 +502,40 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "enableActivityLog",
 		width: 5,
 	},
-]);
+])
 
 function generateMentionOptions(
 	schema?: Schema,
 	prefix?: string,
 ): {
-	label: string;
-	value: string | number;
+	label: string
+	value: string | number
 }[] {
 	let RETURN: {
-		label: string;
-		value: string | number;
-	}[] = [];
+		label: string
+		value: string | number
+	}[] = []
 
-	if (!schema) return RETURN;
+	if (!schema) return RETURN
 
 	for (const field of schema) {
-		if (!field.id || field.id.toString().startsWith("temp-")) continue;
+		if (!field.id || field.id.toString().startsWith("temp-")) continue
 		if (
 			(Array.isArray(field.type) && field.type.includes("array")) ||
 			(field.type === "array" &&
 				field.children &&
 				isArrayOfObjects(field.children))
 		)
-			continue;
+			continue
 		if (field.children && isArrayOfObjects(field.children))
-			RETURN = [
-				...RETURN,
-				...generateMentionOptions(field.children, field.key),
-			];
+			RETURN = [...RETURN, ...generateMentionOptions(field.children, field.key)]
 		else
 			RETURN.push({
 				label: (prefix ? `${prefix}/` : "") + field.key,
 				value: field.id,
-			});
+			})
 	}
-	return RETURN;
+	return RETURN
 }
 
 const labelField: Field = {
@@ -550,20 +545,20 @@ const labelField: Field = {
 	options: generateMentionOptions(tableCopy.value?.schema),
 	inputProps: {
 		filter: (pattern: string, option: { value: string }) => {
-			if (!pattern) return true;
-			return option.value.startsWith(pattern);
+			if (!pattern) return true
+			return option.value.startsWith(pattern)
 		},
 		type: "textarea",
 		autosize: {
 			minRows: 3,
 		},
 	},
-};
+}
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value?.slug)} : ${t("settings")}`,
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

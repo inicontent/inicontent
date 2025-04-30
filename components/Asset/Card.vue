@@ -169,6 +169,9 @@ async function onUpdatePageSize(currentPageSize: number) {
 		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
 	return refreshAssets();
 }
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+
 const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
 	`assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
 	() =>
@@ -183,7 +186,8 @@ const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
 						page: page.value,
 						perPage: pageSize.value,
 					}),
-					where: where ? Inison.stringify(where) : "",
+					where: where ? Inison.stringify(where) : undefined,
+					locale: Language.value
 				},
 			},
 		),
@@ -244,11 +248,15 @@ function onFinishUpload({
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-			`${appConfig.apiBase}${
-				database.value.slug
-			}/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
-			{ method: "DELETE" },
-		),
+		`${appConfig.apiBase}${database.value.slug
+		}/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value
+			}
+		},
+	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name);
 	if (data.result) {
 		if (assets.value)

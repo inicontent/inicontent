@@ -1,13 +1,15 @@
-import Inison from "inison";
+import Inison from "inison"
 
 export default async function () {
-	const appConfig = useAppConfig();
-	const Language = useCookie<LanguagesType>("language", { sameSite: true });
-	const route = useRoute();
-	const translationsState = useState<TranslationsType>("translations");
+	const appConfig = useAppConfig()
+	const Language = useCookie<keyof TranslationsType>("language", {
+		sameSite: true,
+	})
+	const route = useRoute()
+	const translationsState = useState<TranslationsType>("translations")
 	const unfoundTranslationsState = useState<TranslationsType>(
 		"unfoundTranslations",
-	);
+	)
 
 	if (Language.value && unfoundTranslationsState.value) {
 		const fetchResult = (
@@ -24,14 +26,15 @@ export default async function () {
 					},
 				},
 			)
-		).result;
+		).result
 		if (fetchResult)
 			for (const translation of fetchResult) {
-				if (!translationsState.value[`${Language.value}`])
-					translationsState.value[`${Language.value}`] = {};
-				translationsState.value[`${Language.value}`][
-					`${translation.original}`
-				] = translation.translated;
+				if (!translationsState.value[Language.value])
+					// @ts-ignore
+					translationsState.value[Language.value] = {}
+				// @ts-ignore
+				translationsState.value[Language.value][translation.original] =
+					translation.translated
 			}
 	}
 }

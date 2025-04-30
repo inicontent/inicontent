@@ -54,7 +54,8 @@
 			<slot name="default" :data>
 				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
 					:slots />
-				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data" ref="tableViewRef" :slots />
+				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
+					v-model:searchArray="searchArray" ref="tableViewRef" :slots />
 			</slot>
 		</NCard>
 		<LazyTableLogs v-if="table.config?.log" />
@@ -66,14 +67,17 @@ import {
 	IconCopy,
 	IconEye,
 	IconFileArrowRight,
+	IconLayoutDashboardFilled,
+	IconLayoutKanbanFilled,
 	IconPencil,
 	IconPlus,
+	IconTable,
 	IconTableExport,
 	IconTableImport,
 	IconTools,
 	IconTrash,
-} from "@tabler/icons-vue";
-import Inison from "inison";
+} from "@tabler/icons-vue"
+import Inison from "inison"
 import {
 	NButton,
 	NButtonGroup,
@@ -88,43 +92,53 @@ import {
 	type DataTableColumns,
 	type NotificationReactive,
 	type DropdownOption,
-} from "naive-ui";
-import { FormatObjectCriteriaValue, isStringified } from "inibase/utils";
-import { NuxtLink } from "#components";
+} from "naive-ui"
+import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
+import { NuxtLink } from "#components"
 
-const user = useState<User>("user");
-const route = useRoute();
-const searchArray = ref<searchType | undefined>(
+const user = useState<User>("user")
+const route = useRoute()
+const searchArray = ref<searchType>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
-		: undefined,
-);
+		: { and: [[null, "=", null]] },
+)
 
-const columns = ref<DataTableColumns>();
-const data = ref();
+const columns = ref<DataTableColumns>()
+const data = ref()
 
-const database = useState<Database>("database");
-const table = useState<Table>("table");
+const database = useState<Database>("database")
+const table = useState<Table>("table")
 
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const tablesConfig = useCookie<TablesCookie>("tablesConfig", {
+	default: () => ({}),
+	sameSite: true,
+})
 
+if (tablesConfig.value[table.value.slug]?.view)
+	table.value.displayAs = tablesConfig.value[table.value.slug].view
+
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 async function deleteItem(id?: string | number | (string | number)[]) {
-	if (!data.value) return;
-	Loading.value.data = true;
+	if (!data.value) return
+	Loading.value.data = true
 	const deleteResponse = await $fetch<apiResponse>(
 		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
 		{
 			method: "DELETE",
-			query:
-				id && Array.isArray(id) ? { where: Inison.stringify(id) } : undefined,
+			query: {
+				where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
+				locale: Language.value,
+			},
 		},
-	);
-	if (deleteResponse.result) window.$message.success(deleteResponse.message);
-	else window.$message.error(deleteResponse.message);
-	Loading.value.data = false;
+	)
+	if (deleteResponse.result) window.$message.success(deleteResponse.message)
+	else window.$message.error(deleteResponse.message)
+	Loading.value.data = false
 }
-provide("deleteItem", deleteItem);
+provide("deleteItem", deleteItem)
 
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
@@ -157,17 +171,17 @@ function renderItemButtons(row: Item) {
 							tag: "a",
 							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
 							onClick: (e) => {
-								e.preventDefault();
+								e.preventDefault()
 								if (!isMobile)
 									openDrawer(
 										table.value?.slug as string,
 										row.id,
 										structuredClone(toRaw(row)),
-									);
+									)
 								else
 									navigateTo(
 										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									);
+									)
 							},
 							secondary: true,
 							circle: true,
@@ -201,55 +215,55 @@ function renderItemButtons(row: Item) {
 					)
 				: null,
 		].filter((i) => i !== null),
-	);
+	)
 }
-provide("renderItemButtons", renderItemButtons);
+provide("renderItemButtons", renderItemButtons)
 
 defineExpose<TableRef>({
 	search: searchArray as searchType,
 	columns: columns as any,
 	delete: deleteItem,
-});
+})
 
 const slots = defineSlots<{
-	default(props: { data: apiResponse<Item[]> | null }): any;
+	default(props: { data: apiResponse<Item[]> | null }): any
 	form(props: {
-		onAfterCreate: () => Promise<void>;
-		onAfterUpdate: () => Promise<void>;
-	}): any;
-	navbarActions(): any;
-	navbarExtraButtons(): any;
-	navbarExtraActions(): any;
-	itemActions(props: Item): any;
-	itemExtraActions(props: Item): any;
-	itemExtraButtons(props: Item): any;
-	item(props: Item): any;
-}>();
+		onAfterCreate: () => Promise<void>
+		onAfterUpdate: () => Promise<void>
+	}): any
+	navbarActions(): any
+	navbarExtraButtons(): any
+	navbarExtraActions(): any
+	itemActions(props: Item): any
+	itemExtraActions(props: Item): any
+	itemExtraButtons(props: Item): any
+	item(props: Item): any
+}>()
 
 function isSlotEmpty(slotName: keyof typeof slots): boolean {
-	const slot = slots[slotName];
+	const slot = slots[slotName]
 
-	if (!slot) return false;
+	if (!slot) return false
 
 	// Always pass an empty object as argument – it's safe for most slot functions
-	const vnodes: VNode[] = (slot as any)({});
+	const vnodes: VNode[] = (slot as any)({})
 
 	// Check if all nodes are comments or have undefined children
 	return vnodes.every(
 		(vnode) => vnode.type === Comment || vnode.children === undefined,
-	);
+	)
 }
 
-provide("isSlotEmpty", isSlotEmpty);
+provide("isSlotEmpty", isSlotEmpty)
 
-if (!isSlotEmpty("default"))
+if (!isSlotEmpty("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
 		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
-	);
+	)
 
 onBeforeRouteLeave(() => {
-	clearNuxtState("drawer");
-});
+	clearNuxtState("drawer")
+})
 
 defineTranslation({
 	ar: {
@@ -264,25 +278,27 @@ defineTranslation({
 		columns: "الأعمدة",
 		an_export_job_is_running_in_background: "هناك عملية تصدير جارية",
 		an_export_job_is_done: "عملية التصدير إنتهت",
+		table: "جدول",
+		kanban: "كانبان",
 	},
-});
+})
 
-const { isMobile } = useDevice();
+const { isMobile } = useDevice()
 
-const notificationRef = ref<NotificationReactive>();
-const currentJob = computed(() => table.value?.currentJob);
+const notificationRef = ref<NotificationReactive>()
+const currentJob = computed(() => table.value?.currentJob)
 async function jobNotification() {
 	if (currentJob.value) {
 		if (!notificationRef.value)
 			notificationRef.value = window.$notification.info({
 				title: t(`an_${currentJob.value}_job_is_running_in_background`),
 				onClose() {
-					notificationRef.value?.destroy();
-					notificationRef.value = undefined;
-					table.value.currentJob = undefined;
+					notificationRef.value?.destroy()
+					notificationRef.value = undefined
+					table.value.currentJob = undefined
 				},
 				meta: () => h(NTime),
-			});
+			})
 
 		const jobTimer = setInterval(async () => {
 			if (notificationRef.value) {
@@ -290,11 +306,11 @@ async function jobNotification() {
 					await $fetch<apiResponse<number>>(
 						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
 					)
-				).result;
+				).result
 
 				if (currentJobProgress === 100) {
-					clearInterval(jobTimer);
-					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`);
+					clearInterval(jobTimer)
+					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`)
 					if (currentJob.value === "export")
 						notificationRef.value.action = () =>
 							h(
@@ -305,20 +321,19 @@ async function jobNotification() {
 									onClick: () => {
 										window.open(
 											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download`,
-										);
-										notificationRef.value?.destroy();
-										notificationRef.value = undefined;
-										table.value.currentJob = undefined;
+										)
+										notificationRef.value?.destroy()
+										notificationRef.value = undefined
+										table.value.currentJob = undefined
 									},
 								},
 								{
 									default: () => t("download"),
 								},
-							);
+							)
 					setTimeout(() => {
-						if (notificationRef.value)
-							notificationRef.value.content = undefined;
-					}, 500);
+						if (notificationRef.value) notificationRef.value.content = undefined
+					}, 500)
 				} else
 					notificationRef.value.content = () =>
 						h(NProgress, {
@@ -326,37 +341,56 @@ async function jobNotification() {
 							percentage: currentJobProgress,
 							indicatorPlacement: "inside",
 							processing: true,
-						});
+						})
 			}
-		}, 1000);
+		}, 1000)
 	}
 }
-watch(currentJob, jobNotification);
-onMounted(jobNotification);
+watch(currentJob, jobNotification)
+onMounted(jobNotification)
 
 function generateSearchArray(searchQuery: any): searchType {
-	const RETURN: searchType = {};
+	const RETURN: searchType = {}
 	for (const [condition, items] of Object.entries(searchQuery)) {
 		if (!RETURN[condition as "and" | "or"])
-			RETURN[condition as "and" | "or"] = [];
+			RETURN[condition as "and" | "or"] = []
 		for (const [key, value] of Object.entries(items)) {
 			if (["and", "or"].includes(key))
 				RETURN[condition as "and" | "or"]?.push({
 					[key]: generateSearchArray(value),
-				});
+				})
 			else
 				RETURN[condition as "and" | "or"]?.push([
 					key,
 					...FormatObjectCriteriaValue(value),
-				]);
+				])
 		}
 	}
-	return RETURN;
+	return RETURN
 }
 
-const tableViewRef = ref();
+const tableViewRef = ref()
 
 const toolsDropdownOptions = computed(() => [
+	{
+		icon: () => h(NIcon, () => h(IconLayoutDashboardFilled)),
+		label: t("view"),
+		key: "view",
+		children: [
+			{
+				icon: () => h(NIcon, () => h(IconTable)),
+				label: t("table"),
+				key: "viewTable",
+				disabled: !table.value.displayAs,
+			},
+			{
+				icon: () => h(NIcon, () => h(IconLayoutKanbanFilled)),
+				label: t("kanban"),
+				key: "viewKanban",
+				disabled: table.value.displayAs === "kanban",
+			},
+		],
+	},
 	{
 		icon: () => h(NIcon, () => h(IconTableImport)),
 		label: t("import"),
@@ -382,26 +416,41 @@ const toolsDropdownOptions = computed(() => [
 			},
 		],
 	},
-]);
+])
 
 async function toolsDropdownOnSelect(
-	value: "import" | "exportCurrentData" | "exportAllData",
+	value:
+		| "import"
+		| "exportCurrentData"
+		| "exportAllData"
+		| "viewTable"
+		| "viewKanban",
 ) {
 	switch (value) {
 		case "exportAllData": {
 			await $fetch(
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
 				{ method: "POST" },
-			);
-			table.value.currentJob = "export";
-			break;
+			)
+			table.value.currentJob = "export"
+			break
 		}
 		case "exportCurrentData": {
 			tableViewRef.value.dataTableRef?.downloadCsv({
 				fileName: table.value.slug,
 				keepOriginalData: false,
-			});
-			break;
+			})
+			break
+		}
+		case "viewTable":
+		case "viewKanban": {
+			data.value = undefined
+			const displayAs = value === "viewKanban" ? "kanban" : undefined
+			if (!tablesConfig.value[table.value.slug])
+				tablesConfig.value[table.value.slug] = {}
+			tablesConfig.value[table.value.slug].view = displayAs
+			table.value.displayAs = displayAs
+			break
 		}
 	}
 }
@@ -412,38 +461,38 @@ const createDropdownOptions: DropdownOption[] = [
 		key: "paste",
 		icon: () => h(NIcon, () => h(IconCopy)),
 	},
-];
+]
 async function createDropdownOnSelect(value: string) {
 	try {
-		const itemFromClipboard = await navigator.clipboard.readText();
+		const itemFromClipboard = await navigator.clipboard.readText()
 
 		if (!itemFromClipboard) {
-			window.$message.error(t("clipboardEmpty"));
-			return;
+			window.$message.error(t("clipboardEmpty"))
+			return
 		}
 		if (!isStringified(itemFromClipboard)) {
-			window.$message.error(t("clipboardItemIsNotCorrect"));
-			return;
+			window.$message.error(t("clipboardItemIsNotCorrect"))
+			return
 		}
 
-		const unstringifiedItem = Inison.unstringify<Item>(itemFromClipboard);
+		const unstringifiedItem = Inison.unstringify<Item>(itemFromClipboard)
 		if (!unstringifiedItem) {
-			window.$message.error(t("clipboardItemIsNotCorrect"));
-			return;
+			window.$message.error(t("clipboardItemIsNotCorrect"))
+			return
 		}
 
 		switch (value) {
 			case "paste": {
 				if (!isMobile)
-					openDrawer(table.value.slug, undefined, unstringifiedItem);
+					openDrawer(table.value.slug, undefined, unstringifiedItem)
 				else
 					await navigateTo(
 						`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/new?data=${itemFromClipboard}`,
-					);
+					)
 			}
 		}
 	} catch {
-		window.$message.error(t("clipboardItemIsNotCorrect"));
+		window.$message.error(t("clipboardItemIsNotCorrect"))
 	}
 }
 
@@ -452,7 +501,7 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>
 
 <style scoped>

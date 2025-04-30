@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IconPencil, IconTrash, IconUpload } from "@tabler/icons-vue";
+import { IconPencil, IconTrash, IconUpload } from "@tabler/icons-vue"
 import {
 	NDropdown,
 	NFlex,
@@ -92,18 +92,18 @@ import {
 	NDrawerContent,
 	NText,
 	NTime,
-} from "naive-ui";
+} from "naive-ui"
 
 const path = defineModel<string>("path", {
 	default: "",
-});
+})
 const { isAssetRoute, table } = defineProps<{
-	targetID?: string;
-	isAssetRoute?: boolean;
-	table: Table;
-}>();
+	targetID?: string
+	isAssetRoute?: boolean
+	table: Table
+}>()
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 defineTranslation({
 	ar: {
@@ -114,32 +114,35 @@ defineTranslation({
 		rename: "تغيير الإسم",
 		replace: "إستبدال",
 	},
-});
+})
 
-const modelValue = defineModel<Asset[] | null>();
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
-const CurrentAsset = ref<Asset>();
+const modelValue = defineModel<Asset[] | null>()
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const database = useState<Database>("database")
+const CurrentAsset = ref<Asset>()
 
 async function deleteAsset(asset: Asset) {
-	Loading.value[`deleteAsset${asset.id}`] = true;
+	Loading.value[`deleteAsset${asset.id}`] = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-		{
-			method: "DELETE",
-		},
-	),
-		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+				},
+			},
+		),
+		singleAsset = modelValue.value?.find((value) => value.id === asset.id)
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
 			(value) => value.id !== asset.id,
-		);
+		)
 
-		if (database.value.size) database.value.size -= singleAsset?.size ?? 0;
-		window.$message.success(data?.message ?? t("success"));
-	} else window.$message.error(data?.message ?? t("error"));
-	Loading.value[`deleteAsset${asset.id}`] = false;
+		if (database.value.size) database.value.size -= singleAsset?.size ?? 0
+		window.$message.success(data?.message ?? t("success"))
+	} else window.$message.error(data?.message ?? t("error"))
+	Loading.value[`deleteAsset${asset.id}`] = false
 }
 const dropdownOptions = [
 	{
@@ -163,7 +166,7 @@ const dropdownOptions = [
 		show: table.allowedMethods?.includes("u"),
 		icon: () => h(NIcon, () => h(IconUpload)),
 	},
-];
+]
 
 function dropdownOnSelect(key: string) {
 	switch (key) {
@@ -175,50 +178,50 @@ function dropdownOnSelect(key: string) {
 					content: t("theFollowingActionIsIrreversible"),
 					positiveText: t("delete"),
 					async onPositiveClick() {
-						d.loading = true;
-						await deleteAsset(CurrentAsset.value as Asset);
-						return true;
+						d.loading = true
+						await deleteAsset(CurrentAsset.value as Asset)
+						return true
 					},
-				});
+				})
 			}
-			break;
+			break
 		default:
-			break;
+			break
 	}
 }
 
-const showDrawer = ref(false);
-const showDropdown = ref(false);
-const x = ref(0);
-const y = ref(0);
+const showDrawer = ref(false)
+const showDropdown = ref(false)
+const x = ref(0)
+const y = ref(0)
 async function handleContextMenu(e: MouseEvent, asset: Asset) {
-	e.preventDefault();
-	showDropdown.value = false;
-	await nextTick();
-	CurrentAsset.value = asset;
-	showDropdown.value = true;
-	x.value = e.clientX + 8;
-	y.value = e.clientY + 8;
+	e.preventDefault()
+	showDropdown.value = false
+	await nextTick()
+	CurrentAsset.value = asset
+	showDropdown.value = true
+	x.value = e.clientX + 8
+	y.value = e.clientY + 8
 }
 function dropdownOnClickOutside(e: MouseEvent) {
-	const isRightClick = e.button === 2;
-	if (!isRightClick) showDropdown.value = false;
+	const isRightClick = e.button === 2
+	if (!isRightClick) showDropdown.value = false
 }
 async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 	if (e.ctrlKey || e.metaKey) {
-		e.preventDefault();
-		window.open(asset.publicURL);
-		return;
+		e.preventDefault()
+		window.open(asset.publicURL)
+		return
 	}
 	if (asset.type === "folder") {
-		if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`);
-		path.value = `${path.value}/${asset.name}`;
-		return;
+		if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`)
+		path.value = `${path.value}/${asset.name}`
+		return
 	}
-	CurrentAsset.value = asset;
-	showDrawer.value = true;
+	CurrentAsset.value = asset
+	showDrawer.value = true
 }
-const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
 </script>
 
 

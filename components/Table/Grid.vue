@@ -119,6 +119,8 @@ function getTableUrl(slug: string) {
 	return `/${route.params.database || (database.value?.slug === 'inicontent' && route.path === '/admin') ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`;
 }
 
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+
 const createTable = async () => {
 	if (newTableSlug.value) {
 		const bodyContent: string = toRaw(newTableSlug.value);
@@ -128,6 +130,9 @@ const createTable = async () => {
 			`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
+				params: {
+					locale: Language.value
+				}
 			},
 		);
 

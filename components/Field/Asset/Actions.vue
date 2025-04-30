@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IconArrowRight, IconBooks, IconLink } from "@tabler/icons-vue";
+import { IconArrowRight, IconBooks, IconLink } from "@tabler/icons-vue"
 import {
 	NButton,
 	NIcon,
@@ -60,7 +60,7 @@ import {
 	NInputGroup,
 	NPopover,
 	NTooltip,
-} from "naive-ui";
+} from "naive-ui"
 
 defineTranslation({
 	ar: {
@@ -68,24 +68,25 @@ defineTranslation({
 		gallery: "قائمة الملفات",
 		assetLink: "رابط الملف",
 	},
-});
+})
 
 const { field, callback } = defineProps<{
-	field: Field;
-	callback: CallableFunction;
-}>();
+	field: Field
+	callback: CallableFunction
+}>()
 
-const showAssetsModal = defineModel<boolean>("showAssetsModal");
+const showAssetsModal = defineModel<boolean>("showAssetsModal")
 
-const importInputRef = ref<InstanceType<typeof NInput> | null>(null);
+const importInputRef = ref<InstanceType<typeof NInput> | null>(null)
 
-const appConfig = useAppConfig();
-const assetURLs = ref();
-const database = useState<Database>("database");
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const appConfig = useAppConfig()
+const assetURLs = ref()
+const database = useState<Database>("database")
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 async function importAsset() {
-	Loading.value.import = true;
+	Loading.value.import = true
 	const data = await $fetch<apiResponse<Asset | Asset[]>>(
 		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.params ? `?${field.params}` : ""}`,
 		{
@@ -94,13 +95,16 @@ async function importAsset() {
 				"Content-Type": "text/plain; charset=utf-8",
 			},
 			body: assetURLs.value,
+			params: {
+				locale: Language.value,
+			},
 		},
-	);
+	)
 	if (data.result) {
-		assetURLs.value = undefined;
-		callback(data.result);
-		importInputRef.value?.clear();
-	} else window.$message.error(data.message);
-	Loading.value.import = false;
+		assetURLs.value = undefined
+		callback(data.result)
+		importInputRef.value?.clear()
+	} else window.$message.error(data.message)
+	Loading.value.import = false
 }
 </script>

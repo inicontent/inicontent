@@ -77,22 +77,24 @@ const SignupColumns: Schema = database.value?.tables
 				field.key,
 			),
 	) ?? [
-	{
-		key: "username",
-		type: "string",
-		required: true,
-	},
-	{
-		key: "email",
-		type: "email",
-		required: true,
-	},
-	{
-		key: "password",
-		type: "password",
-		required: true,
-	},
-];
+		{
+			key: "username",
+			type: "string",
+			required: true,
+		},
+		{
+			key: "email",
+			type: "email",
+			required: true,
+		},
+		{
+			key: "password",
+			type: "password",
+			required: true,
+		},
+	];
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 async function SignupSubmit(e: Event) {
 	e.preventDefault();
@@ -106,6 +108,9 @@ async function SignupSubmit(e: Event) {
 					{
 						method: "POST",
 						body: bodyContent,
+						params: {
+							locale: Language.value
+						}
 					},
 				);
 				if (data.result) {
@@ -131,6 +136,9 @@ async function SigninSubmit(e: Event) {
 					{
 						method: "PUT",
 						body: bodyContent,
+						params: {
+							locale: Language.value
+						}
 					},
 				);
 				if (data.result?.id) {

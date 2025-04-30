@@ -5,8 +5,7 @@
 				isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
 				:collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
 				<NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
-					@mouseover="() => isMenuOpen = true" @mouseleave="() => isMenuOpen = false" :options="menuOptions"
-					:defaultValue :watch-props="['defaultValue']" accordion />
+					:options="menuOptions" :defaultValue :watch-props="['defaultValue']" accordion />
 			</NLayoutSider>
 			<NLayoutContent id="pageContent" position="absolute" :content-style="{
 				padding: $device.isMobile
@@ -15,7 +14,7 @@
 						? '24px 88px 24px 24px'
 						: '24px 24px 24px 88px',
 			}" :native-scrollbar="false">
-				<div v-if="isMenuOpen" @click="isMenuOpen = false"
+				<div v-if="isMenuOpen" @mouseover="() => isMenuOpen = false"
 					style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
 				</div>
 				<slot></slot>
@@ -25,12 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-	IconEye,
-	IconPlus,
-	IconSettings,
-	IconWebhook,
-} from "@tabler/icons-vue";
+import { IconEye, IconPlus, IconSettings, IconWebhook } from "@tabler/icons-vue"
 import {
 	NIcon,
 	NLayout,
@@ -38,10 +32,10 @@ import {
 	NLayoutSider,
 	NMenu,
 	type MenuOption,
-} from "naive-ui";
-import { NuxtLink } from "#components";
+} from "naive-ui"
+import { NuxtLink } from "#components"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 defineTranslation({
 	ar: {
@@ -67,29 +61,29 @@ defineTranslation({
 		clipboardItemIsNotCorrect: "العنصر في الحافظة غير صحيح",
 		clipboardEmpty: "الحافظة فارغة",
 	},
-});
+})
 
 onBeforeUpdate(() => {
-	clearNuxtState("isMenuOpen");
-});
+	clearNuxtState("isMenuOpen")
+})
 
-const appConfig = useAppConfig();
-const route = useRoute();
-const user = useState<User>("user");
-const table = useState<Table>("table");
-const isMenuOpen = useState("isMenuOpen", () => false);
-const database = useState<Database>("database");
+const appConfig = useAppConfig()
+const route = useRoute()
+const user = useState<User>("user")
+const table = useState<Table>("table")
+const isMenuOpen = useState("isMenuOpen", () => false)
+const database = useState<Database>("database")
 const defaultValue = computed(() => {
 	const lastPathInRoute = decodeURIComponent(
 		route.path.split("/").filter(Boolean).at(-1) ?? "",
-	);
+	)
 	if (table.value?.slug) {
 		if (lastPathInRoute && lastPathInRoute !== table.value.slug)
-			return `${table.value.slug}-${lastPathInRoute}`;
-		return table.value.slug;
+			return `${table.value.slug}-${lastPathInRoute}`
+		return table.value.slug
 	}
-	return decodeURI(lastPathInRoute?.toString() ?? "");
-});
+	return decodeURI(lastPathInRoute?.toString() ?? "")
+})
 
 function renderSingleItem(table: Table): MenuOption {
 	const itemChildren = [
@@ -149,7 +143,7 @@ function renderSingleItem(table: Table): MenuOption {
 				user.value?.role === appConfig.idOne &&
 				!["sessions", "translations"].includes(table.slug),
 		},
-	];
+	]
 	return {
 		label: () =>
 			h(
@@ -161,29 +155,24 @@ function renderSingleItem(table: Table): MenuOption {
 			),
 		key: itemChildren.length ? `${table.slug}Group` : table.slug,
 		icon: () => getTableIcon(table),
-		children: itemChildren.length ? itemChildren : undefined,
-	};
+		children: [
+			{
+				type: "group",
+				label: t(table.slug),
+				key: table.slug,
+				children: itemChildren.length ? itemChildren : undefined,
+			},
+		],
+	}
 }
 
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-				...(database.value.tables
-					.filter(
-						({ slug, allowedMethods }) =>
-							![
-								"users",
-								"sessions",
-								"assets",
-								"translations",
-								"pages",
-								"components",
-							].includes(slug) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-				database.value.tables.filter(
+			...(database.value.tables
+				.filter(
 					({ slug, allowedMethods }) =>
-						[
+						![
 							"users",
 							"sessions",
 							"assets",
@@ -191,21 +180,33 @@ const menuOptions = computed(() =>
 							"pages",
 							"components",
 						].includes(slug) && allowedMethods?.includes("r"),
-				).length
-					? {
-							key: "divider-1",
-							type: "divider",
-						}
-					: undefined,
-				...(database.value.tables
-					?.filter(
-						({ slug, allowedMethods }) =>
-							["users", "sessions", "assets", "pages", "components"].includes(
-								slug,
-							) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-			].filter((item) => item) as MenuOption[])
+				)
+				.map(renderSingleItem) ?? []),
+			database.value.tables.filter(
+				({ slug, allowedMethods }) =>
+					[
+						"users",
+						"sessions",
+						"assets",
+						"translations",
+						"pages",
+						"components",
+					].includes(slug) && allowedMethods?.includes("r"),
+			).length
+				? {
+					key: "divider-1",
+					type: "divider",
+				}
+				: undefined,
+			...(database.value.tables
+				?.filter(
+					({ slug, allowedMethods }) =>
+						["users", "sessions", "assets", "pages", "components"].includes(
+							slug,
+						) && allowedMethods?.includes("r"),
+				)
+				.map(renderSingleItem) ?? []),
+		].filter((item) => item) as MenuOption[])
 		: [],
-);
+)
 </script>

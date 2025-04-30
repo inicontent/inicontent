@@ -4,7 +4,8 @@
 			@update:show="(show) => onUpdateShow(index, show)" :width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'">
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
+			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
@@ -120,8 +121,7 @@ const toggleDrawerWidth = (index: number) => {
 	else
 		drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%";
 	nextTick(() => {
-		if (drawer.width)
-			defaultWidth.value = drawer.width;
+		if (drawer.width) defaultWidth.value = drawer.width;
 	});
 };
 

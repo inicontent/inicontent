@@ -12,7 +12,7 @@
 					<template #icon>
 						<NButton circle secondary size="tiny" @click.prevent="() => {
 							if (!isMobile)
-								openDrawer(table?.slug as string)
+								openDrawer(table?.slug as string, undefined, { [field?.key as string]: column.key === UNSET_KEY ? '' : column.key })
 							else
 								navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table?.slug}/new`);
 						}">
@@ -64,10 +64,10 @@
 </template>
 
 <script lang="ts" setup>
-import { IconDots, IconPlus } from "@tabler/icons-vue";
-import type { pageInfo } from "inibase";
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
-import Inison from "inison";
+import { IconDots, IconPlus } from "@tabler/icons-vue"
+import type { pageInfo } from "inibase"
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
+import Inison from "inison"
 import {
 	NButton,
 	NCard,
@@ -76,47 +76,45 @@ import {
 	NPopover,
 	NSkeleton,
 	NTag,
-} from "naive-ui";
-import type { TagColor } from "naive-ui/es/tag/src/common-props";
-import Draggable from "vuedraggable";
+} from "naive-ui"
+import type { TagColor } from "naive-ui/es/tag/src/common-props"
+import Draggable from "vuedraggable"
 
 defineTranslation({
 	ar: {
 		unspecified: "غير محددة",
 	},
-});
+})
 
 const props = defineProps<{
-	slots: any;
-}>();
+	slots: any
+}>()
 
 type columnType = {
-	label: string;
-	key: string | number;
-	items: Item[];
-	pagination?: pageInfo;
-	color?: TagColor;
-	loading?: boolean;
-};
+	label: string
+	key: string | number
+	items: Item[]
+	pagination?: pageInfo
+	color?: TagColor
+	loading?: boolean
+}
 
-const data = defineModel<columnType[]>("data");
+const data = defineModel<columnType[]>("data")
 
-const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
+const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
 
-const appConfig = useAppConfig();
-const { isMobile } = useDevice();
+const appConfig = useAppConfig()
+const { isMobile } = useDevice()
 
-const database = useState<Database>("database");
-const table = useState<Table>("table");
-const field = table.value?.schema?.find(
-	({ id }) => id === table.value?.groupBy,
-);
+const database = useState<Database>("database")
+const table = useState<Table>("table")
+const field = table.value?.schema?.find(({ id }) => id === table.value?.groupBy)
 
-const UNSET_KEY = "__unset__"; // internal sentinel
+const UNSET_KEY = "__unset__" // internal sentinel
 
 const visibleColumns = computed(() =>
 	data.value?.filter((c) => c.key !== UNSET_KEY || c.items.length > 0),
-);
+)
 
 if (field?.options) {
 	if (isArrayOfArrays(field.options))
@@ -124,30 +122,30 @@ if (field?.options) {
 			([label]) => ({
 				label: t(label),
 				key: label,
-				color: getColorObj(label, field?.options),
+				color: getColorObj(label, field.options as [string | number, string][]),
 				items: [],
 				loading: true,
 			}),
-		);
+		)
 	else if (isArrayOfObjects(field.options))
 		data.value = (
 			field.options as {
-				label: string;
-				value: string | number;
+				label: string
+				value: string | number
 			}[]
 		).map(({ label, value }) => ({
 			label: t(label),
 			key: value,
 			items: [],
 			loading: true,
-		}));
+		}))
 	else
 		data.value = (field.options as string[]).map((value) => ({
 			label: t(value),
 			key: value,
 			items: [],
 			loading: true,
-		}));
+		}))
 
 	const unsetColumn: columnType = {
 		label: t("unspecified"),
@@ -155,10 +153,10 @@ if (field?.options) {
 		items: [],
 		loading: true,
 		color: { color: "#f0f0f0", textColor: "#606060" } satisfies TagColor,
-	};
+	}
 
 	nextTick(() => {
-		(data.value as columnType[]).push(unsetColumn);
+		;(data.value as columnType[]).push(unsetColumn)
 
 		nextTick(async () => {
 			for await (const column of data.value as columnType[]) {
@@ -171,65 +169,71 @@ if (field?.options) {
 							}),
 						},
 					},
-				);
-				column.items = _data.result || [];
-				column.pagination = _data.options;
-				column.loading = false;
+				)
+				column.items = _data.result || []
+				column.pagination = _data.options
+				column.loading = false
 			}
-		});
-	});
+		})
+	})
 }
 
 const calculateHeight = computed(() => {
-	const baseHeight = 50; // Base height for skeleton
-	const lineHeight = 20; // Height per line
-	const maxHeight = 200; // Maximum height limit
+	const baseHeight = 50 // Base height for skeleton
+	const lineHeight = 20 // Height per line
+	const maxHeight = 200 // Maximum height limit
 
-	const lineBreaks = (table.value?.label?.match(/\n/g) || []).length;
-	const calculatedHeight = baseHeight + lineBreaks * lineHeight;
-	return `${Math.min(calculatedHeight, maxHeight)}px`;
-});
+	const lineBreaks = (table.value?.label?.match(/\n/g) || []).length
+	const calculatedHeight = baseHeight + lineBreaks * lineHeight
+	return `${Math.min(calculatedHeight, maxHeight)}px`
+})
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const onItemDrop = async (evt: any, targetColumn: columnType) => {
-	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return;
+	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return
 
-	const card = evt.added.element as Item;
-	const fromKey = (card as any)[field.key]; // old column key
-	const toKey = targetColumn.key; // new column key
-	if (fromKey === toKey) return;
+	const card = evt.added.element as Item
+	const fromKey = card[field.key] // old column key
+	const toKey = targetColumn.key // new column key
+	if (fromKey === toKey) return
 
 	/* optimistic UI ------------------------------------------------- */
-	(card as any)[field.key] = toKey;
-	adjustTotals(fromKey, toKey);
+	card[field.key] = toKey
+	adjustTotals(fromKey, toKey)
 
 	/* API call ------------------------------------------------------ */
-	try {
-		await $fetch(
-			`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/${card.id}`,
-			{
-				method: "PUT",
-				body: { [field.key]: toKey === UNSET_KEY ? "" : toKey },
+	const _data = await $fetch<apiResponse>(
+		`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/${card.id}`,
+		{
+			method: "PUT",
+			body: { [field.key]: toKey === UNSET_KEY ? "" : toKey },
+			params: {
+				return: false,
+				locale: Language.value,
 			},
-		);
-	} catch (err) {
+		},
+	)
+	if (!_data.result) {
 		/* rollback ---------------------------------------------------- */
-		(card as any)[field.key] = fromKey;
-		adjustTotals(toKey, fromKey); // undo the optimistic counts
+		card[field.key] = fromKey
+		adjustTotals(toKey, fromKey) // undo the optimistic counts
 
 		/* put card back visually */
-		const origin = data.value.find((c) => c.key === fromKey);
-		if (origin) {
-			origin.items.push(targetColumn.items.splice(evt.added.newIndex, 1)[0]);
-		}
+		const origin = data.value.find((c) => c.key === fromKey)
+		if (origin)
+			origin.items.push(targetColumn.items.splice(evt.added.newIndex, 1)[0])
+
+		window.$message.error(_data.message)
 	}
-};
+}
 
 function adjustTotals(from: any, to: any) {
-	const dec = data.value?.find((c) => c.key === from);
-	const inc = data.value?.find((c) => c.key === to);
+	const dec = data.value?.find((c) => c.key === from)
+	const inc = data.value?.find((c) => c.key === to)
 	if (dec?.pagination)
-		dec.pagination.total = Math.max((dec.pagination.total ?? 1) - 1, 0);
-	if (inc?.pagination) inc.pagination.total = (inc.pagination.total ?? 0) + 1;
+		dec.pagination.total = Math.max((dec.pagination.total ?? 1) - 1, 0)
+	if (inc?.pagination) inc.pagination.total = (inc.pagination.total ?? 0) + 1
 }
 </script>
 
@@ -256,9 +260,5 @@ function adjustTotals(from: any, to: any) {
 
 .kanban-card {
 	min-height: 300px;
-}
-
-.ghost {
-	opacity: 0.4;
 }
 </style>
