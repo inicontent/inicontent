@@ -9,46 +9,49 @@
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
 				<NFlex align="center" id="navbarActions" style="flex-direction: row-reverse;">
-					<NButtonGroup id="navbarExtraButtons">
-						<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
-							@select="toolsDropdownOnSelect" trigger="click">
-							<NTooltip :delay="500">
-								<template #trigger>
-									<NButton round>
-										<template #icon>
-											<NIcon>
-												<IconTools />
-											</NIcon>
-										</template>
-									</NButton>
-								</template>
-								{{ t("tools") }}
-							</NTooltip>
-						</NDropdown>
+					<slot name="navbarActions">
+						<NButtonGroup id="navbarExtraButtons">
+							<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
+								@select="toolsDropdownOnSelect" trigger="click">
+								<NTooltip :delay="500">
+									<template #trigger>
+										<NButton round>
+											<template #icon>
+												<NIcon>
+													<IconTools />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("tools") }}
+								</NTooltip>
+							</NDropdown>
 
-						<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
-							size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
-							<NTooltip placement="top" :delay="500">
-								<template #trigger>
-									<NButton round :disabled="!table.schema" tag="a"
-										:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
-										@click.prevent="() => {
-											if (!isMobile)
-												openDrawer(table.slug)
-											else
-												navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
-										}">
-										<template #icon>
-											<NIcon>
-												<IconPlus />
-											</NIcon>
-										</template>
-									</NButton>
-								</template>
-								{{ t("newItem") }}
-							</NTooltip>
-						</NDropdown>
-					</NButtonGroup>
+							<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
+								size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
+								<NTooltip placement="top" :delay="500">
+									<template #trigger>
+										<NButton round :disabled="!table.schema" tag="a"
+											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+											@click.prevent="() => {
+												if (!isMobile)
+													openDrawer(table.slug)
+												else
+													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
+											}">
+											<template #icon>
+												<NIcon>
+													<IconPlus />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("newItem") }}
+								</NTooltip>
+							</NDropdown>
+							<slot name="navbarExtraButtons"></slot>
+						</NButtonGroup>
+					</slot>
 				</NFlex>
 			</template>
 			<slot name="default" :data>
@@ -146,73 +149,73 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(IconEye)),
-								),
-						},
-					)
+					NButton,
+					{
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(IconEye)),
+							),
+					},
+				)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault()
-								if (!isMobile)
-									openDrawer(
-										table.value?.slug as string,
-										row.id,
-										structuredClone(toRaw(row)),
-									)
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									)
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault()
+							if (!isMobile)
+								openDrawer(
+									table.value?.slug as string,
+									row.id,
+									structuredClone(toRaw(row)),
+								)
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+								)
 						},
-						{ icon: () => h(NIcon, () => h(IconPencil)) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(IconPencil)) },
+				)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => deleteItem(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () => h(NIcon, () => h(IconTrash)),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => deleteItem(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () => h(NIcon, () => h(IconTrash)),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	)
@@ -280,6 +283,9 @@ defineTranslation({
 		an_export_job_is_done: "عملية التصدير إنتهت",
 		table: "جدول",
 		kanban: "كانبان",
+		small: "صغير",
+		medium: "متوسط",
+		large: "كبير",
 	},
 })
 
@@ -381,7 +387,32 @@ const toolsDropdownOptions = computed(() => [
 				icon: () => h(NIcon, () => h(IconTable)),
 				label: t("table"),
 				key: "viewTable",
-				disabled: !table.value.displayAs,
+				children: [
+					{
+						icon: () => "S",
+						label: t("small"),
+						key: "tableSizeS",
+						disabled:
+							!table.value.displayAs &&
+							tablesConfig.value[table.value.slug]?.size === "small",
+					},
+					{
+						icon: () => "M",
+						label: t("medium"),
+						key: "tableSizeM",
+						disabled:
+							!table.value.displayAs &&
+							!tablesConfig.value[table.value.slug]?.size,
+					},
+					{
+						icon: () => "L",
+						label: t("large"),
+						key: "tableSizeL",
+						disabled:
+							!table.value.displayAs &&
+							tablesConfig.value[table.value.slug]?.size === "large",
+					},
+				],
 			},
 			{
 				icon: () => h(NIcon, () => h(IconLayoutKanbanFilled)),
@@ -424,7 +455,10 @@ async function toolsDropdownOnSelect(
 		| "exportCurrentData"
 		| "exportAllData"
 		| "viewTable"
-		| "viewKanban",
+		| "viewKanban"
+		| "tableSizeS"
+		| "tableSizeM"
+		| "tableSizeL",
 ) {
 	switch (value) {
 		case "exportAllData": {
@@ -442,13 +476,22 @@ async function toolsDropdownOnSelect(
 			})
 			break
 		}
+		case "tableSizeS":
+		case "tableSizeM":
+		case "tableSizeL":
 		case "viewTable":
 		case "viewKanban": {
-			data.value = undefined
 			const displayAs = value === "viewKanban" ? "kanban" : undefined
 			if (!tablesConfig.value[table.value.slug])
 				tablesConfig.value[table.value.slug] = {}
 			tablesConfig.value[table.value.slug].view = displayAs
+			if (value.startsWith("tableSize"))
+				tablesConfig.value[table.value.slug].size = value.endsWith("S")
+					? "small"
+					: value.endsWith("L")
+						? "large"
+						: undefined
+			else data.value = undefined
 			table.value.displayAs = displayAs
 			break
 		}

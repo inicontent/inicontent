@@ -207,6 +207,7 @@ declare global {
 		{
 			columns?: string[]
 			view?: "kanban" | "table"
+			size?: "small" | "medium" | "large"
 		}
 	>
 }

@@ -87,8 +87,8 @@ import {
 	IconPencil,
 	IconSettings,
 	IconSun,
-} from "@tabler/icons-vue";
-import { isValidID } from "inibase/utils";
+} from "@tabler/icons-vue"
+import { isValidID } from "inibase/utils"
 import {
 	NAvatar,
 	NBreadcrumb,
@@ -106,9 +106,9 @@ import {
 	NTag,
 	NText,
 	NTooltip,
-} from "naive-ui";
+} from "naive-ui"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 defineTranslation({
 	ar: {
 		settings: "الإعدادات",
@@ -147,6 +147,7 @@ defineTranslation({
 		primaryColor: "اللون الأساسي",
 		primaryDarkColor: "اللون الأساسي في الوضع الليلي",
 		deletedSuccessfully: "تم الحذف بنجاح",
+		auth: "تسجيل الدخول",
 		units: {
 			kB: "ك.ب",
 			MB: "م.ب",
@@ -154,25 +155,25 @@ defineTranslation({
 			TB: "ت.ب",
 		},
 	},
-});
+})
 
 // onBeforeUpdate(() => {
 //     clearNuxtState("translations");
 // })
 
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
-const appConfig = useAppConfig();
-const route = useRoute();
-const user = useState<User | undefined>("user");
-const database = useState<Database>("database");
-const fromPath = useCookie("from");
+const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
+const appConfig = useAppConfig()
+const route = useRoute()
+const user = useState<User | undefined>("user")
+const database = useState<Database>("database")
+const fromPath = useCookie("from")
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",
 	primaryColorHover: "#F7A42A",
 	primaryColorPressed: "#E19421",
 	primaryColorSuppl: "#CB7900",
-}));
+}))
 
 const showBreadcrumb = computed(
 	() =>
@@ -180,7 +181,7 @@ const showBreadcrumb = computed(
 		!["index", "auth", "dashboard", "database", "database-auth"].includes(
 			String(route.matched[0].name),
 		),
-);
+)
 
 const breadcrumbArray = computed(() =>
 	route.path
@@ -189,7 +190,7 @@ const breadcrumbArray = computed(() =>
 		.slice(
 			!["database", "admin"].includes(route.matched[0].name as string) ? 1 : 0,
 		),
-);
+)
 function breadCrumbItemLink(index: number) {
 	if (index === 0) {
 		return (
@@ -201,7 +202,7 @@ function breadCrumbItemLink(index: number) {
 						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
-		);
+		)
 	}
 	return route.path
 		.split("/")
@@ -209,14 +210,14 @@ function breadCrumbItemLink(index: number) {
 			0,
 			index + (String(route.matched[0].name)?.startsWith("database") ? 3 : 2),
 		)
-		.join("/");
+		.join("/")
 }
-const itemLabel = useState("itemLabel");
+const itemLabel = useState("itemLabel")
 function breadCrumbItemLabel(index: number) {
-	const childRoute = breadcrumbArray.value[index];
+	const childRoute = breadcrumbArray.value[index]
 	return isValidID(childRoute) && itemLabel.value
 		? itemLabel.value
-		: t(childRoute === "admin" ? "adminPanel" : childRoute);
+		: t(childRoute === "admin" ? "adminPanel" : childRoute)
 }
 const userDropdownOptions = [
 	{
@@ -285,7 +286,7 @@ const userDropdownOptions = [
 		show: !user.value?.id,
 		disabled: (route.name as string | undefined)?.endsWith("-auth"),
 	},
-];
+]
 
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
@@ -294,29 +295,29 @@ async function onSelectUserDropdown(v: string) {
 				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
 					(user.value as User).id
 				}/edit`,
-			);
-			break;
+			)
+			break
 		case "settings":
 			navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
-			);
-			break;
+			)
+			break
 		case "theme":
-			Theme.value = Theme.value === "dark" ? "light" : "dark";
-			break;
+			Theme.value = Theme.value === "dark" ? "light" : "dark"
+			break
 		case "logout":
 			await $fetch(
 				`${appConfig.apiBase}${
 					database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{},
-			);
-			fromPath.value = undefined;
-			user.value = undefined;
+			)
+			fromPath.value = undefined
+			user.value = undefined
 			await navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/auth`,
-			);
-			break;
+			)
+			break
 	}
 }
 const languagesDropdownOptions = database.value.secondaryLanguages?.map(
@@ -324,5 +325,5 @@ const languagesDropdownOptions = database.value.secondaryLanguages?.map(
 		label: t(`languages.${language}`),
 		key: language,
 	}),
-);
+)
 </script>

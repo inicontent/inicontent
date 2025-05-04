@@ -49,7 +49,7 @@
 		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
 			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" />
+			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
 		<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
 			:show="showDropdown" :onClickoutside @select="handleSelect" />
 	</div>
