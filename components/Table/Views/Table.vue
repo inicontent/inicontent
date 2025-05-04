@@ -49,7 +49,8 @@
 		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
 			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
+			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll"
+			:size="tablesConfig[table.slug]?.size" />
 		<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
 			:show="showDropdown" :onClickoutside @select="handleSelect" />
 	</div>
@@ -499,7 +500,13 @@ async function setColumns() {
 						getField(field).icon(),
 						h(NPerformantEllipsis, () => t(field.key)),
 					]),
-				width: t(field.key).length > 10 ? t(field.key).length * 14 : 150,
+				width:
+					t(field.key).replaceAll(" ", "").length > 10
+						? t(field.key).replaceAll(" ", "").length *
+							(tablesConfig.value[table.value.slug]?.size === "small" ? 10 : 13)
+						: tablesConfig.value[table.value.slug]?.size === "small"
+							? 100
+							: 130,
 				key: field.key,
 				sorter: !!_data.value?.result,
 				ellipsis: {
@@ -563,12 +570,13 @@ async function setColumns() {
 					{
 						title: t("actions"),
 						align: "center",
-						width: isMobile
-							? 100
-							: 150 +
-								(props.slots.itemExtraButtons
-									? (props.slots.itemExtraButtons as any)().length * 20
-									: 0),
+						width:
+							isMobile || tablesConfig.value[table.value.slug]?.size === "small"
+								? 100
+								: 150 +
+									(props.slots.itemExtraButtons
+										? (props.slots.itemExtraButtons as any)().length * 20
+										: 0),
 						key: "actions",
 						fixed: "right",
 						render: (row: any) =>
@@ -578,7 +586,8 @@ async function setColumns() {
 										props.slots.itemExtraActions
 											? props.slots.itemExtraActions(row)
 											: undefined,
-										isMobile
+										isMobile ||
+										tablesConfig.value[table.value.slug]?.size === "small"
 											? h(
 													NPopover,
 													{
@@ -614,6 +623,7 @@ async function setColumns() {
 		40,
 	)
 }
-watch(() => tablesConfig.value, setColumns, { deep: true })
-watch([Language, checkedRowKeys, _data], setColumns)
+watch([Language, checkedRowKeys, _data, tablesConfig], setColumns, {
+	deep: true,
+})
 </script>
