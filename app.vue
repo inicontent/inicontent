@@ -5,16 +5,15 @@
 </template>
 
 <script lang="ts" setup>
-import { useOsTheme } from "naive-ui";
+import { useOsTheme } from "naive-ui"
 
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
-const osThemeRef = useOsTheme();
-if (!Theme.value) Theme.value = osThemeRef.value ?? "light";
+const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
+const osThemeRef = useOsTheme()
+if (!Theme.value) Theme.value = osThemeRef.value ?? "light"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-if (!Language.value) Language.value = "en";
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-watch(Theme, setThemeConfig);
+watch(Theme, setThemeConfig)
 
 useHead({
 	bodyAttrs: {
@@ -25,5 +24,5 @@ useHead({
 			].join(" "),
 		),
 	},
-});
+})
 </script>

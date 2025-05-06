@@ -105,7 +105,11 @@ const screenHalf = window.screen.width / 2;
 
 function onUpdateShow(index: number, show: boolean) {
 	Drawers.value[index].show = show;
-	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 200);
+	if (!show) setTimeout(() => {
+		console.log("dawers before length", Drawers.value.length);
+		Drawers.value.splice(index, 1)
+		console.log("dawers after length", Drawers.value.length);
+	}, 200);
 }
 
 async function onAfterUpdateCreate(index: number) {

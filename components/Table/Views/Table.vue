@@ -113,7 +113,14 @@ const deleteItem = inject("deleteItem") as (
 	ids?: string | string[],
 ) => Promise<apiResponse<Item[]>>
 
-const isSlotEmpty = inject("isSlotEmpty") as (slotName: string) => boolean
+const isSlotSet = inject("isSlotSet") as (slotName: string) => boolean
+
+function isSlotEmpty(slotName: string): boolean {
+	// Check if all nodes are comments or have undefined children
+	return ((props.slots[slotName] as any)({}) as VNode[])?.every(
+		(vnode) => vnode.type === Comment || vnode.children === undefined,
+	)
+}
 
 const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
@@ -230,7 +237,7 @@ const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		columns: table.value?.columns,
+		// columns: table.value?.columns,
 		sort: Object.keys(sort.value).length ? sort.value : "",
 	}),
 )
@@ -564,7 +571,7 @@ async function setColumns() {
 									field,
 								}),
 			})) ?? []),
-		...(isSlotEmpty("itemActions")
+		...(isSlotSet("itemActions") && isSlotEmpty("itemActions")
 			? []
 			: [
 					{
@@ -574,16 +581,18 @@ async function setColumns() {
 							isMobile || tablesConfig.value[table.value.slug]?.size === "small"
 								? 100
 								: 150 +
-									(props.slots.itemExtraButtons
+									(isSlotSet("itemExtraActions") &&
+									!isSlotEmpty("itemExtraActions")
 										? (props.slots.itemExtraButtons as any)().length * 20
 										: 0),
 						key: "actions",
 						fixed: "right",
 						render: (row: any) =>
-							props.slots.itemActions
+							isSlotSet("itemActions") && !isSlotEmpty("itemActions")
 								? props.slots.itemActions(row)
 								: [
-										props.slots.itemExtraActions
+										isSlotSet("itemExtraActions") &&
+										!isSlotEmpty("itemExtraActions")
 											? props.slots.itemExtraActions(row)
 											: undefined,
 										isMobile ||

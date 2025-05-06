@@ -139,8 +139,8 @@ declare global {
 		primaryColor?: string
 		primaryDarkColor?: string
 		domains?: string[]
-		primaryLanguage: string
-		secondaryLanguages?: string[]
+		primaryLanguage: LanguagesType
+		secondaryLanguages?: LanguagesType[]
 		roles?: { name: string; id: string }[]
 		tables?: Table[]
 		size?: number

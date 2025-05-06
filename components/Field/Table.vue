@@ -32,7 +32,6 @@ import { IconPlus } from "@tabler/icons-vue"
 import type { pageInfo } from "inibase"
 
 const { field } = defineProps<{ field: Field }>()
-
 const modelValue = defineModel<Item | Item[]>()
 const options = ref<tableOption[]>()
 const database = useState<Database>("database")
@@ -118,8 +117,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-		getPath(table.schema ?? [], columnID),
-	)
+			getPath(table.schema ?? [], columnID),
+		)
 	: field.searchIn
 
 const pagination = ref<pageInfo>()
@@ -133,14 +132,14 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true
 	const searchOrObject =
 		searchValue &&
-			(typeof searchValue !== "string" || searchValue.trim().length) &&
-			searchIn
+		(typeof searchValue !== "string" || searchValue.trim().length) &&
+		searchIn
 			? (searchIn.reduce((result, searchKey) => {
-				Object.assign(result, {
-					[searchKey]: `*%${searchValue}%`,
-				})
-				return result
-			}, {}) ?? false)
+					Object.assign(result, {
+						[searchKey]: `*%${searchValue}%`,
+					})
+					return result
+				}, {}) ?? false)
 			: false
 
 	let _where = ""
@@ -212,7 +211,7 @@ async function handleScroll(e: Event) {
 		return
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-		currentTarget.scrollHeight &&
+			currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true

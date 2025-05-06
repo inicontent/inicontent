@@ -343,378 +343,242 @@
 
 <script setup lang="ts">
 import {
-  NButton,
-  NButtonGroup,
-  NRadio,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-  NPopselect,
-  NScrollbar,
-  NFlex,
-  NPopover,
-  NDivider,
-  NInputGroup,
-  NInput,
-  NTooltip,
-} from "naive-ui";
+	NButton,
+	NButtonGroup,
+	NRadio,
+	NDrawer,
+	NDrawerContent,
+	NIcon,
+	NPopselect,
+	NScrollbar,
+	NFlex,
+	NPopover,
+	NDivider,
+	NInputGroup,
+	NInput,
+	NTooltip,
+} from "naive-ui"
 import {
-  IconBold,
-  IconItalic,
-  IconUnderline,
-  IconStrikethrough,
-  IconHeading,
-  IconColorPicker,
-  IconHighlight,
-  IconListNumbers,
-  IconList,
-  IconTextSize,
-  IconUpload,
-  IconLink,
-  IconArrowRight,
-  IconAlignLeft,
-  IconAlignCenter,
-  IconAlignRight,
-  IconArrowBackUp,
-  IconArrowForwardUp,
-  IconLinkOff,
-  IconAlignJustified,
-  IconTextWrap,
-  IconTablePlus,
-  IconTableMinus,
-  IconColumnInsertLeft,
-  IconColumnInsertRight,
-  IconColumnRemove,
-  IconRowInsertBottom,
-  IconRowInsertTop,
-  IconRowRemove,
-  IconTableRow,
-} from "@tabler/icons-vue";
-import TiptapTextStyle from "@tiptap/extension-text-style";
-import { Color as TiptapColor } from "@tiptap/extension-color";
-import TiptapHighlight from "@tiptap/extension-highlight";
-import TiptapUnderline from "@tiptap/extension-underline";
-import TiptapTextAlign from "@tiptap/extension-text-align";
-import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
+	IconBold,
+	IconItalic,
+	IconUnderline,
+	IconStrikethrough,
+	IconHeading,
+	IconColorPicker,
+	IconHighlight,
+	IconListNumbers,
+	IconList,
+	IconTextSize,
+	IconUpload,
+	IconLink,
+	IconArrowRight,
+	IconAlignLeft,
+	IconAlignCenter,
+	IconAlignRight,
+	IconArrowBackUp,
+	IconArrowForwardUp,
+	IconLinkOff,
+	IconAlignJustified,
+	IconTextWrap,
+	IconTablePlus,
+	IconTableMinus,
+	IconColumnInsertLeft,
+	IconColumnInsertRight,
+	IconColumnRemove,
+	IconRowInsertBottom,
+	IconRowInsertTop,
+	IconRowRemove,
+	IconTableRow,
+} from "@tabler/icons-vue"
+import TiptapTextStyle from "@tiptap/extension-text-style"
+import { Color as TiptapColor } from "@tiptap/extension-color"
+import TiptapHighlight from "@tiptap/extension-highlight"
+import TiptapUnderline from "@tiptap/extension-underline"
+import TiptapTextAlign from "@tiptap/extension-text-align"
+import Link from "@tiptap/extension-link"
+import Table from "@tiptap/extension-table"
+import TableCell from "@tiptap/extension-table-cell"
+import TableHeader from "@tiptap/extension-table-header"
+import TableRow from "@tiptap/extension-table-row"
 
-const modelValue = defineModel<string>();
+const modelValue = defineModel<string>()
 
-const showAssetsModal = ref(false);
-const fontColor = ref();
-const fontBgColor = ref();
-const url = ref();
+const showAssetsModal = ref(false)
+const fontColor = ref()
+const fontBgColor = ref()
+const url = ref()
 
 function renderHeadingOption({ value }: { value: number }) {
-  return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
+	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`)
 }
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const headingOptions = [
-  {
-    value: 1,
-  },
-  {
-    value: 2,
-  },
-  {
-    value: 3,
-  },
-  {
-    value: 4,
-  },
-  {
-    value: 5,
-  },
-  {
-    value: 6,
-  },
-];
+	{
+		value: 1,
+	},
+	{
+		value: 2,
+	},
+	{
+		value: 3,
+	},
+	{
+		value: 4,
+	},
+	{
+		value: 5,
+	},
+	{
+		value: 6,
+	},
+]
 
 function renderFontSizeOption({ value }: { value: number }) {
-  return h("span", { style: { fontSize: `${value}px` } }, "Paragraph");
+	return h("span", { style: { fontSize: `${value}px` } }, "Paragraph")
 }
 
 const fontSizeOptions = [
-  {
-    value: 8,
-  },
-  {
-    value: 10,
-  },
-  {
-    value: 12,
-  },
-  {
-    value: 14,
-  },
-  {
-    value: 16,
-  },
-  {
-    value: 18,
-  },
-  {
-    value: 20,
-  },
-  {
-    value: 24,
-  },
-  {
-    value: 30,
-  },
-  {
-    value: 48,
-  },
-  {
-    value: 60,
-  },
-  {
-    value: 72,
-  },
-];
+	{
+		value: 8,
+	},
+	{
+		value: 10,
+	},
+	{
+		value: 12,
+	},
+	{
+		value: 14,
+	},
+	{
+		value: 16,
+	},
+	{
+		value: 18,
+	},
+	{
+		value: 20,
+	},
+	{
+		value: 24,
+	},
+	{
+		value: 30,
+	},
+	{
+		value: 48,
+	},
+	{
+		value: 60,
+	},
+	{
+		value: 72,
+	},
+]
 
 function setLink() {
-  // cancelled
-  if (url.value === null) {
-    return;
-  }
+	// cancelled
+	if (url.value === null) {
+		return
+	}
 
-  // empty
-  if (url.value === "") {
-    editor.value?.chain().focus().extendMarkRange("link").unsetLink().run();
+	// empty
+	if (url.value === "") {
+		editor.value?.chain().focus().extendMarkRange("link").unsetLink().run()
 
-    return;
-  }
+		return
+	}
 
-  // update link
-  editor.value
-    ?.chain()
-    .focus()
-    .extendMarkRange("link")
-    .setLink({ href: url.value })
-    .run();
+	// update link
+	editor.value
+		?.chain()
+		.focus()
+		.extendMarkRange("link")
+		.setLink({ href: url.value })
+		.run()
 }
 
 declare module "@tiptap/core" {
-  interface Commands<ReturnType> {
-    fontSize: {
-      /**
-       * Set the font size
-       */
-      setFontSize: (size: string) => ReturnType;
-      /**
-       * Unset the font size
-       */
-      unsetFontSize: () => ReturnType;
-    };
-  }
+	interface Commands<ReturnType> {
+		fontSize: {
+			/**
+			 * Set the font size
+			 */
+			setFontSize: (size: string) => ReturnType
+			/**
+			 * Unset the font size
+			 */
+			unsetFontSize: () => ReturnType
+		}
+	}
 }
 
 const TextStyleExtended = TiptapTextStyle.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      fontSize: {
-        default: null,
-        parseHTML: (element) => element.style.fontSize.replace("px", ""),
-        renderHTML: (attributes) => {
-          if (!attributes.fontSize) {
-            return {};
-          }
-          return {
-            style: `font-size: ${attributes.fontSize}px`,
-          };
-        },
-      },
-    };
-  },
+	addAttributes() {
+		return {
+			...this.parent?.(),
+			fontSize: {
+				default: null,
+				parseHTML: (element) => element.style.fontSize.replace("px", ""),
+				renderHTML: (attributes) => {
+					if (!attributes.fontSize) {
+						return {}
+					}
+					return {
+						style: `font-size: ${attributes.fontSize}px`,
+					}
+				},
+			},
+		}
+	},
 
-  addCommands() {
-    return {
-      ...this.parent?.(),
-      setFontSize:
-        (fontSize) =>
-          ({ commands }) => {
-            return commands.setMark(this.name, { fontSize: fontSize });
-          },
-      unsetFontSize:
-        () =>
-          ({ chain }) => {
-            return chain()
-              .setMark(this.name, { fontSize: null })
-              .removeEmptyTextStyle()
-              .run();
-          },
-    };
-  },
-});
+	addCommands() {
+		return {
+			...this.parent?.(),
+			setFontSize:
+				(fontSize) =>
+				({ commands }) => {
+					return commands.setMark(this.name, { fontSize: fontSize })
+				},
+			unsetFontSize:
+				() =>
+				({ chain }) => {
+					return chain()
+						.setMark(this.name, { fontSize: null })
+						.removeEmptyTextStyle()
+						.run()
+				},
+		}
+	},
+})
 
 const editor = useEditor({
-  content: modelValue.value,
-  extensions: [
-    TiptapStarterKit,
-    TiptapImage,
-    TiptapColor,
-    TextStyleExtended,
-    TiptapHighlight,
-    TiptapUnderline,
-    TiptapTextAlign,
-    Link,
-    Table.configure({
-      resizable: true,
-    }),
-    TableRow,
-    TableHeader,
-    TableCell,
-  ],
-  onUpdate: ({ editor }) => {
-    const content = editor.getHTML();
-    modelValue.value = content;
-  },
-});
+	content: modelValue.value,
+	extensions: [
+		TiptapStarterKit,
+		TiptapImage,
+		TiptapColor,
+		TextStyleExtended,
+		TiptapHighlight,
+		TiptapUnderline,
+		TiptapTextAlign,
+		Link,
+		Table.configure({
+			resizable: true,
+		}),
+		TableRow,
+		TableHeader,
+		TableCell,
+	],
+	onUpdate: ({ editor }) => {
+		const content = editor.getHTML()
+		modelValue.value = content
+	},
+})
 
 onBeforeUnmount(() => {
-  unref(editor)?.destroy();
-});
-
-const primaryColor = useState<ThemeConfig>("ThemeConfig").value.primaryColor;
+	unref(editor)?.destroy()
+})
 </script>
-
-<style scoped>
-:global(.ProseMirror-focused),
-:global(.ProseMirror:focus) {
-  outline: none;
-}
-
-.externalRichEditor {
-  max-height: 250px;
-  border-radius: 3px;
-  background-color: transparent;
-  border: 1px solid rgb(224, 224, 230);
-  transition: all .3s cubic-bezier(.4, 0, .2, 1);
-
-}
-
-
-:global(.light .internalRichEditor) {
-  --gray-1: rgba(61, 37, 20, 0.05);
-  --gray-2: rgba(61, 37, 20, 0.08);
-  --gray-3: rgba(61, 37, 20, 0.12);
-}
-
-:global(.dark .internalRichEditor) {
-  --gray-1: rgba(255, 255, 255, 0.14);
-  --gray-2: rgba(255, 255, 255, 0.08);
-  --gray-3: rgba(255, 255, 255, 0.35);
-}
-
-:global(.ProseMirror),
-.internalRichEditor {
-  min-height: 100px;
-}
-
-.internalRichEditor {
-  min-height: 100px;
-  padding: 15px;
-  width: 100%;
-}
-
-.externalRichEditor:hover,
-.externalRichEditor:focus {
-  border-color: v-bind(primaryColor);
-}
-
-:global(.dark .externalRichEditor) {
-  border-color: transparent;
-  background-color: rgba(255, 255, 255, 0.1);
-  resize: vertical;
-}
-
-:global(.internalRichEditor a) {
-  color: v-bind(primaryColor);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-:global(.internalRichEditor img) {
-  display: block;
-  height: auto;
-  margin: 1.5rem 0;
-  max-width: 100%;
-}
-
-:global(.internalRichEditor img.ProseMirror-selectednode) {
-  outline: 3px solid v-bind(primaryColor);
-}
-
-
-.internalRichEditor:first-child {
-  margin-top: 0;
-}
-
-:global(.internalRichEditor table) {
-  border-collapse: collapse;
-  margin: 0;
-  overflow: hidden;
-  table-layout: fixed;
-  width: 100%;
-}
-
-:global(.internalRichEditor table td),
-:global(.internalRichEditor table th) {
-  border: 1px solid var(--gray-3);
-  box-sizing: border-box;
-  min-width: 1em;
-  padding: 6px 8px;
-  position: relative;
-  vertical-align: top;
-}
-
-:global(.internalRichEditor table td>*),
-:global(.internalRichEditor table th>*) {
-  margin-bottom: 0;
-}
-
-:global(.internalRichEditor table th) {
-  background-color: var(--gray-1);
-  font-weight: bold;
-  text-align: left;
-}
-
-:global(.internalRichEditor table .selectedCell:after) {
-  background: var(--gray-2);
-  content: "";
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 2;
-}
-
-:global(.internalRichEditor table .column-resize-handle) {
-  background-color: v-bind(primaryColor);
-  bottom: -2px;
-  pointer-events: none;
-  position: absolute;
-  right: -2px;
-  top: 0;
-  width: 4px;
-}
-
-:global(.internalRichEditor .tableWrapper) {
-  margin: 1.5rem 0;
-  overflow-x: auto;
-}
-
-:global(.internalRichEditor .resize-cursor) {
-  cursor: ew-resize;
-  cursor: col-resize;
-}
-</style>
