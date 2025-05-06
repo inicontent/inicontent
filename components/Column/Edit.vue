@@ -13,35 +13,37 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfObjects } from "inibase/utils";
-import { NSpin, NTooltip } from "naive-ui";
+import { isArrayOfObjects } from "inibase/utils"
+import { NSpin, NTooltip } from "naive-ui"
 
 const { field, loading, ...props } = defineProps<{
-	field: Field;
-	loading?: boolean;
-	modelValue?: any;
-}>();
+	field: Field
+	loading?: boolean
+	modelValue?: any
+}>()
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue"])
+
+const modelValue = computed({
+	get: () => props.modelValue,
+	set: (newValue) => emit("update:modelValue", newValue),
+})
 
 const isEditable =
-	!isArrayOfObjects(field.children) && !field.table && field.type !== "html";
+	!isArrayOfObjects(field.children) &&
+	(!field.table || !modelValue.value) &&
+	field.type !== "html"
 
 defineTranslation({
 	ar: {
 		clickToEdit: "اضغط للتعديل",
 	},
-});
+})
 
-const modelValue = computed({
-	get: () => props.modelValue,
-	set: (newValue) => emit("update:modelValue", newValue),
-});
+const tooltipShow = ref(false)
 
-const tooltipShow = ref(false);
-
-const inputValue = ref(modelValue.value);
-const inputRef = ref();
+const inputValue = ref(modelValue.value)
+const inputRef = ref()
 const inputField = {
 	...field,
 	subType: field.subType
@@ -56,44 +58,45 @@ const inputField = {
 		ref: inputRef,
 		onBlur: handleChange,
 	},
-};
-const isEdit = ref(false);
+}
+const isEdit = ref(false)
 
 function onClick(e: MouseEvent) {
-	if (!isEditable) return;
-	e.preventDefault();
-	e.stopPropagation();
-	if (isArrayOfObjects(field.children) || field.table) return;
-	isEdit.value = true;
-	nextTick(() => {
+	if (!isEditable) return
+
+	e.preventDefault()
+	e.stopPropagation()
+
+	isEdit.value = true
+
+	setTimeout(() => {
 		if (inputRef.value) {
-			if (inputRef.value.focusInput) return inputRef.value.focusInput();
-			inputRef.value.focus();
+			if (inputRef.value.focusInput) return inputRef.value.focusInput()
+			inputRef.value.focus()
 		}
-	});
+	}, 100)
 }
 
 function handleChange() {
-	if (inputValue.value !== modelValue.value)
-		modelValue.value = inputValue.value;
-	isEdit.value = false;
-	tooltipShow.value = false;
+	if (inputValue.value !== modelValue.value) modelValue.value = inputValue.value
+	isEdit.value = false
+	tooltipShow.value = false
 }
 
 onMounted(() => {
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === "Escape") {
-			isEdit.value = false;
-			tooltipShow.value = false;
+			isEdit.value = false
+			tooltipShow.value = false
 		}
 	}
 
-	window.addEventListener("keydown", handleKeydown);
+	window.addEventListener("keydown", handleKeydown)
 
 	onUnmounted(() => {
-		window.removeEventListener("keydown", handleKeydown);
-	});
-});
+		window.removeEventListener("keydown", handleKeydown)
+	})
+})
 </script>
 
 <style scoped>

@@ -3,8 +3,7 @@
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="Loading[`options_${field.key}`]"
 			:multiple="!!field.isArray" :consistent-menu-width="false" max-tag-count="responsive"
-			@update:show="(show) => show && loadOptions()" :reset-menu-on-options-change="false" @scroll="handleScroll"
-			@search="debouncedLoadOptions" v-bind="field.inputProps
+			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
 					: field.inputProps
@@ -259,4 +258,11 @@ if (
 		},
 	)
 }
+
+if (
+	field.inputProps &&
+	typeof field.inputProps === "object" &&
+	field.inputProps.show
+)
+	loadOptions()
 </script>

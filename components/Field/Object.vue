@@ -9,7 +9,10 @@
 				</NDropdown>
 			</template>
 			<div class="collapseContentPadding">
-				<FieldS :schema="(field.children as Schema)" v-model="localModelValue" />
+				<NFlex>
+					<LazyField v-for="field of (field.children as Schema)" :field="field"
+						v-model="localModelValue[field.key]" />
+				</NFlex>
 			</div>
 		</NCollapseItem>
 	</NCollapse>
@@ -24,6 +27,7 @@ import {
 	NCollapseItem,
 	NDropdown,
 	NIcon,
+	NFlex,
 	type DropdownOption,
 } from "naive-ui";
 

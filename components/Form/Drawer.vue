@@ -70,7 +70,7 @@ import {
 	IconChevronRight,
 	IconDeviceFloppy,
 	IconExternalLink,
-} from "@tabler/icons-vue";
+} from "@tabler/icons-vue"
 import {
 	NButton,
 	NDrawer,
@@ -79,69 +79,65 @@ import {
 	NFlex,
 	NText,
 	NSpin,
-} from "naive-ui";
+} from "naive-ui"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const database = useState<Database>("database")
 
 defineSlots<{
 	default({
 		onAfterCreate,
 		onAfterUpdate,
-	}: { onAfterCreate: () => any; onAfterUpdate: () => any }): {
-		onAfterCreate: () => any;
-		onAfterUpdate: () => any;
-	};
-}>();
+	}: {
+		onAfterCreate: () => any
+		onAfterUpdate: () => any
+	}): {
+		onAfterCreate: () => any
+		onAfterUpdate: () => any
+	}
+}>()
 
-const Drawers = useState<DrawerRef>("drawers", () => []);
+const Drawers = useState<DrawerRef>("drawers", () => [])
 const defaultWidth = useCookie<number | string>("width", {
 	sameSite: true,
-});
-const formRefs = ref<FormRef[]>([]);
+})
+const formRefs = ref<FormRef[]>([])
 
-const screenHalf = window.screen.width / 2;
+const screenHalf = window.screen.width / 2
 
 function onUpdateShow(index: number, show: boolean) {
-	Drawers.value[index].show = show;
-	if (!show) setTimeout(() => {
-		console.log("dawers before length", Drawers.value.length);
-		Drawers.value.splice(index, 1)
-		console.log("dawers after length", Drawers.value.length);
-	}, 200);
+	Drawers.value[index].show = show
+	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 100)
 }
 
 async function onAfterUpdateCreate(index: number) {
-	Drawers.value[index].show = false;
-	setTimeout(() => Drawers.value.splice(index, 1), 100);
-	await refreshNuxtData();
-	return Drawers.value[index];
+	onUpdateShow(index, false)
+	await refreshNuxtData()
 }
 
 const toggleDrawerWidth = (index: number) => {
-	const drawer = Drawers.value[index];
-	if (typeof drawer.width === "string") drawer.width = 251;
-	else
-		drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%";
+	const drawer = Drawers.value[index]
+	if (typeof drawer.width === "string") drawer.width = 251
+	else drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%"
 	nextTick(() => {
-		if (drawer.width) defaultWidth.value = drawer.width;
-	});
-};
+		if (drawer.width) defaultWidth.value = drawer.width
+	})
+}
 
-const itemsLabels = ref<string[]>([]);
+const itemsLabels = ref<string[]>([])
 watchEffect(() => {
 	for (let index = 0; index < Drawers.value.length; index++) {
-		const drawer = Drawers.value[index];
+		const drawer = Drawers.value[index]
 		const table = drawer.table
 			? database.value.tables?.find(({ slug }) => slug === drawer.table)
-			: undefined;
+			: undefined
 
 		if (table) {
-			itemsLabels.value[index] = renderLabel(table, drawer.data);
-			continue;
+			itemsLabels.value[index] = renderLabel(table, drawer.data)
+			continue
 		}
-		itemsLabels.value[index] = "--";
+		itemsLabels.value[index] = "--"
 	}
-});
+})
 </script>
