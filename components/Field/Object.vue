@@ -9,7 +9,7 @@
 				</NDropdown>
 			</template>
 			<div class="collapseContentPadding">
-				<FieldS :schema="(field.children as Schema)" v-model="modelValue" />
+				<FieldS :schema="(field.children as Schema)" v-model="localModelValue" />
 			</div>
 		</NCollapseItem>
 	</NCollapse>
