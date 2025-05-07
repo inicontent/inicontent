@@ -13,7 +13,8 @@
 									{{ t('created') }} {{ t("newItem") }}:
 									<NButtonGroup>
 										<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
-											size="small" type="primary">{{ renderLabel(table, item) }}
+											size="small" type="primary">
+											{{ renderLabel(table, item, `[${t('removed')}]`) }}
 										</NButton>
 									</NButtonGroup>
 								</template>
@@ -106,6 +107,7 @@ defineTranslation({
 		add: "إضافة عنصر",
 		updated: "قام بتعديل",
 		deleted: "قام بحذف",
+		removed: "محذوف",
 		created: "قام بإنشاء",
 		anItem: "عنصر",
 		asFollow: "كالأتي",

@@ -209,7 +209,7 @@ const pagination = reactive({
 			page: currentPage !== 1 ? currentPage : undefined,
 		}
 		router.push({ query: Query })
-		await refresh()
+		await refreshNuxtData()
 	},
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize))
@@ -230,7 +230,7 @@ const pagination = reactive({
 			router.push({
 				query: Query
 			})
-			await refresh()
+			await refreshNuxtData()
 		}
 	},
 })
@@ -248,7 +248,7 @@ const queryOptions = computed(() =>
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const { data: _data, refresh } = await useLazyFetch<apiResponse<Item[]>>(
+const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
 	{
 		query: {
@@ -416,7 +416,6 @@ async function setColumns() {
 							icon: () => h(NIcon, () => h(IconTrash)),
 							onSelect: async () => {
 								await deleteItem(checkedRowKeys.value)
-								await refresh()
 								checkedRowKeys.value = []
 							},
 						},
@@ -428,7 +427,6 @@ async function setColumns() {
 							icon: () => h(NIcon, () => h(IconTableMinus)),
 							onSelect: async () => {
 								await deleteItem()
-								await refresh()
 								checkedRowKeys.value = []
 							},
 						},
