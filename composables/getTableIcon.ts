@@ -1,4 +1,4 @@
-import { DataIcon } from "#components";
+import { DataIcon } from "#components"
 import {
 	IconFolders,
 	IconLanguage,
@@ -6,25 +6,25 @@ import {
 	IconFingerprint,
 	IconAppWindow,
 	IconTournament,
-} from "@tabler/icons-vue";
-import { NIcon } from "naive-ui";
+} from "@tabler/icons-vue"
+import { NIcon } from "naive-ui"
 
 export default function (table: Table) {
-	if (table.icon) return h(DataIcon, { value: table.icon });
+	if (table.icon) return h(DataIcon, { value: table.icon })
 	switch (table.slug) {
 		case "assets":
-			return h(NIcon, () => h(IconFolders));
+			return h(NIcon, () => h(IconFolders))
 		case "translations":
-			return h(NIcon, () => h(IconLanguage));
+			return h(NIcon, () => h(IconLanguage))
 		case "users":
-			return h(NIcon, () => h(IconUsers));
+			return h(NIcon, () => h(IconUsers))
 		case "sessions":
-			return h(NIcon, () => h(IconFingerprint));
+			return h(NIcon, () => h(IconFingerprint))
 		case "pages":
-			return h(NIcon, () => h(IconAppWindow));
-		case "components":
-			return h(NIcon, () => h(IconTournament));
+			return h(NIcon, () => h(IconAppWindow))
+		case "blocks":
+			return h(NIcon, () => h(IconTournament))
 		default:
-			return h("span", t(table.slug).charAt(0).toUpperCase());
+			return h("span", t(table.slug).charAt(0).toUpperCase())
 	}
 }

@@ -1560,7 +1560,7 @@ export default [
 	"compass-off",
 	"compass",
 	"components-off",
-	"components",
+	"blocks",
 	"cone-2",
 	"cone-off",
 	"cone-plus",
@@ -4856,4 +4856,4 @@ export default [
 	"zoom",
 	"zzz-off",
 	"zzz",
-] as string[];
+] as string[]

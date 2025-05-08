@@ -178,7 +178,7 @@ const menuOptions = computed(() =>
 							"assets",
 							"translations",
 							"pages",
-							"components",
+							"blocks",
 						].includes(slug) && allowedMethods?.includes("r"),
 				)
 				.map(renderSingleItem) ?? []),
@@ -190,7 +190,7 @@ const menuOptions = computed(() =>
 						"assets",
 						"translations",
 						"pages",
-						"components",
+						"blocks",
 					].includes(slug) && allowedMethods?.includes("r"),
 			).length
 				? {
@@ -201,7 +201,7 @@ const menuOptions = computed(() =>
 			...(database.value.tables
 				?.filter(
 					({ slug, allowedMethods }) =>
-						["users", "sessions", "assets", "pages", "components"].includes(
+						["users", "sessions", "assets", "pages", "blocks"].includes(
 							slug,
 						) && allowedMethods?.includes("r"),
 				)

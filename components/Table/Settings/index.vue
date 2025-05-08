@@ -274,7 +274,7 @@ async function updateTable() {
 }
 
 const isUnDeletable = computed(() =>
-	["users", "pages", "components"].includes(table.value?.slug),
+	["users", "pages", "blocks"].includes(table.value?.slug),
 )
 
 async function deleteTable() {
@@ -419,7 +419,7 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "slug",
 		type: "string",
 		required: true,
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -430,7 +430,7 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "icon",
 		type: "string",
 		subType: "icon",
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -447,7 +447,7 @@ const generalSettingsSchema = reactive<Schema>([
 			{ label: t("list"), value: "list", disabled: true },
 			{ label: t("cards"), value: "cards", disabled: true },
 		],
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -457,7 +457,7 @@ const generalSettingsSchema = reactive<Schema>([
 	{
 		key: "compression",
 		type: "boolean",
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -467,7 +467,7 @@ const generalSettingsSchema = reactive<Schema>([
 	{
 		key: "cache",
 		type: "boolean",
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -478,7 +478,7 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "prepend",
 		type: "boolean",
 		description: "recentItemsAppearAtTheTop",
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}
@@ -489,7 +489,7 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "decodeID",
 		type: "boolean",
 		description: "disableIdEncryption",
-		inputProps: ["users", "pages", "components"].includes(table.value?.slug)
+		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
 					disabled: true,
 				}

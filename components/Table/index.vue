@@ -540,16 +540,3 @@ useHead({
 	],
 })
 </script>
-
-<style scoped>
-#tableCard {
-	background: none;
-}
-
-@media (max-width: 768px) {
-	:global(#tableCard > .n-card-header) {
-		flex-direction: column;
-		gap: 8px;
-	}
-}
-</style>

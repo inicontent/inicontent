@@ -407,6 +407,17 @@ body {
   cursor: col-resize;
 }
 
+#tableCard {
+	background: none;
+}
+
+@media (max-width: 768px) {
+	#tableCard > .n-card-header {
+		flex-direction: column;
+		gap: 8px;
+	}
+}
+
 @media print {
 	* {
 		max-height: unset !important;

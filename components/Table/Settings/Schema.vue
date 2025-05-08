@@ -320,8 +320,8 @@ function isDisabled(key?: string) {
 			case "pages":
 				defaultFields.push("slug", "content", "seo")
 				break
-			case "components":
-				defaultFields.push("component", "config", "hideOn")
+			case "blocks":
+				defaultFields.push("name", "config", "hideOn")
 				break
 			default:
 				break
