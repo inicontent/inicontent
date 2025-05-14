@@ -8,7 +8,6 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
-import Inison from "inison"
 import { NForm, type FormInst } from "naive-ui"
 
 const props = defineProps<{
@@ -55,33 +54,36 @@ function countItems(items: Schema): number {
 	}, 0)
 }
 
-function mergeItems(existing: Schema, updated: Schema): Schema {
-	const updatedMap = new Map(updated.map((item) => [item.id, item]))
+const mergeItems = (existing: Schema, updated: Schema): Schema => (existing
+	.map((existedItem) => {
+		if (!existedItem.id || (typeof existedItem.id === 'string' && existedItem.id.startsWith("temp-"))) return existedItem
 
-	return existing
-		.map((item) => {
-			const updatedItem = updatedMap.get(item.id)
-			if (!updatedItem) return item // Safety check
+		const updatedItem = updated.find((item) => item.id === existedItem.id);
 
-			return {
-				...item, // Preserve extra properties
-				...updatedItem, // Update existing properties
-				children:
-					item.children &&
-					isArrayOfObjects(item.children) &&
-					updatedItem.children &&
-					isArrayOfObjects(updatedItem.children)
-						? mergeItems(
-								(item.children as Schema | undefined) ?? [],
-								(updatedItem.children as Schema | undefined) ?? [],
-							) // Recursively update children
-						: updatedItem.children || item.children,
+		if (!updatedItem) return null
+
+		if (existedItem.children && isArrayOfObjects(existedItem.children)) {
+			if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
+				updatedItem.children = mergeItems(
+					existedItem.children as Schema,
+					updatedItem.children as Schema,
+				)
+			} else if (!updatedItem.children && existedItem.children) {
+				const existedCustomChildren = existedItem.children.filter((child) => !child.id)
+				if (existedCustomChildren.length)
+					updatedItem.children = existedCustomChildren
+				else
+					delete updatedItem.children
 			}
-		})
-		.concat(
-			updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
-		)
-}
+		}
+
+		return { ...updatedItem, ...existedItem }
+	})
+	.filter(Boolean) as Schema)
+	.concat(
+		updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
+	)
+
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 // Fetch schema and data dynamically from the correct endpoint
@@ -109,7 +111,16 @@ async function fetchSchemaAndData() {
 						field.key,
 					),
 			)
-			if (!schema.value) schema.value = filteredSchema
+			if (!schema.value?.length) {
+				if (table.value?.schema)
+					schema.value = mergeItems(table.value.schema, filteredSchema)
+				else {
+					const targetTable = database.value.tables?.find((table) => table.slug === (props.table ?? route.params.table));
+					if (targetTable?.schema)
+						schema.value = mergeItems(targetTable.schema, filteredSchema);
+					else schema.value = filteredSchema;
+				}
+			}
 			else if (countItems(schema.value) !== countItems(filteredSchema))
 				schema.value = mergeItems(schema.value, filteredSchema)
 		}
@@ -170,8 +181,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -202,8 +212,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",

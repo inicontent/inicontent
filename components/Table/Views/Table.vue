@@ -212,7 +212,7 @@ const pagination = reactive({
 		await refreshNuxtData()
 	},
 	async onUpdatePageSize(pageSize: number) {
-		const OLD_pageSize = structuredClone(toRaw(pagination.pageSize))
+		const OLD_pageSize = toRaw(pagination.pageSize)
 		pagination.pageSize = pageSize
 		let { perPage, page, ...Query }: any = route.query
 		if (pageSize !== 15) {
@@ -241,7 +241,7 @@ const queryOptions = computed(() =>
 	Inison.stringify({
 		page: pagination.page,
 		perPage: pagination.pageSize,
-		// columns: table.value?.columns,
+		columns: table.value?.columns,
 		sort: Object.keys(sort.value).length ? sort.value : "",
 	}),
 )
@@ -512,10 +512,10 @@ async function setColumns() {
 				width:
 					t(field.key).replaceAll(" ", "").length > 10
 						? t(field.key).replaceAll(" ", "").length *
-						(tablesConfig.value[table.value.slug]?.size === "small" ? 10 : 13)
+						(tablesConfig.value[table.value.slug]?.size === "small" ? 10 : 15)
 						: tablesConfig.value[table.value.slug]?.size === "small"
 							? 100
-							: 130,
+							: 150,
 				key: field.key,
 				sorter: !!_data.value?.result,
 				ellipsis: {

@@ -54,7 +54,6 @@ const database = useState<Database>("database");
 watchEffect(() => {
     if (field.value.defaultValue && !modelValue.value)
         modelValue.value = field.value.defaultValue;
-
     if (
         (Array.isArray(field.value.type) && field.value.type.includes("array")) ||
         (typeof field.value.type === "string" && field.value.type === "array")

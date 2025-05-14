@@ -48,6 +48,7 @@ if (error) {
 		default:
 			code.value = "error";
 			message.value = t("internalServerError");
+			console.clear();
 			console.error(error);
 			break;
 	}

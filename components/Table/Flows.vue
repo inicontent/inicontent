@@ -325,6 +325,7 @@ defineTranslation({
 		newCard: "بطاقة جديدة",
 		onRequest: "عند الطلب",
 		onResponse: "عند العرض",
+		condition: "شرط",
 	},
 })
 
@@ -334,13 +335,13 @@ const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
 const table = useState<Table>("table")
-const tableCopy = ref(JSON.parse(JSON.stringify(table.value)))
+const tableCopy = ref<any>(toRaw(table.value))
 const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
 
 async function saveFlow() {
 	Loading.value.updateTable = true
-	const bodyContent = structuredClone(toRaw(tableCopy.value))
+	const bodyContent = toRaw(tableCopy.value)
 
 	// Remove id and replace with value property before sending
 	for (const flowName of flowNames) {
@@ -496,7 +497,7 @@ function generateFlowSelectOptions(
 					result.push(
 						(isObject(_value)
 							? _value
-							: {
+							: Array.isArray(_value) ? { label: _value[0], value: _value[0] } : {
 								label: _value,
 								value: _value,
 							}) as any,

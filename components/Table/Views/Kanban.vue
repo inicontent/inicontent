@@ -24,40 +24,43 @@
 						</NButton>
 					</template>
 				</NTag>
-				<Draggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }" item-key="id"
-					ghost-class="ghost" :sort="false" @move="({ to, from }) => from !== to"
-					@change="e => onItemDrop(e, column)">
-					<template #item="{ element, index }">
-						<NCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
-							<component v-if="props.slots.itemActions" :is="props.slots.itemActions(element)" />
-							<component v-else-if="props.slots.itemExtraActions"
-								:is="props.slots.itemExtraActions(element)" />
-							<NPopover scrollable style="max-height: 240px;border-radius:34px" contentStyle="padding: 0">
-								<template #trigger>
-									<NButton size="tiny" round style="position: absolute;" secondary type="primary">
-										<template #icon>
-											<NIcon>
-												<IconDots />
-											</NIcon>
-										</template>
-									</NButton>
-								</template>
-								<component :is="renderItemButtons(column.items[index])" />
-							</NPopover>
-							<ClientOnly v-if="props.slots.item">
-								<component
-									v-for="(slot, slotIndex) in ([] as VNode[]).concat(props.slots.item(element))"
-									:is="slot" :key="slotIndex" :item="element"></component>
-							</ClientOnly>
-							<template v-else>{{ renderLabel(table, element) }}</template>
-						</NCard>
+				<NScrollbar style="max-height: 350px;">
+					<Draggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }" item-key="id"
+						ghost-class="ghost" :sort="false" @move="({ to, from }) => from !== to"
+						@change="e => onItemDrop(e, column)">
+						<template #item="{ element, index }">
+							<NCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
+								<component v-if="props.slots.itemActions" :is="props.slots.itemActions(element)" />
+								<component v-else-if="props.slots.itemExtraActions"
+									:is="props.slots.itemExtraActions(element)" />
+								<NPopover scrollable style="max-height: 240px;border-radius:34px"
+									contentStyle="padding: 0">
+									<template #trigger>
+										<NButton size="tiny" round style="position: absolute;" secondary type="primary">
+											<template #icon>
+												<NIcon>
+													<IconDots />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									<component :is="renderItemButtons(column.items[index])" />
+								</NPopover>
+								<ClientOnly v-if="props.slots.item">
+									<component
+										v-for="(slot, slotIndex) in ([] as VNode[]).concat(props.slots.item(element))"
+										:is="slot" :key="slotIndex" :item="element"></component>
+								</ClientOnly>
+								<template v-else>{{ renderLabel(table, element) }}</template>
+							</NCard>
+						</template>
+					</Draggable>
+					<template v-if="column.items.length === 0 && column.loading">
+						<NSkeleton :height="calculateHeight" style="border-radius: 8px;margin-bottom: 10px;" />
+						<NSkeleton :height="calculateHeight" style="border-radius: 8px;" />
 					</template>
-				</Draggable>
-				<template v-if="column.items.length === 0 && column.loading">
-					<NSkeleton :height="calculateHeight" style="border-radius: 8px;margin-bottom: 10px;" />
-					<NSkeleton :height="calculateHeight" style="border-radius: 8px;" />
-				</template>
-				<NEmpty v-else-if="column.items.length === 0" style="height: 100%;justify-content: center" />
+					<NEmpty v-else-if="column.items.length === 0" style="height: 100%;justify-content: center" />
+				</NScrollbar>
 			</NCard>
 		</div>
 	</div>
@@ -74,6 +77,7 @@ import {
 	NEmpty,
 	NIcon,
 	NPopover,
+	NScrollbar,
 	NSkeleton,
 	NTag,
 } from "naive-ui"
@@ -156,7 +160,7 @@ if (field?.options) {
 	}
 
 	nextTick(() => {
-		;(data.value as columnType[]).push(unsetColumn)
+		; (data.value as columnType[]).push(unsetColumn)
 
 		nextTick(async () => {
 			for await (const column of data.value as columnType[]) {

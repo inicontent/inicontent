@@ -119,7 +119,7 @@ defineTranslation({
 		logout: "تسجيل الخروج",
 		profile: "تعديل الحساب",
 		sessions: "سِجل الدخول",
-		components: "أجزاء الصفحات",
+		blocks: "أجزاء الصفحات",
 		pages: "الصفحات",
 		users: "المستخدمين",
 		admin: "مدير",

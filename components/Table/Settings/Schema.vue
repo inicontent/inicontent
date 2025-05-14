@@ -357,7 +357,7 @@ const database = useState<Database>("database")
 const table = useState<Table>("table")
 
 function changeFieldType(
-	{ id, key, required, children }: any,
+	{ id, key, required, children, width }: any,
 	newType: string,
 ): any {
 	switch (newType) {
@@ -369,6 +369,7 @@ function changeFieldType(
 				id,
 				key,
 				...(handleSelectedSchemaType(newType) as any),
+				width,
 				required,
 			}
 	}

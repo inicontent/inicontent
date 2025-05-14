@@ -16,7 +16,7 @@
             <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
                 <LazyColumnAsset v-if="detectedFieldType === 'table' && field.table === 'assets'" :value />
                 <LazyColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
-                <LazyColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :value />
+                <LazyColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :field :value />
             </NScrollbar>
             <LazyColumnColor v-else-if="detectedFieldType === 'color'" :value />
             <LazyColumnUrl v-else-if="detectedFieldType === 'url'" :value />
@@ -40,7 +40,7 @@ import { NButton, NText, NListItem, NScrollbar } from "naive-ui";
 const { field, value } = defineProps<{ field: Field; value: any }>();
 
 let detectedFieldType = (field.subType ?? field.type) as
-	| DB_FieldType
-	| CMS_FieldType;
+    | DB_FieldType
+    | CMS_FieldType;
 if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
 </script>

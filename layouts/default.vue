@@ -34,6 +34,7 @@ import {
 	unstableDialogRtl,
 	unstablePaginationRtl,
 	unstableNotificationRtl,
+	unstableStepsRtl,
 	darkTheme,
 	createDiscreteApi,
 	type ConfigProviderProps,
@@ -65,6 +66,7 @@ const rtlStyles: any = [
 	unstableDialogRtl,
 	unstablePaginationRtl,
 	unstableNotificationRtl,
+	unstableStepsRtl
 ]
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
