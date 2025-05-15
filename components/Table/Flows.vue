@@ -361,7 +361,7 @@ async function saveFlow() {
 			}))(bodyContent),
 			params: {
 				locale: Language.value
-			}
+			}, credentials: "include"
 		},
 	)
 

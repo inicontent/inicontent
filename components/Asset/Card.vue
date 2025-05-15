@@ -130,7 +130,7 @@ const table = ref<Table>(parentTable.value);
 if (!parentTable.value || parentTable.value.slug !== "assets")
 	table.value = (
 		await $fetch<apiResponse<Table>>(
-			`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`,
+			`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`, { credentials: "include" }
 		)
 	).result;
 
@@ -188,7 +188,7 @@ const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
 					}),
 					where: where ? Inison.stringify(where) : undefined,
 					locale: Language.value
-				},
+				}, credentials: "include"
 			},
 		),
 	{
@@ -254,7 +254,7 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 			method: "DELETE",
 			params: {
 				locale: Language.value
-			}
+			}, credentials: "include"
 		},
 	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name);

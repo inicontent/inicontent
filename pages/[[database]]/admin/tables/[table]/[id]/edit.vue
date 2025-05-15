@@ -24,7 +24,7 @@ const { data } = await useFetch<Item>(
 				columns: table.value.columns,
 			}),
 		},
-		transform: (input) => input.result,
+		transform: (input) => input.result, credentials: "include"
 	},
 );
 

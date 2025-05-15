@@ -146,7 +146,7 @@ const { data } = await useLazyFetch<apiResponse<Log[]>>(
 		},
 		onResponse() {
 			Loading.value.logs = false
-		},
+		}, credentials: "include"
 	},
 )
 function getTypeFromAction(

@@ -132,7 +132,7 @@ const createTable = async () => {
 				method: "POST",
 				params: {
 					locale: Language.value
-				}
+				}, credentials: "include"
 			},
 		);
 

@@ -184,7 +184,7 @@ async function updateDatabase() {
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
 				{
 					method: "PUT",
-					body: bodyContent,
+					body: bodyContent, credentials: "include"
 				},
 			);
 			if (data.result) {
@@ -206,7 +206,7 @@ async function deleteDatabase() {
 	const data = await $fetch<apiResponse>(
 		`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
 		{
-			method: "DELETE",
+			method: "DELETE", credentials: "include"
 		},
 	);
 	if (data.result) {

@@ -139,14 +139,14 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 			query: {
 				where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
 				locale: Language.value,
-			},
+			}, credentials: "include"
 		},
 	)
 	if (deleteResponse.result) window.$message.success(deleteResponse.message)
 	else window.$message.error(deleteResponse.message)
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, { credentials: "include" }
 		)
 	else await refreshNuxtData()
 
@@ -259,7 +259,7 @@ provide("isSlotSet", isSlotSet)
 
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, { credentials: "include" }
 	)
 
 onBeforeRouteLeave(() => {
@@ -309,6 +309,7 @@ async function jobNotification() {
 				const currentJobProgress = (
 					await $fetch<apiResponse<number>>(
 						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
+						{ credentials: "include" }
 					)
 				).result
 
@@ -463,7 +464,7 @@ async function toolsDropdownOnSelect(
 		case "exportAllData": {
 			await $fetch(
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
-				{ method: "POST" },
+				{ method: "POST", credentials: "include" },
 			)
 			table.value.currentJob = "export"
 			break

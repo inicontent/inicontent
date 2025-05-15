@@ -110,7 +110,7 @@ async function SignupSubmit(e: Event) {
 						body: bodyContent,
 						params: {
 							locale: Language.value
-						}
+						}, credentials: "include",
 					},
 				);
 				if (data.result) {
@@ -138,15 +138,16 @@ async function SigninSubmit(e: Event) {
 						body: bodyContent,
 						params: {
 							locale: Language.value
-						}
+						},
+						credentials: "include",
 					},
 				);
 				if (data.result?.id) {
 					window.$message.success(data.message);
 					user.value = data.result;
 					database.value = (
-						await $fetch<any>(
-							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+						await $fetch<apiResponse<Database>>(
+							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`, { credentials: "include" }
 						)
 					).result;
 					await navigateTo(

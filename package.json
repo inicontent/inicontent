@@ -30,19 +30,19 @@
 		"@fontsource-variable/cairo": "^5.2.5",
 		"@nuxtjs/device": "3.2.4",
 		"@tabler/icons-vue": "^3.31.0",
-		"@tiptap/extension-color": "^2.11.5",
-		"@tiptap/extension-highlight": "^2.11.5",
-		"@tiptap/extension-table": "^2.11.5",
-		"@tiptap/extension-table-cell": "^2.11.5",
-		"@tiptap/extension-table-header": "^2.11.5",
-		"@tiptap/extension-table-row": "^2.11.5",
-		"@tiptap/extension-text-align": "^2.11.5",
-		"@tiptap/extension-underline": "^2.11.5",
-		"inibase": "^1.2.11",
+		"@tiptap/extension-color": "^2.12.0",
+		"@tiptap/extension-highlight": "^2.12.0",
+		"@tiptap/extension-table": "^2.12.0",
+		"@tiptap/extension-table-cell": "^2.12.0",
+		"@tiptap/extension-table-header": "^2.12.0",
+		"@tiptap/extension-table-row": "^2.12.0",
+		"@tiptap/extension-text-align": "^2.12.0",
+		"@tiptap/extension-underline": "^2.12.0",
+		"inibase": "^1.2.14",
 		"inidot": "latest",
 		"inison": "^2.0.1",
 		"naive-ui": "2.41.0",
-		"nuxt": "3.16.2",
+		"nuxt": "3.17.3",
 		"nuxt-tiptap-editor": "2.1.1",
 		"nuxtjs-naive-ui": "^1.0.2",
 		"vuedraggable": "4.1.0"
@@ -50,5 +50,6 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0-beta.1",
 		"lefthook": "^1.11.3"
-	}
+	},
+	"packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
 }

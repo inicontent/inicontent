@@ -23,6 +23,7 @@ export default async function () {
 							original: `[]${Object.keys(unfoundTranslationsState.value).join(",")}`,
 							locale: Language.value,
 						}),
+						credentials: "include",
 					},
 				},
 			)

@@ -269,7 +269,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 			Loading.value.data = false
 			pagination.pageCount = totalPages ?? 0
 			pagination.itemCount = total ?? 0
-		},
+		}, credentials: "include"
 	},
 )
 
@@ -554,7 +554,7 @@ async function setColumns() {
 											params: {
 												return: false,
 												locale: Language.value,
-											},
+											}, credentials: "include"
 										},
 									)
 									if (

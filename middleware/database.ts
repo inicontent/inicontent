@@ -17,6 +17,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 						? to.params.database || appConfig.database
 						: appConfig.database || to.params.database
 				}`,
+				{ credentials: "include" },
 			)
 		).result
 

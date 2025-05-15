@@ -28,6 +28,7 @@ async function loadDrawer(index: number) {
 							}),
 							locale: Language.value,
 						},
+						credentials: "include",
 					},
 				)
 			).result ?? {}),

@@ -171,7 +171,7 @@ if (field?.options) {
 							where: Inison.stringify({
 								[field.key]: column.key === UNSET_KEY ? "" : column.key,
 							}),
-						},
+						}, credentials: "include"
 					},
 				)
 				column.items = _data.result || []
@@ -215,7 +215,7 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 			params: {
 				return: false,
 				locale: Language.value,
-			},
+			}, credentials: "include"
 		},
 	)
 	if (!_data.result) {

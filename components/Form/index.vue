@@ -100,7 +100,7 @@ async function fetchSchemaAndData() {
 				body: bodyContent,
 				params: {
 					locale: Language.value,
-				},
+				}, credentials: "include"
 			},
 		)
 		// Update the schema
@@ -189,7 +189,7 @@ async function UPDATE() {
 					params: {
 						return: false,
 						locale: Language.value,
-					},
+					}, credentials: "include"
 				},
 			)
 			Loading.value.UPDATE = false
@@ -218,7 +218,7 @@ async function DELETE() {
 			method: "DELETE",
 			params: {
 				locale: Language.value,
-			},
+			}, credentials: "include"
 		},
 	)
 	Loading.value.DELETE = false
@@ -254,7 +254,7 @@ async function CREATE() {
 					body: bodyContent,
 					params: {
 						locale: Language.value,
-					},
+					}, credentials: "include"
 				},
 			)
 			Loading.value.CREATE = false
