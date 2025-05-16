@@ -1,4 +1,4 @@
-import { NIcon } from "naive-ui";
+import { NIcon } from "naive-ui"
 import {
 	IconKey,
 	IconNumbers,
@@ -29,21 +29,22 @@ import {
 	IconBoxMultiple,
 	IconObjectScan,
 	IconBrandAirtable,
-} from "@tabler/icons-vue";
-import type { VNodeChild } from "vue";
+	IconMap2,
+} from "@tabler/icons-vue"
+import type { VNodeChild } from "vue"
 
 function renderIcon(icon: Icon) {
-	return () => h(NIcon, () => h(icon));
+	return () => h(NIcon, () => h(icon))
 }
 
 type fieldListOptionType = {
-	type?: string;
-	key: CMS_FieldType | DB_FieldType;
-	label: string;
-	icon: () => VNodeChild;
-	disabled?: boolean;
-	children?: fieldListOptionType[];
-};
+	type?: string
+	key: CMS_FieldType | DB_FieldType
+	label: string
+	icon: () => VNodeChild
+	disabled?: boolean
+	children?: fieldListOptionType[]
+}
 
 export default function fieldsList(): fieldListOptionType[] {
 	defineTranslation({
@@ -77,6 +78,7 @@ export default function fieldsList(): fieldListOptionType[] {
 				multiple: "متعدد",
 				range: "مجال",
 				slider: "شريط",
+				ip: "عنوان IP",
 			},
 		},
 		en: {
@@ -84,7 +86,7 @@ export default function fieldsList(): fieldListOptionType[] {
 				html: "Rich Editor",
 			},
 		},
-	});
+	})
 	return [
 		{
 			label: t("fields.string"),
@@ -153,6 +155,12 @@ export default function fieldsList(): fieldListOptionType[] {
 					label: t("fields.slider"),
 					key: "slider",
 					icon: renderIcon(IconTimelineEvent),
+					disabled: true,
+				},
+				{
+					label: t("fields.ip"),
+					key: "ip",
+					icon: renderIcon(IconMap2),
 					disabled: true,
 				},
 			],
@@ -246,18 +254,18 @@ export default function fieldsList(): fieldListOptionType[] {
 			key: "table",
 			icon: renderIcon(IconTable),
 		},
-	];
+	]
 }
 
 const defaultUnfoundField: fieldListOptionType = {
 	key: "custom",
 	label: "custom",
 	icon: renderIcon(IconQuestionMark),
-};
+}
 
 export const flatFieldsList = fieldsList().flatMap(
 	(field) => field.children || field,
-);
+)
 
 export function getField(field: Field) {
 	if (field.table === "assets")
@@ -265,7 +273,7 @@ export function getField(field: Field) {
 			flatFieldsList.find(
 				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
 			) ?? defaultUnfoundField
-		);
+		)
 	if (field.type === "array") {
 		if (
 			!Array.isArray(field.children) &&
@@ -275,12 +283,12 @@ export function getField(field: Field) {
 				flatFieldsList.find(
 					({ key }) => key === [field.type, field.children].join("-"),
 				) ?? defaultUnfoundField
-			);
+			)
 	}
-	let fieldType = field.subType ?? field.type;
-	if (Array.isArray(fieldType)) fieldType = "multiple";
-	if (!fieldType) return defaultUnfoundField;
+	let fieldType = field.subType ?? field.type
+	if (Array.isArray(fieldType)) fieldType = "multiple"
+	if (!fieldType) return defaultUnfoundField
 	return (
 		flatFieldsList.find(({ key }) => key === fieldType) ?? defaultUnfoundField
-	);
+	)
 }

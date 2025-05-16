@@ -54,33 +54,41 @@ function countItems(items: Schema): number {
 	}, 0)
 }
 
-const mergeItems = (existing: Schema, updated: Schema): Schema => (existing
-	.map((existedItem) => {
-		if (!existedItem.id || (typeof existedItem.id === 'string' && existedItem.id.startsWith("temp-"))) return existedItem
-
-		const updatedItem = updated.find((item) => item.id === existedItem.id);
-
-		if (!updatedItem) return null
-
-		if (existedItem.children && isArrayOfObjects(existedItem.children)) {
-			if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
-				updatedItem.children = mergeItems(
-					existedItem.children as Schema,
-					updatedItem.children as Schema,
+const mergeItems = (existing: Schema, updated: Schema): Schema =>
+	(
+		existing
+			.map((existedItem) => {
+				if (
+					!existedItem.id ||
+					(typeof existedItem.id === "string" &&
+						existedItem.id.startsWith("temp-"))
 				)
-			} else if (!updatedItem.children && existedItem.children) {
-				const existedCustomChildren = existedItem.children.filter((child) => !child.id)
-				if (existedCustomChildren.length)
-					updatedItem.children = existedCustomChildren
-				else
-					delete updatedItem.children
-			}
-		}
+					return existedItem
 
-		return { ...updatedItem, ...existedItem }
-	})
-	.filter(Boolean) as Schema)
-	.concat(
+				const updatedItem = updated.find((item) => item.id === existedItem.id)
+
+				if (!updatedItem) return null
+
+				if (existedItem.children && isArrayOfObjects(existedItem.children)) {
+					if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
+						updatedItem.children = mergeItems(
+							existedItem.children as Schema,
+							updatedItem.children as Schema,
+						)
+					} else if (!updatedItem.children && existedItem.children) {
+						const existedCustomChildren = existedItem.children.filter(
+							(child) => !child.id,
+						)
+						if (existedCustomChildren.length)
+							updatedItem.children = existedCustomChildren
+						else delete updatedItem.children
+					}
+				}
+
+				return { ...updatedItem, ...existedItem }
+			})
+			.filter(Boolean) as Schema
+	).concat(
 		updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
 	)
 
@@ -100,7 +108,8 @@ async function fetchSchemaAndData() {
 				body: bodyContent,
 				params: {
 					locale: Language.value,
-				}, credentials: "include"
+				},
+				credentials: "include",
 			},
 		)
 		// Update the schema
@@ -112,16 +121,17 @@ async function fetchSchemaAndData() {
 					),
 			)
 			if (!schema.value?.length) {
-				if (table.value?.schema)
-					schema.value = mergeItems(table.value.schema, filteredSchema)
-				else {
-					const targetTable = database.value.tables?.find((table) => table.slug === (props.table ?? route.params.table));
+				if (props.table) {
+					const targetTable = database.value.tables?.find(
+						({ slug }) =>
+							slug === (props.table ?? table.value?.slug ?? route.params.table),
+					)
 					if (targetTable?.schema)
-						schema.value = mergeItems(targetTable.schema, filteredSchema);
-					else schema.value = filteredSchema;
-				}
-			}
-			else if (countItems(schema.value) !== countItems(filteredSchema))
+						schema.value = mergeItems(targetTable.schema, filteredSchema)
+					else schema.value = filteredSchema
+				} else if (table.value?.schema)
+					schema.value = mergeItems(table.value.schema, filteredSchema)
+			} else if (countItems(schema.value) !== countItems(filteredSchema))
 				schema.value = mergeItems(schema.value, filteredSchema)
 		}
 
@@ -181,7 +191,8 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${
+					props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -189,7 +200,8 @@ async function UPDATE() {
 					params: {
 						return: false,
 						locale: Language.value,
-					}, credentials: "include"
+					},
+					credentials: "include",
 				},
 			)
 			Loading.value.UPDATE = false
@@ -212,20 +224,24 @@ async function DELETE() {
 
 	Loading.value.DELETE = true
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${
+			props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
 			params: {
 				locale: Language.value,
-			}, credentials: "include"
+			},
+			credentials: "include",
 		},
 	)
 	Loading.value.DELETE = false
 
 	if (data.result) {
 		window.$message.success(data.message)
-		await refreshNuxtData()
+		await refreshNuxtData(
+			`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+		)
 
 		if (props.onAfterDelete) return props.onAfterDelete(data.result)
 
@@ -254,7 +270,8 @@ async function CREATE() {
 					body: bodyContent,
 					params: {
 						locale: Language.value,
-					}, credentials: "include"
+					},
+					credentials: "include",
 				},
 			)
 			Loading.value.CREATE = false
@@ -263,7 +280,9 @@ async function CREATE() {
 				return window.$message.error(data.message)
 
 			window.$message.success(data.message)
-			await refreshNuxtData()
+			await refreshNuxtData(
+				`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+			)
 
 			if (props.onAfterCreate) return props.onAfterCreate(data.result)
 

@@ -209,7 +209,7 @@ const pagination = reactive({
 			page: currentPage !== 1 ? currentPage : undefined,
 		}
 		router.push({ query: Query })
-		await refreshNuxtData()
+		await refreshNuxtData(`${database.value.slug}/${table.value?.slug as string}`)
 	},
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = toRaw(pagination.pageSize)
@@ -230,7 +230,7 @@ const pagination = reactive({
 			router.push({
 				query: Query
 			})
-			await refreshNuxtData()
+			await refreshNuxtData(`${database.value.slug}/${table.value?.slug as string}`)
 		}
 	},
 })

@@ -5,7 +5,7 @@
     </div>
     <div v-else>
         <ColumnRole v-if="detectedFieldType === 'role'" :value />
-        <ColumnId v-else-if="detectedFieldType === 'id'" :value />
+        <ColumnId v-else-if="['id', 'ip'].includes(detectedFieldType)" :value />
         <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
             <ColumnAsset v-if="field.table === 'assets'" :value />
             <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />

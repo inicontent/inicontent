@@ -113,7 +113,9 @@ function onUpdateShow(index: number, show: boolean) {
 
 async function onAfterUpdateCreate(index: number) {
 	onUpdateShow(index, false)
-	await refreshNuxtData()
+	const drawer = Drawers.value[index]
+
+	await refreshNuxtData(`${database.value.slug}/${drawer.table}`)
 }
 
 const toggleDrawerWidth = (index: number) => {

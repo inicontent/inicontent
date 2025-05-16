@@ -148,7 +148,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 		data.value = await $fetch<apiResponse<Item[]>>(
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, { credentials: "include" }
 		)
-	else await refreshNuxtData()
+	else await refreshNuxtData(`${database.value.slug}/${table.value?.slug as string}`)
 
 }
 provide("deleteItem", deleteItem)
@@ -263,7 +263,7 @@ if (isSlotSet("default") && !table.value.displayAs)
 	)
 
 onBeforeRouteLeave(() => {
-	clearNuxtState("drawer")
+	clearNuxtState("drawer");
 })
 
 defineTranslation({

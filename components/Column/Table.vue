@@ -13,23 +13,24 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex, NButton } from "naive-ui";
+import { NFlex, NButton } from "naive-ui"
 
-const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>();
-const route = useRoute();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
-const table = database.value.tables?.find(({ slug }) => slug === field.table);
+const { field, value } = defineProps<{ field: Field; value: Item | Item[] }>()
+const route = useRoute()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const database = useState<Database>("database")
+const table = database.value.tables?.find(({ slug }) => slug === field.table)
 
-const { isMobile } = useDevice();
+const { isMobile } = useDevice()
 
 async function handleClick(item: Item) {
 	if (item.id && field.table) {
-		if (!isMobile) openDrawer(field.table, item.id);
+		if (!isMobile) openDrawer(field.table, item.id)
 		else
 			await navigateTo(
 				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/${field.table}/${item.id}/edit`,
-			);
+				{ open: { target: "_blank" } },
+			)
 	}
 }
 </script>

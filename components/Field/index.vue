@@ -1,5 +1,5 @@
 <template>
-    <LazyFieldText v-if="['string', 'text', 'id', 'multiple'].includes(detectedFieldType)" v-model="modelValue"
+    <LazyFieldText v-if="['string', 'text', 'id', 'ip', 'multiple'].includes(detectedFieldType)" v-model="modelValue"
         :field />
     <LazyFieldSelect v-else-if="detectedFieldType === 'role'" v-model="modelValue" :field="{
         ...field, options: database.roles?.map(({ name, id }) => ({

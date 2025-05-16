@@ -1,70 +1,72 @@
 <template>
-	<div v-if="data?.result">
-		<NH3>{{ t('latestActivities') }}</NH3>
-		<NSpin :show="Loading.logs">
-			<NScrollbar v-if="data?.result" style="max-height: 340px">
-				<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
-					<NTimelineItem v-for="log in data.result" :key="log.id"
-						:type="getTypeFromAction(log.actions[0][0])">
-						<template #header>
-							<NFlex align="center" size="small">
-								<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
-								<template v-if="log.actions[0][0] === 'create'">
-									{{ t('created') }} {{ t("newItem") }}:
-									<NButtonGroup>
-										<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
-											size="small" type="primary">
-											{{ renderLabel(table, item, `[${t('removed')}]`) }}
-										</NButton>
-									</NButtonGroup>
-								</template>
-								<template v-else-if="log.actions[0][0] === 'delete'">
-									{{ t('deleted') }} {{ t("anItem") }}
-								</template>
-								<template v-else>
-									{{ t('updated') }}
-									<NButtonGroup>
-										<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
-											size="small" type="primary">{{ renderLabel(table, item) }}
-										</NButton>
-									</NButtonGroup>
-									{{ t('asFollow') }}:
+	<NCollapse :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
+		<NCollapseItem :title="t('latestActivities')" name="logs">
+			<NSpin :show="Loading.logs">
+				<NScrollbar v-if="data?.result" style="max-height: 340px">
+					<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
+						<NTimelineItem v-for="log in data.result" :key="log.id"
+							:type="getTypeFromAction(log.actions[0][0])">
+							<template v-if="!id" #header>
+								<NFlex align="center" size="small">
+									<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
+									<template v-if="log.actions[0][0] === 'create'">
+										{{ t('created') }} {{ t("newItem") }}:
+										<NButtonGroup>
+											<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+												size="small" type="primary">
+												{{ renderLabel(table, item, `[${t('removed')}]`) }}
+											</NButton>
+										</NButtonGroup>
+									</template>
+									<template v-else-if="log.actions[0][0] === 'delete'">
+										{{ t('deleted') }} {{ t("anItem") }}
+									</template>
+									<template v-else>
+										{{ t('updated') }}
+										<NButtonGroup>
+											<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+												size="small" type="primary">{{ renderLabel(table, item) }}
+											</NButton>
+										</NButtonGroup>
+										{{ t('asFollow') }}:
+									</template>
+								</NFlex>
+							</template>
+							<NFlex vertical style="line-height: 2.5;">
+								<template v-for="action in log.actions">
+									<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} <NTag :bordered="false" round
+											type="warning">{{
+												action[1] }}</NTag>
+									</NText>
+									<NText v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }}
+										<NTag :bordered="false" round type="error">{{ action[1] }}</NTag>
+									</NText>
+									<NText v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <NTag
+											:bordered="false" round type="success">{{ action[1] }}</NTag>
+									</NText>
+									<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false"
+											round type="info">{{
+												action[1] }}</NTag> {{ t("as") }} <NTag :bordered="false" round>{{
+												action[2] }}
+										</NTag>
+									</NText>
+									<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false"
+											round type="info">
+											{{ action[1] }}</NTag> {{
+												t("to") }}
+										<NTag :bordered="false" round>{{ action[2] }}</NTag>
+									</NText>
 								</template>
 							</NFlex>
-						</template>
-						<NFlex vertical style="line-height: 2.5;">
-							<template v-for="action in log.actions">
-								<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} <NTag :bordered="false" round
-										type="warning">{{
-											action[1] }}</NTag>
-								</NText>
-								<NText v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }} <NTag
-										:bordered="false" round type="error">{{ action[1] }}</NTag>
-								</NText>
-								<NText v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <NTag
-										:bordered="false" round type="success">{{ action[1] }}</NTag>
-								</NText>
-								<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false" round
-										type="info">{{
-											action[1] }}</NTag> {{ t("as") }} <NTag :bordered="false" round>{{ action[2] }}
-									</NTag>
-								</NText>
-								<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false"
-										round type="info">
-										{{ action[1] }}</NTag> {{
-											t("to") }}
-									<NTag :bordered="false" round>{{ action[2] }}</NTag>
-								</NText>
+							<template #footer>
+								<NTime :time="log.createdAt" type="relative" />
 							</template>
-						</NFlex>
-						<template #footer>
-							<NTime :time="log.createdAt" type="relative" />
-						</template>
-					</NTimelineItem>
-				</NTimeline>
-			</NScrollbar>
-		</NSpin>
-	</div>
+						</NTimelineItem>
+					</NTimeline>
+				</NScrollbar>
+			</NSpin>
+		</NCollapseItem>
+	</NCollapse>
 </template>
 
 <script lang="ts" setup>
@@ -81,6 +83,8 @@ import {
 	NTag,
 	NButtonGroup,
 	NButton,
+	NCollapse,
+	NCollapseItem,
 } from "naive-ui"
 
 type ActionName =
@@ -119,6 +123,10 @@ defineTranslation({
 	},
 })
 
+const { id } = defineProps<{
+	id?: string | number
+}>()
+
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
@@ -128,10 +136,13 @@ const usersTable = database.value.tables?.find(({ slug }) => slug === "users")
 
 const table = useState<Table>("table")
 
-const { data } = await useLazyFetch<apiResponse<Log[]>>(
-	`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
+const isOpen = ref(false)
+
+const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
+	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
 		query: {
+			where: id ? `{item:${id}}` : undefined,
 			options: Inison.stringify({
 				columns: [
 					"*",
@@ -141,14 +152,37 @@ const { data } = await useLazyFetch<apiResponse<Log[]>>(
 			}),
 			locale: Language.value,
 		},
+		immediate: false,
 		onRequest() {
 			Loading.value.logs = true
 		},
-		onResponse() {
+		onResponse({ response }) {
 			Loading.value.logs = false
-		}, credentials: "include"
+		},
+		credentials: "include",
 	},
 )
+
+let firstTime = true
+watch(isOpen, (newValue) => {
+	if (newValue && firstTime) {
+		execute()
+		firstTime = false
+	}
+})
+
+function handleCollapseChange({
+	name,
+	expanded,
+}: {
+	name: string | number
+	expanded: boolean
+}) {
+	if (name === "logs") {
+		isOpen.value = expanded
+	}
+}
+
 function getTypeFromAction(
 	ActionName: ActionName,
 ): "error" | "info" | "success" {

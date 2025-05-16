@@ -83,9 +83,6 @@ const dateLocales = {
 }
 
 const configProviderProps = computed<ConfigProviderProps>(() => ({
-	style: {
-		"--primaryColor": hexToRGB(ThemeConfig.value.primaryColor).join(", "),
-	},
 	dir: Language.value === "ar" ? "rtl" : "ltr",
 	rtl: Language.value === "ar" ? rtlStyles : undefined,
 	theme: Theme.value === "dark" ? darkTheme : undefined,
@@ -149,6 +146,13 @@ onMounted(() => {
 			.querySelector(".printable-direct-parent")
 			?.classList.remove("printable-parent")
 	}
+})
+
+useHead({
+	bodyAttrs: {
+		style: computed(() => `--primaryColor: ${hexToRGB(ThemeConfig.value.primaryColor).join(", ")}`
+		),
+	},
 })
 
 // onMounted(fetchTranslation);
