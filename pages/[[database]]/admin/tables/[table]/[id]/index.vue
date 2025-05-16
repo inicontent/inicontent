@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <NFlex vertical>
         <LazyFormDrawer v-if="!$device.isMobile" />
         <NCard style="height: fit-content">
             <template #header>
@@ -65,7 +65,7 @@
             <LazyDataS v-if="data && table.schema" :value="data" :schema="table.schema" />
         </NCard>
         <LazyTableLogs v-if="table.config?.log && data" :id="data.id" />
-    </div>
+    </NFlex>
 </template>
 
 <script lang="ts" setup>
@@ -76,6 +76,7 @@ import {
 	NIcon,
 	NTooltip,
 	NButtonGroup,
+	NFlex,
 } from "naive-ui"
 import { IconPencil, IconPrinter } from "@tabler/icons-vue"
 import Inison from "inison"

@@ -1,12 +1,15 @@
 <template>
 	<NCollapse :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
-		<NCollapseItem :title="t('latestActivities')" name="logs">
+		<NCollapseItem name="logs">
+			<template #header>
+				<NH4 style="margin: 0">{{ t('latestActivities') }}</NH4>
+			</template>
 			<NSpin :show="Loading.logs">
 				<NScrollbar v-if="data?.result" style="max-height: 340px">
 					<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
 						<NTimelineItem v-for="log in data.result" :key="log.id"
 							:type="getTypeFromAction(log.actions[0][0])">
-							<template v-if="!id" #header>
+							<template #header>
 								<NFlex align="center" size="small">
 									<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
 									<template v-if="log.actions[0][0] === 'create'">
@@ -85,6 +88,7 @@ import {
 	NButton,
 	NCollapse,
 	NCollapseItem,
+	NH4,
 } from "naive-ui"
 
 type ActionName =
