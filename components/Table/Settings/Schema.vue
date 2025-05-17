@@ -37,7 +37,7 @@
 							</NButtonGroup>
 
 							<NButtonGroup v-if="!isDisabled(element.key)">
-								<NTooltip>
+								<NTooltip :delay="500">
 									<template #trigger>
 										<NPopselect v-model:value="schema[index].width" :options="widthOptions">
 											<NButton round strong secondary size="small" type="info">
@@ -52,7 +52,7 @@
 									</template>
 									{{ t('width') }}
 								</NTooltip>
-								<NTooltip>
+								<NTooltip :delay="500">
 									<template #trigger>
 										<NButton round secondary size="small"
 											:type="element.required ? 'error' : 'tertiary'"
@@ -334,12 +334,12 @@ const expandedNames = defineModel<string[]>("expandedNames")
 const expandedChildNames = ref<string[]>()
 function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index].children) schema.value[index].children = [] as Schema
-		; (schema.value[index].children as Schema).push({
-			id: `temp-${randomID()}`,
-			key: null,
-			required: false,
-			...handleSelectedSchemaType(type),
-		} as any)
+	;(schema.value[index].children as Schema).push({
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	} as any)
 	expandedNames.value = [schema.value[index].id as string]
 	const newElementId = (
 		(schema.value[index].children as Schema).at(-1) as Field
@@ -396,7 +396,7 @@ const fileTypeSelectOptions = [
 		icon: renderIcon(IconMusic),
 	},
 	{
-		label: t("fileType.documents"),
+		label: t("fileType.document"),
 		value: "document",
 		icon: renderIcon(IconFileDescription),
 	},
@@ -478,7 +478,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 				return h(NInput, {
 					value: row[0].toString(),
 					onUpdateValue(v) {
-						; (schemaItem.options as [string | number, string][])[index][0] = v
+						;(schemaItem.options as [string | number, string][])[index][0] = v
 					},
 				})
 			},
@@ -492,7 +492,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					showAlpha: false,
 					value: row[1].toString(),
 					onUpdateValue(v) {
-						; (schemaItem.options as [string | number, string][])[index][1] = v
+						;(schemaItem.options as [string | number, string][])[index][1] = v
 					},
 				})
 			},
@@ -514,7 +514,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 								schemaItem.options = [["", ""]]
 								return
 							}
-							; (schemaItem.options as [string | number, string][]).splice(
+							;(schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
 							)
