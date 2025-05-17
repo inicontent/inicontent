@@ -145,6 +145,7 @@ const isOpen = ref(false)
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
+		key: `${database.value.slug}/${table.value?.slug as string}/logs`,
 		query: {
 			where: id ? `{item:${id}}` : undefined,
 			options: Inison.stringify({

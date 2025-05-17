@@ -251,6 +251,7 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
 	{
+		key: `${database.value.slug}/${table.value?.slug as string}`,
 		query: {
 			options: queryOptions,
 			where: whereQuery,
