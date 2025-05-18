@@ -11,7 +11,7 @@
 			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onFinish
-			:list-type="!field.isTable ? 'image' : 'image-card'">
+			:list-type="!field.isTable ? 'image' : 'image-card'" with-credentials>
 			<NUploadDragger v-if="!field.isTable">
 				<NIcon size="48" depth="3">
 					<IconUpload />
@@ -186,8 +186,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-						(value) => value.id === asset.id,
-					)
+					(value) => value.id === asset.id,
+				)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
@@ -205,27 +205,27 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-					id: asset,
-					name: asset.split("/").pop(),
-					status: "finished",
-					url: asset,
-					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-					thumbnailUrl:
-						field.accept?.includes("image") && !field.params?.includes("fit")
-							? `${asset}`
-							: undefined,
-				}
+				id: asset,
+				name: asset.split("/").pop(),
+				status: "finished",
+				url: asset,
+				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+				thumbnailUrl:
+					field.accept?.includes("image") && !field.params?.includes("fit")
+						? `${asset}`
+						: undefined,
+			}
 			: {
-					id: asset.id,
-					name: asset.name || asset.id,
-					status: "finished",
-					url: (asset as Asset).publicURL,
-					type: asset.type,
-					thumbnailUrl:
-						asset.type?.startsWith("image/") && !field.params?.includes("fit")
-							? `${(asset as Asset).publicURL}`
-							: undefined,
-				},
+				id: asset.id,
+				name: asset.name || asset.id,
+				status: "finished",
+				url: (asset as Asset).publicURL,
+				type: asset.type,
+				thumbnailUrl:
+					asset.type?.startsWith("image/") && !field.params?.includes("fit")
+						? `${(asset as Asset).publicURL}`
+						: undefined,
+			},
 	) as UploadFileInfo[];
 }
 

@@ -5,7 +5,7 @@
 				if (index === 0) defaultWidth = width
 				drawer.width = width
 			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
-			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined">
+			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :auto-focus="false">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
