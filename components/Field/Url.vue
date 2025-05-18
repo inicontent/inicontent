@@ -21,6 +21,7 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
+    trigger: ['blur', 'input'],
 	required: field.required,
 	validator() {
 		if (!modelValue.value)

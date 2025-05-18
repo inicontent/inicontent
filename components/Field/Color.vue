@@ -16,11 +16,12 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string>();
 
 const rule: FormItemRule = {
-	type: "hex",
-	required: field.required,
-	validator() {
-		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
-	},
+    trigger: ['blur', 'change'],
+    type: "hex",
+    required: field.required,
+    validator() {
+        if (!modelValue.value && field.required)
+            return new Error(`${t(field.key)} ${t("isRequired")}`);
+    },
 };
 </script>

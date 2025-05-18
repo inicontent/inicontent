@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { NResult } from "naive-ui";
-import type { NuxtError } from "#app";
+import { NResult } from "naive-ui"
+import type { NuxtError } from "#app"
 type errorCodes =
 	| "info"
 	| "success"
@@ -15,12 +15,12 @@ type errorCodes =
 	| "404"
 	| "403"
 	| "500"
-	| "418";
+	| "418"
 const { error } = defineProps({
 	error: Object as () => NuxtError & { message: "database" | "table" | "item" },
-});
-const code = ref<errorCodes>();
-const message = ref();
+})
+const code = ref<errorCodes>()
+const message = ref()
 
 defineTranslation({
 	ar: {
@@ -32,28 +32,28 @@ defineTranslation({
 		item: "العنصر",
 		page: "الصفحة",
 	},
-});
+})
 
 if (error) {
-	code.value = String(error.statusCode) as errorCodes;
+	code.value = String(error.statusCode) as errorCodes
 	switch (error.statusCode) {
 		case 404:
-			code.value = "warning";
-			message.value = `${t(error.message)} ${t("notFound")}`;
-			break;
+			code.value = "warning"
+			message.value = `${t(error.message)} ${t("notFound")}`
+			break
 		case 403:
-			code.value = "warning";
-			message.value = t("accessDenied");
-			break;
+			code.value = "warning"
+			message.value = t("accessDenied")
+			break
 		default:
-			code.value = "error";
-			message.value = t("internalServerError");
-			console.clear();
-			console.error(error);
-			break;
+			code.value = "error"
+			message.value = t("internalServerError")
+			console.clear()
+			console.error(error)
+			break
 	}
 } else {
-	code.value = "error";
-	message.value = t("internalServerError");
+	code.value = "error"
+	message.value = t("internalServerError")
 }
 </script>

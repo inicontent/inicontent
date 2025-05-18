@@ -13,20 +13,21 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
-import { NFlex, NRadio, NRadioGroup, type FormItemRule } from "naive-ui";
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
+import { NFlex, NRadio, NRadioGroup, type FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string | number>();
+const modelValue = defineModel<string | number>()
 
 const rule: FormItemRule = {
+	trigger: "change",
 	required: field.required,
 	validator() {
 		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
+			return new Error(`${t(field.key)} ${t("isRequired")}`)
 	},
-};
+}
 
 const options = computed(() =>
 	field.options
@@ -42,5 +43,5 @@ const options = computed(() =>
 						label: t(value),
 					}))
 		: [],
-);
+)
 </script>

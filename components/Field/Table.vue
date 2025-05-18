@@ -57,6 +57,7 @@ const selectValue = computed<null | string | string[]>(() =>
 )
 
 const rule: FormItemRule = {
+	trigger: ["blur", "change"],
 	type: !field.isArray ? "string" : "array",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
@@ -116,8 +117,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-		getPath(table.schema ?? [], columnID),
-	)
+			getPath(table.schema ?? [], columnID),
+		)
 	: field.searchIn
 
 const pagination = ref<pageInfo>()
@@ -131,14 +132,14 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true
 	const searchOrObject =
 		searchValue &&
-			(typeof searchValue !== "string" || searchValue.trim().length) &&
-			searchIn
+		(typeof searchValue !== "string" || searchValue.trim().length) &&
+		searchIn
 			? (searchIn.reduce((result, searchKey) => {
-				Object.assign(result, {
-					[searchKey]: `*%${searchValue}%`,
-				})
-				return result
-			}, {}) ?? false)
+					Object.assign(result, {
+						[searchKey]: `*%${searchValue}%`,
+					})
+					return result
+				}, {}) ?? false)
 			: false
 
 	let _where = ""
@@ -181,7 +182,8 @@ async function loadOptions(searchValue?: string | number) {
 					columns: table?.columns,
 				}),
 			},
-			cache: "no-cache", credentials: "include"
+			cache: "no-cache",
+			credentials: "include",
 		},
 	)
 	pagination.value = request.options
@@ -210,7 +212,7 @@ async function handleScroll(e: Event) {
 		return
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-		currentTarget.scrollHeight &&
+			currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true
@@ -224,7 +226,8 @@ async function handleScroll(e: Event) {
 						columns: table?.columns,
 					}),
 				},
-				cache: "no-cache", credentials: "include"
+				cache: "no-cache",
+				credentials: "include",
 			},
 		)
 		if (request.result) request.result = request.result.map(singleOption)
@@ -254,7 +257,8 @@ if (
 			onResponse: ({ response }) => {
 				options.value = response._data.result.map(singleOption)
 				Loading.value[`options_${field.key}`] = false
-			}, credentials: "include"
+			},
+			credentials: "include",
 		},
 	)
 }

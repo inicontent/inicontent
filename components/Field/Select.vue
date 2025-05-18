@@ -19,6 +19,7 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string | string[]>();
 
 const rule: FormItemRule = {
+	trigger: ['blur', 'change'],
 	type: field.isArray ? "array" : "any",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
@@ -50,15 +51,15 @@ const options = computed(() =>
 	field.options
 		? isArrayOfArrays(field.options)
 			? (field.options as [string | number, string][]).map(([value]) => ({
-					value: value,
-					label: t(value),
-				}))
+				value: value,
+				label: t(value),
+			}))
 			: isArrayOfObjects(field.options)
 				? field.options
 				: (field.options as string[]).map((value) => ({
-						value: value,
-						label: t(value),
-					}))
+					value: value,
+					label: t(value),
+				}))
 		: [],
 );
 </script>

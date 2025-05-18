@@ -318,7 +318,7 @@ async function onSelectUserDropdown(v: string) {
 			break
 	}
 }
-const languagesDropdownOptions = database.value.secondaryLanguages?.map(
+const languagesDropdownOptions = database.value?.secondaryLanguages?.map(
 	(language) => ({
 		label: t(`languages.${language}`),
 		key: language,
