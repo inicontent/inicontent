@@ -29,7 +29,6 @@ export default defineNuxtConfig({
 	devtools: {
 		enabled: false,
 	},
-	future: { compatibilityVersion: 4 },
 	vite: {
 		server: { hmr: { clientPort: 3434 } },
 	},
