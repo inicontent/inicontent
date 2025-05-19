@@ -32,6 +32,7 @@ export default defineNuxtConfig({
 	build: {
 		transpile: process.env.NODE_ENV === "production" ? ["naive-ui"] : [],
 	},
+	future: { compatibilityVersion: 4 },
 	hooks: {
 		"imports:extend": () => {
 			// Add imports for naive-ui components
