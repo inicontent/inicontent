@@ -29,31 +29,7 @@ export default defineNuxtConfig({
 	devtools: {
 		enabled: false,
 	},
-	build: {
-		transpile: process.env.NODE_ENV === "production" ? ["naive-ui"] : [],
-	},
 	future: { compatibilityVersion: 4 },
-	hooks: {
-		"imports:extend": () => {
-			// Add imports for naive-ui components
-			Object.keys(naive)
-				.filter((name) => /^N[A-Z]|n-[a-z]/.test(name))
-				.forEach((name) => {
-					addComponent({
-						export: name,
-						name,
-						filePath: "naive-ui",
-						mode: "all",
-						global: true,
-					})
-				})
-		},
-		"prepare:types": ({ references }) => {
-			references.push({
-				types: "naive-ui/volar",
-			})
-		},
-	},
 	vite: {
 		server: { hmr: { clientPort: 3434 } },
 	},
