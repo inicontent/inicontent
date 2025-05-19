@@ -12,9 +12,7 @@
 				<NFlex justify="center">
 					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table as string)">
 						<template #icon>
-							<NIcon>
-								<IconPlus />
-							</NIcon>
+							<Icon name="tabler:plus" />
 						</template>
 					</NButton>
 				</NFlex>
@@ -25,9 +23,8 @@
 
 <script lang="ts" setup>
 import Inison from "inison"
-import { NButton, NFlex, NIcon, NSelect, type FormItemRule } from "naive-ui"
+import type { FormItemRule } from "naive-ui"
 import { isArrayOfObjects, isObject, isValidID } from "inibase/utils"
-import { IconPlus } from "@tabler/icons-vue"
 import type { pageInfo } from "inibase"
 
 const { field } = defineProps<{ field: Field }>()
@@ -61,20 +58,9 @@ const rule: FormItemRule = {
 	type: !field.isArray ? "string" : "array",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
-	validator() {
-		if (
-			!modelValue.value ||
-			(Array.isArray(modelValue.value) && modelValue.value.length === 0)
-		)
-			return field.required
-				? new Error(`${t(field.key)} ${t("isRequired")}`)
-				: true
-		if (
-			Array.isArray(modelValue.value) &&
-			((field.min && modelValue.value.length < field.min) ||
-				(field.max && modelValue.value.length > field.max))
-		)
-			return new Error(`${t(field.key)} ${t("isNotValid")}`)
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
 	},
 }
 
@@ -117,8 +103,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
+		getPath(table.schema ?? [], columnID),
+	)
 	: field.searchIn
 
 const pagination = ref<pageInfo>()
@@ -132,14 +118,14 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true
 	const searchOrObject =
 		searchValue &&
-		(typeof searchValue !== "string" || searchValue.trim().length) &&
-		searchIn
+			(typeof searchValue !== "string" || searchValue.trim().length) &&
+			searchIn
 			? (searchIn.reduce((result, searchKey) => {
-					Object.assign(result, {
-						[searchKey]: `*%${searchValue}%`,
-					})
-					return result
-				}, {}) ?? false)
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				})
+				return result
+			}, {}) ?? false)
 			: false
 
 	let _where = ""
@@ -211,8 +197,7 @@ async function handleScroll(e: Event) {
 	)
 		return
 	if (
-		currentTarget.scrollTop + currentTarget.offsetHeight >=
-			currentTarget.scrollHeight &&
+		currentTarget.scrollTop + currentTarget.offsetHeight >= currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true

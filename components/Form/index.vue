@@ -8,7 +8,7 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
-import { NForm, type FormInst } from "naive-ui"
+import type { FormInst } from "naive-ui"
 
 const props = defineProps<{
 	table?: string

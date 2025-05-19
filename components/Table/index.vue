@@ -13,12 +13,12 @@
 						<NButtonGroup id="navbarExtraButtons">
 							<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
 								@select="toolsDropdownOnSelect" trigger="click">
-								<NTooltip :delay="500">
+								<NTooltip :delay="1500">
 									<template #trigger>
 										<NButton round>
 											<template #icon>
 												<NIcon>
-													<IconTools />
+													<Icon name="tabler:tools" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -29,7 +29,7 @@
 
 							<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
 								size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
-								<NTooltip placement="top" :delay="500">
+								<NTooltip placement="top" :delay="1500">
 									<template #trigger>
 										<NButton round :disabled="!table.schema" tag="a"
 											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
@@ -41,7 +41,7 @@
 											}">
 											<template #icon>
 												<NIcon>
-													<IconPlus />
+													<Icon name="tabler:plus" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -60,10 +60,10 @@
 				</NFlex>
 			</template>
 			<slot name="default" :data>
-				<TableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
+				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
 					:slots />
-				<TableViewsTable v-else v-model:columns="columns" v-model:data="data" v-model:searchArray="searchArray"
-					ref="tableViewRef" :slots />
+				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
+					v-model:searchArray="searchArray" ref="tableViewRef" :slots />
 			</slot>
 		</NCard>
 		<LazyTableLogs v-if="table.config?.log" />
@@ -71,30 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-	IconCopy,
-	IconEye,
-	IconFileArrowRight,
-	IconLayoutDashboardFilled,
-	IconLayoutKanbanFilled,
-	IconPencil,
-	IconPlus,
-	IconTable,
-	IconTableExport,
-	IconTableImport,
-	IconTools,
-	IconTrash,
-} from "@tabler/icons-vue"
 import Inison from "inison"
 import {
-	NButton,
 	NButtonGroup,
-	NCard,
-	NDropdown,
-	NFlex,
+	NButton,
 	NIcon,
 	NProgress,
-	NTooltip,
 	NTime,
 	NPopconfirm,
 	type DataTableColumns,
@@ -102,7 +84,7 @@ import {
 	type DropdownOption,
 } from "naive-ui"
 import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
-import { NuxtLink } from "#components"
+import { Icon, NuxtLink } from "#components"
 
 const user = useState<User>("user")
 const route = useRoute()
@@ -139,17 +121,25 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 			query: {
 				where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
 				locale: Language.value,
-			}, credentials: "include"
+			},
+			credentials: "include",
 		},
 	)
 	if (deleteResponse.result) window.$message.success(deleteResponse.message)
 	else window.$message.error(deleteResponse.message)
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, { credentials: "include" }
+			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+			{ credentials: "include" },
 		)
-	else await refreshNuxtData(`${database.value.slug}/${table.value?.slug as string}`)
-
+	else
+		await refreshNuxtData(
+			`${database.value.slug}/${table.value?.slug as string}`,
+		)
+	if (table.value.config?.log)
+		await refreshNuxtData(
+			`${database.value.slug}/${table.value?.slug as string}/logs`,
+		)
 }
 provide("deleteItem", deleteItem)
 
@@ -159,73 +149,70 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(IconEye)),
-							),
-					},
-				)
+						NButton,
+						{
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+								),
+						},
+					)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault()
-							if (!isMobile)
-								openDrawer(
-									table.value?.slug as string,
-									row.id,
-									toRaw(row),
-								)
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-								)
+						NButton,
+						{
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault()
+								if (!isMobile)
+									openDrawer(table.value?.slug as string, row.id, toRaw(row))
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+									)
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(IconPencil)) },
-				)
+						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+					)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => deleteItem(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () => h(NIcon, () => h(IconTrash)),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => deleteItem(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
 	)
@@ -259,12 +246,9 @@ provide("isSlotSet", isSlotSet)
 
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`, { credentials: "include" }
+		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+		{ credentials: "include" },
 	)
-
-onBeforeRouteLeave(() => {
-	clearNuxtState("drawer");
-})
 
 defineTranslation({
 	ar: {
@@ -309,7 +293,7 @@ async function jobNotification() {
 				const currentJobProgress = (
 					await $fetch<apiResponse<number>>(
 						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
-						{ credentials: "include" }
+						{ credentials: "include" },
 					)
 				).result
 
@@ -378,12 +362,13 @@ const tableViewRef = ref()
 
 const toolsDropdownOptions = computed(() => [
 	{
-		icon: () => h(NIcon, () => h(IconLayoutDashboardFilled)),
+		icon: () =>
+			h(NIcon, () => h(Icon, { name: "tabler:layout-dashboard-filled" })),
 		label: t("view"),
 		key: "view",
 		children: [
 			{
-				icon: () => h(NIcon, () => h(IconTable)),
+				icon: () => h(NIcon, () => h(Icon, { name: "tabler:table" })),
 				label: t("table"),
 				key: "viewTable",
 				children: [
@@ -414,7 +399,8 @@ const toolsDropdownOptions = computed(() => [
 				],
 			},
 			{
-				icon: () => h(NIcon, () => h(IconLayoutKanbanFilled)),
+				icon: () =>
+					h(NIcon, () => h(Icon, { name: "tabler:layout-kanban-filled" })),
 				label: t("kanban"),
 				key: "viewKanban",
 				disabled: table.value.displayAs === "kanban",
@@ -423,24 +409,25 @@ const toolsDropdownOptions = computed(() => [
 		],
 	},
 	{
-		icon: () => h(NIcon, () => h(IconTableImport)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-import" })),
 		label: t("import"),
 		disabled: true,
 		key: "import",
 	},
 	{
-		icon: () => h(NIcon, () => h(IconTableExport)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-export" })),
 		label: t("export"),
 		key: "export",
 		disabled: !table.value?.schema,
 		children: [
 			{
-				icon: () => h(NIcon, () => h(IconFileArrowRight)),
+				icon: () =>
+					h(NIcon, () => h(Icon, { name: "tabler:file-arrow-right" })),
 				label: t("exportCurrentData"),
 				key: "exportCurrentData",
 			},
 			{
-				icon: () => h(NIcon, () => h(IconTableExport)),
+				icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-export" })),
 				disabled: !!currentJob.value,
 				label: t("exportAllData"),
 				key: "exportAllData",
@@ -502,7 +489,7 @@ const createDropdownOptions: DropdownOption[] = [
 	{
 		label: t("createFromClipboard"),
 		key: "paste",
-		icon: () => h(NIcon, () => h(IconCopy)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
 ]
 async function createDropdownOnSelect(value: string) {

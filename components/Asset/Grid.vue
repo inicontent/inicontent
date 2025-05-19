@@ -76,23 +76,8 @@
 </template>
 
 <script lang="ts" setup>
-import { IconPencil, IconTrash, IconUpload } from "@tabler/icons-vue"
-import {
-	NDropdown,
-	NFlex,
-	NGrid,
-	NGridItem,
-	NIcon,
-	NImage,
-	NSkeleton,
-	NPerformantEllipsis,
-	NEmpty,
-	NA,
-	NDrawer,
-	NDrawerContent,
-	NText,
-	NTime,
-} from "naive-ui"
+import { Icon } from "#components"
+import { NIcon } from "naive-ui"
 
 const path = defineModel<string>("path", {
 	default: "",
@@ -125,14 +110,15 @@ const CurrentAsset = ref<Asset>()
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
-			}, credentials: "include"
-		},
-	),
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+				},
+				credentials: "include",
+			},
+		),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id)
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -149,7 +135,7 @@ const dropdownOptions = [
 		label: t("delete"),
 		key: "delete",
 		show: table.allowedMethods?.includes("d"),
-		icon: () => h(NIcon, () => h(IconTrash)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
 	},
 	{
 		label: t("rename"),
@@ -157,14 +143,14 @@ const dropdownOptions = [
 		disabled: true,
 		show:
 			table.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
-		icon: () => h(NIcon, () => h(IconPencil)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
 	},
 	{
 		label: t("replace"),
 		key: "replace",
 		disabled: true,
 		show: table.allowedMethods?.includes("u"),
-		icon: () => h(NIcon, () => h(IconUpload)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:upload" })),
 	},
 ]
 

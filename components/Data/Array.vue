@@ -15,7 +15,6 @@
 </template>
 
 <script lang="ts" setup>
-import { NListItem, NText } from "naive-ui";
 import { isArrayOfObjects } from "inibase/utils";
 
 const { field, value } = defineProps<{ field: Field; value: any }>();

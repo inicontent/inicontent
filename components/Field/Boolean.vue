@@ -9,17 +9,17 @@
 </template>
 
 <script lang="ts" setup>
-import { NSwitch, type FormItemRule } from "naive-ui";
+import type { FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<boolean>();
+const modelValue = defineModel<boolean>()
 
 const rule: FormItemRule = {
 	required: field.required,
-	validator() {
-		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
 	},
-};
+}
 </script>

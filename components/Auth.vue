@@ -22,15 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	type FormInst,
-	NButton,
-	NCard,
-	NForm,
-	NTabPane,
-	NTabs,
-	type TabsInst,
-} from "naive-ui";
+import type { FormInst, TabsInst } from "naive-ui"
 
 defineTranslation({
 	ar: {
@@ -38,25 +30,25 @@ defineTranslation({
 		signup: "إنشاء حساب",
 		authentication: "صفحة الدخول",
 	},
-});
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+})
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 
-const fromPath = useCookie("from");
+const fromPath = useCookie("from")
 
-const SigninFormRef = ref<FormInst | null>(null);
-const route = useRoute();
-const tabsInstRef = ref<TabsInst | null>(null);
-const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
-const database = useState<Database>("database");
-const table = useState<Table>("table");
-const user = useState<User>("user");
-const SignupForm = useState(() => ({}));
-const SignupFormRef = ref<FormInst | null>(null);
+const SigninFormRef = ref<FormInst | null>(null)
+const route = useRoute()
+const tabsInstRef = ref<TabsInst | null>(null)
+const tabsValue = ref((route.query.tab as string) ?? "signin") // Default tab
+const database = useState<Database>("database")
+const table = useState<Table>("table")
+const user = useState<User>("user")
+const SignupForm = useState(() => ({}))
+const SignupFormRef = ref<FormInst | null>(null)
 const SigninForm = ref({
 	username: "",
 	password: "",
-});
+})
 const SigninColumns: Schema = [
 	{
 		key: "username",
@@ -68,7 +60,7 @@ const SigninColumns: Schema = [
 		type: "password",
 		required: true,
 	},
-];
+]
 const SignupColumns: Schema = database.value?.tables
 	?.find((item) => item.slug === "users")
 	?.schema?.filter(
@@ -77,79 +69,81 @@ const SignupColumns: Schema = database.value?.tables
 				field.key,
 			),
 	) ?? [
-		{
-			key: "username",
-			type: "string",
-			required: true,
-		},
-		{
-			key: "email",
-			type: "email",
-			required: true,
-		},
-		{
-			key: "password",
-			type: "password",
-			required: true,
-		},
-	];
+	{
+		key: "username",
+		type: "string",
+		required: true,
+	},
+	{
+		key: "email",
+		type: "email",
+		required: true,
+	},
+	{
+		key: "password",
+		type: "password",
+		required: true,
+	},
+]
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 async function SignupSubmit(e: Event) {
-	e.preventDefault();
+	e.preventDefault()
 	SignupFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = toRaw(SignupForm.value);
+			const bodyContent = toRaw(SignupForm.value)
 			if (Loading.value.Signup !== true) {
-				Loading.value.Signup = true;
+				Loading.value.Signup = true
 				const data = await $fetch<Record<string, any>>(
 					`${appConfig.apiBase}${database.value.slug}/user`,
 					{
 						method: "POST",
 						body: bodyContent,
 						params: {
-							locale: Language.value
-						}, credentials: "include",
+							locale: Language.value,
+						},
+						credentials: "include",
 					},
-				);
+				)
 				if (data.result) {
-					window.$message.success(data.message);
-					tabsValue.value = "signin";
-					tabsInstRef.value?.syncBarPosition();
-				} else window.$message.error(data.message);
-				Loading.value.Signup = false;
+					window.$message.success(data.message)
+					tabsValue.value = "signin"
+					tabsInstRef.value?.syncBarPosition()
+				} else window.$message.error(data.message)
+				Loading.value.Signup = false
 			}
-		} else window.$message.error(t("inputsAreInvalid"));
-	});
+		} else window.$message.error(t("inputsAreInvalid"))
+	})
 }
 
 async function SigninSubmit(e: Event) {
-	e.preventDefault();
+	e.preventDefault()
 	SigninFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = toRaw(SigninForm.value);
+			const bodyContent = toRaw(SigninForm.value)
 			if (Loading.value.Signin !== true) {
-				Loading.value.Signin = true;
+				Loading.value.Signin = true
 				const data = await $fetch<Record<string, any>>(
 					`${appConfig.apiBase}${database.value.slug}/auth/signin`,
 					{
 						method: "PUT",
 						body: bodyContent,
 						params: {
-							locale: Language.value
+							locale: Language.value,
 						},
 						credentials: "include",
 					},
-				);
+				)
 				if (data.result?.id) {
-					window.$message.success(data.message);
-					user.value = data.result;
+					window.$message.success(data.message)
+					user.value = data.result
 					database.value = (
 						await $fetch<apiResponse<Database>>(
-							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`, { credentials: "include" }
+							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+							{ credentials: "include" },
 						)
-					).result;
+					).result
 					await navigateTo(
 						fromPath.value &&
 							(fromPath.value.startsWith(`/${database.value.slug}`) ||
@@ -159,12 +153,12 @@ async function SigninSubmit(e: Event) {
 							: route.params.database
 								? `/${database.value.slug}/admin`
 								: "/admin",
-					);
-				} else window.$message.error(data.message);
-				Loading.value.Signin = false;
+					)
+				} else window.$message.error(data.message)
+				Loading.value.Signin = false
 			}
-		} else window.$message.error(t("inputsAreInvalid"));
-	});
+		} else window.$message.error(t("inputsAreInvalid"))
+	})
 }
 
 useHead({
@@ -172,5 +166,5 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

@@ -5,7 +5,5 @@
 </template>
 
 <script lang="ts" setup>
-import { NA } from "naive-ui";
-
-const { value } = defineProps<{ value?: string }>();
+const { value } = defineProps<{ value?: string }>()
 </script>

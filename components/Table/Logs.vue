@@ -74,22 +74,6 @@
 
 <script lang="ts" setup>
 import Inison from "inison"
-import {
-	NH3,
-	NSpin,
-	NScrollbar,
-	NTimeline,
-	NTimelineItem,
-	NText,
-	NTime,
-	NFlex,
-	NTag,
-	NButtonGroup,
-	NButton,
-	NCollapse,
-	NCollapseItem,
-	NH4,
-} from "naive-ui"
 
 type ActionName =
 	| "set"
@@ -140,6 +124,10 @@ const usersTable = database.value.tables?.find(({ slug }) => slug === "users")
 
 const table = useState<Table>("table")
 
+onBeforeRouteLeave(() => {
+	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`)
+})
+
 const isOpen = ref(false)
 
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
@@ -161,7 +149,7 @@ const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 		onRequest() {
 			Loading.value.logs = true
 		},
-		onResponse({ response }) {
+		onResponse() {
 			Loading.value.logs = false
 		},
 		credentials: "include",

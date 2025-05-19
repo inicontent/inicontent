@@ -1,40 +1,9 @@
 import { NIcon } from "naive-ui"
-import {
-	IconKey,
-	IconNumbers,
-	IconAt,
-	IconLink,
-	IconUpload,
-	IconTags,
-	IconCalendar,
-	IconToggleLeft,
-	IconCode,
-	IconAlignJustified,
-	IconLetterCase,
-	IconPalette,
-	IconListCheck,
-	IconBrackets,
-	IconBraces,
-	IconTable,
-	IconTypography,
-	IconShieldLock,
-	IconId,
-	IconQuestionMark,
-	IconTimelineEvent,
-	IconParentheses,
-	IconMessage,
-	IconCopyCheck,
-	IconCircleCheck,
-	type Icon,
-	IconBoxMultiple,
-	IconObjectScan,
-	IconBrandAirtable,
-	IconMap2,
-} from "@tabler/icons-vue"
+import { Icon } from "#components"
 import type { VNodeChild } from "vue"
 
-function renderIcon(icon: Icon) {
-	return () => h(NIcon, () => h(icon))
+function renderIcon(iconName: string) {
+	return () => h(NIcon, () => h(Icon, { name: `tabler:${iconName}` }))
 }
 
 type fieldListOptionType = {
@@ -91,76 +60,76 @@ export default function fieldsList(): fieldListOptionType[] {
 		{
 			label: t("fields.string"),
 			key: "text",
-			icon: renderIcon(IconTypography),
+			icon: renderIcon("typography"),
 			children: [
 				{
 					label: t("fields.shortText"),
 					key: "string",
-					icon: renderIcon(IconLetterCase),
+					icon: renderIcon("letter-case"),
 				},
 				{
 					label: t("fields.longText"),
 					key: "textarea",
-					icon: renderIcon(IconAlignJustified),
+					icon: renderIcon("align-justified"),
 				},
 				{
 					label: t("fields.html"),
 					key: "html",
-					icon: renderIcon(IconCode),
+					icon: renderIcon("code"),
 				},
 				{
 					label: t("fields.password"),
 					key: "password",
-					icon: renderIcon(IconKey),
+					icon: renderIcon("key"),
 				},
 				{
 					label: t("fields.email"),
 					key: "email",
-					icon: renderIcon(IconAt),
+					icon: renderIcon("at"),
 				},
 				{
 					label: t("fields.link"),
 					key: "url",
-					icon: renderIcon(IconLink),
+					icon: renderIcon("link"),
 				},
 				{
 					label: t("fields.color"),
 					key: "color",
-					icon: renderIcon(IconPalette),
+					icon: renderIcon("palette"),
 				},
 				{
 					label: t("fields.role"),
 					key: "role",
-					icon: renderIcon(IconShieldLock),
+					icon: renderIcon("shield-lock"),
 				},
 				{
 					label: t("fields.mention"),
 					key: "mention",
-					icon: renderIcon(IconMessage),
+					icon: renderIcon("message"),
 				},
 			],
 		},
 		{
 			label: t("fields.number"),
 			key: "number",
-			icon: renderIcon(IconNumbers),
+			icon: renderIcon("numbers"),
 			children: [
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
 					label: t("fields.number"),
 					key: "number",
-					icon: renderIcon(IconNumbers),
+					icon: renderIcon("numbers"),
 				},
 				{
 					label: t("fields.slider"),
 					key: "slider",
-					icon: renderIcon(IconTimelineEvent),
+					icon: renderIcon("timeline-event"),
 					disabled: true,
 				},
 				{
 					label: t("fields.ip"),
 					key: "ip",
-					icon: renderIcon(IconMap2),
+					icon: renderIcon("map-2"),
 					disabled: true,
 				},
 			],
@@ -168,99 +137,99 @@ export default function fieldsList(): fieldListOptionType[] {
 		{
 			label: t("fields.multiple"),
 			key: "multiple",
-			icon: renderIcon(IconBoxMultiple),
+			icon: renderIcon("box-multiple"),
 		},
 		{
 			label: t("fields.date"),
 			key: "date",
-			icon: renderIcon(IconCalendar),
+			icon: renderIcon("calendar"),
 		},
 		{
 			label: t("fields.toggle"),
 			key: "boolean",
-			icon: renderIcon(IconToggleLeft),
+			icon: renderIcon("toggle-left"),
 		},
 		{
 			label: t("fields.id"),
 			key: "id",
-			icon: renderIcon(IconId),
+			icon: renderIcon("id"),
 		},
 		{
 			label: t("fields.asset"),
 			key: "asset",
-			icon: renderIcon(IconUpload),
+			icon: renderIcon("upload"),
 		},
 		{
 			label: t("fields.radio"),
 			key: "radio",
-			icon: renderIcon(IconCircleCheck),
+			icon: renderIcon("circle-check"),
 		},
 		{
 			label: t("fields.select"),
 			key: "select",
-			icon: renderIcon(IconListCheck),
+			icon: renderIcon("list-check"),
 		},
 		{
 			label: t("fields.array"),
 			key: "array",
-			icon: renderIcon(IconBrackets),
+			icon: renderIcon("brackets"),
 			children: [
 				{
 					label: t("fields.tags"),
 					key: "tags",
-					icon: renderIcon(IconTags),
+					icon: renderIcon("tags"),
 				},
 				{
 					label: t("fields.select"),
 					key: "array-select",
-					icon: renderIcon(IconListCheck),
+					icon: renderIcon("list-check"),
 				},
 				{
 					label: t("fields.checkbox"),
 					key: "checkbox",
-					icon: renderIcon(IconCopyCheck),
+					icon: renderIcon("copy-check"),
 				},
 				{
 					label: t("fields.assets"),
 					key: "array-asset",
-					icon: renderIcon(IconUpload),
+					icon: renderIcon("upload"),
 				},
 				// https://www.naiveui.com/en-US/dark/components/slider
 				{
 					label: t("fields.range"),
 					key: "range",
-					icon: renderIcon(IconParentheses),
+					icon: renderIcon("parentheses"),
 					disabled: true,
 				},
 				{
 					label: t("fields.tableItems"),
 					key: "array-table",
-					icon: renderIcon(IconBrandAirtable),
+					icon: renderIcon("brand-airtable"),
 				},
 				{
 					label: t("fields.objects"),
 					key: "array",
-					icon: renderIcon(IconObjectScan),
+					icon: renderIcon("object-scan"),
 				},
 			],
 		},
 		{
 			label: t("fields.object"),
 			key: "object",
-			icon: renderIcon(IconBraces),
+			icon: renderIcon("braces"),
 		},
 		{
 			label: t("fields.table"),
 			key: "table",
-			icon: renderIcon(IconTable),
+			icon: renderIcon("table"),
 		},
 	]
 }
 
-const defaultUnfoundField: fieldListOptionType = {
+const defaultField: fieldListOptionType = {
 	key: "custom",
 	label: "custom",
-	icon: renderIcon(IconQuestionMark),
+	icon: renderIcon("question-mark"),
 }
 
 export const flatFieldsList = fieldsList().flatMap(
@@ -272,7 +241,7 @@ export function getField(field: Field) {
 		return (
 			flatFieldsList.find(
 				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
-			) ?? defaultUnfoundField
+			) ?? defaultField
 		)
 	if (field.type === "array") {
 		if (
@@ -282,13 +251,11 @@ export function getField(field: Field) {
 			return (
 				flatFieldsList.find(
 					({ key }) => key === [field.type, field.children].join("-"),
-				) ?? defaultUnfoundField
+				) ?? defaultField
 			)
 	}
 	let fieldType = field.subType ?? field.type
 	if (Array.isArray(fieldType)) fieldType = "multiple"
-	if (!fieldType) return defaultUnfoundField
-	return (
-		flatFieldsList.find(({ key }) => key === fieldType) ?? defaultUnfoundField
-	)
+	if (!fieldType) return defaultField
+	return flatFieldsList.find(({ key }) => key === fieldType) ?? defaultField
 }

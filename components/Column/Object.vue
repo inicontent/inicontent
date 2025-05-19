@@ -14,7 +14,5 @@
 </template>
 
 <script lang="ts" setup>
-import { NButton, NFlex, NPopover } from "naive-ui";
-
 const { field, value } = defineProps<{ field: Field; value?: any }>();
 </script>

@@ -41,7 +41,6 @@ import {
 } from "naive-ui"
 
 import "~/assets/main.css"
-import "@fontsource-variable/cairo"
 
 const rtlStyles: any = [
 	unstableListRtl,
@@ -66,7 +65,7 @@ const rtlStyles: any = [
 	unstableDialogRtl,
 	unstablePaginationRtl,
 	unstableNotificationRtl,
-	unstableStepsRtl
+	unstableStepsRtl,
 ]
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
@@ -89,8 +88,8 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 	themeOverrides: {
 		common: {
 			...ThemeConfig.value,
-			fontFamily: "Cairo Variable",
-			fontFamilyMono: "Cairo Variable",
+			fontFamily: "Cairo",
+			fontFamilyMono: "Cairo",
 		},
 	},
 	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
@@ -150,7 +149,9 @@ onMounted(() => {
 
 useHead({
 	bodyAttrs: {
-		style: computed(() => `--primaryColor: ${hexToRGB(ThemeConfig.value.primaryColor).join(", ")}`
+		style: computed(
+			() =>
+				`--primaryColor: ${hexToRGB(ThemeConfig.value.primaryColor).join(", ")}`,
 		),
 	},
 })

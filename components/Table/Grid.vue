@@ -6,7 +6,7 @@
 					<template #header>
 						<NFlex align="center">
 							<NIconWrapper :border-radius="50" style="font-style: normal">
-								<component :is="getTableIcon(table)" />
+								<LazyTableIcon :table="table" />
 							</NIconWrapper>
 							<NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
 						</NFlex>
@@ -16,9 +16,9 @@
 							<NButton circle @mouseover="Hover[table.slug] = true"
 								@mouseleave="Hover[table.slug] = false">
 								<NIcon>
-									<IconArrowRight
+									<Icon name="tabler:arrow-right"
 										v-if="Hover[table.slug] || (table.slug === 'assets' && (!user || user.role !== appConfig.idOne))" />
-									<IconDots v-else />
+									<Icon name="tabler:dots" v-else />
 								</NIcon>
 							</NButton>
 						</NDropdown>
@@ -36,7 +36,7 @@
 								@click="showPopover = !showPopover">
 								<NFlex justify="center" align="center">
 									<NIcon size="36">
-										<IconPlus />
+										<Icon name="tabler:plus" />
 									</NIcon>
 								</NFlex>
 							</NCard>
@@ -46,14 +46,14 @@
 								:placeholder="t('tableSlug')">
 								<template #suffix>
 									<NIcon>
-										<IconLetterCase />
+										<Icon name="tabler:letter-case" />
 									</NIcon>
 								</template>
 							</NInput>
 							<NButton @click="createTable" :loading="Loading.Table">
 								<template #icon>
 									<NIcon>
-										<IconChevronRight />
+										<Icon name="tabler:chevron-right" />
 									</NIcon>
 								</template>
 							</NButton>
@@ -67,33 +67,10 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	IconArrowRight,
-	IconChevronRight,
-	IconDots,
-	IconLetterCase,
-	IconPlus,
-	IconSettings,
-	IconWebhook,
-} from "@tabler/icons-vue";
-import {
-	NButton,
-	NCard,
-	NDropdown,
-	NGridItem,
-	NGrid,
-	NH4,
-	NIcon,
-	NIconWrapper,
-	NInput,
-	NInputGroup,
-	NPopover,
-	NFlex,
-	type DropdownOption,
-} from "naive-ui";
-import { NuxtLink } from "#components";
+import { Icon, NuxtLink } from "#components"
+import { NIcon, type DropdownOption } from "naive-ui"
 
-const modelValue = defineModel<Database>({ required: true });
+const modelValue = defineModel<Database>({ required: true })
 
 defineTranslation({
 	ar: {
@@ -102,49 +79,50 @@ defineTranslation({
 		tableFlows: "تدفقات الجدول",
 		tableSlug: "إسم الجدول",
 	},
-});
+})
 
-const showPopover = ref(false);
+const showPopover = ref(false)
 
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const user = useState<User>("user");
-const Hover = ref<Record<string, boolean>>({});
-const newTableSlug = ref();
-const route = useRoute();
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const user = useState<User>("user")
+const Hover = ref<Record<string, boolean>>({})
+const newTableSlug = ref()
+const route = useRoute()
 
 const database = useState<Database>("database")
 
 function getTableUrl(slug: string) {
-	return `/${route.params.database || (database.value?.slug === 'inicontent' && route.path === '/admin') ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`;
+	return `/${route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`
 }
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const createTable = async () => {
 	if (newTableSlug.value) {
-		const bodyContent: string = toRaw(newTableSlug.value);
-		Loading.value.Table = true;
+		const bodyContent: string = toRaw(newTableSlug.value)
+		Loading.value.Table = true
 
 		const data = await $fetch<apiResponse<Table>>(
 			`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
 				params: {
-					locale: Language.value
-				}, credentials: "include"
+					locale: Language.value,
+				},
+				credentials: "include",
 			},
-		);
+		)
 
 		if (data.result) {
-			modelValue.value.tables?.push(data.result);
-			window.$message.success(data.message);
-			newTableSlug.value = null;
-			showPopover.value = false;
-		} else window.$message.error(data.message ?? t("error"));
-		Loading.value.Table = false;
-	} else window.$message.error(t("inputsAreInvalid"));
-};
+			modelValue.value.tables?.push(data.result)
+			window.$message.success(data.message)
+			newTableSlug.value = null
+			showPopover.value = false
+		} else window.$message.error(data.message ?? t("error"))
+		Loading.value.Table = false
+	} else window.$message.error(t("inputsAreInvalid"))
+}
 
 const filteredTables = computed(() =>
 	modelValue.value.tables
@@ -158,19 +136,19 @@ const filteredTables = computed(() =>
 					["users", "sessions", "translations", "assets"].includes(a.slug),
 				),
 		),
-);
+)
 
 const getDropdownOptions = (table: Table) => [
 	{
 		key: `${getTableUrl(table.slug)}/new`,
 		label: t("newItem"),
-		icon: () => h(NIcon, () => h(IconPlus)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:plus" })),
 		show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
 	},
 	{
 		key: `${getTableUrl(table.slug)}/settings`,
 		label: t("tableSettings"),
-		icon: () => h(NIcon, () => h(IconSettings)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 		show:
 			!["sessions", "translations", "assets"].includes(table.slug) &&
 			user.value?.role === appConfig.idOne,
@@ -178,12 +156,12 @@ const getDropdownOptions = (table: Table) => [
 	{
 		key: `${getTableUrl(table.slug)}/flows`,
 		label: t("tableFlows"),
-		icon: () => h(NIcon, () => h(IconWebhook)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 		show:
 			!["sessions", "translations"].includes(table.slug) &&
 			user.value?.role === appConfig.idOne,
 	},
-];
+]
 
 function renderDropdownLabel(option: DropdownOption) {
 	return h(
@@ -192,6 +170,6 @@ function renderDropdownLabel(option: DropdownOption) {
 			to: option.key as string,
 		},
 		() => option.label,
-	);
+	)
 }
 </script>

@@ -5,7 +5,7 @@
 				if (index === 0) defaultWidth = width
 				drawer.width = width
 			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
-			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :auto-focus="false">
+			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
@@ -15,7 +15,7 @@
 							<NText type="primary">
 								{{ itemsLabels[index] }}
 								<NIcon size="small">
-									<IconExternalLink />
+									<Icon name="tabler:external-link" />
 								</NIcon>
 							</NText>
 						</NuxtLink>
@@ -30,9 +30,9 @@
 						<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
 							<template #icon>
 								<NIcon>
-									<IconChevronRight
+									<Icon name="tabler:chevron-right"
 										v-if="drawer.width && (typeof drawer.width === 'string' || drawer.width >= screenHalf)" />
-									<IconChevronLeft v-else />
+									<Icon name="tabler:chevron-left" v-else />
 								</NIcon>
 							</template>
 						</NButton>
@@ -43,7 +43,7 @@
 							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
 							<template #icon>
 								<NIcon>
-									<IconDeviceFloppy />
+									<Icon name="tabler:device-floppy" />
 								</NIcon>
 							</template>
 							{{ drawer.id ? t('update') : t('create') }}
@@ -65,22 +65,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-	IconChevronLeft,
-	IconChevronRight,
-	IconDeviceFloppy,
-	IconExternalLink,
-} from "@tabler/icons-vue"
-import {
-	NButton,
-	NDrawer,
-	NDrawerContent,
-	NIcon,
-	NFlex,
-	NText,
-	NSpin,
-} from "naive-ui"
-
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
@@ -141,5 +125,13 @@ watchEffect(() => {
 		}
 		itemsLabels.value[index] = "--"
 	}
+})
+
+onBeforeRouteUpdate((to, from, next) => {
+	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show)
+	if (openDrawerIndex !== -1) {
+		onUpdateShow(openDrawerIndex, false)
+		next(false) // Prevent navigation until all drawers are closed
+	} else next() // Allow navigation without altering the query in the URL
 })
 </script>

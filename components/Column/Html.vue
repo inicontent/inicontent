@@ -3,8 +3,8 @@
         @mouseover="buttonHovered = true" @mouseout="buttonHovered = false">
         <template #icon>
             <NIcon>
-                <IconZoomIn v-if="buttonHovered" />
-                <IconBracketsAngle v-else />
+                <Icon name="tabler:zoom-in" v-if="buttonHovered" />
+                <Icon name="tabler:brackets-angle" v-else />
             </NIcon>
         </template>
     </NButton>
@@ -14,10 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IconBracketsAngle, IconZoomIn } from "@tabler/icons-vue";
-import { NButton, NIcon, NModal } from "naive-ui";
-
-const { value } = defineProps<{ value?: string }>();
-const showModal = ref(false);
-const buttonHovered = ref(false);
+const { value } = defineProps<{ value?: string }>()
+const showModal = ref(false)
+const buttonHovered = ref(false)
 </script>

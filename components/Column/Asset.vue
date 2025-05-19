@@ -10,7 +10,7 @@
                             round>
                             <template #icon>
                                 <NIcon>
-                                    <IconFileUpload />
+                                    <Icon name="tabler:file-upload" size="24" />
                                 </NIcon>
                             </template>
                         </NButton>
@@ -23,8 +23,5 @@
 </template>
 
 <script lang="ts" setup>
-import { IconFileUpload } from "@tabler/icons-vue";
-import { NIcon, NImageGroup, NImage, NFlex, NA, NButton, NTooltip } from "naive-ui";
-
 const { value } = defineProps<{ value: Asset | Asset[] }>();
 </script>

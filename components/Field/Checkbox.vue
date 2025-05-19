@@ -14,7 +14,7 @@
 
 <script lang="ts" setup>
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
-import { NFlex, NCheckbox, NCheckboxGroup, type FormItemRule } from "naive-ui";
+import type { FormItemRule } from "naive-ui";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -24,10 +24,10 @@ const rule: FormItemRule = {
 	trigger: 'change',
 	type: "array",
 	required: field.required,
-	validator() {
-		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
-	},
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
+	}
 };
 
 const options = computed(() =>

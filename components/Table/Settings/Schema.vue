@@ -15,7 +15,7 @@
 										<NButton :disabled="!element.key" secondary round size="small">
 											<template #icon>
 												<NIcon>
-													<IconPlus />
+													<Icon name="tabler:plus" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -37,13 +37,13 @@
 							</NButtonGroup>
 
 							<NButtonGroup v-if="!isDisabled(element.key)">
-								<NTooltip :delay="500">
+								<NTooltip :delay="1500">
 									<template #trigger>
 										<NPopselect v-model:value="schema[index].width" :options="widthOptions">
 											<NButton round strong secondary size="small" type="info">
 												<template v-if="!$device.isMobile" #icon>
 													<NIcon>
-														<IconArrowAutofitWidth />
+														<Icon name="tabler:arrow-autofit-width" />
 													</NIcon>
 												</template>
 												1/{{ element.width ?? 1 }}
@@ -52,14 +52,14 @@
 									</template>
 									{{ t('width') }}
 								</NTooltip>
-								<NTooltip :delay="500">
+								<NTooltip :delay="1500">
 									<template #trigger>
 										<NButton round secondary size="small"
 											:type="element.required ? 'error' : 'tertiary'"
 											@click="schema[index].required = !schema[index].required">
 											<template #icon>
 												<NIcon>
-													<IconAsterisk />
+													<Icon name="tabler:asterisk" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -69,7 +69,7 @@
 								<NButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
 									<template #icon>
 										<NIcon>
-											<IconTrash />
+											<Icon name="tabler:trash" />
 										</NIcon>
 									</template>
 								</NButton>
@@ -110,7 +110,7 @@
 									@click="(schema[index].options as [string, string][]).push(['', ''])">
 									<template #icon>
 										<NIcon>
-											<IconPlus />
+											<Icon name="tabler:plus" />
 										</NIcon>
 									</template>
 									{{ t('add') }}
@@ -200,38 +200,16 @@
 
 <script lang="ts" setup>
 import {
-	IconPlus,
-	IconAsterisk,
-	IconTrash,
-	IconFileDescription,
-	IconFileZip,
-	IconMusic,
-	IconPhoto,
-	IconVideo,
-	IconArrowAutofitWidth,
-	type Icon,
-} from "@tabler/icons-vue"
-import {
-	NCollapse,
-	NCollapseItem,
 	NIcon,
 	NFlex,
-	NDropdown,
 	NButton,
-	NFormItem,
 	NInput,
-	NSelect,
-	NSwitch,
-	NInputNumber,
-	NPopselect,
-	NDataTable,
 	NColorPicker,
-	NButtonGroup,
-	NTooltip,
 	type SelectOption,
 	type DataTableColumns,
 } from "naive-ui"
 import Draggable from "vuedraggable"
+import { Icon } from "#components"
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 
 defineTranslation({
@@ -375,35 +353,35 @@ function changeFieldType(
 	}
 }
 
-function renderIcon(icon: Icon) {
-	return () => h(NIcon, () => h(icon))
+function renderIcon(iconName: string) {
+	return () => h(NIcon, () => h(Icon, { name: iconName }))
 }
 
 const fileTypeSelectOptions = [
 	{
 		label: t("fileType.image"),
 		value: "image",
-		icon: renderIcon(IconPhoto),
+		icon: renderIcon("tabler:photo"),
 	},
 	{
 		label: t("fileType.video"),
 		value: "video",
-		icon: renderIcon(IconVideo),
+		icon: renderIcon("tabler:video"),
 	},
 	{
 		label: t("fileType.audio"),
 		value: "audio",
-		icon: renderIcon(IconMusic),
+		icon: renderIcon("tabler:music"),
 	},
 	{
 		label: t("fileType.document"),
 		value: "document",
-		icon: renderIcon(IconFileDescription),
+		icon: renderIcon("tabler:file-description"),
 	},
 	{
 		label: t("fileType.archive"),
 		value: "archive",
-		icon: renderIcon(IconFileZip),
+		icon: renderIcon("tabler:file-zip"),
 	},
 ]
 function selectRenderLabelWithIcon(
@@ -520,7 +498,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 							)
 						},
 					},
-					{ icon: () => h(NIcon, () => h(IconTrash)) },
+					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })) },
 				)
 			},
 		},

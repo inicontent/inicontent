@@ -11,55 +11,38 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
-import { NSelect, type FormItemRule } from "naive-ui";
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
+import type { FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string | string[]>();
+const modelValue = defineModel<string | string[]>()
 
 const rule: FormItemRule = {
-	trigger: ['blur', 'change'],
+	trigger: "change",
 	type: field.isArray ? "array" : "any",
 	required: field.required,
 	min: field.isArray ? field.min : undefined,
 	max: field.isArray ? field.max : undefined,
-	validator() {
-		if (
-			!modelValue.value ||
-			(Array.isArray(modelValue.value) && modelValue.value.length === 0)
-		)
-			return field.required
-				? new Error(`${t(field.key)} ${t("isRequired")}`)
-				: true;
-		if (
-			Array.isArray(modelValue.value) &&
-			field.min &&
-			modelValue.value.length < field.min
-		)
-			return new Error(`${t(field.key)} ${t("isNotValid")}`);
-		if (
-			Array.isArray(modelValue.value) &&
-			field.max &&
-			modelValue.value.length > field.max
-		)
-			return new Error(`${t(field.key)} ${t("isNotValid")}`);
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
 	},
-};
+}
 
 const options = computed(() =>
 	field.options
 		? isArrayOfArrays(field.options)
 			? (field.options as [string | number, string][]).map(([value]) => ({
-				value: value,
-				label: t(value),
-			}))
-			: isArrayOfObjects(field.options)
-				? field.options
-				: (field.options as string[]).map((value) => ({
 					value: value,
 					label: t(value),
 				}))
+			: isArrayOfObjects(field.options)
+				? field.options
+				: (field.options as string[]).map((value) => ({
+						value: value,
+						label: t(value),
+					}))
 		: [],
-);
+)
 </script>

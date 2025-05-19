@@ -10,20 +10,20 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfObjects } from "inibase/utils";
-import { NMention, type FormItemRule } from "naive-ui";
+import { isArrayOfObjects } from "inibase/utils"
+import type { FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string>();
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
 	required: field.required,
-	validator() {
-		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`);
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
 	},
-};
+}
 
 const options = field.options
 	? isArrayOfObjects(field.options)
@@ -32,5 +32,5 @@ const options = field.options
 				value: value,
 				label: t(value),
 			}))
-	: [];
+	: []
 </script>

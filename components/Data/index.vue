@@ -35,8 +35,6 @@
 </template>
 
 <script lang="ts" setup>
-import { NButton, NText, NListItem, NScrollbar } from "naive-ui";
-
 const { field, value } = defineProps<{ field: Field; value: any }>();
 
 let detectedFieldType = (field.subType ?? field.type) as

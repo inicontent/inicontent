@@ -13,23 +13,19 @@
 </template>
 
 <script lang="ts" setup>
-import { isURL } from "inibase/utils";
-import { NInput, type FormItemRule } from "naive-ui";
+import { isURL } from "inibase/utils"
+import type { FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string>();
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
-    trigger: ['blur', 'input'],
+	trigger: ["blur", "input"],
 	required: field.required,
-	validator() {
-		if (!modelValue.value)
-			return field.required
-				? new Error(`${t(field.key)} ${t("isRequired")}`)
-				: true;
-		if (!isURL(modelValue.value))
-			return new Error(`${t(field.key)} ${t("isNotValid")}`);
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value, isURL)
 	},
-};
+}
 </script>

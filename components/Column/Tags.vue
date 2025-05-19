@@ -9,7 +9,5 @@
 <script lang="ts" setup>
 import { isArrayOfArrays } from "inibase/utils"
 
-import { NFlex, NTag } from "naive-ui";
-
-defineProps<{ field: Field; value: string | string[] }>();
+defineProps<{ field: Field; value: string | string[] }>()
 </script>

@@ -1,10 +1,10 @@
 <template>
-    <NTooltip :delay="500">
+    <NTooltip :delay="1500">
         <template #trigger>
             <NButton circle secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
                 <template #icon>
                     <NIcon>
-                        <IconBooks />
+                        <Icon name="tabler:books" />
                     </NIcon>
                 </template>
             </NButton>
@@ -13,12 +13,12 @@
     </NTooltip>
     <NPopover trigger="click">
         <template #trigger>
-            <NTooltip :delay="500" placement="bottom">
+            <NTooltip :delay="1500" placement="bottom">
                 <template #trigger>
                     <NButton circle secondary size="tiny" @click.prevent.stop="importInputRef?.focus()">
                         <template #icon>
                             <NIcon>
-                                <IconLink />
+                                <Icon name="tabler:link" />
                             </NIcon>
                         </template>
                     </NButton>
@@ -31,16 +31,16 @@
                 :placeholder="t('assetLink')" clearable @keydown.enter.prevent="importAsset">
                 <template #suffix>
                     <NIcon>
-                        <IconLink />
+                        <Icon name="tabler:link" />
                     </NIcon>
                 </template>
             </NInput>
-            <NTooltip :delay="500">
+            <NTooltip :delay="1500">
                 <template #trigger>
                     <NButton :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
                         <template #icon>
                             <NIcon>
-                                <IconArrowRight />
+                                <Icon name="tabler:arrow-right" />
                             </NIcon>
                         </template>
                     </NButton>
@@ -52,15 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IconArrowRight, IconBooks, IconLink } from "@tabler/icons-vue"
-import {
-    NButton,
-    NIcon,
-    NInput,
-    NInputGroup,
-    NPopover,
-    NTooltip,
-} from "naive-ui"
+import type { NInput } from 'naive-ui';
 
 defineTranslation({
     ar: {
@@ -77,7 +69,7 @@ const { field, callback } = defineProps<{
 
 const showAssetsModal = defineModel<boolean>("showAssetsModal")
 
-const importInputRef = ref<InstanceType<typeof NInput> | null>(null)
+const importInputRef = ref<InstanceType<typeof NInput>>()
 
 const appConfig = useAppConfig()
 const assetURLs = ref()
@@ -97,7 +89,8 @@ async function importAsset() {
             body: assetURLs.value,
             params: {
                 locale: Language.value,
-            }, credentials: "include"
+            },
+            credentials: "include",
         },
     )
     if (data.result) {

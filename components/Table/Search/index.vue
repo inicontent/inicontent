@@ -10,31 +10,31 @@
 							circle size="small">
 							<template #icon>
 								<NIcon>
-									<IconPlus />
+									<Icon name="tabler:plus" />
 								</NIcon>
 							</template>
 						</NButton>
 					</NDropdown>
 
-					<NTooltip :delay="500">
+					<NTooltip :delay="1500">
 						<template #trigger>
 							<NButton round type="info" secondary @click="() => toggleCondition(condition)" circle
 								size="small">
 								<template #icon>
 									<NIcon>
-										<IconSwitchHorizontal />
+										<Icon name="tabler:switch-horizontal" />
 									</NIcon>
 								</template>
 							</NButton>
 						</template>
 						{{ t(
-							`convertTo_"${condition === "and" ? "or" : "and"}"_group`,
+							`convert_to_${condition === "and" ? "or" : "and"}_group`,
 						) }}
 					</NTooltip>
 					<NButton round type="error" secondary @click="delete modelValue[condition]" circle size="small">
 						<template #icon>
 							<NIcon>
-								<IconTrash />
+								<Icon name="tabler:trash" />
 							</NIcon>
 						</template>
 					</NButton>
@@ -46,52 +46,40 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	IconPlus,
-	IconTrash,
-	IconSwitchHorizontal,
-	IconArrowMerge,
-	IconArrowFork,
-} from "@tabler/icons-vue";
-import {
-	NButton,
-	NTooltip,
-	NCollapse,
-	NCollapseItem,
-	NDropdown,
-	NIcon,
-	NButtonGroup,
-} from "naive-ui";
+import { NIcon } from "naive-ui"
+import { Icon } from "#components"
 
 defineTranslation({
 	ar: {
+		convert_to_and_group: "تحويل إلى مجموعة و",
+		convert_to_or_group: "تحويل إلى مجموعة أو",
 		andGroup: "مجموعة و",
 		orGroup: "مجموعة أو",
 	},
-});
+})
 
-const { callback } = defineProps<{ callback: CallableFunction }>();
+const { callback } = defineProps<{ callback: CallableFunction }>()
 
 const modelValue = defineModel<searchType>({
 	default: { and: [[null, "=", null]] },
-});
+})
 
 const conditionDropdownOptions = [
 	{
 		key: "and",
 		label: t("andGroup"),
-		icon: () => h(NIcon, () => h(IconArrowMerge)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:arrow-merge" })),
 	},
 	{
 		key: "or",
 		label: t("orGroup"),
-		icon: () => h(NIcon, () => h(IconArrowFork)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:arrow-fork" })),
 	},
-];
+]
 
 function toggleCondition(oldCondition: "and" | "or") {
 	modelValue.value[oldCondition === "and" ? "or" : "and"] =
-		modelValue.value[oldCondition];
-	delete modelValue.value[oldCondition];
+		modelValue.value[oldCondition]
+	delete modelValue.value[oldCondition]
 }
 </script>

@@ -1,15 +1,28 @@
+import Components from "unplugin-vue-components/vite"
+import { NaiveUiResolver } from "unplugin-vue-components/resolvers"
+import Compression from "vite-plugin-compression2"
+
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
-	modules: ["@nuxtjs/device", "nuxtjs-naive-ui", "nuxt-tiptap-editor"],
+	telemetry: false,
+
+	modules: [
+		"nuxtjs-naive-ui",
+		"nuxt-tiptap-editor",
+		"@nuxtjs/device",
+		"@nuxt/fonts",
+		"@nuxt/icon",
+		"nuxt-build-cache",
+	],
 	tiptap: {
 		prefix: "Tiptap",
 	},
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
-	telemetry: false,
 	experimental: {
+		buildCache: true,
 		payloadExtraction: false,
 	},
 	devServer: {
@@ -19,11 +32,8 @@ export default defineNuxtConfig({
 		enabled: false,
 	},
 	vite: {
-		server: {
-			hmr: {
-				clientPort: 3434,
-			},
-		},
+		plugins: [Components({ resolvers: [NaiveUiResolver()] }), Compression()],
+		server: { hmr: { clientPort: 3434 } },
 	},
 	...(process.env.GIGET_AUTH
 		? {
@@ -32,5 +42,5 @@ export default defineNuxtConfig({
 				],
 			}
 		: {}),
-	compatibilityDate: "2025-02-01",
+	compatibilityDate: "2025-05-18",
 })

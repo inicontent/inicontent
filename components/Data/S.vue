@@ -8,7 +8,5 @@
 </template>
 
 <script lang="ts" setup>
-import { NList, NScrollbar } from "naive-ui";
-
 const { schema, value } = defineProps<{ schema: Schema; value: Item }>();
 </script>

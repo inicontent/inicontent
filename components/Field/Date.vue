@@ -11,19 +11,19 @@
 </template>
 
 <script lang="ts" setup>
-import { NDatePicker, type FormItemRule } from "naive-ui"
+import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel<number>()
 
 const rule: FormItemRule = {
-	trigger: ["blur", "change"],
-	type: "number",
-	required: field.required,
-	validator() {
-		if (!modelValue.value && field.required)
-			return new Error(`${t(field.key)} ${t("isRequired")}`)
-	},
+    trigger: "change",
+    type: "number",
+    required: field.required,
+    validator: async () => {
+        await nextTick()
+        return fieldValidator(field, modelValue.value)
+    }
 }
 </script>

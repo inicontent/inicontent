@@ -23,7 +23,6 @@
 </template>
 
 <script lang="ts" setup>
-import { NButton, NFlex, NPopover, NCollapse, NCollapseItem } from "naive-ui";
 import { isArrayOfObjects } from "inibase/utils";
 
 const { field, value } = defineProps<{ field: Field; value?: any }>();

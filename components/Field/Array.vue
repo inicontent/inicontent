@@ -21,7 +21,7 @@
 			:disabled="!modelValue?.length">
 			<template #header>
 				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
-					:delay="500" :options="dropdownOptions" @select="handleSelect">
+					:delay="1500" :options="dropdownOptions" @select="handleSelect">
 					{{ t(field.key) }}
 				</NDropdown>
 			</template>
@@ -32,7 +32,7 @@
 						<NButton size="small" round @click="handleAddNewItem">
 							<template #icon>
 								<NIcon>
-									<IconPlus />
+									<Icon name="tabler:plus" />
 								</NIcon>
 							</template>
 						</NButton>
@@ -56,7 +56,7 @@
 									@click="handleDeleteItem(index)">
 									<template #icon>
 										<NIcon>
-											<IconTrash />
+											<Icon name="tabler:trash" />
 										</NIcon>
 									</template>
 								</NButton>
@@ -81,7 +81,7 @@
 		header-style="padding-top: 0; padding-left: 0; padding-right: 0;">
 		<template #header>
 			<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
-				:delay="500" :options="dropdownOptions" @select="handleSelect">
+				:delay="1500" :options="dropdownOptions" @select="handleSelect">
 				{{ t(field.key) }}
 			</NDropdown>
 		</template>
@@ -92,7 +92,7 @@
 					<NButton size="small" round @click="handleAddNewItem">
 						<template #icon>
 							<NIcon>
-								<IconPlus />
+								<Icon name="tabler:plus" />
 							</NIcon>
 						</template>
 					</NButton>
@@ -107,101 +107,88 @@
 <script setup lang="ts">
 import {
 	NIcon,
-	NCollapse,
-	NCollapseItem,
 	NButton,
-	NCard,
-	NDataTable,
 	NText,
 	NTooltip,
-	NDropdown,
-	NButtonGroup,
 	NFlex,
 	NPerformantEllipsis,
 	type DataTableColumns,
 	type DropdownOption,
-} from "naive-ui";
-import { isArrayOfObjects, isStringified } from "inibase/utils";
-import {
-	IconChevronRight,
-	IconClipboard,
-	IconCopy,
-	IconPlus,
-	IconTrash,
-} from "@tabler/icons-vue";
-import { LazyField } from "#components";
-import Inison from "inison";
+} from "naive-ui"
+import { isArrayOfObjects, isStringified } from "inibase/utils"
+import { LazyField, Icon } from "#components"
+import Inison from "inison"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<(string | number | Item)[]>();
-const parentExpanded = ref();
+const modelValue = defineModel<(string | number | Item)[]>()
+const parentExpanded = ref()
 
-const expandedNames = ref();
+const expandedNames = ref()
 watch(expandedNames, (v) => {
-	if (v) parentExpanded.value = field.id;
-});
+	if (v) parentExpanded.value = field.id
+})
 function handleAddNewItem() {
-	let newElementIndex: number;
+	let newElementIndex: number
 	if (!modelValue.value) {
-		newElementIndex = 0;
+		newElementIndex = 0
 		modelValue.value = [
 			field.onCreate
 				? field.onCreate instanceof Function
 					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
-		];
+		]
 	} else {
-		newElementIndex = toRaw(modelValue.value).length;
+		newElementIndex = toRaw(modelValue.value).length
 		modelValue.value.push(
 			field.onCreate
 				? field.onCreate instanceof Function
 					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
-		);
+		)
 	}
-	expandedNames.value = `${field.id}.${newElementIndex}`;
+	expandedNames.value = `${field.id}.${newElementIndex}`
 }
 
 function handleDeleteItem(index: number) {
-	if (field.onDelete) field.onDelete(index);
-	modelValue.value?.splice(index, 1);
+	if (field.onDelete) field.onDelete(index)
+	modelValue.value?.splice(index, 1)
 }
 
 async function handleSelect(value: string) {
 	switch (value) {
 		case "copy": {
-			if (!modelValue.value) return;
-			await copyToClipboard(Inison.stringify(modelValue.value));
-			window.$message.success(t("copiedSuccessfully"));
-			break;
+			if (!modelValue.value) return
+			await copyToClipboard(Inison.stringify(modelValue.value))
+			window.$message.success(t("copiedSuccessfully"))
+			break
 		}
 		case "paste": {
 			try {
-				const itemFromClipboard = await navigator.clipboard.readText();
+				const itemFromClipboard = await navigator.clipboard.readText()
 
 				if (!itemFromClipboard) {
-					window.$message.error(t("clipboardEmpty"));
-					return;
+					window.$message.error(t("clipboardEmpty"))
+					return
 				}
 				if (!isStringified(itemFromClipboard)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"));
-					return;
+					window.$message.error(t("clipboardItemIsNotCorrect"))
+					return
 				}
 
-				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
+				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard)
 				if (!unstringifiedItem && !Array.isArray(unstringifiedItem)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"));
-					return;
+					window.$message.error(t("clipboardItemIsNotCorrect"))
+					return
 				}
 
-				modelValue.value = unstringifiedItem;
+				modelValue.value = unstringifiedItem
 			} catch {
-				window.$message.error(t("clipboardItemIsNotCorrect"));
+				window.$message.error(t("clipboardItemIsNotCorrect"))
 			}
 		}
 	}
@@ -214,17 +201,17 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 			!!modelValue.value &&
 			Array.isArray(modelValue.value) &&
 			modelValue.value.length > 0,
-		icon: () => h(NIcon, () => h(IconCopy)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
 	{
 		label: t("pasteItem"),
 		key: "paste",
-		icon: () => h(NIcon, () => h(IconClipboard)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:clipboard" })),
 	},
-]);
+])
 
-const columns = ref<DataTableColumns<any>>();
-const tableWidth = ref<number>(0);
+const columns = ref<DataTableColumns<any>>()
+const tableWidth = ref<number>(0)
 
 function setColumns() {
 	columns.value = [
@@ -267,7 +254,7 @@ function setColumns() {
 							: {}),
 					},
 					"onUpdate:modelValue": (newValue) => {
-						(modelValue.value as Item[])[index][child.key] = newValue;
+						; (modelValue.value as Item[])[index][child.key] = newValue
 					},
 					modelValue: (modelValue.value as Item[])[index][child.key],
 				}),
@@ -300,25 +287,25 @@ function setColumns() {
 										onClick: () => handleDeleteItem(index),
 									},
 									{
-										icon: () => h(NIcon, () => h(IconTrash)),
+										icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
 									},
 								),
 							default: () => t("delete"),
 						},
-					);
+					)
 				},
 			},
-	] as DataTableColumns<any>;
+	] as DataTableColumns<any>
 
 	tableWidth.value = columns.value.reduce(
 		(accumulator: number, { width }) =>
 			accumulator + ((width as number | undefined) ?? 0),
 		40,
-	);
+	)
 }
 
-watch(Language, setColumns);
+watch(Language, setColumns)
 onMounted(() => {
-	if (isArrayOfObjects(field.children)) setColumns();
-});
+	if (isArrayOfObjects(field.children)) setColumns()
+})
 </script>

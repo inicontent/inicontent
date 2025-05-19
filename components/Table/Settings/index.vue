@@ -5,7 +5,7 @@
 				<NCard :title="t('tableSettings')" hoverable>
 					<template #header-extra>
 						<NButtonGroup>
-							<NTooltip :delay="500">
+							<NTooltip :delay="1500">
 								<template #trigger>
 									<NPopconfirm :show-icon="false" @positive-click="deleteTable">
 										<template #trigger>
@@ -13,7 +13,7 @@
 												:loading="Loading.deleteTable">
 												<template #icon>
 													<NIcon>
-														<IconTrash />
+														<Icon name="tabler:trash" />
 													</NIcon>
 												</template>
 											</NButton>
@@ -26,7 +26,7 @@
 							<NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
 								<template #icon>
 									<NIcon>
-										<IconDeviceFloppy />
+										<Icon name="tabler:device-floppy" />
 									</NIcon>
 								</template>
 								<template v-if="!$device.isMobile" #default>
@@ -65,7 +65,7 @@
 													@click="activate(), focusSingleLabelSelect()" :disabled>
 													<template #icon>
 														<NIcon>
-															<IconPlus />
+															<Icon name="tabler:plus" />
 														</NIcon>
 													</template>
 												</NButton>
@@ -91,7 +91,7 @@
 									<NButton secondary type="primary" round>
 										<template #icon>
 											<NIcon>
-												<IconPlus />
+												<Icon name="tabler:plus" />
 											</NIcon>
 										</template>
 									</NButton>
@@ -99,7 +99,7 @@
 							</template>
 							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
 							<NForm size="small">
-								<TableSettingsSchema v-model="tableCopy.schema"
+								<LazyTableSettingsSchema v-model="tableCopy.schema"
 									v-model:expanded-names="expandedNames" />
 							</NForm>
 						</NCard>
@@ -117,31 +117,12 @@
 </template>
 
 <script lang="ts" setup>
-import { IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-vue"
-import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils"
 import {
-	type FormInst,
-	NAnchor,
-	NAnchorLink,
-	NButton,
-	NButtonGroup,
-	NCard,
-	NCascader,
-	NDropdown,
-	NDynamicTags,
-	NEmpty,
-	NFlex,
-	NForm,
-	NFormItem,
-	NGrid,
-	NGridItem,
-	NIcon,
-	NPopconfirm,
-	NSelect,
-	NSpin,
 	NTag,
-	NTooltip,
+	type FormInst,
 } from "naive-ui"
+import { Icon } from "#components"
+import { flattenSchema, isValidID, isArrayOfObjects } from "inibase/utils"
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -207,7 +188,7 @@ const route = useRoute()
 const router = useRouter()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
-const settingsFormRef = ref<FormInst | null>(null)
+const settingsFormRef = ref<FormInst>()
 const tableCopy = ref<
 	Table & {
 		localLabel?: { value: string; label: string }[]
@@ -235,14 +216,16 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
 					body: bodyContent,
 					params: {
 						locale: Language.value,
-					}, credentials: "include"
+					},
+					credentials: "include",
 				},
 			)
 			const tableIndex = database.value.tables?.findIndex(
@@ -279,13 +262,15 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
 			params: {
 				locale: Language.value,
-			}, credentials: "include"
+			},
+			credentials: "include",
 		},
 	)
 	if (data?.result) {
@@ -320,22 +305,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-					?.split(/(@\w+)/g)
-					.filter((value: string) => value.trim() != "")
-					.map((label: string) => {
-						if (label.startsWith("@"))
+						?.split(/(@\w+)/g)
+						.filter((value: string) => value.trim() != "")
+						.map((label: string) => {
+							if (label.startsWith("@"))
+								return {
+									label:
+										flattenCopySchema.value.find(
+											({ id }) => id === label.slice(1),
+										)?.key ?? "",
+									value: label,
+								}
 							return {
-								label:
-									flattenCopySchema.value.find(
-										({ id }) => id === label.slice(1),
-									)?.key ?? "",
+								label,
 								value: label,
 							}
-						return {
-							label,
-							value: label,
-						}
-					})
+						})
 				: undefined
 	},
 	{ immediate: true },
@@ -376,7 +361,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isValidID(labelObject.value.slice(1))
+				isValidID(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -419,8 +404,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -430,8 +415,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -447,8 +432,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -457,8 +442,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -467,8 +452,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -478,8 +463,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -489,8 +474,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -522,10 +507,15 @@ function generateMentionOptions(
 			(Array.isArray(field.type) && field.type.includes("array")) ||
 			(field.type === "array" &&
 				field.children &&
+				Array.isArray(field.children) &&
 				isArrayOfObjects(field.children))
 		)
 			continue
-		if (field.children && isArrayOfObjects(field.children))
+		if (
+			field.children &&
+			Array.isArray(field.children) &&
+			isArrayOfObjects(field.children)
+		)
 			RETURN = [...RETURN, ...generateMentionOptions(field.children, field.key)]
 		else
 			RETURN.push({

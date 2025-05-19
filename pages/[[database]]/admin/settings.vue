@@ -4,14 +4,14 @@
 			<n-card :title="t('settings')" hoverable>
 				<template #header-extra>
 					<n-flex>
-						<n-tooltip :delay="500">
+						<n-tooltip :delay="1500">
 							<template #trigger>
 								<n-popconfirm :show-icon="false" @positive-click="deleteDatabase">
 									<template #trigger>
 										<n-button type="error" tertiary round :loading="Loading.deleteDatabase">
 											<template #icon>
 												<NIcon>
-													<IconTrash />
+													<Icon name="tabler:trash" />
 												</NIcon>
 											</template>
 										</n-button>
@@ -25,7 +25,7 @@
 							:loading="Loading.updateDatabase">
 							<template #icon>
 								<NIcon>
-									<IconDeviceFloppy />
+									<Icon name="tabler:device-floppy" />
 								</NIcon>
 							</template>
 							{{ t("save") }}
@@ -60,22 +60,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-vue";
-import {
-	type FormInst,
-	NAnchor,
-	NAnchorLink,
-	NButton,
-	NCard,
-	NEmpty,
-	NForm,
-	NGridItem,
-	NGrid,
-	NIcon,
-	NPopconfirm,
-	NFlex,
-	NTooltip,
-} from "naive-ui";
+import type { FormInst } from 'naive-ui';
 
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "global"],
@@ -111,7 +96,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
 const router = useRouter();
 const database = useState<Database>("database");
-const databaseRef = ref<FormInst | null>(null);
+const databaseRef = ref<FormInst>();
 const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)));
 
 const databaseSchema: Schema = [

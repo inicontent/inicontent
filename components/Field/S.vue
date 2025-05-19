@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts" setup>
-import { NFlex } from "naive-ui"
 import { isArrayOfObjects } from "inibase/utils"
 
 function addIdToSchema(schema: Schema, startWithID = 0) {

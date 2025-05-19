@@ -5,7 +5,6 @@
 </template>
 
 <script setup lang="ts">
-import { NResult } from "naive-ui"
 import type { NuxtError } from "#app"
 type errorCodes =
 	| "info"

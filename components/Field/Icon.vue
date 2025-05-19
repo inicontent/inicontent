@@ -40,54 +40,45 @@
 </template>
 
 <script lang="ts" setup>
-import { IconIcons, IconQuestionMark } from "@tabler/icons-vue";
-import {
-    NButton,
-    NIcon,
-    NEmpty,
-    NInput,
-    NPopover,
-    NVirtualList,
-    type FormItemRule,
-} from "naive-ui";
+import type { FormItemRule } from "naive-ui"
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string>();
+const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
-    required: field.required,
-    validator() {
-        if (!modelValue.value && field.required)
-            return new Error(`${t(field.key)} ${t("isRequired")}`);
-    },
-};
+	required: field.required,
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
+	},
+}
 function IconsListSingle(icon: string) {
-    return {
-        key: icon,
-        value: icon,
-    };
+	return {
+		key: icon,
+		value: icon,
+	}
 }
 
 function getIconsList(search?: string) {
-    if (!search) return iconsList.map(IconsListSingle);
-    const filteredIconsList = iconsList.filter((icon) => icon.includes(search));
-    if (!filteredIconsList.length) return [];
-    if (filteredIconsList.length === 1)
-        return [
-            ...filteredIconsList.map(IconsListSingle),
-            ...iconsList.filter((icon) => icon !== search).map(IconsListSingle),
-        ];
-    return [
-        ...filteredIconsList.map(IconsListSingle),
-        ...iconsList.filter((icon) => !icon.includes(search)).map(IconsListSingle),
-    ];
+	if (!search) return iconsList.map(IconsListSingle)
+	const filteredIconsList = iconsList.filter((icon) => icon.includes(search))
+	if (!filteredIconsList.length) return []
+	if (filteredIconsList.length === 1)
+		return [
+			...filteredIconsList.map(IconsListSingle),
+			...iconsList.filter((icon) => icon !== search).map(IconsListSingle),
+		]
+	return [
+		...filteredIconsList.map(IconsListSingle),
+		...iconsList.filter((icon) => !icon.includes(search)).map(IconsListSingle),
+	]
 }
-const formatedIconsList = computed(() => getIconsList(modelValue.value));
-const showPopover = ref(false);
+const formatedIconsList = computed(() => getIconsList(modelValue.value))
+const showPopover = ref(false)
 function onClickoutside(event: MouseEvent) {
-    if (!(event.target as HTMLElement).classList.contains("IconPickerInput"))
-        showPopover.value = false;
+	if (!(event.target as HTMLElement).classList.contains("IconPickerInput"))
+		showPopover.value = false
 }
 </script>
 

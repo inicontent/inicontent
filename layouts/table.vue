@@ -24,16 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { IconEye, IconPlus, IconSettings, IconWebhook } from "@tabler/icons-vue"
-import {
-	NIcon,
-	NLayout,
-	NLayoutContent,
-	NLayoutSider,
-	NMenu,
-	type MenuOption,
-} from "naive-ui"
-import { NuxtLink } from "#components"
+import { NIcon, type MenuOption } from "naive-ui"
+import { Icon, LazyTableIcon, NuxtLink } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
@@ -98,7 +90,7 @@ function renderSingleItem(table: Table): MenuOption {
 				),
 			key: table.slug,
 			show: table.slug !== "assets",
-			icon: () => h(NIcon, () => h(IconEye)),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
 		},
 		{
 			label: () =>
@@ -111,7 +103,7 @@ function renderSingleItem(table: Table): MenuOption {
 				),
 			key: `${table.slug}-new`,
 			show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
-			icon: () => h(NIcon, () => h(IconPlus)),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:plus" })),
 		},
 		{
 			label: () =>
@@ -123,7 +115,7 @@ function renderSingleItem(table: Table): MenuOption {
 					{ default: () => t("settings") },
 				),
 			key: `${table.slug}-settings`,
-			icon: () => h(NIcon, () => h(IconSettings)),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 			show:
 				user.value?.role === appConfig.idOne &&
 				!["sessions", "translations", "assets"].includes(table.slug),
@@ -138,7 +130,7 @@ function renderSingleItem(table: Table): MenuOption {
 					{ default: () => t("flows") },
 				),
 			key: `${table.slug}-flows`,
-			icon: () => h(NIcon, () => h(IconWebhook)),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 			show:
 				user.value?.role === appConfig.idOne &&
 				!["sessions", "translations"].includes(table.slug),
@@ -154,7 +146,7 @@ function renderSingleItem(table: Table): MenuOption {
 				{ default: () => t(table.slug) },
 			),
 		key: itemChildren.length ? `${table.slug}Group` : table.slug,
-		icon: () => getTableIcon(table),
+		icon: () => h(LazyTableIcon, { table }),
 		children: [
 			{
 				type: "group",
@@ -169,10 +161,22 @@ function renderSingleItem(table: Table): MenuOption {
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-			...(database.value.tables
-				.filter(
+				...(database.value.tables
+					.filter(
+						({ slug, allowedMethods }) =>
+							![
+								"users",
+								"sessions",
+								"assets",
+								"translations",
+								"pages",
+								"blocks",
+							].includes(slug) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+				database.value.tables.filter(
 					({ slug, allowedMethods }) =>
-						![
+						[
 							"users",
 							"sessions",
 							"assets",
@@ -180,33 +184,21 @@ const menuOptions = computed(() =>
 							"pages",
 							"blocks",
 						].includes(slug) && allowedMethods?.includes("r"),
-				)
-				.map(renderSingleItem) ?? []),
-			database.value.tables.filter(
-				({ slug, allowedMethods }) =>
-					[
-						"users",
-						"sessions",
-						"assets",
-						"translations",
-						"pages",
-						"blocks",
-					].includes(slug) && allowedMethods?.includes("r"),
-			).length
-				? {
-					key: "divider-1",
-					type: "divider",
-				}
-				: undefined,
-			...(database.value.tables
-				?.filter(
-					({ slug, allowedMethods }) =>
-						["users", "sessions", "assets", "pages", "blocks"].includes(
-							slug,
-						) && allowedMethods?.includes("r"),
-				)
-				.map(renderSingleItem) ?? []),
-		].filter((item) => item) as MenuOption[])
+				).length
+					? {
+							key: "divider-1",
+							type: "divider",
+						}
+					: undefined,
+				...(database.value.tables
+					?.filter(
+						({ slug, allowedMethods }) =>
+							["users", "sessions", "assets", "pages", "blocks"].includes(
+								slug,
+							) && allowedMethods?.includes("r"),
+					)
+					.map(renderSingleItem) ?? []),
+			].filter((item) => item) as MenuOption[])
 		: [],
 )
 </script>

@@ -4,14 +4,14 @@
 		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :path="field.id" :name="field.id">
 			<template #header>
 				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
-					:delay="500" :options="dropdownOptions" @select="handleSelect">
+					:delay="1500" :options="dropdownOptions" @select="handleSelect">
 					{{ t(field.key) }}
 				</NDropdown>
 			</template>
 			<div class="collapseContentPadding">
 				<NFlex>
-					<LazyField v-for="field of (field.children as Schema)" :field="field"
-						v-model="localModelValue[field.key]" />
+					<LazyField v-for="childField of (field.children as Schema)" :field="childField"
+						v-model="localModelValue[childField.key]" />
 				</NFlex>
 			</div>
 		</NCollapseItem>
@@ -19,65 +19,58 @@
 </template>
 
 <script setup lang="ts">
-import { IconClipboard, IconCopy } from "@tabler/icons-vue";
-import { isObject, isStringified } from "inibase/utils";
-import Inison from "inison";
-import {
-	NCollapse,
-	NCollapseItem,
-	NDropdown,
-	NIcon,
-	NFlex,
-	type DropdownOption,
-} from "naive-ui";
+import { Icon } from "#components"
+import { isObject, isStringified } from "inibase/utils"
+import Inison from "inison"
+import { NIcon, type DropdownOption } from "naive-ui"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const { field } = defineProps<{ field: Field }>();
+const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<Record<string | number, any>>();
+const modelValue = defineModel<Record<string | number, any>>()
 
 const localModelValue = ref<Record<string | number, any>>(
 	toRaw(modelValue.value ?? {}),
-);
+)
 watch(
 	localModelValue,
 	(v) => {
-		modelValue.value = v;
+		modelValue.value = v
 	},
 	{ deep: true },
-);
+)
 
 async function handleSelect(value: string) {
 	switch (value) {
 		case "copy": {
-			if (!modelValue.value) return;
-			await copyToClipboard(Inison.stringify(modelValue.value));
-			window.$message.success(t("copiedSuccessfully"));
-			break;
+			if (!modelValue.value) return
+			await copyToClipboard(Inison.stringify(modelValue.value))
+			window.$message.success(t("copiedSuccessfully"))
+			break
 		}
 		case "paste": {
 			try {
-				const itemFromClipboard = await navigator.clipboard.readText();
+				const itemFromClipboard = await navigator.clipboard.readText()
 
 				if (!itemFromClipboard) {
-					window.$message.error(t("clipboardEmpty"));
-					return;
+					window.$message.error(t("clipboardEmpty"))
+					return
 				}
 				if (!isStringified(itemFromClipboard)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"));
-					return;
+					window.$message.error(t("clipboardItemIsNotCorrect"))
+					return
 				}
 
-				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
+				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard)
 				if (!unstringifiedItem && !isObject(unstringifiedItem)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"));
-					return;
+					window.$message.error(t("clipboardItemIsNotCorrect"))
+					return
 				}
 
-				modelValue.value = unstringifiedItem;
+				modelValue.value = unstringifiedItem
 			} catch {
-				window.$message.error(t("clipboardItemIsNotCorrect"));
+				window.$message.error(t("clipboardItemIsNotCorrect"))
 			}
 		}
 	}
@@ -87,12 +80,12 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 		label: t("copyItem"),
 		key: "copy",
 		show: !!modelValue.value,
-		icon: () => h(NIcon, () => h(IconCopy)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
 	{
 		label: t("pasteItem"),
 		key: "paste",
-		icon: () => h(NIcon, () => h(IconClipboard)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:clipboard" })),
 	},
-]);
+])
 </script>

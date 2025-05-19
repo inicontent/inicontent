@@ -25,7 +25,7 @@
                     size="small">
                     <template #icon>
                         <NIcon>
-                            <IconMinus />
+                            <Icon name="tabler:minus" />
                         </NIcon>
                     </template>
                 </NButton>
@@ -36,13 +36,12 @@
 </template>
 
 <script lang="ts" setup>
-import { IconMinus } from "@tabler/icons-vue";
 import {
     getField as getFieldFromSchema,
     isArrayOfObjects,
     isObject,
 } from "inibase/utils";
-import { NButton, NFlex, NIcon, NInputGroup, NSelect } from "naive-ui";
+import { Icon } from "#components";
 
 const { callback } = defineProps<{ callback: CallableFunction }>();
 
@@ -68,7 +67,7 @@ function getFieldFromItem(item: searchTypeValueItem) {
         required: false,
         labelProps: {
             showLabel: false,
-            style: "margin-top: -3px;width:33.33%",
+            style: "width:33.33%",
             showFeedback: false,
         },
         inputProps: {

@@ -18,7 +18,7 @@
             :disabled="!editor?.can().chain().focus().toggleBold().run()"
             :type="editor?.isActive('bold') ? 'primary' : 'default'">
             <NIcon>
-              <IconBold />
+              <Icon name="tabler:bold" />
             </NIcon>
           </NButton>
 
@@ -26,7 +26,7 @@
             :disabled="!editor?.can().chain().focus().toggleItalic().run()"
             :type="editor?.isActive('italic') ? 'primary' : 'default'">
             <NIcon>
-              <IconItalic />
+              <Icon name="tabler:italic" />
             </NIcon>
           </NButton>
 
@@ -34,7 +34,7 @@
             :disabled="!editor?.can().chain().focus().toggleUnderline().run()"
             :type="editor?.isActive('underline') ? 'primary' : 'default'">
             <NIcon>
-              <IconUnderline />
+              <Icon name="tabler:underline" />
             </NIcon>
           </NButton>
 
@@ -42,7 +42,7 @@
             @click="editor?.chain().focus().toggleStrike().run()"
             :disabled="!editor?.can().chain().focus().toggleStrike().run()">
             <NIcon>
-              <IconStrikethrough />
+              <Icon name="tabler:strikethrough" />
             </NIcon>
           </NButton>
 
@@ -52,7 +52,7 @@
             :options="headingOptions">
             <NButton :type="editor?.isActive('heading') ? 'primary' : 'default'">
               <NIcon>
-                <IconHeading />
+                <Icon name="tabler:heading" />
               </NIcon>
             </NButton>
           </NPopselect>
@@ -63,7 +63,7 @@
             :options="fontSizeOptions">
             <NButton @click="editor?.chain().focus().unsetFontSize().run()">
               <NIcon>
-                <IconTextSize />
+                <Icon name="tabler:text-size" />
               </NIcon>
             </NButton>
           </NPopselect>
@@ -73,7 +73,7 @@
               <NButton :style="{ color: fontColor }"
                 :disabled="!editor?.can().chain().focus().setColor('#ff9800').run()">
                 <NIcon>
-                  <IconColorPicker />
+                  <Icon name="tabler:color-picker" />
                 </NIcon>
               </NButton>
             </template>
@@ -85,7 +85,7 @@
             <template #trigger>
               <NButton @click="editor?.chain().focus().toggleHighlight().run()" :style="{ color: fontBgColor }">
                 <NIcon>
-                  <IconHighlight />
+                  <Icon name="tabler:highlight" />
                 </NIcon>
               </NButton>
             </template>
@@ -103,7 +103,7 @@
 
           <NButton @click="showAssetsModal = true">
             <NIcon>
-              <IconUpload />
+              <Icon name="tabler:upload" />
             </NIcon>
           </NButton>
 
@@ -115,7 +115,7 @@
             <template #trigger>
               <NButton :type="editor?.isActive('link') ? 'primary' : 'default'">
                 <NIcon>
-                  <IconLink />
+                  <Icon name="tabler:link" />
                 </NIcon>
               </NButton>
             </template>
@@ -125,12 +125,12 @@
                 <NButton :type="'error'" @click="editor?.chain().focus().unsetLink().run()"
                   :disabled="!editor?.isActive('link')">
                   <NIcon>
-                    <IconLinkOff />
+                    <Icon name="tabler:link-off" />
                   </NIcon>
                 </NButton>
                 <NButton type="primary" @click="setLink">
                   <NIcon>
-                    <IconArrowRight />
+                    <Icon name="tabler:arrow-right" />
                   </NIcon>
                 </NButton>
               </NButtonGroup>
@@ -140,14 +140,14 @@
           <NButton :type="editor?.isActive('bulletList') ? 'primary' : 'default'"
             @click="editor?.chain().focus().toggleBulletList().run()">
             <NIcon>
-              <IconListNumbers />
+              <Icon name="tabler:list-numbers" />
             </NIcon>
           </NButton>
 
           <NButton :type="editor?.isActive('orderedList') ? 'primary' : 'default'"
             @click="editor?.chain().focus().toggleOrderedList().run()">
             <NIcon>
-              <IconList />
+              <Icon name="tabler:list" />
             </NIcon>
           </NButton>
 
@@ -162,21 +162,21 @@
           <NButton :type="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('left').run()">
             <NIcon>
-              <IconAlignLeft />
+              <Icon name="tabler:align-left" />
             </NIcon>
           </NButton>
 
           <NButton :type="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('center').run()">
             <NIcon>
-              <IconAlignCenter />
+              <Icon name="tabler:align-center" />
             </NIcon>
           </NButton>
 
           <NButton :type="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('right').run()">
             <NIcon>
-              <IconAlignRight />
+              <Icon name="tabler:align-right" />
             </NIcon>
           </NButton>
 
@@ -184,7 +184,7 @@
           <NButton :type="editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('justify').run()">
             <NIcon>
-              <IconAlignJustified />
+              <Icon name="tabler:align-justified" />
             </NIcon>
           </NButton>
 
@@ -194,7 +194,7 @@
             :type="editor?.isActive({ textAlign: 'left' }) || editor?.isActive({ textAlign: 'center' }) || editor?.isActive({ textAlign: 'right' }) || editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().unsetTextAlign().run()">
             <NIcon>
-              <IconTextWrap />
+              <Icon name="tabler:text-wrap" />
             </NIcon>
           </NButton>
 
@@ -206,7 +206,7 @@
         <NButtonGroup size="small">
           <NButton @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
             <NIcon>
-              <IconTablePlus />
+              <Icon name="tabler:table-plus" />
             </NIcon>
           </NButton>
           <template
@@ -215,7 +215,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().deleteTable().run()">
                   <NIcon>
-                    <IconTableMinus />
+                    <Icon name="tabler:table-minus" />
                   </NIcon>
                 </NButton>
               </template>
@@ -226,7 +226,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().addColumnAfter().run()">
                   <NIcon>
-                    <IconColumnInsertRight />
+                    <Icon name="tabler:column-insert-right" />
                   </NIcon>
                 </NButton>
               </template>
@@ -237,7 +237,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().addColumnBefore().run()">
                   <NIcon>
-                    <IconColumnInsertLeft />
+                    <Icon name="tabler:column-insert-left" />
                   </NIcon>
                 </NButton>
               </template>
@@ -248,7 +248,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().deleteColumn().run()">
                   <NIcon>
-                    <IconColumnRemove />
+                    <Icon name="tabler:column-remove" />
                   </NIcon>
                 </NButton>
               </template>
@@ -259,7 +259,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().addRowBefore().run()">
                   <NIcon>
-                    <IconRowInsertTop />
+                    <Icon name="tabler:row-insert-top" />
                   </NIcon>
                 </NButton>
               </template>
@@ -270,7 +270,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().addColumnBefore().run()">
                   <NIcon>
-                    <IconColumnInsertLeft />
+                    <Icon name="tabler:column-insert-left" />
                   </NIcon>
                 </NButton>
               </template>
@@ -281,7 +281,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().addRowAfter().run()">
                   <NIcon>
-                    <IconRowInsertBottom />
+                    <Icon name="tabler:row-insert-bottom" />
                   </NIcon>
                 </NButton>
               </template>
@@ -292,7 +292,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().deleteRow().run()">
                   <NIcon>
-                    <IconRowRemove />
+                    <Icon name="tabler:row-remove" />
                   </NIcon>
                 </NButton>
               </template>
@@ -304,7 +304,7 @@
               <template #trigger>
                 <NButton @click="editor?.chain().focus().mergeCells().run()">
                   <NIcon>
-                    <IconTableRow />
+                    <Icon name="tabler:table-row" />
                   </NIcon>
                 </NButton>
               </template>
@@ -320,14 +320,14 @@
           <NButton @click="editor?.chain().focus().undo().run()"
             :disabled="!editor?.can().chain().focus().undo().run()">
             <NIcon>
-              <IconArrowBackUp />
+              <Icon name="tabler:arrow-back-up" />
             </NIcon>
           </NButton>
 
           <NButton @click="editor?.chain().focus().redo().run()"
             :disabled="!editor?.can().chain().focus().redo().run()">
             <NIcon>
-              <IconArrowForwardUp />
+              <Icon name="tabler:arrow-forward-up" />
             </NIcon>
           </NButton>
         </NButtonGroup>
@@ -342,54 +342,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-	NButton,
-	NButtonGroup,
-	NRadio,
-	NDrawer,
-	NDrawerContent,
-	NIcon,
-	NPopselect,
-	NScrollbar,
-	NFlex,
-	NPopover,
-	NDivider,
-	NInputGroup,
-	NInput,
-	NTooltip,
-} from "naive-ui"
-import {
-	IconBold,
-	IconItalic,
-	IconUnderline,
-	IconStrikethrough,
-	IconHeading,
-	IconColorPicker,
-	IconHighlight,
-	IconListNumbers,
-	IconList,
-	IconTextSize,
-	IconUpload,
-	IconLink,
-	IconArrowRight,
-	IconAlignLeft,
-	IconAlignCenter,
-	IconAlignRight,
-	IconArrowBackUp,
-	IconArrowForwardUp,
-	IconLinkOff,
-	IconAlignJustified,
-	IconTextWrap,
-	IconTablePlus,
-	IconTableMinus,
-	IconColumnInsertLeft,
-	IconColumnInsertRight,
-	IconColumnRemove,
-	IconRowInsertBottom,
-	IconRowInsertTop,
-	IconRowRemove,
-	IconTableRow,
-} from "@tabler/icons-vue"
 import TiptapTextStyle from "@tiptap/extension-text-style"
 import { Color as TiptapColor } from "@tiptap/extension-color"
 import TiptapHighlight from "@tiptap/extension-highlight"

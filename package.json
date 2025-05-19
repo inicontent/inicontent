@@ -27,9 +27,9 @@
 		"nuxt.config.ts"
 	],
 	"dependencies": {
-		"@fontsource-variable/cairo": "^5.2.5",
+		"@iconify-json/tabler": "^1.2.18",
+		"@nuxt/fonts": "^0.11.4",
 		"@nuxtjs/device": "3.2.4",
-		"@tabler/icons-vue": "^3.31.0",
 		"@tiptap/extension-color": "^2.12.0",
 		"@tiptap/extension-highlight": "^2.12.0",
 		"@tiptap/extension-table": "^2.12.0",
@@ -49,7 +49,10 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0-beta.1",
-		"lefthook": "^1.11.3"
-	},
-	"packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+		"@nuxt/icon": "^1.13.0",
+		"lefthook": "^1.11.3",
+		"nuxt-build-cache": "^0.1.1",
+		"unplugin-vue-components": "^28.5.0",
+		"vite-plugin-compression2": "^1.3.3"
+	}
 }

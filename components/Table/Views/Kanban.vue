@@ -18,7 +18,7 @@
 						}">
 							<template #icon>
 								<NIcon :color="column.color?.textColor">
-									<IconPlus />
+									<Icon name="tabler:plus" />
 								</NIcon>
 							</template>
 						</NButton>
@@ -39,7 +39,7 @@
 										<NButton size="tiny" round style="position: absolute;" secondary type="primary">
 											<template #icon>
 												<NIcon>
-													<IconDots />
+													<Icon name="tabler:dots" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -67,21 +67,10 @@
 </template>
 
 <script lang="ts" setup>
-import { IconDots, IconPlus } from "@tabler/icons-vue"
-import type { pageInfo } from "inibase"
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
-import {
-	NButton,
-	NCard,
-	NEmpty,
-	NIcon,
-	NPopover,
-	NScrollbar,
-	NSkeleton,
-	NTag,
-} from "naive-ui"
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
+import type { pageInfo } from "inibase"
 import Draggable from "vuedraggable"
 
 defineTranslation({

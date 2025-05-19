@@ -37,7 +37,7 @@
 						<template #extra>
 							<NButtonGroup>
 								<NTooltip v-if="user?.role ===
-									appConfig.idOne" :delay="500">
+									appConfig.idOne" :delay="1500">
 									<template #trigger>
 										<NButton round size="small">{{ humanFileSize(
 											database?.size,
@@ -49,7 +49,7 @@
 									<NButton round size="small">
 										<template #icon>
 											<NIcon>
-												<IconSettings />
+												<Icon name="tabler:settings" />
 											</NIcon>
 										</template>
 									</NButton>
@@ -59,7 +59,7 @@
 									<NButton round size="small">
 										<template #icon>
 											<NIcon>
-												<IconLanguage />
+												<Icon name="tabler:language" />
 											</NIcon>
 										</template>
 									</NButton>
@@ -79,34 +79,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-	IconLanguage,
-	IconLogin,
-	IconLogout,
-	IconMoon,
-	IconPencil,
-	IconSettings,
-	IconSun,
-} from "@tabler/icons-vue"
+import { NFlex, NIcon, NTag, NText } from "naive-ui"
+import { Icon } from "#components"
 import { isValidID } from "inibase/utils"
-import {
-	NAvatar,
-	NBreadcrumb,
-	NBreadcrumbItem,
-	NButton,
-	NButtonGroup,
-	NDropdown,
-	NFlex,
-	NIcon,
-	NLayout,
-	NLayoutContent,
-	NLayoutHeader,
-	NPageHeader,
-	NScrollbar,
-	NTag,
-	NText,
-	NTooltip,
-} from "naive-ui"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 defineTranslation({
@@ -130,6 +105,7 @@ defineTranslation({
 		tables: "الجداول",
 		totalDatabaseSize: "حجم قاعدة البيانات",
 		isRequired: "إجباري",
+		isInvalidFormat: "صيغة غير صحيحة",
 		isNotValid: "غير صالح",
 		username: "إسم المستخدم",
 		email: "البريد الإلكتروني",
@@ -199,7 +175,7 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-					(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
+						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -241,7 +217,7 @@ const userDropdownOptions = [
 						() =>
 							user.value?.username
 								? user.value.username.charAt(0).toUpperCase() +
-								user.value.username.slice(1)
+									user.value.username.slice(1)
 								: "--",
 					),
 			),
@@ -255,18 +231,23 @@ const userDropdownOptions = [
 	{
 		label: t("settings"),
 		key: "settings",
-		icon: () => h(NIcon, () => h(IconSettings)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 		show: user.value?.role === appConfig.idOne,
 	},
 	{
 		label: t("toggleTheme"),
 		key: "theme",
-		icon: () => h(NIcon, () => h(Theme.value === "light" ? IconMoon : IconSun)),
+		icon: () =>
+			h(NIcon, () =>
+				h(Icon, {
+					name: Theme.value === "light" ? "tabler:moon" : "tabler:sun",
+				}),
+			),
 	},
 	{
 		label: t("profile"),
 		key: "edit",
-		icon: () => h(NIcon, () => h(IconPencil)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
 		show:
 			!!user.value?.id &&
 			database.value?.tables
@@ -276,13 +257,13 @@ const userDropdownOptions = [
 	{
 		label: t("logout"),
 		key: "logout",
-		icon: () => h(NIcon, () => h(IconLogout)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:logout" })),
 		show: !!user.value?.id,
 	},
 	{
 		label: t("auth"),
 		key: "auth",
-		icon: () => h(NIcon, () => h(IconLogin)),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:login" })),
 		show: !user.value?.id,
 		disabled: (route.name as string | undefined)?.endsWith("-auth"),
 	},
@@ -292,7 +273,8 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
+					(user.value as User).id
 				}/edit`,
 			)
 			break
@@ -306,7 +288,8 @@ async function onSelectUserDropdown(v: string) {
 			break
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${
+					database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{ credentials: "include" },
 			)

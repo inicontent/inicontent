@@ -9,14 +9,14 @@
                 </template>
                 <template v-if="formRef?.schema && formRef?.schema.length > 4" #header-extra>
                     <NButtonGroup v-if="isEdit">
-                        <NTooltip :delay="500">
+                        <NTooltip :delay="1500">
                             <template #trigger>
                                 <NButton type="info" secondary round>
                                     <template #icon>
                                         <NuxtLink
                                             :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                             <NIcon>
-                                                <IconEye />
+                                                <Icon name="tabler:eye" />
                                             </NIcon>
                                         </NuxtLink>
                                     </template>
@@ -26,12 +26,12 @@
                         </NTooltip>
                         <NPopconfirm @positive-click="formRef?.delete">
                             <template #trigger>
-                                <NTooltip :delay="500">
+                                <NTooltip :delay="1500">
                                     <template #trigger>
                                         <NButton secondary round type="error" :loading="Loading.DELETE">
                                             <template #icon>
                                                 <NIcon>
-                                                    <IconTrash />
+                                                    <Icon name="tabler:trash" />
                                                 </NIcon>
                                             </template>
                                         </NButton>
@@ -42,13 +42,13 @@
                             {{ t("theFollowingActionIsIrreversible") }}
                         </NPopconfirm>
 
-                        <NTooltip :delay="500">
+                        <NTooltip :delay="1500">
                             <template #trigger>
                                 <NButton secondary round type="primary" @click="formRef?.update"
                                     :loading="Loading.UPDATE || Loading.SCHEMA">
                                     <template #icon>
                                         <NIcon>
-                                            <IconDeviceFloppy />
+                                            <Icon name="tabler:device-floppy" />
                                         </NIcon>
                                     </template>
                                 </NButton>
@@ -56,13 +56,13 @@
                             {{ t('update') }}
                         </NTooltip>
                     </NButtonGroup>
-                    <NTooltip v-else :delay="500">
+                    <NTooltip v-else :delay="1500">
                         <template #trigger>
                             <NButton secondary round type="primary" @click="formRef?.create"
                                 :loading="Loading.CREATE || Loading.SCHEMA">
                                 <template #icon>
                                     <NIcon>
-                                        <IconSend />
+                                        <Icon name="tabler:send" />
                                     </NIcon>
                                 </template>
                             </NButton>
@@ -78,7 +78,7 @@
                                     <NuxtLink
                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                         <NIcon>
-                                            <IconEye />
+                                            <Icon name="tabler:eye" />
                                         </NIcon>
                                     </NuxtLink>
                                 </template>
@@ -89,7 +89,7 @@
                                     <NButton secondary round type="error" :loading="Loading.DELETE">
                                         <template #icon>
                                             <NIcon>
-                                                <IconTrash />
+                                                <Icon name="tabler:trash" />
                                             </NIcon>
                                         </template>
                                         {{ t('delete') }}
@@ -102,7 +102,7 @@
                                 :loading="Loading.UPDATE || Loading.SCHEMA">
                                 <template #icon>
                                     <NIcon>
-                                        <IconDeviceFloppy />
+                                        <Icon name="tabler:device-floppy" />
                                     </NIcon>
                                 </template>
                                 {{ t('update') }}
@@ -112,7 +112,7 @@
                             :loading="Loading.CREATE || Loading.SCHEMA">
                             <template #icon>
                                 <NIcon>
-                                    <IconSend />
+                                    <Icon name="tabler:send" />
                                 </NIcon>
                             </template>
                             {{ t('publish') }}
@@ -129,24 +129,6 @@
 </template>
 
 <script lang="ts" setup>
-import {
-    NButton,
-    NCard,
-    NPerformantEllipsis,
-    NIcon,
-    NTooltip,
-    NPopconfirm,
-    NButtonGroup,
-    NSpin,
-    NFlex,
-} from "naive-ui";
-import {
-    IconDeviceFloppy,
-    IconEye,
-    IconSend,
-    IconTrash,
-} from "@tabler/icons-vue";
-
 onBeforeRouteUpdate((route, currentRoute) => {
     if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
         clearNuxtState("itemLabel");

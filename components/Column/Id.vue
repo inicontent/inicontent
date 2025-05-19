@@ -1,7 +1,7 @@
 <template>
     <NFlex :wrap="false" align="center" :size="5">
         <NIcon v-if="value" style="cursor: pointer;" size="medium" @click="copyID">
-            <IconCopy />
+            <Icon name="tabler:copy" />
         </NIcon>
         <NPerformantEllipsis>
             {{ value }}
@@ -10,9 +10,6 @@
 </template>
 
 <script lang="ts" setup>
-import { IconCopy } from "@tabler/icons-vue";
-import { NFlex, NIcon, NPerformantEllipsis } from "naive-ui";
-
 const { value } = defineProps<{ value?: string | number }>();
 
 async function copyID() {

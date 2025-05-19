@@ -1,20 +1,18 @@
 <template>
-	<NTooltip placement="bottom" :show="tooltipShow && !isEdit && isEditable"
-		@update:show="(show) => tooltipShow = show" :delay="500">
+	<NTooltip :show="tooltipShow && !isEdit && isEditable" @update:show="(show) => tooltipShow = show" :delay="1500">
 		<template #trigger>
-			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onClick
+			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onContextmenu
 				:class="{ 'editable': !isEdit && isEditable }">
 				<Column v-if="!isEdit" :field="field" :value="modelValue" />
 				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
 			</NSpin>
 		</template>
-		{{ t('clickToEdit') }}
+		{{ t('rightClickToEdit') }}
 	</NTooltip>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
-import { NSpin, NTooltip } from "naive-ui"
 
 const { field, loading, ...props } = defineProps<{
 	field: Field
@@ -29,14 +27,11 @@ const modelValue = computed({
 	set: (newValue) => emit("update:modelValue", newValue),
 })
 
-const isEditable =
-	!isArrayOfObjects(field.children) &&
-	(!field.table || !modelValue.value) &&
-	field.type !== "html"
+const isEditable = !isArrayOfObjects(field.children) && field.type !== "html"
 
 defineTranslation({
 	ar: {
-		clickToEdit: "اضغط للتعديل",
+		rightClickToEdit: "اضغط بزر الماوس الأيمن للتعديل",
 	},
 })
 
@@ -61,11 +56,10 @@ const inputField = {
 }
 const isEdit = ref(false)
 
-function onClick(e: MouseEvent) {
+function onContextmenu(e: MouseEvent | TouchEvent) {
 	if (!isEditable) return
 
 	e.preventDefault()
-	e.stopPropagation()
 
 	isEdit.value = true
 
@@ -82,21 +76,6 @@ function handleChange() {
 	isEdit.value = false
 	tooltipShow.value = false
 }
-
-onMounted(() => {
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === "Escape") {
-			isEdit.value = false
-			tooltipShow.value = false
-		}
-	}
-
-	window.addEventListener("keydown", handleKeydown)
-
-	onUnmounted(() => {
-		window.removeEventListener("keydown", handleKeydown)
-	})
-})
 </script>
 
 <style scoped>

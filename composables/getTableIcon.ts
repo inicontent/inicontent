@@ -1,30 +1,19 @@
-import { DataIcon } from "#components"
-import {
-	IconFolders,
-	IconLanguage,
-	IconUsers,
-	IconFingerprint,
-	IconAppWindow,
-	IconTournament,
-} from "@tabler/icons-vue"
-import { NIcon } from "naive-ui"
-
 export default function (table: Table) {
-	if (table.icon) return h(DataIcon, { value: table.icon })
+	if (table.icon) return `tabler:${table.icon}`
 	switch (table.slug) {
 		case "assets":
-			return h(NIcon, () => h(IconFolders))
+			return "tabler:folder"
 		case "translations":
-			return h(NIcon, () => h(IconLanguage))
+			return "tabler:language"
 		case "users":
-			return h(NIcon, () => h(IconUsers))
+			return "tabler:users"
 		case "sessions":
-			return h(NIcon, () => h(IconFingerprint))
+			return "tabler:fingerprint"
 		case "pages":
-			return h(NIcon, () => h(IconAppWindow))
+			return "tabler:app-window"
 		case "blocks":
-			return h(NIcon, () => h(IconTournament))
+			return "tabler:tournament"
 		default:
-			return h("span", t(table.slug).charAt(0).toUpperCase())
+			return t(table.slug).charAt(0).toUpperCase()
 	}
 }

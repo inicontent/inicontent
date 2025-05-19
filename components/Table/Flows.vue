@@ -4,7 +4,7 @@
 			:loading="Loading.updateTable" type="primary" size="large" @click="saveFlow">
 			<template #icon>
 				<NIcon>
-					<IconDeviceFloppy />
+					<Icon name="tabler:device-floppy" />
 				</NIcon>
 			</template>
 		</NButton>
@@ -24,8 +24,9 @@
 										: `${currentFlow}-${index}`">
 									<template #icon>
 										<NIcon>
-											<IconEye v-if="currentFlowCard === `${currentFlow}-${index}`" />
-											<IconPencil v-else />
+											<Icon name="tabler:eye"
+												v-if="currentFlowCard === `${currentFlow}-${index}`" />
+											<Icon name="tabler:pencil" v-else />
 										</NIcon>
 									</template>
 								</NButton>
@@ -33,7 +34,7 @@
 									@click="() => { if (currentFlowCard === `${currentFlow}-${index}`) currentFlowCard = undefined; tableCopy[flowName]?.splice(index, 1) }">
 									<template #icon>
 										<NIcon>
-											<IconTrash />
+											<Icon name="tabler:trash" />
 										</NIcon>
 									</template>
 								</NButton>
@@ -130,7 +131,7 @@
 													@click="pushRuleToFlow(element.value, 'if')">
 													<template #icon>
 														<NIcon>
-															<IconPlus />
+															<Icon name="tabler:plus" />
 														</NIcon>
 													</template>
 												</NButton>
@@ -209,7 +210,7 @@
 														{{ formatValue(firstValue) }}
 													</NTag>
 												</NFlex>
-												<NTooltip :delay="500">
+												<NTooltip :delay="1500">
 													<template #trigger>
 														<NTag round :bordered="false" size="small">
 															{{ secondValue }}
@@ -236,7 +237,7 @@
 						</NCard>
 					</template>
 					<template #footer>
-						<NPopover placement="bottom" :delay="500">
+						<NPopover placement="bottom" :delay="1500">
 							<template #trigger>
 								<NCard style="cursor: pointer;" content-style="padding: 34px 0" hoverable @click="() => {
 									if (tableCopy[flowName] && Array.isArray(tableCopy[flowName]))
@@ -248,7 +249,7 @@
 								}">
 									<NFlex justify="center" align="center">
 										<NIcon :size="36">
-											<IconPlus />
+											<Icon name="tabler:plus" />
 										</NIcon>
 									</NFlex>
 								</NCard>
@@ -265,33 +266,12 @@
 <script lang="ts" setup>
 import Draggable from "vuedraggable"
 import {
-	IconDeviceFloppy,
-	IconEye,
-	IconPencil,
-	IconPlus,
-	IconTrash,
-} from "@tabler/icons-vue"
-import {
-	NButton,
-	NButtonGroup,
-	NCard,
-	NCascader,
-	NDropdown,
-	NEmpty,
-	NFlex,
-	NIcon,
-	NInputGroup,
-	NPopover,
-	NScrollbar,
-	NSelect,
-	NTabPane,
-	NTabs,
-	NTag,
 	type CascaderOption,
 	type SelectOption,
 	type SelectGroupOption,
-	NTooltip,
+	NIcon,
 } from "naive-ui"
+import { Icon } from "#components"
 import {
 	flattenSchema,
 	isArrayOfObjects,
@@ -351,7 +331,8 @@ async function saveFlow() {
 	}
 
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${table.value.slug}`,
 		{
 			method: "PUT",
@@ -360,8 +341,9 @@ async function saveFlow() {
 				onRequest,
 			}))(bodyContent),
 			params: {
-				locale: Language.value
-			}, credentials: "include"
+				locale: Language.value,
+			},
+			credentials: "include",
 		},
 	)
 
@@ -396,7 +378,7 @@ function ruleDropdownProps(flow: FlowType, index: number) {
 			{
 				label: t("delete"),
 				key: "delete",
-				icon: () => h(NIcon, () => h(IconTrash)),
+				icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
 			},
 		],
 		onSelect(key: string) {
@@ -451,12 +433,12 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-							{
-								label: t("or"),
-								value: "@where.or",
-								children: schemaToOptions(table.value.schema, "@where.or"),
-							},
-						]
+								{
+									label: t("or"),
+									value: "@where.or",
+									children: schemaToOptions(table.value.schema, "@where.or"),
+								},
+							]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
@@ -497,10 +479,12 @@ function generateFlowSelectOptions(
 					result.push(
 						(isObject(_value)
 							? _value
-							: Array.isArray(_value) ? { label: _value[0], value: _value[0] } : {
-								label: _value,
-								value: _value,
-							}) as any,
+							: Array.isArray(_value)
+								? { label: _value[0], value: _value[0] }
+								: {
+										label: _value,
+										value: _value,
+									}) as any,
 					),
 				)
 		}
@@ -552,16 +536,16 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-						{
-							key: "@where.or",
-							label: "or",
-							type: "group",
-							children: schema.map(({ id, key }) => ({
-								label: `@where.or.${key}`,
-								value: `@where.or.${id}`,
-							})),
-						},
-					]
+							{
+								key: "@where.or",
+								label: "or",
+								type: "group",
+								children: schema.map(({ id, key }) => ({
+									label: `@where.or.${key}`,
+									value: `@where.or.${id}`,
+								})),
+							},
+						]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
