@@ -37,10 +37,10 @@ export default defineNuxtConfig({
 	},
 	...(process.env.GIGET_AUTH
 		? {
-				extends: [
-					["gh:inicontent/private", { install: true, preferOffline: true }],
-				],
-			}
+			extends: [
+				["gh:inicontent/private", { install: true, preferOffline: true }],
+			],
+		}
 		: {}),
 	compatibilityDate: "2025-05-18",
 })
