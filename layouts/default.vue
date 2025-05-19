@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import {
-	NConfigProvider,
 	arDZ,
 	dateArDZ,
 	enUS,

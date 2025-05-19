@@ -31,16 +31,22 @@ export default defineNuxtConfig({
 	devtools: {
 		enabled: false,
 	},
+	future: {
+		compatibilityVersion: 4,
+	},
 	vite: {
-		plugins: [Components({ resolvers: [NaiveUiResolver()] }), Compression()],
+		plugins: [
+			Components({ resolvers: [NaiveUiResolver()], dts: true }),
+			Compression(),
+		],
 		server: { hmr: { clientPort: 3434 } },
 	},
 	...(process.env.GIGET_AUTH
 		? {
-			extends: [
-				["gh:inicontent/private", { install: true, preferOffline: true }],
-			],
-		}
+				extends: [
+					["gh:inicontent/private", { install: true, preferOffline: true }],
+				],
+			}
 		: {}),
 	compatibilityDate: "2025-05-18",
 })
