@@ -71,14 +71,14 @@ body {
 .rtl .n-collapse .n-collapse-item .n-collapse-item__header .n-collapse-item-arrow .n-icon,
 .rtl .n-switch,
 .rtl .n-pagination .n-pagination-item svg,
-.rtl .tabler-icon-arrow-left,
-.rtl .tabler-icon-arrow-right,
-.rtl .tabler-icon-chevron-left,
-.rtl .tabler-icon-chevron-right,
-.rtl .tabler-icon-send,
-.rtl .tabler-icon-question-mark,
-.rtl .tabler-icon-arrow-back-up,
-.rtl .tabler-icon-arrow-forward-up {
+.rtl .i-tabler\:arrow-left,
+.rtl .i-tabler\:arrow-right,
+.rtl .i-tabler\:chevron-left,
+.rtl .i-tabler\:chevron-right,
+.rtl .i-tabler\:send,
+.rtl .i-tabler\:question-mark,
+.rtl .i-tabler\:arrow-back-up,
+.rtl .i-tabler\:arrow-forward-up {
 	transform: scaleX(-1) !important;
 }
 

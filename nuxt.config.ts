@@ -1,14 +1,9 @@
-import Components from "unplugin-vue-components/vite"
-import { NaiveUiResolver } from "unplugin-vue-components/resolvers"
-import Compression from "vite-plugin-compression2"
-
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
 	telemetry: false,
 
 	modules: [
-		"nuxtjs-naive-ui",
 		"nuxt-tiptap-editor",
 		"@nuxtjs/device",
 		"@nuxt/fonts",
@@ -31,14 +26,7 @@ export default defineNuxtConfig({
 	devtools: {
 		enabled: false,
 	},
-	future: {
-		compatibilityVersion: 4,
-	},
 	vite: {
-		plugins: [
-			Components({ resolvers: [NaiveUiResolver()], dts: true }),
-			Compression(),
-		],
 		server: { hmr: { clientPort: 3434 } },
 	},
 	...(process.env.GIGET_AUTH

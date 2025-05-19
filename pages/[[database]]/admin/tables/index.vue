@@ -1,11 +1,10 @@
 <template>
 	<NCard :title="t('tables')" style="background:none" :bordered="false">
-		<TableGrid v-model="database" />
+		<LazyTableGrid v-model="database" />
 	</NCard>
 </template>
 
 <script setup lang="ts">
-import { NCard } from "naive-ui";
 definePageMeta({
 	layout: "dashboard",
 	middleware: ["database", "user", "dashboard", "global"],
