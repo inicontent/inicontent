@@ -4,7 +4,8 @@
 			@update:show="(show) => onUpdateShow(index, show)" :width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" to="body">
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
+			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
