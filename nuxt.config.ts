@@ -1,6 +1,3 @@
-import naive from "naive-ui"
-import { addComponent } from "nuxt/kit"
-
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,

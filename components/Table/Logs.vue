@@ -7,12 +7,12 @@
 			<NSpin :show="Loading.logs">
 				<NScrollbar v-if="data?.result" style="max-height: 340px">
 					<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
-						<NTimelineItem v-for="log in data.result" :key="log.id"
-							:type="getTypeFromAction(log.actions[0][0])">
+						<NTimelineItem v-for="log in data.result?.filter((log) => log.actions?.length)" :key="log.id"
+							:type="getTypeFromAction((log.actions[0] as Actions[0])[0])">
 							<template #header>
 								<NFlex align="center" size="small">
 									<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
-									<template v-if="log.actions[0][0] === 'create'">
+									<template v-if="(log.actions[0] as Actions[0])[0] === 'create'">
 										{{ t('created') }} {{ t("newItem") }}:
 										<NButtonGroup>
 											<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
@@ -21,7 +21,7 @@
 											</NButton>
 										</NButtonGroup>
 									</template>
-									<template v-else-if="log.actions[0][0] === 'delete'">
+									<template v-else-if="(log.actions[0] as Actions[0])[0] === 'delete'">
 										{{ t('deleted') }} {{ t("anItem") }}
 									</template>
 									<template v-else>
@@ -39,25 +39,24 @@
 								<template v-for="action in log.actions">
 									<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} <NTag :bordered="false" round
 											type="warning">{{
-												action[1] }}</NTag>
+												t(action[1]) }}</NTag>
 									</NText>
 									<NText v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }}
-										<NTag :bordered="false" round type="error">{{ action[1] }}</NTag>
+										<NTag :bordered="false" round type="error">{{ t(action[1]) }}</NTag>
 									</NText>
 									<NText v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <NTag
-											:bordered="false" round type="success">{{ action[1] }}</NTag>
+											:bordered="false" round type="success">{{ t(action[1]) }}</NTag>
 									</NText>
 									<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false"
-											round type="info">{{
-												action[1] }}</NTag> {{ t("as") }} <NTag :bordered="false" round>{{
-												action[2] }}
+											round type="info">{{ t(action[1]) }}</NTag> {{ t("as") }} <NTag
+											:bordered="false" round>{{ t(action[2]) }}
 										</NTag>
 									</NText>
 									<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false"
 											round type="info">
-											{{ action[1] }}</NTag> {{
+											{{ t(action[1]) }}</NTag> {{
 												t("to") }}
-										<NTag :bordered="false" round>{{ action[2] }}</NTag>
+										<NTag :bordered="false" round>{{ t(action[2]) }}</NTag>
 									</NText>
 								</template>
 							</NFlex>

@@ -130,27 +130,27 @@
 
 <script lang="ts" setup>
 onBeforeRouteUpdate((route, currentRoute) => {
-    if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
-        clearNuxtState("itemLabel");
-});
+	if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
+		clearNuxtState("itemLabel")
+})
 
-const modelValue = defineModel<Item>();
-const isEdit = computed(() => !!modelValue.value?.id);
+const modelValue = defineModel<Item>()
+const isEdit = !!modelValue.value?.id
 
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const table = useState<Table>("table");
-const database = useState<Database>("database");
-const formRef = ref<FormRef>();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const table = useState<Table>("table")
+const database = useState<Database>("database")
+const formRef = ref<FormRef>()
 
-const itemLabel = useState("itemLabel");
+const itemLabel = useState("itemLabel")
 watchEffect(() => {
-    itemLabel.value = renderLabel(table.value, modelValue.value);
-});
+	itemLabel.value = renderLabel(table.value, modelValue.value)
+})
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${isEdit ? itemLabel.value : t("new")}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
-});
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${isEdit ? itemLabel.value : t("new")}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
+})
 </script>

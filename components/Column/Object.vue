@@ -1,5 +1,5 @@
 <template>
-    <NPopover scrollable style="max-height: 240px;" trigger="click">
+    <NPopover scrollable style="max-height: 240px;max-width: 200px;" trigger="click">
         <template #trigger>
             <NButton size="small" circle>{{ `\{${Object.keys(value).length}\}` }}</NButton>
         </template>
@@ -14,5 +14,5 @@
 </template>
 
 <script lang="ts" setup>
-const { field, value } = defineProps<{ field: Field; value?: any }>();
+const { field, value } = defineProps<{ field: Field; value?: any }>()
 </script>

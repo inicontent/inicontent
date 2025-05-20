@@ -3,19 +3,19 @@
 		<template #header>
 			<span v-if="isAssetRoute">{{ t("assets") }}</span>
 			<NBreadcrumb v-else>
-				<NBreadcrumbItem @click="modelValue = ''">
+				<NBreadcrumbItem @click="currentPath = ''">
 					{{ t("assets") }}
 				</NBreadcrumbItem>
-				<NBreadcrumbItem v-for="(singlePath, index) in (modelValue ?? '').split('/').slice(1)"
-					@click="modelValue = `/${(modelValue ?? '').split('/').slice(1, index + 1).join('/')}`">
+				<NBreadcrumbItem v-for="(singlePath, index) in currentPath.split('/').slice(1)"
+					@click="currentPath = `/${currentPath.split('/').slice(1, index + 1).join('/')}`">
 					{{ singlePath }}
 				</NBreadcrumbItem>
 			</NBreadcrumb>
 		</template>
 		<template #header-extra>
 			<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-				:action="`${appConfig.apiBase}${database.slug}/assets${modelValue ?? ($route.params.folder ? `/${([] as string[]).concat($route.params.folder).join('/')}` : '')}`"
-				@update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload">
+				:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
+				@update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload" with-credentials>
 				<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
 					<template #trigger>
 						<NUploadTrigger :abstract="false">
@@ -49,7 +49,7 @@
 									<NButton @click="createFolder">
 										<template #icon>
 											<NIcon>
-												<Icon name="folder-plus" />
+												<Icon name="tabler:folder-plus" />
 											</NIcon>
 										</template>
 									</NButton>
@@ -57,7 +57,7 @@
 							</NPopover>
 						</NUploadTrigger>
 					</template>
-					<NUploadFileList />
+					<NUploadFileList></NUploadFileList>
 				</NPopover>
 			</NUpload>
 		</template>
@@ -82,6 +82,8 @@ import Inison from "inison"
 
 defineTranslation({
 	ar: {
+		folderCreatedSuccessfully: "تم إنشاء المجلد بنجاح",
+		folderNameRequired: "إسم المجلد مطلوب",
 		folderName: "إسم المجلد",
 	},
 })
@@ -95,16 +97,24 @@ const { where } = defineProps({
 		type: Object,
 	},
 })
-const modelValue = defineModel<string>()
 const appConfig = useAppConfig()
+
 const route = useRoute()
-const isAssetRoute = !!(route.params.folder || route.params.folder === "")
+const isAssetRoute = !!(route.params.path || route.params.path === "")
+
+const currentPath = ref<string>(
+	route.params.path
+		? `/${([] as string[]).concat(route.params.path).join("/")}`
+		: "",
+)
+
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
-const parentTable = useState<Table>("table")
-const table = ref<Table>(parentTable.value)
-if (!parentTable.value || parentTable.value.slug !== "assets")
-	table.value = (
+const table = useState<Table>("table")
+
+const assetsTable = ref<Table>(table.value)
+if (!assetsTable.value || assetsTable.value.slug !== "assets")
+	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
 			`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`,
 			{ credentials: "include" },
@@ -121,9 +131,9 @@ async function onUpdatePage(currentPage: number) {
 	page.value = currentPage
 	let Query = route.query
 	if (currentPage !== 1) Query = { ...Query, page: currentPage as any }
-	if (route.params.folder || route.params.folder === "")
+	if (route.params.path || route.params.path === "")
 		router.push({ query: (({ page, ...rest }) => rest)(Query) })
-	return refreshAssets()
+	return refresh()
 }
 async function onUpdatePageSize(currentPageSize: number) {
 	const OLD_pageSize = toRaw(pageSize.value)
@@ -142,18 +152,18 @@ async function onUpdatePageSize(currentPageSize: number) {
 			page: page.value,
 		}
 	}
-	if (route.params.folder || route.params.folder === "")
+	if (route.params.path || route.params.path === "")
 		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) })
-	return refreshAssets()
+	return refresh()
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const { data: assets, refresh: refreshAssets } = await useLazyAsyncData(
-	`assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
+const { data: assets, refresh } = await useLazyAsyncData(
+	`assets${currentPath.value}`,
 	() =>
 		$fetch<apiResponse<Asset[]>>(
-			`${appConfig.apiBase}${database.value.slug}/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}`,
+			`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
 			{
 				onRequest: () => {
 					Loading.value.AssetData = true
@@ -226,17 +236,16 @@ function onFinishUpload({
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-			`${appConfig.apiBase}${
-				database.value.slug
-			}/assets${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${file.name}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug
+		}/assets${currentPath.value}/${file.name}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name)
 	if (data.result) {
 		if (assets.value)
@@ -252,18 +261,21 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 const folder = ref()
 async function createFolder() {
 	if (folder.value) {
-		modelValue.value = `${modelValue.value ?? (route.params.folder ? `/${([] as string[]).concat(route.params.folder).join("/")}` : "")}/${folder.value}`
+		currentPath.value += `/${folder.value}`
 		window.$message.success(t("folderCreatedSuccessfully"))
+		await nextTick()
 		if (isAssetRoute)
 			await navigateTo(
-				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${modelValue.value}`,
+				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${currentPath.value}`,
 			)
+	} else {
+		window.$message.error(t("folderNameRequired"))
 	}
 }
 
-watch(modelValue, () => {
+watch(currentPath, () => {
 	page.value = 1
 	itemCount.value = 0
-	refreshAssets()
+	refresh()
 })
 </script>

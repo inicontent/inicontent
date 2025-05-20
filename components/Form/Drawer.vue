@@ -4,8 +4,7 @@
 			@update:show="(show) => onUpdateShow(index, show)" :width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
-			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined">
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" to="body">
 			<NDrawerContent closable>
 				<template #header>
 					<span v-if="drawer.id">
@@ -91,6 +90,7 @@ const formRefs = ref<FormRef[]>([])
 const screenHalf = window.screen.width / 2
 
 function onUpdateShow(index: number, show: boolean) {
+	if (!Drawers.value[index]) return
 	Drawers.value[index].show = show
 	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 100)
 }
@@ -98,12 +98,13 @@ function onUpdateShow(index: number, show: boolean) {
 async function onAfterUpdateCreate(index: number) {
 	onUpdateShow(index, false)
 	const drawer = Drawers.value[index]
-
+	if (!drawer) return
 	await refreshNuxtData(`${database.value.slug}/${drawer.table}`)
 }
 
 const toggleDrawerWidth = (index: number) => {
 	const drawer = Drawers.value[index]
+	if (!drawer) return
 	if (typeof drawer.width === "string") drawer.width = 251
 	else drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%"
 	nextTick(() => {
@@ -115,6 +116,7 @@ const itemsLabels = ref<string[]>([])
 watchEffect(() => {
 	for (let index = 0; index < Drawers.value.length; index++) {
 		const drawer = Drawers.value[index]
+		if (!drawer) continue
 		const table = drawer.table
 			? database.value.tables?.find(({ slug }) => slug === drawer.table)
 			: undefined

@@ -6,7 +6,6 @@ import type {
 	TableObject,
 	Data,
 } from "inibase"
-import type { DialogApiInjection } from "naive-ui/es/dialog/src/DialogProvider"
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider"
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider"
 import type { DataTableColumns, SelectOption } from "naive-ui"
@@ -22,7 +21,6 @@ interface SingleLanguageTranslations {
 declare global {
 	interface Window {
 		$message: MessageApiInjection
-		$dialog: DialogApiInjection
 		$notification: NotificationApiInjection
 	}
 	type CMS_FieldType =

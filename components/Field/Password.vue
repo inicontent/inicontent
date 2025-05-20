@@ -28,6 +28,9 @@ const rule: FormItemRule = {
 			await nextTick()
 			return fieldValidator(field, modelValue.value)
 		}
+		return new Promise((resolve) => {
+			resolve()
+		})
 	},
 }
 

@@ -5,7 +5,7 @@
 				<NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
 					<NPageHeader>
 						<template #avatar>
-							<NuxtLink v-if="String($route.matched[0].name).startsWith('database')"
+							<NuxtLink v-if="String($route.matched[0]?.name).startsWith('database')"
 								:to="`/${$route.params.database ?? ''}`">
 								<NTag strong round :bordered="false" style="cursor:pointer;font-weight:600"
 									:style="ThemeConfig.revert && Theme === 'dark' ? 'color:#000;background-color:#fff' : ''">
@@ -49,8 +49,12 @@
 									<NButton round size="small">
 										<template #icon>
 											<NIcon>
-												<Icon name="tabler:settings" />
+												<Icon name="tabler:user" />
 											</NIcon>
+										</template>
+										<template v-if="user">
+											<NText strong>{{ user.username.charAt(0).toUpperCase() +
+												user.username.slice(1) }}</NText>
 										</template>
 									</NButton>
 								</NDropdown>
@@ -155,7 +159,7 @@ const showBreadcrumb = computed(
 	() =>
 		database.value?.slug &&
 		!["index", "auth", "dashboard", "database", "database-auth"].includes(
-			String(route.matched[0].name),
+			String(route.matched[0]?.name),
 		),
 )
 
@@ -164,7 +168,7 @@ const breadcrumbArray = computed(() =>
 		.split("/")
 		.filter(Boolean)
 		.slice(
-			!["database", "admin"].includes(route.matched[0].name as string) ? 1 : 0,
+			!["database", "admin"].includes(route.matched[0]?.name as string) ? 1 : 0,
 		),
 )
 function breadCrumbItemLink(index: number) {
@@ -175,7 +179,10 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(["database", "admin"].includes(breadcrumbArray.value[0]) ? 3 : 2),
+						(breadcrumbArray.value[0] &&
+						["database", "admin"].includes(breadcrumbArray.value[0])
+							? 3
+							: 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -184,7 +191,7 @@ function breadCrumbItemLink(index: number) {
 		.split("/")
 		.slice(
 			0,
-			index + (String(route.matched[0].name)?.startsWith("database") ? 3 : 2),
+			index + (String(route.matched[0]?.name)?.startsWith("database") ? 3 : 2),
 		)
 		.join("/")
 }
@@ -196,38 +203,6 @@ function breadCrumbItemLabel(index: number) {
 		: t(childRoute === "admin" ? "adminPanel" : childRoute)
 }
 const userDropdownOptions = [
-	{
-		key: "header",
-		type: "render",
-		render: () =>
-			h(
-				NFlex,
-				{
-					justify: "center",
-					style: {
-						padding: "5px 0",
-					},
-				},
-				() =>
-					h(
-						NText,
-						{
-							strong: true,
-						},
-						() =>
-							user.value?.username
-								? user.value.username.charAt(0).toUpperCase() +
-									user.value.username.slice(1)
-								: "--",
-					),
-			),
-		show: !!user.value?.id,
-	},
-	{
-		key: "header-divider",
-		type: "divider",
-		show: !!user.value?.id,
-	},
 	{
 		label: t("settings"),
 		key: "settings",

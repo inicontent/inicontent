@@ -4,6 +4,8 @@ async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => [])
 	const drawer = Drawers.value[index]
 
+	if (!drawer) return
+
 	if (drawer.id) {
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 		const appConfig = useAppConfig()
@@ -17,24 +19,26 @@ async function loadDrawer(index: number) {
 		const table = database.value.tables?.find(
 			({ slug }) => slug === drawer.table,
 		)
-		drawer.data = {
-			...((
-				await $fetch<apiResponse>(
-					`${appConfig.apiBase}${database.value.slug}/${drawer.table}/${drawer.id}`,
-					{
-						params: {
-							options: Inison.stringify({
-								columns: table?.columns,
-							}),
-							locale: Language.value,
-						},
-						credentials: "include",
-					},
-				)
-			).result ?? {}),
-			...(drawer.data ?? {}),
-		}
+		const response = await $fetch<apiResponse>(
+			`${appConfig.apiBase}${database.value.slug}/${drawer.table}/${drawer.id}`,
+			{
+				params: {
+					options: Inison.stringify({
+						columns: table?.columns,
+					}),
+					locale: Language.value,
+				},
+				credentials: "include",
+			},
+		)
+
 		Loading.value[key] = false
+		if (!response.result) {
+			Drawers.value.splice(index, 1)
+			window.$message.error(response.message)
+			return
+		}
+		drawer.data = { ...response.result, ...(drawer.data ?? {}) }
 	}
 
 	drawer.show = true
@@ -52,6 +56,7 @@ export default function (table: string, id?: string | number, data: any = {}) {
 		if (Drawers.value.length) {
 			for (let index = 0; index < Drawers.value.length; index++) {
 				const drawer = Drawers.value[index]
+				if (!drawer) continue
 				if (typeof drawer.width === "string") continue
 				if (drawer.width) width = drawer.width
 				if (typeof width === "number")
@@ -69,7 +74,7 @@ export default function (table: string, id?: string | number, data: any = {}) {
 		})
 
 		loadDrawer(Drawers.value.length - 1)
-	} else {
+	} else if (Drawers.value[index]) {
 		// If drawer already exists, just update it
 		Drawers.value[index].show = true
 		if (!Drawers.value[index].width) Drawers.value[index].width = width

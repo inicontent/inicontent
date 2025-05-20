@@ -11,8 +11,7 @@
 				<NFlex align="center" id="navbarActions" style="flex-direction: row-reverse;">
 					<slot name="navbarActions">
 						<NButtonGroup id="navbarExtraButtons">
-							<NDropdown v-if="user && user.role === appConfig.idOne" :options="toolsDropdownOptions"
-								@select="toolsDropdownOnSelect" trigger="click">
+							<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 								<NTooltip :delay="1500">
 									<template #trigger>
 										<NButton round>
@@ -106,7 +105,7 @@ const tablesConfig = useCookie<TablesCookie>("tablesConfig", {
 })
 
 if (tablesConfig.value[table.value.slug]?.view)
-	table.value.displayAs = tablesConfig.value[table.value.slug].view
+	table.value.displayAs = tablesConfig.value[table.value.slug]?.view
 
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
@@ -411,14 +410,16 @@ const toolsDropdownOptions = computed(() => [
 	{
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-import" })),
 		label: t("import"),
-		disabled: true,
 		key: "import",
+		disabled: true,
+		show: user.value?.role === appConfig.idOne,
 	},
 	{
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-export" })),
 		label: t("export"),
 		key: "export",
 		disabled: !table.value?.schema,
+		show: user.value?.role === appConfig.idOne,
 		children: [
 			{
 				icon: () =>
@@ -471,8 +472,11 @@ async function toolsDropdownOnSelect(
 			const displayAs = value === "viewKanban" ? "kanban" : undefined
 			if (!tablesConfig.value[table.value.slug])
 				tablesConfig.value[table.value.slug] = {}
+			// @ts-ignore
 			tablesConfig.value[table.value.slug].view = displayAs
+
 			if (value.startsWith("tableSize"))
+				// @ts-ignore
 				tablesConfig.value[table.value.slug].size = value.endsWith("S")
 					? "small"
 					: value.endsWith("L")

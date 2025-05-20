@@ -157,19 +157,8 @@ const dropdownOptions = [
 function dropdownOnSelect(key: string) {
 	switch (key) {
 		case "delete":
-			{
-				const d = window.$dialog.create({
-					showIcon: false,
-					title: `${t("delete")}: ${CurrentAsset.value?.name || CurrentAsset.value?.id}`,
-					content: t("theFollowingActionIsIrreversible"),
-					positiveText: t("delete"),
-					async onPositiveClick() {
-						d.loading = true
-						await deleteAsset(CurrentAsset.value as Asset)
-						return true
-					},
-				})
-			}
+			deleteAsset(CurrentAsset.value as Asset)
+			showDropdown.value = false
 			break
 		default:
 			break

@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<NButton :disabled="JSON.stringify(tableCopy) === JSON.stringify(table)" class="flowSaveButton" round secondary
-			:loading="Loading.updateTable" type="primary" size="large" @click="saveFlow">
+		<NButton class="flowSaveButton" round secondary :loading="Loading.updateTable" type="primary" size="large"
+			@click="saveFlow">
 			<template #icon>
 				<NIcon>
 					<Icon name="tabler:device-floppy" />
@@ -356,7 +356,7 @@ async function saveFlow() {
 
 const flowNames = ["onRequest", "onResponse"] as const
 // Ensure each flow item has a unique id and a value property
-function formatFlow(_table: any) {
+function formatFlow(_table: Table) {
 	for (const flowName of flowNames) {
 		_table[flowName] = _table[flowName]?.map((item: any) => {
 			if (!item.id) {
@@ -368,6 +368,7 @@ function formatFlow(_table: any) {
 			return item
 		})
 	}
+	return _table
 }
 
 formatFlow(tableCopy.value)

@@ -94,8 +94,8 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
 	dateLocale: dateLocales[Language.value as "ar" | "en"] ?? dateLocales.en,
 }))
-const { message, dialog, notification } = createDiscreteApi(
-	["message", "dialog", "notification"],
+const { message, notification } = createDiscreteApi(
+	["message", "notification"],
 	{
 		messageProviderProps: {
 			keepAliveOnHover: true,
@@ -110,7 +110,6 @@ const { message, dialog, notification } = createDiscreteApi(
 
 onMounted(() => {
 	window.$message = message
-	window.$dialog = dialog
 	window.$notification = notification
 
 	// Add an event listener for the print action
@@ -138,7 +137,7 @@ onMounted(() => {
 		// Remove the "printable-parent" class after printing
 		const elements = document.querySelectorAll(".printable-parent")
 		for (let i = 0; i < elements.length; i++)
-			elements[i].classList.remove("printable-parent")
+			elements[i]?.classList.remove("printable-parent")
 
 		document
 			.querySelector(".printable-direct-parent")

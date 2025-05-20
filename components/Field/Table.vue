@@ -10,7 +10,8 @@
 				: {}">
 			<template #action>
 				<NFlex justify="center">
-					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table as string)">
+					<NButton :disabled="!table?.allowedMethods?.includes('c')" round strong secondary type="primary"
+						@click="() => openDrawer(field.table as string)">
 						<template #icon>
 							<Icon name="tabler:plus" />
 						</template>

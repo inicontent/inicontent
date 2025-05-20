@@ -252,6 +252,8 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		onResponse({
 			response: {
 				_data: {
+					code,
+					message,
 					options: { total, totalPages },
 				},
 			},
@@ -259,6 +261,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 			Loading.value.data = false
 			pagination.pageCount = totalPages ?? 0
 			pagination.itemCount = total ?? 0
+			if (![202, 404].includes(code)) window.$message.error(message)
 		},
 		credentials: "include",
 	},
@@ -407,19 +410,38 @@ async function setColumns() {
 								key: "delete",
 								disabled: checkedRowKeys.value.length === 0,
 								icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								children: [
+									{
+										label: () =>
+											h(
+												"span",
+												{
+													onClick: async () => {
+														await deleteItem()
+														checkedRowKeys.value = []
+													},
+												},
+												t("clearTable"),
+											),
+										key: "clear",
+										disabled:
+											checkedRowKeys.value.length !==
+											_data.value?.result?.length,
+										icon: () =>
+											h(
+												NIcon,
+												{
+													onClick: async () => {
+														await deleteItem()
+														checkedRowKeys.value = []
+													},
+												},
+												() => h(Icon, { name: "tabler:trash" }),
+											),
+									},
+								],
 								onSelect: async () => {
 									await deleteItem(checkedRowKeys.value)
-									checkedRowKeys.value = []
-								},
-							},
-							{
-								label: t("clearTable"),
-								key: "clear",
-								disabled:
-									checkedRowKeys.value.length !== _data.value?.result?.length,
-								icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-								onSelect: async () => {
-									await deleteItem()
 									checkedRowKeys.value = []
 								},
 							},
@@ -441,17 +463,20 @@ async function setColumns() {
 															table.value?.slug as string
 														]?.columns?.includes(id as string)
 													)
+														// @ts-ignore
 														tablesConfig.value[
 															table.value?.slug as string
 														].columns = tablesConfig.value[
 															table.value?.slug as string
-														].columns?.filter((itemID) => itemID !== id)
+														]?.columns?.filter((itemID) => itemID !== id)
 													else {
 														if (
 															!tablesConfig?.value[table.value?.slug as string]
 														)
 															tablesConfig.value[table.value?.slug as string] =
 																{ columns: [] }
+
+														// @ts-ignore
 														tablesConfig.value[
 															table.value?.slug as string
 														].columns?.push(id as string)
