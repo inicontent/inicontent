@@ -41,7 +41,6 @@ defineTranslation({
 		create: "إنشاء",
 		delete: "حذف",
 		actions: "الأوامر",
-		showAll: "أظهر الكل",
 		flows: "تدفقات",
 		newItem: "عنصر جديد",
 		new: "جديد",
