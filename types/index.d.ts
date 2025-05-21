@@ -121,6 +121,7 @@ declare global {
 		columns?: string[]
 		displayAs?: "table" | "kanban" | "cards"
 		groupBy?: string
+		show?: boolean
 	}
 	type Item = Data & {
 		createdBy?: User

@@ -161,44 +161,44 @@ function renderSingleItem(table: Table): MenuOption {
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-				...(database.value.tables
-					.filter(
-						({ slug, allowedMethods }) =>
-							![
-								"users",
-								"sessions",
-								"assets",
-								"translations",
-								"pages",
-								"blocks",
-							].includes(slug) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-				database.value.tables.filter(
-					({ slug, allowedMethods }) =>
-						[
+			...(database.value.tables
+				.filter(
+					({ slug, allowedMethods, show }) =>
+						![
 							"users",
 							"sessions",
 							"assets",
 							"translations",
 							"pages",
 							"blocks",
-						].includes(slug) && allowedMethods?.includes("r"),
-				).length
-					? {
-							key: "divider-1",
-							type: "divider",
-						}
-					: undefined,
-				...(database.value.tables
-					?.filter(
-						({ slug, allowedMethods }) =>
-							["users", "sessions", "assets", "pages", "blocks"].includes(
-								slug,
-							) && allowedMethods?.includes("r"),
-					)
-					.map(renderSingleItem) ?? []),
-			].filter((item) => item) as MenuOption[])
+						].includes(slug) && allowedMethods?.includes("r") && show !== false,
+				)
+				.map(renderSingleItem) ?? []),
+			database.value.tables.filter(
+				({ slug, allowedMethods, show }) =>
+					[
+						"users",
+						"sessions",
+						"assets",
+						"translations",
+						"pages",
+						"blocks",
+					].includes(slug) && allowedMethods?.includes("r") && show !== false,
+			).length
+				? {
+					key: "divider-1",
+					type: "divider",
+				}
+				: undefined,
+			...(database.value.tables
+				?.filter(
+					({ slug, allowedMethods, show }) =>
+						["users", "sessions", "assets", "pages", "blocks"].includes(
+							slug,
+						) && allowedMethods?.includes("r") && show !== false,
+				)
+				.map(renderSingleItem) ?? []),
+		].filter((item) => item) as MenuOption[])
 		: [],
 )
 </script>

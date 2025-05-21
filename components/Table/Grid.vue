@@ -1,33 +1,32 @@
 <template>
 	<NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
 		<NGridItem v-for="table in filteredTables" :key="table.slug">
-			<NuxtLink :to="getTableUrl(table.slug)">
-				<NCard hoverable>
-					<template #header>
+			<NCard hoverable>
+				<template #header>
+					<NuxtLink :to="getTableUrl(table.slug)">
 						<NFlex align="center">
 							<NIconWrapper :border-radius="50" style="font-style: normal">
 								<LazyTableIcon :table="table" />
 							</NIconWrapper>
 							<NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
 						</NFlex>
-					</template>
-					<template #header-extra>
-						<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
-							<NButton circle @mouseover="Hover[table.slug] = true"
-								@mouseleave="Hover[table.slug] = false">
+					</NuxtLink>
+				</template>
+				<template #header-extra>
+					<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
+						<NButton circle size="small">
+							<template #icon>
 								<NIcon>
-									<Icon name="tabler:arrow-right"
-										v-if="Hover[table.slug] || (table.slug === 'assets' && (!user || user.role !== appConfig.idOne))" />
-									<Icon name="tabler:dots" v-else />
+									<Icon name="tabler:dots" />
 								</NIcon>
-							</NButton>
-						</NDropdown>
-					</template>
-				</NCard>
-			</NuxtLink>
+							</template>
+						</NButton>
+					</NDropdown>
+				</template>
+			</NCard>
 		</NGridItem>
 
-		<NGridItem>
+		<NGridItem v-if="user?.role === appConfig.idOne">
 			<NPopover placement="bottom">
 				<template #trigger>
 					<NPopover trigger="click" v-model:show="showPopover">
@@ -126,7 +125,10 @@ const createTable = async () => {
 
 const filteredTables = computed(() =>
 	modelValue.value.tables
-		?.filter(({ allowedMethods }) => allowedMethods?.includes("r"))
+		?.filter(
+			({ allowedMethods, show }) =>
+				allowedMethods?.includes("r") && show !== false,
+		)
 		.sort(
 			(a, b) =>
 				Number(
