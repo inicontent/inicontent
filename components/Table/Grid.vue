@@ -140,30 +140,38 @@ const filteredTables = computed(() =>
 		),
 )
 
-const getDropdownOptions = (table: Table) => [
-	{
-		key: `${getTableUrl(table.slug)}/new`,
-		label: t("newItem"),
-		icon: () => h(NIcon, () => h(Icon, { name: "tabler:plus" })),
-		show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
-	},
-	{
-		key: `${getTableUrl(table.slug)}/settings`,
-		label: t("tableSettings"),
-		icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
-		show:
-			!["sessions", "translations", "assets"].includes(table.slug) &&
-			user.value?.role === appConfig.idOne,
-	},
-	{
-		key: `${getTableUrl(table.slug)}/flows`,
-		label: t("tableFlows"),
-		icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
-		show:
-			!["sessions", "translations"].includes(table.slug) &&
-			user.value?.role === appConfig.idOne,
-	},
-]
+const getDropdownOptions = (table: Table) => {
+	const tableUrl = getTableUrl(table.slug)
+	return [
+		{
+			key: tableUrl,
+			label: t("showAll"),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+		},
+		{
+			key: `${tableUrl}/new`,
+			label: t("newItem"),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:plus" })),
+			show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
+		},
+		{
+			key: `${tableUrl}/settings`,
+			label: t("tableSettings"),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
+			show:
+				!["sessions", "translations", "assets"].includes(table.slug) &&
+				user.value?.role === appConfig.idOne,
+		},
+		{
+			key: `${tableUrl}/flows`,
+			label: t("tableFlows"),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
+			show:
+				!["sessions", "translations"].includes(table.slug) &&
+				user.value?.role === appConfig.idOne,
+		},
+	]
+}
 
 function renderDropdownLabel(option: DropdownOption) {
 	return h(

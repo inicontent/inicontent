@@ -78,13 +78,14 @@ const defaultValue = computed(() => {
 })
 
 function renderSingleItem(table: Table): MenuOption {
+	const tableUrl = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`
 	const itemChildren = [
 		{
 			label: () =>
 				h(
 					NuxtLink,
 					{
-						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
+						to: tableUrl,
 					},
 					{ default: () => t("showAll") },
 				),
@@ -97,7 +98,7 @@ function renderSingleItem(table: Table): MenuOption {
 				h(
 					NuxtLink,
 					{
-						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/new`,
+						to: `${tableUrl}/new`,
 					},
 					{ default: () => t("newItem") },
 				),
@@ -110,7 +111,7 @@ function renderSingleItem(table: Table): MenuOption {
 				h(
 					NuxtLink,
 					{
-						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/settings`,
+						to: `${tableUrl}/settings`,
 					},
 					{ default: () => t("settings") },
 				),
@@ -125,7 +126,7 @@ function renderSingleItem(table: Table): MenuOption {
 				h(
 					NuxtLink,
 					{
-						to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}/flows`,
+						to: `${tableUrl}/flows`,
 					},
 					{ default: () => t("flows") },
 				),
@@ -141,7 +142,7 @@ function renderSingleItem(table: Table): MenuOption {
 			h(
 				NuxtLink,
 				{
-					to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`,
+					to: tableUrl,
 				},
 				{ default: () => t(table.slug) },
 			),
@@ -161,44 +162,50 @@ function renderSingleItem(table: Table): MenuOption {
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-			...(database.value.tables
-				.filter(
+				...(database.value.tables
+					.filter(
+						({ slug, allowedMethods, show }) =>
+							![
+								"users",
+								"sessions",
+								"assets",
+								"translations",
+								"pages",
+								"blocks",
+							].includes(slug) &&
+							allowedMethods?.includes("r") &&
+							show !== false,
+					)
+					.map(renderSingleItem) ?? []),
+				database.value.tables.filter(
 					({ slug, allowedMethods, show }) =>
-						![
+						[
 							"users",
 							"sessions",
 							"assets",
 							"translations",
 							"pages",
 							"blocks",
-						].includes(slug) && allowedMethods?.includes("r") && show !== false,
-				)
-				.map(renderSingleItem) ?? []),
-			database.value.tables.filter(
-				({ slug, allowedMethods, show }) =>
-					[
-						"users",
-						"sessions",
-						"assets",
-						"translations",
-						"pages",
-						"blocks",
-					].includes(slug) && allowedMethods?.includes("r") && show !== false,
-			).length
-				? {
-					key: "divider-1",
-					type: "divider",
-				}
-				: undefined,
-			...(database.value.tables
-				?.filter(
-					({ slug, allowedMethods, show }) =>
-						["users", "sessions", "assets", "pages", "blocks"].includes(
-							slug,
-						) && allowedMethods?.includes("r") && show !== false,
-				)
-				.map(renderSingleItem) ?? []),
-		].filter((item) => item) as MenuOption[])
+						].includes(slug) &&
+						allowedMethods?.includes("r") &&
+						show !== false,
+				).length
+					? {
+							key: "divider-1",
+							type: "divider",
+						}
+					: undefined,
+				...(database.value.tables
+					?.filter(
+						({ slug, allowedMethods, show }) =>
+							["users", "sessions", "assets", "pages", "blocks"].includes(
+								slug,
+							) &&
+							allowedMethods?.includes("r") &&
+							show !== false,
+					)
+					.map(renderSingleItem) ?? []),
+			].filter((item) => item) as MenuOption[])
 		: [],
 )
 </script>
