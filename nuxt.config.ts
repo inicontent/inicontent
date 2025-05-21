@@ -4,11 +4,11 @@ export default defineNuxtConfig({
 	telemetry: false,
 
 	modules: [
-		"nuxt-tiptap-editor",
 		"@nuxtjs/device",
 		"@nuxt/fonts",
 		"@nuxt/icon",
 		"nuxt-build-cache",
+		"nuxt-tiptap-editor",
 	],
 	tiptap: {
 		prefix: "Tiptap",
@@ -29,12 +29,5 @@ export default defineNuxtConfig({
 	vite: {
 		server: { hmr: { clientPort: 3434 } },
 	},
-	...(process.env.GIGET_AUTH
-		? {
-				extends: [
-					["gh:inicontent/private", { install: true, preferOffline: true }],
-				],
-			}
-		: {}),
 	compatibilityDate: "2025-05-18",
 })
