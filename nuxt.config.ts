@@ -7,6 +7,7 @@ export default defineNuxtConfig({
 		"@nuxtjs/device",
 		"@nuxt/fonts",
 		"@nuxt/icon",
+		"nuxt-build-cache",
 		"nuxt-tiptap-editor",
 	],
 	tiptap: {
