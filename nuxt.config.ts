@@ -7,7 +7,6 @@ export default defineNuxtConfig({
 		"@nuxtjs/device",
 		"@nuxt/fonts",
 		"@nuxt/icon",
-		"nuxt-build-cache",
 		"nuxt-tiptap-editor",
 	],
 	tiptap: {
@@ -28,6 +27,9 @@ export default defineNuxtConfig({
 	},
 	vite: {
 		server: { hmr: { clientPort: 3434 } },
+	},
+	future: {
+		compatibilityVersion: 4,
 	},
 	compatibilityDate: "2025-05-18",
 })
