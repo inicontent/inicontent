@@ -28,7 +28,7 @@
 				<AssetCard targetID="assetsModal" :where="assetWhere">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
-							<NCheckbox v-if="asset.type === 'dir'" :checked="getChecked(asset)"
+							<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
 								@update:checked="handleSelectAsset(asset)" />
 							<NRadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
 						</template>
@@ -218,7 +218,7 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 			) {
 				const finalFileList = value
 					.filter(({ status }) => status === "finished")
-					.map((asset, index) => !asset.file ? (field.isArray ? (modelValue.value as Asset[])[index] : modelValue.value) : ({
+					.map((asset) => !asset.file ? (field.isArray ? (modelValue.value as Asset[]).find((item) => item.id === asset.id) : modelValue.value) : ({
 						id: fileIdObject.value[asset.id],
 						name: asset.name,
 						type: asset.type,
