@@ -45,9 +45,7 @@
 		"naive-ui": "^2.41.0",
 		"nuxt": "3.17.3",
 		"nuxt-tiptap-editor": "2.2.1",
-		"vuedraggable": "4.1.0"
-	},
-	"devDependencies": {
+		"vuedraggable": "4.1.0",
 		"@nuxt/icon": "^1.13.0",
 		"nuxt-build-cache": "^0.1.1"
 	}
