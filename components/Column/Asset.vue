@@ -10,7 +10,7 @@
                             round>
                             <template #icon>
                                 <NIcon>
-                                    <Icon name="tabler:file-upload" size="24" />
+                                    <Icon name="tabler:file-upload" />
                                 </NIcon>
                             </template>
                         </NButton>
