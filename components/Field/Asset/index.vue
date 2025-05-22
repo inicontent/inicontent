@@ -218,13 +218,13 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 			) {
 				const finalFileList = value
 					.filter(({ status }) => status === "finished")
-					.map(({ id, name, url, type, file }) => ({
-						id: fileIdObject.value[id],
-						name,
-						type,
-						publicURL: url,
-						size: file?.size ?? 0,
-						createdAt: file?.lastModified ?? 0,
+					.map((asset, index) => !asset.file ? (field.isArray ? (modelValue.value as Asset[])[index] : modelValue.value) : ({
+						id: fileIdObject.value[asset.id],
+						name: asset.name,
+						type: asset.type,
+						publicURL: asset.url,
+						size: asset.file?.size ?? 0,
+						createdAt: asset.file?.lastModified ?? 0,
 					})) as Asset[]
 				if (finalFileList.length) {
 					modelValue.value = field.isArray ? finalFileList : finalFileList[0]
