@@ -37,74 +37,74 @@
 
 <script lang="ts" setup>
 import {
-    getField as getFieldFromSchema,
-    isArrayOfObjects,
-    isObject,
-} from "inibase/utils";
-import { Icon } from "#components";
+	getField as getFieldFromSchema,
+	isArrayOfObjects,
+	isObject,
+} from "inibase/utils"
+import { Icon } from "#components"
 
-const { callback } = defineProps<{ callback: CallableFunction }>();
+const { callback } = defineProps<{ callback: CallableFunction }>()
 
 const modelValue = defineModel<searchTypeValue>({
-    default: [[null, "=", null]],
-});
+	default: [[null, "=", null]],
+})
 
 const formatedItems = computed(() =>
-    modelValue.value?.map((item) => {
-        if (Array.isArray(item) && item[0])
-            item[3] = getFieldFromSchema(item[0], table.value.schema as any);
-        return item;
-    }),
-);
-const table = useState<Table>("table");
+	modelValue.value?.map((item) => {
+		if (Array.isArray(item) && item[0])
+			item[3] = getFieldFromSchema(item[0], table.value.schema as any)
+		return item
+	}),
+)
+const table = useState<Table>("table")
 
 function getFieldFromItem(item: searchTypeValueItem) {
-    return {
-        ...item[3],
-        subType: ["radio", "checkbox"].includes(item[3].subType)
-            ? "select"
-            : item[3].subType,
-        required: false,
-        labelProps: {
-            showLabel: false,
-            style: "width:33.33%",
-            showFeedback: false,
-        },
-        inputProps: {
-            size: "small",
-            onKeydown: ({ key }: KeyboardEvent) => {
-                if (key === "Enter") callback();
-            },
-        },
-    };
+	return {
+		...item[3],
+		subType: ["radio", "checkbox"].includes(item[3].subType)
+			? "select"
+			: item[3].subType,
+		required: false,
+		labelProps: {
+			showLabel: false,
+			style: "width:33.33%",
+			showFeedback: false,
+		},
+		inputProps: {
+			size: "small",
+			onKeydown: ({ key }: KeyboardEvent) => {
+				if (key === "Enter") callback()
+			},
+		},
+	}
 }
 function getAvailableComparisonOperator(field: Field): {
-    label: string;
-    value: string;
+	label: string
+	value: string
 }[] {
-    return comparisonOperatorOptions().filter(({ value }) => {
-        if (Array.isArray(field.type))
-            return [
-                "=",
-                "!=",
-                ...(field.type.some((type: string) =>
-                    ["string", "email", "url"].includes(type),
-                )
-                    ? ["*", "!*"]
-                    : []),
-                ...(field.type.some((type: string) => ["number", "date"].includes(type))
-                    ? [">", ">=", "<", "<="]
-                    : []),
-            ].includes(value);
+	return comparisonOperatorOptions().filter(({ value }) => {
+		if (Array.isArray(field.type))
+			return [
+				"=",
+				"!=",
+				...(field.type.some((type: string) =>
+					["string", "email", "url"].includes(type),
+				)
+					? ["*", "!*"]
+					: []),
+				...(field.type.some((type: string) => ["number", "date"].includes(type))
+					? [">", ">=", "<", "<="]
+					: []),
+			].includes(value)
 
-        if (checkFieldType(field.type, ["number", "date"]))
-            return ["=", "!=", ">", ">=", "<", "<="].includes(value);
-        if (
-            checkFieldType(field.type, "array") ||
-            checkFieldType(field.type, "table")
-        )
-            return ![">", ">=", "<", "<="].includes(value);
-        return ![">", ">=", "<", "<=", "[]", "![]"].includes(value);
-    });
+		if (checkFieldType(field.type, ["number", "date"]))
+			return ["=", "!=", ">", ">=", "<", "<="].includes(value)
+		if (
+			checkFieldType(field.type, "array") ||
+			checkFieldType(field.type, "table")
+		)
+			return ![">", ">=", "<", "<="].includes(value)
+		return ![">", ">=", "<", "<=", "[]", "![]"].includes(value)
+	})
 }
 </script>

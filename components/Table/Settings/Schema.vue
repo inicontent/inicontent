@@ -199,18 +199,18 @@
 </template>
 
 <script lang="ts" setup>
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import {
-	NIcon,
-	NFlex,
-	NButton,
-	NInput,
-	NColorPicker,
-	type SelectOption,
 	type DataTableColumns,
+	NButton,
+	NColorPicker,
+	NFlex,
+	NIcon,
+	NInput,
+	type SelectOption,
 } from "naive-ui"
 import Draggable from "vuedraggable"
 import { Icon } from "#components"
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 
 defineTranslation({
 	ar: {

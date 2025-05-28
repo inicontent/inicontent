@@ -10,11 +10,11 @@
 </template>
 
 <script lang="ts" setup>
-const { value } = defineProps<{ value?: string | number }>();
+const { value } = defineProps<{ value?: string | number }>()
 
 async function copyID() {
-    if (!value) return;
-    await copyToClipboard(value);
-    window.$message.success(t("copiedSuccessfully"));
+	if (!value) return
+	await copyToClipboard(value)
+	window.$message.success(t("copiedSuccessfully"))
 }
 </script>

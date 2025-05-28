@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { NIcon, type MenuOption } from "naive-ui"
+import { type MenuOption, NIcon } from "naive-ui"
 import { Icon, LazyTableIcon, NuxtLink } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })

@@ -18,16 +18,17 @@ export default defineNuxtModule({
 			_nuxt.options.build.transpile =
 				_nuxt.options.build.transpile.concat(transpile)
 
-		Object.keys(naive)
-			.filter((name) => /^N[A-Z]|n-[a-z]/.test(name))
-			.forEach((name) => {
-				addComponent({
-					export: name,
-					name,
-					filePath: "naive-ui",
-					mode: "all",
-					global: true,
-				})
+		for (const key in Object.keys(naive).filter((name) =>
+			/^N[A-Z]|n-[a-z]/.test(name),
+		)) {
+			// Add types for each component
+			addComponent({
+				export: key,
+				name: key,
+				filePath: "naive-ui",
+				mode: "all",
+				global: true,
 			})
+		}
 	},
 })

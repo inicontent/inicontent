@@ -67,10 +67,10 @@
 </template>
 
 <script lang="ts" setup>
+import type { pageInfo } from "inibase"
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
-import type { pageInfo } from "inibase"
 import Draggable from "vuedraggable"
 
 defineTranslation({
@@ -149,7 +149,7 @@ if (field?.options) {
 	}
 
 	nextTick(() => {
-		; (data.value as columnType[]).push(unsetColumn)
+		;(data.value as columnType[]).push(unsetColumn)
 
 		nextTick(async () => {
 			for await (const column of data.value as columnType[]) {
@@ -160,7 +160,8 @@ if (field?.options) {
 							where: Inison.stringify({
 								[field.key]: column.key === UNSET_KEY ? "" : column.key,
 							}),
-						}, credentials: "include"
+						},
+						credentials: "include",
 					},
 				)
 				column.items = _data.result || []
@@ -204,7 +205,8 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 			params: {
 				return: false,
 				locale: Language.value,
-			}, credentials: "include"
+			},
+			credentials: "include",
 		},
 	)
 	if (!_data.result) {

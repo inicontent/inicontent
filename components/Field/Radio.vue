@@ -26,22 +26,22 @@ const rule: FormItemRule = {
 	validator: async () => {
 		await nextTick()
 		return fieldValidator(field, modelValue.value)
-	}
+	},
 }
 
 const options = computed(() =>
 	field.options
 		? isArrayOfArrays(field.options)
 			? (field.options as [string | number, string][]).map(([value]) => ({
-				value: value,
-				label: t(value),
-			}))
-			: isArrayOfObjects(field.options)
-				? field.options
-				: (field.options as string[]).map((value) => ({
 					value: value,
 					label: t(value),
 				}))
+			: isArrayOfObjects(field.options)
+				? field.options
+				: (field.options as string[]).map((value) => ({
+						value: value,
+						label: t(value),
+					}))
 		: [],
 )
 </script>

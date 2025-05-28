@@ -1,6 +1,6 @@
 import { NIcon } from "naive-ui"
-import { Icon } from "#components"
 import type { VNodeChild } from "vue"
+import { Icon } from "#components"
 
 function renderIcon(iconName: string) {
 	return () => h(NIcon, () => h(Icon, { name: `tabler:${iconName}` }))

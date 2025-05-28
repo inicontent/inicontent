@@ -6,10 +6,10 @@
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table", "global"],
 	layout: "table",
-});
+})
 
-const route = useRoute();
-const database = useState<Database>("database");
+const route = useRoute()
+const database = useState<Database>("database")
 
 useHead({
 	title: `${t(database.value.slug)} | ${t("assets")}${
@@ -20,5 +20,5 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

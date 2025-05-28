@@ -76,8 +76,8 @@
 </template>
 
 <script lang="ts" setup>
-import { Icon } from "#components"
 import { NIcon } from "naive-ui"
+import { Icon } from "#components"
 
 const path = defineModel<string>("path", {
 	default: "",

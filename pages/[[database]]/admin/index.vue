@@ -5,17 +5,17 @@
 </template>
 
 <script setup lang="ts">
-import { NCard } from "naive-ui";
+import { NCard } from "naive-ui"
 definePageMeta({
 	layout: "dashboard",
 	middleware: ["database", "user", "dashboard", "global"],
-});
+})
 
-const database = useState<Database>("database");
+const database = useState<Database>("database")
 useHead({
 	title: `${t(database.value.slug)} | ${t("dashboard")}`,
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

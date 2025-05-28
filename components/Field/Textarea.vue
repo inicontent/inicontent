@@ -26,6 +26,6 @@ const rule: FormItemRule = {
 	validator: async () => {
 		await nextTick()
 		return fieldValidator(field, modelValue.value)
-	}
+	},
 }
 </script>

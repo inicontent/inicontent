@@ -9,26 +9,26 @@
 
 <script setup lang="ts">
 defineProps<{
-    table: Table
+	table: Table
 }>()
 
 function getTableIcon(table: Table) {
-    if (table.icon) return `tabler:${table.icon}`
-    switch (table.slug) {
-        case "assets":
-            return "tabler:folder"
-        case "translations":
-            return "tabler:language"
-        case "users":
-            return "tabler:users"
-        case "sessions":
-            return "tabler:fingerprint"
-        case "pages":
-            return "tabler:app-window"
-        case "blocks":
-            return "tabler:tournament"
-        default:
-            return "tabler:table"
-    }
+	if (table.icon) return `tabler:${table.icon}`
+	switch (table.slug) {
+		case "assets":
+			return "tabler:folder"
+		case "translations":
+			return "tabler:language"
+		case "users":
+			return "tabler:users"
+		case "sessions":
+			return "tabler:fingerprint"
+		case "pages":
+			return "tabler:app-window"
+		case "blocks":
+			return "tabler:tournament"
+		default:
+			return "tabler:table"
+	}
 }
 </script>

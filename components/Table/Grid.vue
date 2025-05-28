@@ -66,8 +66,8 @@
 </template>
 
 <script lang="ts" setup>
+import { type DropdownOption, NIcon } from "naive-ui"
 import { Icon, NuxtLink } from "#components"
-import { NIcon, type DropdownOption } from "naive-ui"
 
 const modelValue = defineModel<Database>({ required: true })
 

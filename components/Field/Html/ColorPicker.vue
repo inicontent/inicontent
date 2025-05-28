@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-const modelValue = defineModel<string>({ default: "" });
+const modelValue = defineModel<string>({ default: "" })
 
 const colors = [
 	[
@@ -94,7 +94,7 @@ const colors = [
 		"#4b253f",
 		"#3d2622",
 	],
-];
+]
 </script>
 
 <style scoped>

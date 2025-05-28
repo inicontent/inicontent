@@ -44,10 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import type {
-	 FormItemRule,
-	 FormInst,
-} from "naive-ui"
+import type { FormInst, FormItemRule } from "naive-ui"
 
 import { validateFieldType } from "inibase/utils"
 

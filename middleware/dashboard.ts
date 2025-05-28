@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-	const user = useState<User>("user");
-	const database = useState<Database>("database");
-	const fromPath = useCookie("from");
+	const user = useState<User>("user")
+	const database = useState<Database>("database")
+	const fromPath = useCookie("from")
 	if (user.value) {
 		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
 			return navigateTo(
@@ -13,12 +13,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 					: to.params.database
 						? `/${database.value.slug}/admin`
 						: "/admin",
-			);
+			)
 		}
 	} else if (!["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
-		fromPath.value = from.fullPath;
+		fromPath.value = from.fullPath
 		return navigateTo(
 			to.params.database ? `/${database.value.slug}/auth` : "/auth",
-		);
+		)
 	}
-});
+})

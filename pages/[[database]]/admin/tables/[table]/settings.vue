@@ -17,9 +17,9 @@ definePageMeta({
 			)
 				throw createError({
 					statusCode: 403,
-				});
+				})
 		},
 	],
 	layout: "table",
-});
+})
 </script>

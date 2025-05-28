@@ -6,5 +6,5 @@
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table", "global"],
 	layout: "table",
-});
+})
 </script>

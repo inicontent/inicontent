@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfObjects } from "inibase/utils"
 
-const { field, value } = defineProps<{ field: Field; value: any }>();
+const { field, value } = defineProps<{ field: Field; value: any }>()
 </script>

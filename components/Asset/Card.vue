@@ -77,8 +77,8 @@
 
 
 <script lang="ts" setup>
-import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 import Inison from "inison"
+import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 
 defineTranslation({
 	ar: {
@@ -236,16 +236,17 @@ function onFinishUpload({
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-		`${appConfig.apiBase}${database.value.slug
-		}/assets${currentPath.value}/${file.name}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
+			`${appConfig.apiBase}${
+				database.value.slug
+			}/assets${currentPath.value}/${file.name}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		},
-	),
+		),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name)
 	if (data.result) {
 		if (assets.value)

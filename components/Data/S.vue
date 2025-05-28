@@ -8,5 +8,5 @@
 </template>
 
 <script lang="ts" setup>
-const { schema, value } = defineProps<{ schema: Schema; value: Item }>();
+const { schema, value } = defineProps<{ schema: Schema; value: Item }>()
 </script>

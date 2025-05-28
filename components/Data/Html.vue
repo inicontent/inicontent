@@ -3,5 +3,5 @@
 </template>
 
 <script lang="ts" setup>
-const { value } = defineProps<{ value?: string }>();
+const { value } = defineProps<{ value?: string }>()
 </script>

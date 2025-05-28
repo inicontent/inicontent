@@ -31,24 +31,52 @@ import type { ImageRenderToolbarProps } from "naive-ui"
 import type { VNodeChild } from "vue"
 import { Icon, NButton, NIcon, NTooltip } from "#components"
 
-const { value } = defineProps<{ value: Asset | Asset[] }>();
+const { value } = defineProps<{ value: Asset | Asset[] }>()
 
-const renderToolbar: (props: ImageRenderToolbarProps, file: Asset) => VNodeChild = ({ nodes: { rotateCounterclockwise, rotateClockwise, resizeToOriginalSize, zoomOut, zoomIn, download, close } }, file: Asset) => {
-    if (download.props && file.publicURL)
-        download.props.onClick = (event: MouseEvent) => {
-            event?.preventDefault()
-            window.open(file.publicURL as string, "_blank")
-            close?.props?.onClick?.()
-        }
-    return [
-        h(NTooltip, {}, { default: () => file.name, trigger: () => h("i", { class: "n-base-icon" }, h(Icon, { name: "tabler:info-circle-filled" })) }),
-        rotateCounterclockwise,
-        rotateClockwise,
-        zoomIn,
-        zoomOut,
-        resizeToOriginalSize,
-        download,
-        close,
-    ]
+const renderToolbar: (
+	props: ImageRenderToolbarProps,
+	file: Asset,
+) => VNodeChild = (
+	{
+		nodes: {
+			rotateCounterclockwise,
+			rotateClockwise,
+			resizeToOriginalSize,
+			zoomOut,
+			zoomIn,
+			download,
+			close,
+		},
+	},
+	file: Asset,
+) => {
+	if (download.props && file.publicURL)
+		download.props.onClick = (event: MouseEvent) => {
+			event?.preventDefault()
+			window.open(file.publicURL as string, "_blank")
+			close?.props?.onClick?.()
+		}
+	return [
+		h(
+			NTooltip,
+			{},
+			{
+				default: () => file.name,
+				trigger: () =>
+					h(
+						"i",
+						{ class: "n-base-icon" },
+						h(Icon, { name: "tabler:info-circle-filled" }),
+					),
+			},
+		),
+		rotateCounterclockwise,
+		rotateClockwise,
+		zoomIn,
+		zoomOut,
+		resizeToOriginalSize,
+		download,
+		close,
+	]
 }
 </script>

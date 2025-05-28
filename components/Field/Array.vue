@@ -105,19 +105,19 @@
 </template>
 
 <script setup lang="ts">
+import { isArrayOfObjects, isStringified } from "inibase/utils"
+import Inison from "inison"
 import {
-	NIcon,
-	NButton,
-	NText,
-	NTooltip,
-	NFlex,
-	NPerformantEllipsis,
 	type DataTableColumns,
 	type DropdownOption,
+	NButton,
+	NFlex,
+	NIcon,
+	NPerformantEllipsis,
+	NText,
+	NTooltip,
 } from "naive-ui"
-import { isArrayOfObjects, isStringified } from "inibase/utils"
-import { LazyField, Icon } from "#components"
-import Inison from "inison"
+import { Icon, LazyField } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 

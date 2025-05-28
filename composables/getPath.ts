@@ -1,4 +1,4 @@
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfObjects } from "inibase/utils"
 
 export function getPath(
 	schema: Schema,
@@ -7,29 +7,29 @@ export function getPath(
 	listNumbers?: number | number[],
 	currentPath?: string,
 ): string {
-	if (!id) return "";
+	if (!id) return ""
 
 	for (const item of schema) {
-		const newPath = currentPath ? `${currentPath}.${item.key}` : item.key;
+		const newPath = currentPath ? `${currentPath}.${item.key}` : item.key
 
-		if (item.id === id) return newPath;
+		if (item.id === id) return newPath
 
 		if (
 			item.type === "array" &&
 			item.children &&
 			isArrayOfObjects(item.children)
 		) {
-			let nestedPath = "";
+			let nestedPath = ""
 			if (listNumbers) {
-				if (!Array.isArray(listNumbers)) listNumbers = [listNumbers];
-				const firstItem = listNumbers.shift();
+				if (!Array.isArray(listNumbers)) listNumbers = [listNumbers]
+				const firstItem = listNumbers.shift()
 				nestedPath = getPath(
 					item.children,
 					id,
 					supportWildcard,
 					listNumbers,
 					newPath + (supportWildcard ? ".*" : ".") + firstItem,
-				);
+				)
 			} else
 				nestedPath = getPath(
 					item.children,
@@ -37,8 +37,8 @@ export function getPath(
 					supportWildcard,
 					undefined,
 					newPath + (supportWildcard ? ".*" : "."),
-				);
-			if (nestedPath) return nestedPath;
+				)
+			if (nestedPath) return nestedPath
 		} else if (item.children && isArrayOfObjects(item.children)) {
 			const nestedPath = getPath(
 				item.children,
@@ -46,10 +46,10 @@ export function getPath(
 				supportWildcard,
 				undefined,
 				newPath,
-			);
-			if (nestedPath) return nestedPath;
+			)
+			if (nestedPath) return nestedPath
 		}
 	}
 
-	return "";
+	return ""
 }

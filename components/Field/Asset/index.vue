@@ -38,9 +38,9 @@
 </template>
 
 <script lang="ts" setup>
-import { Icon, NImage, NTooltip } from "#components";
 import { isArrayOfObjects, isObject } from "inibase/utils"
 import type { FormItemRule, UploadFileInfo } from "naive-ui"
+import { Icon, NImage, NTooltip } from "#components"
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -159,8 +159,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-					(value) => value.id === asset.id,
-				)
+						(value) => value.id === asset.id,
+					)
 				: (modelValue.value as string[]).indexOf(asset.publicURL)
 			if (index > -1) modelValue.value.splice(index, 1)
 			else modelValue.value.push(value)
@@ -178,19 +178,19 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-				id: asset,
-				name: asset.split("/").pop(),
-				status: "finished",
-				url: asset,
-				type: field.accept?.includes("image") ? "image/jpeg" : undefined
-			}
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+				}
 			: {
-				id: asset.id,
-				name: asset.name || asset.id,
-				status: "finished",
-				url: (asset as Asset).publicURL,
-				type: asset.type
-			},
+					id: asset.id,
+					name: asset.name || asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+				},
 	) as UploadFileInfo[]
 }
 
@@ -206,14 +206,22 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 			) {
 				const finalFileList = value
 					.filter(({ status }) => status === "finished")
-					.map((asset) => !asset.file ? (field.isArray ? (modelValue.value as Asset[]).find((item) => item.id === asset.id) : modelValue.value) : ({
-						id: fileIdObject.value[asset.id],
-						name: asset.name,
-						type: asset.type,
-						publicURL: asset.url,
-						size: asset.file?.size ?? 0,
-						createdAt: asset.file?.lastModified ?? 0,
-					})) as Asset[]
+					.map((asset) =>
+						!asset.file
+							? field.isArray
+								? (modelValue.value as Asset[]).find(
+										(item) => item.id === asset.id,
+									)
+								: modelValue.value
+							: {
+									id: fileIdObject.value[asset.id],
+									name: asset.name,
+									type: asset.type,
+									publicURL: asset.url,
+									size: asset.file?.size ?? 0,
+									createdAt: asset.file?.lastModified ?? 0,
+								},
+					) as Asset[]
 				if (finalFileList.length) {
 					modelValue.value = field.isArray ? finalFileList : finalFileList[0]
 					await nextTick()
@@ -242,32 +250,60 @@ function onFinish({
 }
 
 function renderIcon(file: UploadFileInfo) {
-	if (file.url && file.type && (file.type.startsWith("image/") || file.type === "application/pdf")) return h(NImage, {
-		src: file.type === "application/pdf" ? `${file.url}?fit=100` : file.url,
-		previewSrc: file.type === "application/pdf" ? `${file.url}?raw` : file.url,
-		width: 100,
-		height: 100,
-		style: "height: 100%; width: 100%",
-		objectFit: "cover",
-		renderToolbar: ({ nodes: { rotateCounterclockwise, rotateClockwise, resizeToOriginalSize, zoomOut, zoomIn, download, close } }) => {
-			if (download.props && file.url)
-				download.props.onClick = (event: MouseEvent) => {
-					event?.preventDefault()
-					window.open(file.url as string, "_blank")
-					close?.props?.onClick?.()
-				}
-			return [
-				h(NTooltip, {}, { default: () => file.name, trigger: () => h("i", { class: "n-base-icon" }, h(Icon, { name: "tabler:info-circle-filled" })) }),
-				rotateCounterclockwise,
-				rotateClockwise,
-				zoomIn,
-				zoomOut,
-				resizeToOriginalSize,
-				download,
-				close,
-			]
-		},
-	})
+	if (
+		file.url &&
+		file.type &&
+		(file.type.startsWith("image/") || file.type === "application/pdf")
+	)
+		return h(NImage, {
+			src: file.type === "application/pdf" ? `${file.url}?fit=100` : file.url,
+			previewSrc:
+				file.type === "application/pdf" ? `${file.url}?raw` : file.url,
+			width: 100,
+			height: 100,
+			style: "height: 100%; width: 100%",
+			objectFit: "cover",
+			renderToolbar: ({
+				nodes: {
+					rotateCounterclockwise,
+					rotateClockwise,
+					resizeToOriginalSize,
+					zoomOut,
+					zoomIn,
+					download,
+					close,
+				},
+			}) => {
+				if (download.props && file.url)
+					download.props.onClick = (event: MouseEvent) => {
+						event?.preventDefault()
+						window.open(file.url as string, "_blank")
+						close?.props?.onClick?.()
+					}
+				return [
+					h(
+						NTooltip,
+						{},
+						{
+							default: () => file.name,
+							trigger: () =>
+								h(
+									"i",
+									{ class: "n-base-icon" },
+									h(Icon, { name: "tabler:info-circle-filled" }),
+								),
+						},
+					),
+					rotateCounterclockwise,
+					rotateClockwise,
+					zoomIn,
+					zoomOut,
+					resizeToOriginalSize,
+					download,
+					close,
+				]
+			},
+		})
 	return h(Icon, {
 		name: file.type?.startsWith("image/") ? "tabler:image" : "tabler:file",
 	})

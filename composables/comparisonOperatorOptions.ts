@@ -14,7 +14,7 @@ export default () => {
 				isNotOneOf: "لا يضم",
 			},
 		},
-	});
+	})
 	return [
 		{
 			label: t("ComparisonOperator.equalTo"),
@@ -56,5 +56,5 @@ export default () => {
 			label: t("ComparisonOperator.lessOrEqualTo"),
 			value: "<=",
 		},
-	];
-};
+	]
+}

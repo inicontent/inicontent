@@ -7,9 +7,9 @@ export default function (
 			Array.isArray(compareAtType)
 				? compareAtType.includes(type)
 				: compareAtType === type,
-		);
+		)
 
 	return Array.isArray(compareAtType)
 		? compareAtType.includes(fieldType)
-		: compareAtType === fieldType;
+		: compareAtType === fieldType
 }

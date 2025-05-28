@@ -5,5 +5,5 @@
 </template>
 
 <script lang="ts" setup>
-defineProps<{ value?: string | number }>();
+defineProps<{ value?: string | number }>()
 </script>

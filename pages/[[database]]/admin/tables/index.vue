@@ -8,13 +8,13 @@
 definePageMeta({
 	layout: "dashboard",
 	middleware: ["database", "user", "dashboard", "global"],
-});
+})
 
-const database = useState<Database>("database");
+const database = useState<Database>("database")
 useHead({
 	title: `${t(database.value.slug)} | ${t("tables")}`,
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

@@ -69,22 +69,22 @@
 </template>
 
 <script lang="ts" setup>
-import Inison from 'inison'
+import Inison from "inison"
 
 onBeforeRouteUpdate((route, currentRoute) => {
-    if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
-        clearNuxtState("itemLabel")
+	if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
+		clearNuxtState("itemLabel")
 })
 
 definePageMeta({
-    middleware: ["database", "user", "dashboard", "table", "global"],
-    layout: "table",
+	middleware: ["database", "user", "dashboard", "table", "global"],
+	layout: "table",
 })
 
 defineTranslation({
-    ar: {
-        print: "طباعة",
-    },
+	ar: {
+		print: "طباعة",
+	},
 })
 
 const appConfig = useAppConfig()
@@ -92,38 +92,39 @@ const route = useRoute()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const { data } = await useFetch<Item>(
-    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
-    }/${route.params.id}`,
-    {
-        query: {
-            options: Inison.stringify({
-                columns: table.value.columns,
-            }),
-        },
-        transform: (input) => input.result,
-        credentials: "include",
-    },
+	`${appConfig.apiBase}${database.value.slug}/${
+		table.value.slug
+	}/${route.params.id}`,
+	{
+		query: {
+			options: Inison.stringify({
+				columns: table.value.columns,
+			}),
+		},
+		transform: (input) => input.result,
+		credentials: "include",
+	},
 )
 
 if (!data.value?.id)
-    throw createError({
-        statusCode: 404,
-        statusMessage: "item",
-        fatal: true,
-    })
+	throw createError({
+		statusCode: 404,
+		statusMessage: "item",
+		fatal: true,
+	})
 
 function PRINT() {
-    window.print()
+	window.print()
 }
 
 const itemLabel = useState("itemLabel", () =>
-    renderLabel(table.value, data.value ?? undefined),
+	renderLabel(table.value, data.value ?? undefined),
 )
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
 })
 </script>

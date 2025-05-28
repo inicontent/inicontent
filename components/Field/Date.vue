@@ -18,12 +18,12 @@ const { field } = defineProps<{ field: Field }>()
 const modelValue = defineModel<number>()
 
 const rule: FormItemRule = {
-    trigger: "change",
-    type: "number",
-    required: field.required,
-    validator: async () => {
-        await nextTick()
-        return fieldValidator(field, modelValue.value)
-    }
+	trigger: "change",
+	type: "number",
+	required: field.required,
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value)
+	},
 }
 </script>

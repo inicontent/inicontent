@@ -60,12 +60,12 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormInst } from 'naive-ui';
+import type { FormInst } from "naive-ui"
 
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "global"],
 	layout: "table",
-});
+})
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -75,11 +75,11 @@ onMounted(() => {
 				(e.key.toLowerCase() === "s" || e.key === "س")
 			)
 		)
-			return;
-		e.preventDefault();
-		updateDatabase();
-	};
-});
+			return
+		e.preventDefault()
+		updateDatabase()
+	}
+})
 
 defineTranslation({
 	ar: {
@@ -90,14 +90,14 @@ defineTranslation({
 		deleteDatabase: "حذف قاعدة البيانات",
 		soon: "قريباً",
 	},
-});
-const appConfig = useAppConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const route = useRoute();
-const router = useRouter();
-const database = useState<Database>("database");
-const databaseRef = ref<FormInst>();
-const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)));
+})
+const appConfig = useAppConfig()
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const route = useRoute()
+const router = useRouter()
+const database = useState<Database>("database")
+const databaseRef = ref<FormInst>()
+const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)))
 
 const databaseSchema: Schema = [
 	{
@@ -143,7 +143,7 @@ const databaseSchema: Schema = [
 			[0, 1, 2].includes(index) ? { disabled: true } : {},
 		required: false,
 	},
-];
+]
 
 const translationSchema: Schema = [
 	{
@@ -158,51 +158,53 @@ const translationSchema: Schema = [
 		children: "string",
 		subType: "locale",
 	},
-];
+]
 
 async function updateDatabase() {
 	databaseRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value));
-			Loading.value.updateDatabase = true;
+			const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value))
+			Loading.value.updateDatabase = true
 			const data = await $fetch<apiResponse>(
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
 				{
 					method: "PUT",
-					body: bodyContent, credentials: "include"
+					body: bodyContent,
+					credentials: "include",
 				},
-			);
+			)
 			if (data.result) {
-				database.value = { ...database.value, ...data.result };
+				database.value = { ...database.value, ...data.result }
 				if (route.params.database !== database.value.slug)
 					router.replace({
 						params: { database: database.value.slug },
-					});
-				setThemeConfig();
-				Loading.value.updateDatabase = false;
-				window.$message.success(data.message);
-			} else window.$message.error(data.message);
-			Loading.value.updateDatabase = false;
-		} else window.$message.error(t("inputsAreInvalid"));
-	});
+					})
+				setThemeConfig()
+				Loading.value.updateDatabase = false
+				window.$message.success(data.message)
+			} else window.$message.error(data.message)
+			Loading.value.updateDatabase = false
+		} else window.$message.error(t("inputsAreInvalid"))
+	})
 }
 async function deleteDatabase() {
-	Loading.value.deleteDatabase = true;
+	Loading.value.deleteDatabase = true
 	const data = await $fetch<apiResponse>(
 		`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
 		{
-			method: "DELETE", credentials: "include"
+			method: "DELETE",
+			credentials: "include",
 		},
-	);
+	)
 	if (data.result) {
-		Loading.value.deleteDatabase = false;
-		window.$message.success(data.message);
+		Loading.value.deleteDatabase = false
+		window.$message.success(data.message)
 		setTimeout(async () => {
-			clearNuxtState("database");
-			await navigateTo("/admin");
-		}, 800);
-	} else window.$message.error(data.message);
-	Loading.value.deleteDatabase = false;
+			clearNuxtState("database")
+			await navigateTo("/admin")
+		}, 800)
+	} else window.$message.error(data.message)
+	Loading.value.deleteDatabase = false
 }
 
 useHead({
@@ -210,5 +212,5 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+})
 </script>

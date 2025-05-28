@@ -21,31 +21,31 @@ const { field } = defineProps<{ field: Field }>()
 const modelValue = defineModel<string>()
 
 const rule: FormItemRule = {
-    trigger: ["blur", "input"],
-    type: "email",
-    required: field.required,
-    validator: async () => {
-        await nextTick()
-        return fieldValidator(field, modelValue.value, isEmail)
-    }
+	trigger: ["blur", "input"],
+	type: "email",
+	required: field.required,
+	validator: async () => {
+		await nextTick()
+		return fieldValidator(field, modelValue.value, isEmail)
+	},
 }
 const emailProviders = [
-    "@gmail.com",
-    "@outlook.com",
-    "@yahoo.com",
-    "@hotmail.com",
-    "@protonmail.com",
-    "@qq.com",
+	"@gmail.com",
+	"@outlook.com",
+	"@yahoo.com",
+	"@hotmail.com",
+	"@protonmail.com",
+	"@qq.com",
 ]
 
 const options = computed(() => {
-    return emailProviders.map((suffix) => {
-        const value = modelValue.value === null ? "" : modelValue.value
-        const prefix = value?.split("@")[0]
-        return {
-            label: prefix + suffix,
-            value: prefix + suffix,
-        }
-    })
+	return emailProviders.map((suffix) => {
+		const value = modelValue.value === null ? "" : modelValue.value
+		const prefix = value?.split("@")[0]
+		return {
+			label: prefix + suffix,
+			value: prefix + suffix,
+		}
+	})
 })
 </script>

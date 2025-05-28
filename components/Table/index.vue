@@ -70,19 +70,19 @@
 </template>
 
 <script setup lang="ts">
+import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
 import Inison from "inison"
 import {
-	NButtonGroup,
+	type DataTableColumns,
+	type DropdownOption,
 	NButton,
+	NButtonGroup,
 	NIcon,
+	NPopconfirm,
 	NProgress,
 	NTime,
-	NPopconfirm,
-	type DataTableColumns,
 	type NotificationReactive,
-	type DropdownOption,
 } from "naive-ui"
-import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
 import { Icon, NuxtLink } from "#components"
 
 const user = useState<User>("user")

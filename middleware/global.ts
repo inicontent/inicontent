@@ -1,1 +1,1 @@
-export default defineNuxtRouteMiddleware(() => {});
+export default defineNuxtRouteMiddleware(() => {})

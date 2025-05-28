@@ -264,20 +264,20 @@
 </template>
 
 <script lang="ts" setup>
-import Draggable from "vuedraggable"
-import {
-	type CascaderOption,
-	type SelectOption,
-	type SelectGroupOption,
-	NIcon,
-} from "naive-ui"
-import { Icon } from "#components"
 import {
 	flattenSchema,
 	isArrayOfObjects,
 	isObject,
 	isValidID,
 } from "inibase/utils"
+import {
+	type CascaderOption,
+	NIcon,
+	type SelectGroupOption,
+	type SelectOption,
+} from "naive-ui"
+import Draggable from "vuedraggable"
+import { Icon } from "#components"
 
 onMounted(() => {
 	document.onkeydown = (e) => {

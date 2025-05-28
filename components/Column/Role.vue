@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts" setup>
-const { value } = defineProps<{ value: string }>();
-const database = useState<Database>("database");
-const role = database.value.roles?.find(({ id }) => id === value)?.name;
+const { value } = defineProps<{ value: string }>()
+const database = useState<Database>("database")
+const role = database.value.roles?.find(({ id }) => id === value)?.name
 </script>

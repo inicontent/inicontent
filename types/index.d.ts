@@ -1,14 +1,14 @@
 import type {
+	ComparisonOperator,
+	Data,
+	TableObject,
 	Field as dbField,
 	FieldType as dbFieldType,
 	pageInfo,
-	ComparisonOperator,
-	TableObject,
-	Data,
 } from "inibase"
+import type { DataTableColumns, SelectOption } from "naive-ui"
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider"
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider"
-import type { DataTableColumns, SelectOption } from "naive-ui"
 import type languages from "~/composables/Translation/languages"
 
 type onCreateCallback = (index: number) => any

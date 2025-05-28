@@ -35,10 +35,10 @@
 </template>
 
 <script lang="ts" setup>
-const { field, value } = defineProps<{ field: Field; value: any }>();
+const { field, value } = defineProps<{ field: Field; value: any }>()
 
 let detectedFieldType = (field.subType ?? field.type) as
-    | DB_FieldType
-    | CMS_FieldType;
-if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
+	| DB_FieldType
+	| CMS_FieldType
+if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key
 </script>

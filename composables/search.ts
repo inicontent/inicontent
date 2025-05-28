@@ -1,4 +1,4 @@
-import { isArrayOfObjects } from "inibase/utils";
+import { isArrayOfObjects } from "inibase/utils"
 
 function _generateSearchInOption(
 	schema: Schema,
@@ -11,8 +11,8 @@ function _generateSearchInOption(
 			Array.isArray(type)
 				? type.some((t) => !["table", "array", "object"].includes(t))
 				: !["table", "array", "object"].includes(type),
-		);
-		if (!_children.length) return undefined;
+		)
+		if (!_children.length) return undefined
 		return {
 			label: t(key),
 			value: useIDasValue ? id : (path ?? "") + key,
@@ -24,13 +24,13 @@ function _generateSearchInOption(
 					`${(path ?? "") + key}.`,
 				),
 			),
-		};
+		}
 	}
 
 	return {
 		label: t(key),
 		value: useIDasValue ? id : (path ?? "") + key,
-	};
+	}
 }
 
 export function generateSearchInOptions(
@@ -38,12 +38,12 @@ export function generateSearchInOptions(
 	excludedKeys?: string[],
 	useIDasValue?: boolean,
 ) {
-	if (!schema) return [];
+	if (!schema) return []
 	const RETURN = schema
 		.map((field) => _generateSearchInOption(schema, field, useIDasValue))
 		.filter(Boolean)
-		.flat(Number.POSITIVE_INFINITY);
+		.flat(Number.POSITIVE_INFINITY)
 	if (excludedKeys)
-		return RETURN.filter(({ value }) => !excludedKeys.includes(value));
-	return RETURN;
+		return RETURN.filter(({ value }) => !excludedKeys.includes(value))
+	return RETURN
 }

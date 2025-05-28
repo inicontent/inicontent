@@ -1,66 +1,66 @@
 <template><template v-for="(drawer, index) in Drawers" :key="index">
-	<NDrawer :onEsc :show="drawer.show || false" @update:show="(show) => onUpdateShow(index, show)"
-		:width="drawer.width" @update:width="(width) => {
-			if (index === 0) defaultWidth = width
-			drawer.width = width
-		}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
-		:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
-		<NDrawerContent closable>
-			<template #header>
-				<span v-if="drawer.id">
-					{{ t('edit') }}
-					<NuxtLink
-						:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
-						<NText type="primary">
-							{{ itemsLabels[index] }}
-							<NIcon size="small">
-								<Icon name="tabler:external-link" />
-							</NIcon>
-						</NText>
-					</NuxtLink>
-				</span>
-				<span v-else>
-					{{ t('new') }} {{ t(drawer.table) }}
-				</span>
-			</template>
+		<NDrawer :onEsc :show="drawer.show || false" @update:show="(show) => onUpdateShow(index, show)"
+			:width="drawer.width" @update:width="(width) => {
+				if (index === 0) defaultWidth = width
+				drawer.width = width
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
+			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
+			<NDrawerContent closable>
+				<template #header>
+					<span v-if="drawer.id">
+						{{ t('edit') }}
+						<NuxtLink
+							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
+							<NText type="primary">
+								{{ itemsLabels[index] }}
+								<NIcon size="small">
+									<Icon name="tabler:external-link" />
+								</NIcon>
+							</NText>
+						</NuxtLink>
+					</span>
+					<span v-else>
+						{{ t('new') }} {{ t(drawer.table) }}
+					</span>
+				</template>
 
-			<template #footer>
-				<NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
-					<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
-						<template #icon>
-							<NIcon>
-								<Icon name="tabler:chevron-right"
-									v-if="drawer.width && (typeof drawer.width === 'string' || drawer.width >= screenHalf)" />
-								<Icon name="tabler:chevron-left" v-else />
-							</NIcon>
-						</template>
-					</NButton>
+				<template #footer>
+					<NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
+						<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:chevron-right"
+										v-if="drawer.width && (typeof drawer.width === 'string' || drawer.width >= screenHalf)" />
+									<Icon name="tabler:chevron-left" v-else />
+								</NIcon>
+							</template>
+						</NButton>
 
-					<NButton round secondary type="primary"
-						:disabled="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
-						:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
-						@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
-						<template #icon>
-							<NIcon>
-								<Icon name="tabler:device-floppy" />
-							</NIcon>
-						</template>
-						{{ drawer.id ? t('update') : t('create') }}
-					</NButton>
-				</NFlex>
-			</template>
-			<div class="drawerSpin" v-if="!drawer.schema?.length || !!Loading.CREATE || !!Loading.UPDATE">
-				<NSpin />
-			</div>
+						<NButton round secondary type="primary"
+							:disabled="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
+							:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
+							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:device-floppy" />
+								</NIcon>
+							</template>
+							{{ drawer.id ? t('update') : t('create') }}
+						</NButton>
+					</NFlex>
+				</template>
+				<div class="drawerSpin" v-if="!drawer.schema?.length || !!Loading.CREATE || !!Loading.UPDATE">
+					<NSpin />
+				</div>
 
-			<slot @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
-				<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
-					@after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)"
-					v-model:schema="drawer.schema"></Form>
-			</slot>
-		</NDrawerContent>
-	</NDrawer>
-</template></template>
+				<slot @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
+					<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
+						@after-create="() => onAfterUpdateCreate(index)"
+						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
+				</slot>
+			</NDrawerContent>
+		</NDrawer>
+	</template></template>
 
 <script setup lang="ts">
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
@@ -113,7 +113,7 @@ const toggleDrawerWidth = (index: number) => {
 function onEsc() {
 	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show)
 	if (openDrawerIndex !== -1) {
-		const previewModal = document.querySelector('.n-image-preview-container')
+		const previewModal = document.querySelector(".n-image-preview-container")
 		if (!previewModal) onUpdateShow(openDrawerIndex, false)
 	}
 }
@@ -132,6 +132,10 @@ watchEffect(() => {
 		}
 		itemsLabels.value[index] = "--"
 	}
+})
+
+onBeforeRouteLeave(() => {
+	Drawers.value = []
 })
 
 onBeforeRouteUpdate((_to, _from, next) => {

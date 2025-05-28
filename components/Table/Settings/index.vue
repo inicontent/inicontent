@@ -117,12 +117,9 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	NTag,
-	type FormInst,
-} from "naive-ui"
+import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils"
+import { type FormInst, NTag } from "naive-ui"
 import { Icon } from "#components"
-import { flattenSchema, isValidID, isArrayOfObjects } from "inibase/utils"
 
 onMounted(() => {
 	document.onkeydown = (e) => {

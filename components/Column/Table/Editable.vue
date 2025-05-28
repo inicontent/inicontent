@@ -21,14 +21,13 @@ const table = database.value.tables?.find(({ slug }) => slug === field.table)
 const { isMobile } = useDevice()
 
 async function handleClick(item: Item) {
-    if (item.id && field.table) {
-        if (!isMobile) openDrawer(field.table, item.id)
-        else
-            await navigateTo(
-                `${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/${field.table}/${item.id}/edit`,
-                { open: { target: "_blank" } },
-            )
-    }
+	if (item.id && field.table) {
+		if (!isMobile) openDrawer(field.table, item.id)
+		else
+			await navigateTo(
+				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/${field.table}/${item.id}/edit`,
+				{ open: { target: "_blank" } },
+			)
+	}
 }
-
 </script>
