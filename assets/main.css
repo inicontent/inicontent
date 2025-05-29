@@ -552,6 +552,7 @@ body {
 		width: 100% !important;
 		height: 100% !important;
 		z-index: 9999989999 !important;
+		overflow: visible !important;
 	}
 
 	.printable-direct-parent {
