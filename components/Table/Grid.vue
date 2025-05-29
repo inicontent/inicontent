@@ -31,7 +31,7 @@
 				<template #trigger>
 					<NPopover trigger="click" v-model:show="showPopover">
 						<template #trigger>
-							<NCard style="cursor: pointer" content-style="padding: 18px 0" hoverable
+							<NCard style="cursor: pointer" content-style="padding: 15px 0" hoverable
 								@click="showPopover = !showPopover">
 								<NFlex justify="center" align="center">
 									<NIcon size="36">
