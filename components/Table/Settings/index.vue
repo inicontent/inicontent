@@ -117,9 +117,9 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema, isArrayOfObjects, isValidID } from "inibase/utils"
-import { type FormInst, NTag } from "naive-ui"
-import { Icon } from "#components"
+import { flattenSchema, isArrayOfObjects, isNumber } from "inibase/utils"
+import type { FormInst } from "naive-ui"
+import { Icon, NTag } from "#components"
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -335,8 +335,8 @@ watch(
 	},
 )
 function onAppendToLabel(label: string) {
-	if (!label.startsWith("@") && isValidID(label)) label = `@${label}`
-	if (label.startsWith("@") && isValidID(label.slice(1)))
+	if (!label.startsWith("@") && isNumber(label)) label = `@${label}`
+	if (label.startsWith("@") && isNumber(label.slice(1)))
 		return {
 			label:
 				flattenCopySchema.value.find(({ id }) => id === label.slice(1))?.key ??
@@ -358,7 +358,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-				isValidID(labelObject.value.slice(1))
+				isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,

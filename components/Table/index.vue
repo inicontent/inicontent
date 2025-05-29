@@ -72,18 +72,21 @@
 <script setup lang="ts">
 import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
 import Inison from "inison"
+import type {
+	DataTableColumns,
+	DropdownOption,
+	NotificationReactive,
+} from "naive-ui"
 import {
-	type DataTableColumns,
-	type DropdownOption,
+	Icon,
+	NuxtLink,
 	NButton,
 	NButtonGroup,
 	NIcon,
 	NPopconfirm,
 	NProgress,
 	NTime,
-	type NotificationReactive,
-} from "naive-ui"
-import { Icon, NuxtLink } from "#components"
+} from "#components"
 
 const user = useState<User>("user")
 const route = useRoute()

@@ -5,7 +5,6 @@
 </template>
 
 <script setup lang="ts">
-import { NCard } from "naive-ui"
 definePageMeta({
 	layout: "dashboard",
 	middleware: ["database", "user", "dashboard", "global"],

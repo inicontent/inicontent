@@ -122,6 +122,7 @@ declare global {
 		displayAs?: "table" | "kanban" | "cards"
 		groupBy?: string
 		show?: boolean
+		size?: number
 	}
 	type Item = Data & {
 		createdBy?: User

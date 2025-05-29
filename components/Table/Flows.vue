@@ -270,14 +270,9 @@ import {
 	isObject,
 	isValidID,
 } from "inibase/utils"
-import {
-	type CascaderOption,
-	NIcon,
-	type SelectGroupOption,
-	type SelectOption,
-} from "naive-ui"
+import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui"
 import Draggable from "vuedraggable"
-import { Icon } from "#components"
+import { Icon, NIcon } from "#components"
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -498,9 +493,8 @@ function generateFlowSelectOptions(
 
 	if (
 		value &&
-		(value === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-			(table.value.slug === "users" &&
-				value.endsWith(".c12f82766d02ae29c6a94a3acf11cda4")))
+		(value === "@user.4" ||
+			(table.value.slug === "users" && value.endsWith(".4")))
 	)
 		// @user.role
 		result.push({
@@ -575,9 +569,8 @@ function formatValue(
 ) {
 	if (
 		parentKey &&
-		(parentKey === "@user.c12f82766d02ae29c6a94a3acf11cda4" ||
-			(table.value.slug === "users" &&
-				parentKey.endsWith(".c12f82766d02ae29c6a94a3acf11cda4"))) &&
+		(parentKey === "@user.4" ||
+			(table.value.slug === "users" && parentKey.endsWith(".4"))) &&
 		isValidID(value)
 	)
 		return (

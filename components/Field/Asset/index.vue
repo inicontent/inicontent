@@ -1,40 +1,43 @@
 <template>
-<FieldWrapper :field :rule v-model="modelValue">
-	<template #label>
-		<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
-			<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field :callback="importAssetCallback" />
-		</NFlex>
-	</template>
+	<FieldWrapper :field :rule v-model="modelValue">
+		<template #label>
+			<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
+				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
+					:callback="importAssetCallback" />
+			</NFlex>
+		</template>
 
-	<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray" :accept="acceptedFileType"
-		:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
-		response-type="json" :fileList @update:file-list="setModelValue" :onFinish
-		:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false"
-		with-credentials>
-		<NUploadDragger v-if="!field.isTable">
-			<NIcon size="48" depth="3">
-				<Icon name="tabler:upload" />
-			</NIcon>
-		</NUploadDragger>
-		<NFlex v-else align="center" size="small">
-			<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field :callback="importAssetCallback" />
-		</NFlex>
-	</NUpload>
+		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
+			:accept="acceptedFileType"
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
+			response-type="json" :fileList @update:file-list="setModelValue" :onFinish
+			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false"
+			with-credentials>
+			<NUploadDragger v-if="!field.isTable">
+				<NIcon size="48" depth="3">
+					<Icon name="tabler:upload" />
+				</NIcon>
+			</NUploadDragger>
+			<NFlex v-else align="center" size="small">
+				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
+					:callback="importAssetCallback" />
+			</NFlex>
+		</NUpload>
 
-	<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-		<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
-			<AssetCard targetID="assetsModal" :where="assetWhere">
-				<template v-slot="{ asset }">
-					<template v-if="asset.type !== 'dir'">
-						<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
-							@update:checked="handleSelectAsset(asset)" />
-						<NRadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
+		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
+			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+				<AssetCard targetID="assetsModal" :where="assetWhere">
+					<template v-slot="{ asset }">
+						<template v-if="asset.type !== 'dir'">
+							<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
+								@update:checked="handleSelectAsset(asset)" />
+							<NRadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
+						</template>
 					</template>
-				</template>
-			</AssetCard>
-		</NDrawerContent>
-	</NDrawer>
-</FieldWrapper>
+				</AssetCard>
+			</NDrawerContent>
+		</NDrawer>
+	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
@@ -256,7 +259,7 @@ function renderIcon(file: UploadFileInfo) {
 		(file.type.startsWith("image/") || file.type === "application/pdf")
 	)
 		return h(NImage, {
-			src: file.type === "application/pdf" ? `${file.url}?fit=100` : file.url,
+			src: file.type === "application/pdf" ? `${file.url}?raw` : file.url,
 			previewSrc:
 				file.type === "application/pdf" ? `${file.url}?raw` : file.url,
 			width: 100,

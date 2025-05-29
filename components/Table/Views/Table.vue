@@ -58,20 +58,24 @@
 <script setup lang="ts">
 import { isArrayOfObjects, isObject } from "inibase/utils"
 import Inison from "inison"
+import type {
+	DataTableColumns,
+	DataTableGetCsvCell,
+	DataTableGetCsvHeader,
+	DataTableInst,
+	DropdownOption,
+} from "naive-ui"
+
 import {
-	type DataTableColumns,
-	type DataTableGetCsvCell,
-	type DataTableGetCsvHeader,
-	type DataTableInst,
-	type DropdownOption,
+	Column,
+	ColumnEdit,
+	Icon,
 	NButton,
 	NFlex,
 	NIcon,
 	NPerformantEllipsis,
 	NPopover,
-} from "naive-ui"
-
-import { Column, ColumnEdit, Icon } from "#components"
+} from "#components"
 
 const dataTableRef = ref<DataTableInst>()
 defineExpose({ dataTableRef })

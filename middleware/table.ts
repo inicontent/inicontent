@@ -3,7 +3,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const table = useState<Table>("table")
 	let currentTableInPath: string | undefined = decodeURIComponent(
 		(to.params.table as string) ||
-			to.path.split("/admin/tables/")[1]?.split("/")[0],
+			to.path.split("/admin/tables/")[1]?.split("/")[0] ||
+			"",
 	)
 
 	if (currentTableInPath === "undefined") currentTableInPath = undefined

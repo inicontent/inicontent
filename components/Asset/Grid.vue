@@ -3,9 +3,12 @@
 		<NDrawer v-model:show="showDrawer" :placement="Language === 'ar' ? 'left' : 'right'" class="assetDrawer">
 			<NDrawerContent :native-scrollbar="false" v-if="CurrentAsset">
 				<NFlex vertical>
-					<NImage v-if="CurrentAsset?.type.startsWith('image/')" class="asset"
-						:src="`${CurrentAsset.publicURL}`" :preview-src="CurrentAsset.publicURL"
-						:img-props="{ class: 'image' }" />
+					<NImage v-if="CurrentAsset?.type.startsWith('image/') || CurrentAsset?.type === 'application/pdf'"
+						class="asset"
+						:src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
+						:preview-src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
+						:img-props="{ class: 'image' }"
+						:renderToolbar="(props) => renderToolbar(props, CurrentAsset)" />
 					<NIcon v-else class="asset">
 						<NA :href="CurrentAsset.publicURL" target="_blank">
 							<LazyAssetIcon :type="CurrentAsset.type" class="icon" />
@@ -53,10 +56,13 @@
 							<NFlex class="assetActions">
 								<slot :asset></slot>
 							</NFlex>
-							<NImage v-if="asset.type.startsWith('image/')" class="asset" :src="`${asset.publicURL}`"
+							<NImage v-if="asset.type.startsWith('image/') || asset.type === 'application/pdf'"
+								class="asset"
+								:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
 								preview-disabled :intersection-observer-options="{
 									root: `#${targetID ?? 'container'}`
-								}" lazy :preview-src="asset.publicURL" @click="handleOnClickAsset($event, asset)" />
+								}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
+								@click="handleOnClickAsset($event, asset)" />
 							<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
 								<LazyAssetIcon :type="asset.type" class="icon" />
 							</NIcon>
@@ -76,8 +82,9 @@
 </template>
 
 <script lang="ts" setup>
-import { NIcon } from "naive-ui"
-import { Icon } from "#components"
+import type { ImageRenderToolbarProps } from "naive-ui"
+import type { VNodeChild } from "vue"
+import { Icon, NIcon } from "#components"
 
 const path = defineModel<string>("path", {
 	default: "",
@@ -195,5 +202,39 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 	}
 	CurrentAsset.value = asset
 	showDrawer.value = true
+}
+
+const renderToolbar: (
+	props: ImageRenderToolbarProps,
+	file?: Asset,
+) => VNodeChild = (
+	{
+		nodes: {
+			rotateCounterclockwise,
+			rotateClockwise,
+			resizeToOriginalSize,
+			zoomOut,
+			zoomIn,
+			download,
+			close,
+		},
+	},
+	file?: Asset,
+) => {
+	if (download.props && file?.publicURL)
+		download.props.onClick = (event: MouseEvent) => {
+			event?.preventDefault()
+			window.open(file.publicURL as string, "_blank")
+			close?.props?.onClick?.()
+		}
+	return [
+		rotateCounterclockwise,
+		rotateClockwise,
+		zoomIn,
+		zoomOut,
+		resizeToOriginalSize,
+		download,
+		close,
+	]
 }
 </script>

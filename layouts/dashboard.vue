@@ -37,13 +37,26 @@
 						<template #extra>
 							<NButtonGroup>
 								<NTooltip v-if="user?.role ===
-									appConfig.idOne" :delay="1500">
+									appConfig.idOne" :delay="600" show scrollable style="max-height: 240px">
 									<template #trigger>
 										<NButton round size="small">{{ humanFileSize(
 											database?.size,
 										) }}</NButton>
 									</template>
-									{{ t("totalDatabaseSize") }}
+									<NFlex vertical>
+										<NTag v-for="table in database.tables" round
+											style="width:fit-content;padding-inline-start: 0; margin: auto;"
+											:bordered="false">
+											<NTag style="width:fit-content;margin-inline-end: 8px;" :bordered="false"
+												type="primary" round strong>
+												<template #avatar>
+													<LazyTableIcon :table="table" />
+												</template>
+												{{ t(table.slug) }}
+											</NTag>
+											{{ humanFileSize(table?.size) }}
+										</NTag>
+									</NFlex>
 								</NTooltip>
 								<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
 									<NButton round size="small">
@@ -84,8 +97,7 @@
 
 <script setup lang="ts">
 import { isValidID } from "inibase/utils"
-import { NFlex, NIcon, NTag, NText } from "naive-ui"
-import { Icon } from "#components"
+import { Icon, NIcon, NTag, NText } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 defineTranslation({

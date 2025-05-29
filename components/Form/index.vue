@@ -59,7 +59,7 @@ const mergeItems = (existing: Schema, updated: Schema): Schema =>
 		existing
 			.map((existedItem) => {
 				if (
-					!existedItem.id ||
+					existedItem.id === undefined ||
 					(typeof existedItem.id === "string" &&
 						existedItem.id.startsWith("temp-"))
 				)

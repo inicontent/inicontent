@@ -11,8 +11,10 @@ export default function renderLabel(
 	if (table.customLabel) return table.customLabel(item)
 
 	const flattenTableSchema = flattenSchema(table.schema as any)
-	return table.label.replace(/@(\w+)/g, (_match, capturedString: string) => {
-		const field = flattenTableSchema.find(({ id }) => id === capturedString)
+	return table.label.replace(/@(\d+)/g, (_match, capturedNumber: string) => {
+		const field = flattenTableSchema.find(
+			({ id }) => id === Number(capturedNumber),
+		)
 		if (!field || !item || !item[field.key]) return defaulValue
 		if (field.table) {
 			const database = useState<Database>("database")

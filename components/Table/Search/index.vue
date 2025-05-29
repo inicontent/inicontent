@@ -46,8 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NIcon } from "naive-ui"
-import { Icon } from "#components"
+import { Icon, NIcon } from "#components"
 
 defineTranslation({
 	ar: {

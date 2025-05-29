@@ -21,8 +21,8 @@
 <script setup lang="ts">
 import { isObject, isStringified } from "inibase/utils"
 import Inison from "inison"
-import { type DropdownOption, NIcon } from "naive-ui"
-import { Icon } from "#components"
+import type { DropdownOption } from "naive-ui"
+import { Icon, NIcon } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 

@@ -18,7 +18,7 @@ export default defineNuxtModule({
 			_nuxt.options.build.transpile =
 				_nuxt.options.build.transpile.concat(transpile)
 
-		for (const key in Object.keys(naive).filter((name) =>
+		for (const key of Object.keys(naive).filter((name) =>
 			/^N[A-Z]|n-[a-z]/.test(name),
 		)) {
 			// Add types for each component
