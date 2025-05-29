@@ -45,7 +45,6 @@
 		"inison": "^2.0.1",
 		"naive-ui": "^2.41.0",
 		"nuxt": "3.17.3",
-		"nuxt-build-cache": "^0.1.1",
 		"nuxt-tiptap-editor": "2.2.1",
 		"vuedraggable": "4.1.0"
 	},
