@@ -192,6 +192,22 @@ const tableCopy = ref<
 	}
 >({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" })
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
+function removeTempIds(schema: Schema) {
+	return schema
+		.filter(
+			(field) =>
+				!(typeof field.id === "string" && field.id.startsWith("temp-"))
+		)
+		.map((field) => {
+			if (isArrayOfObjects(field.children)) {
+				return {
+					...field,
+					children: removeTempIds(field.children),
+				}
+			}
+			return field
+		})
+}
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -200,9 +216,6 @@ async function updateTable() {
 			}))(tableCopy.value)
 			Loading.value.updateTable = true
 
-			// TO-DO: Fix
-			const oldAllowedMethods = bodyContent.allowedMethods
-
 			if (bodyContent.displayAs === "table") bodyContent.displayAs = "" as any
 
 			if (bodyContent.localLabel)
@@ -210,11 +223,13 @@ async function updateTable() {
 					.map(({ value }: { value: string }) => value)
 					.join(" ")
 
+			if (bodyContent.schema)
+				bodyContent.schema = removeTempIds(bodyContent.schema)
+
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${
-					database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -234,7 +249,6 @@ async function updateTable() {
 				database.value.tables &&
 				data?.result
 			) {
-				data.result.allowedMethods = oldAllowedMethods
 				data.result.displayAs = data.result.displayAs || "table"
 				database.value.tables[tableIndex] = data.result
 				table.value = data.result
@@ -259,8 +273,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${
-			database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -302,22 +315,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-						?.split(/(@\w+)/g)
-						.filter((value: string) => value.trim() != "")
-						.map((label: string) => {
-							if (label.startsWith("@"))
-								return {
-									label:
-										flattenCopySchema.value.find(
-											({ id }) => id === label.slice(1),
-										)?.key ?? "",
-									value: label,
-								}
+					?.split(/(@\w+)/g)
+					.filter((value: string) => value.trim() != "")
+					.map((label: string) => {
+						if (label.startsWith("@"))
 							return {
-								label,
+								label:
+									flattenCopySchema.value.find(
+										({ id }) => id === label.slice(1),
+									)?.key ?? "",
 								value: label,
 							}
-						})
+						return {
+							label,
+							value: label,
+						}
+					})
 				: undefined
 	},
 	{ immediate: true },
@@ -358,7 +371,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-				isNumber(labelObject.value.slice(1))
+					isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -401,8 +414,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -412,8 +425,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -429,8 +442,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -439,8 +452,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -449,8 +462,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -460,8 +473,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -471,8 +484,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
