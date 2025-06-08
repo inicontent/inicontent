@@ -3,7 +3,7 @@
 		<template #trigger>
 			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onContextmenu
 				:class="{ 'editable': !isEdit && isEditable }">
-				<Column v-if="!isEdit" :field="field" :value="modelValue" />
+				<LazyColumn v-if="!isEdit" :field="field" :value="modelValue" />
 				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
 			</NSpin>
 		</template>
