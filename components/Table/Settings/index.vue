@@ -192,12 +192,9 @@ const tableCopy = ref<
 	}
 >({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" })
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
-function removeTempIds(schema: Schema) {
+function removeTempIds(schema: Schema): Schema {
 	return schema
-		.filter(
-			(field) =>
-				!(typeof field.id === "string" && field.id.startsWith("temp-"))
-		)
+		.filter(({ id }) => !String(id).startsWith("temp-"))
 		.map((field) => {
 			if (isArrayOfObjects(field.children)) {
 				return {
@@ -322,7 +319,7 @@ watch(
 							return {
 								label:
 									flattenCopySchema.value.find(
-										({ id }) => id === label.slice(1),
+										({ id }) => String(id) === label.slice(1),
 									)?.key ?? "",
 								value: label,
 							}
@@ -348,12 +345,12 @@ watch(
 	},
 )
 function onAppendToLabel(label: string) {
-	if (!label.startsWith("@") && isNumber(label)) label = `@${label}`
-	if (label.startsWith("@") && isNumber(label.slice(1)))
+	if (isNumber(label) && !String(label).startsWith("@")) label = `@${label}`
+	if (isNumber(label.slice(1)) && String(label).startsWith("@"))
 		return {
 			label:
-				flattenCopySchema.value.find(({ id }) => id === label.slice(1))?.key ??
-				"undefined",
+				flattenCopySchema.value.find(({ id }) => String(id) === label.slice(1))
+					?.key ?? "undefined",
 			value: label,
 		}
 
