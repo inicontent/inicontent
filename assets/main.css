@@ -506,6 +506,10 @@ body {
 	color: rgb(var(--primaryColor));
 }
 
+.rtl .n-input-group > .n-button:not(:first-child) {
+	border-radius: 0 !important;
+}
+
 @media (max-width: 768px) {
 	#tableCard > .n-card-header {
 		flex-direction: column;

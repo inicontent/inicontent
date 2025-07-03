@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NInput type="password" show-password-on="click" v-model:value="modelValue" :placeholder="t(field.key)"
+		<NInput type="password" show-password-on="click" v-model:value="localModelValue" :placeholder="t(field.key)"
 			clearable v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
@@ -17,8 +17,15 @@
 import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
-
-const modelValue = defineModel<string>()
+const modelValue = defineModel<string | null>()
+const localModelValue = ref<string | null>(
+	modelValue.value !== undefined && modelValue.value !== null
+		? String(modelValue.value)
+		: null,
+)
+watch(localModelValue, (v) => {
+	modelValue.value = v
+})
 
 const rule: FormItemRule = {
 	trigger: ["blur", "input"],
@@ -26,7 +33,7 @@ const rule: FormItemRule = {
 	validator: async () => {
 		if (!alreadyRun.value) {
 			await nextTick()
-			return fieldValidator(field, modelValue.value)
+			return fieldValidator(field, localModelValue.value)
 		}
 		return new Promise((resolve) => {
 			resolve()
@@ -36,11 +43,11 @@ const rule: FormItemRule = {
 
 const alreadyRun = ref(false)
 if (
-	modelValue.value !== undefined &&
-	modelValue.value !== "" &&
-	modelValue.value !== null
+	localModelValue.value !== undefined &&
+	localModelValue.value !== "" &&
+	localModelValue.value !== null
 ) {
 	alreadyRun.value = true
-	modelValue.value = undefined
+	localModelValue.value = null
 }
 </script>

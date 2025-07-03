@@ -267,6 +267,7 @@
 import {
 	flattenSchema,
 	isArrayOfObjects,
+	isNumber,
 	isObject,
 	isValidID,
 } from "inibase/utils"
@@ -571,10 +572,11 @@ function formatValue(
 		parentKey &&
 		(parentKey === "@user.4" ||
 			(table.value.slug === "users" && parentKey.endsWith(".4"))) &&
-		isValidID(value)
+		isNumber(value)
 	)
 		return (
-			database.value.roles?.find(({ id }) => id === value)?.name ?? "@undefined"
+			database.value.roles?.find(({ id }) => String(id) === String(value))
+				?.name ?? "@undefined"
 		)
 
 	if (
