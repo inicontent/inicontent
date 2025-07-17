@@ -42,12 +42,14 @@ const rule: FormItemRule = {
 }
 
 const alreadyRun = ref(false)
-if (
-	localModelValue.value !== undefined &&
-	localModelValue.value !== "" &&
-	localModelValue.value !== null
-) {
-	alreadyRun.value = true
-	localModelValue.value = null
-}
+onMounted(() => {
+	if (
+		localModelValue.value !== undefined &&
+		localModelValue.value !== "" &&
+		localModelValue.value !== null
+	) {
+		alreadyRun.value = true
+		localModelValue.value = null
+	}
+})
 </script>
