@@ -17,11 +17,11 @@
 import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
-const modelValue = defineModel<string | null>()
-const localModelValue = ref<string | null>(
+const modelValue = defineModel<string>()
+const localModelValue = ref<string | undefined>(
 	modelValue.value !== undefined && modelValue.value !== null
 		? String(modelValue.value)
-		: null,
+		: undefined,
 )
 watch(localModelValue, (v) => {
 	modelValue.value = v
@@ -49,7 +49,7 @@ onMounted(() => {
 		localModelValue.value !== null
 	) {
 		alreadyRun.value = true
-		localModelValue.value = null
+		localModelValue.value = undefined
 	}
 })
 </script>
