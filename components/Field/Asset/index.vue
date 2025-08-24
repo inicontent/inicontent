@@ -308,7 +308,7 @@ function renderIcon(file: UploadFileInfo) {
 			},
 		})
 	return h(Icon, {
-		name: file.type?.startsWith("image/") ? "tabler:image" : "tabler:file",
+		name: file.type?.startsWith("image/") ? "tabler:photo" : "tabler:file",
 	})
 }
 

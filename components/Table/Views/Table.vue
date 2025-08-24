@@ -403,7 +403,7 @@ function handleScroll() {
 const tableWidth = ref<number>(0)
 
 async function setColumns() {
-	columns.value = [
+	const cols = [
 		...(table.value?.allowedMethods !== "r"
 			? [
 				{
@@ -658,13 +658,15 @@ async function setColumns() {
 			]),
 	] as DataTableColumns
 
+	if (cols.length > 2) columns.value = cols
+
 	await nextTick()
 
 	tableWidth.value = columns.value?.reduce(
 		(accumulator: number, { width }) =>
 			accumulator + ((width as number | undefined) ?? 0),
 		40,
-	)
+	) ?? 40
 }
 watch([Language, checkedRowKeys, _data, tablesConfig], setColumns, {
 	deep: true,

@@ -74,7 +74,7 @@
 				</NGridItem>
 			</template>
 		</NGrid>
-		<NDropdown v-if="table.allowedMethods?.includes('u') || table.allowedMethods?.includes('d')"
+		<NDropdown v-if="table?.allowedMethods?.includes('u') || table?.allowedMethods?.includes('d')"
 			placement="bottom-start" trigger="manual" :x="x" :y="y" :show="showDropdown" :options="dropdownOptions"
 			@clickoutside="dropdownOnClickOutside" @select="(key: string) => dropdownOnSelect(key)" />
 	</template>
@@ -117,15 +117,15 @@ const CurrentAsset = ref<Asset>()
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true
 	const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id)
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -141,7 +141,7 @@ const dropdownOptions = [
 	{
 		label: t("delete"),
 		key: "delete",
-		show: table.allowedMethods?.includes("d"),
+		show: table?.allowedMethods?.includes("d"),
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
 	},
 	{
@@ -149,14 +149,14 @@ const dropdownOptions = [
 		key: "rename",
 		disabled: true,
 		show:
-			table.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
+			table?.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
 	},
 	{
 		label: t("replace"),
 		key: "replace",
 		disabled: true,
-		show: table.allowedMethods?.includes("u"),
+		show: table?.allowedMethods?.includes("u"),
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:upload" })),
 	},
 ]
@@ -221,20 +221,20 @@ const renderToolbar: (
 	},
 	file?: Asset,
 ) => {
-	if (download.props && file?.publicURL)
-		download.props.onClick = (event: MouseEvent) => {
-			event?.preventDefault()
-			window.open(file.publicURL as string, "_blank")
-			close?.props?.onClick?.()
-		}
-	return [
-		rotateCounterclockwise,
-		rotateClockwise,
-		zoomIn,
-		zoomOut,
-		resizeToOriginalSize,
-		download,
-		close,
-	]
-}
+		if (download.props && file?.publicURL)
+			download.props.onClick = (event: MouseEvent) => {
+				event?.preventDefault()
+				window.open(file.publicURL as string, "_blank")
+				close?.props?.onClick?.()
+			}
+		return [
+			rotateCounterclockwise,
+			rotateClockwise,
+			zoomIn,
+			zoomOut,
+			resizeToOriginalSize,
+			download,
+			close,
+		]
+	}
 </script>

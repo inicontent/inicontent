@@ -327,8 +327,7 @@ async function saveFlow() {
 	}
 
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${
-			database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug
 		}/${table.value.slug}`,
 		{
 			method: "PUT",
@@ -430,12 +429,12 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-								{
-									label: t("or"),
-									value: "@where.or",
-									children: schemaToOptions(table.value.schema, "@where.or"),
-								},
-							]
+							{
+								label: t("or"),
+								value: "@where.or",
+								children: schemaToOptions(table.value.schema, "@where.or"),
+							},
+						]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
@@ -469,7 +468,7 @@ function generateFlowSelectOptions(
 			)?.schema
 			if (userSchema) userSchema = flattenSchema(userSchema as any)
 			const field = (value.startsWith("@user.") ? userSchema : schema)?.find(
-				({ id }) => id === value.slice(6),
+				({ id }) => String(id) === value.slice(6),
 			)
 			if (field?.options)
 				field.options.map((_value) =>
@@ -479,9 +478,9 @@ function generateFlowSelectOptions(
 							: Array.isArray(_value)
 								? { label: _value[0], value: _value[0] }
 								: {
-										label: _value,
-										value: _value,
-									}) as any,
+									label: _value,
+									value: _value,
+								}) as any,
 					),
 				)
 		}
@@ -532,16 +531,16 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-							{
-								key: "@where.or",
-								label: "or",
-								type: "group",
-								children: schema.map(({ id, key }) => ({
-									label: `@where.or.${key}`,
-									value: `@where.or.${id}`,
-								})),
-							},
-						]
+						{
+							key: "@where.or",
+							label: "or",
+							type: "group",
+							children: schema.map(({ id, key }) => ({
+								label: `@where.or.${key}`,
+								value: `@where.or.${id}`,
+							})),
+						},
+					]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
@@ -594,7 +593,7 @@ function formatValue(
 				: table.value.schema
 		if (schema) {
 			schema = flattenSchema(schema as any, true)
-			const item = schema.find(({ id }) => id === lastItem)
+			const item = schema.find(({ id }) => String(id) === lastItem)
 
 			if (!item) return undefined
 

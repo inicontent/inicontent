@@ -190,20 +190,24 @@ const tableCopy = ref<
 	Table & {
 		localLabel?: { value: string; label: string }[]
 	}
->({ ...toRaw(table.value), displayAs: table.value.displayAs || "table" })
+>({
+	...toRaw(table.value),
+	displayAs: table.value.displayAs || "table",
+	schema: table.value.schema || [],
+})
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 function removeTempIds(schema: Schema): Schema {
-	return schema
-		.filter(({ id }) => !String(id).startsWith("temp-"))
-		.map((field) => {
-			if (isArrayOfObjects(field.children)) {
-				return {
-					...field,
-					children: removeTempIds(field.children),
-				}
+	return schema.map((field) => {
+		if (field.id && String(field.id).startsWith("temp-")) delete field.id
+
+		if (isArrayOfObjects(field.children)) {
+			return {
+				...field,
+				children: removeTempIds(field.children),
 			}
-			return field
-		})
+		}
+		return field
+	})
 }
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
@@ -226,7 +230,8 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -270,7 +275,8 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -312,22 +318,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-					?.split(/(@\w+)/g)
-					.filter((value: string) => value.trim() != "")
-					.map((label: string) => {
-						if (label.startsWith("@"))
+						?.split(/(@\w+)/g)
+						.filter((value: string) => value.trim() != "")
+						.map((label: string) => {
+							if (label.startsWith("@"))
+								return {
+									label:
+										flattenCopySchema.value.find(
+											({ id }) => String(id) === label.slice(1),
+										)?.key ?? "",
+									value: label,
+								}
 							return {
-								label:
-									flattenCopySchema.value.find(
-										({ id }) => String(id) === label.slice(1),
-									)?.key ?? "",
+								label,
 								value: label,
 							}
-						return {
-							label,
-							value: label,
-						}
-					})
+						})
 				: undefined
 	},
 	{ immediate: true },
@@ -368,7 +374,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isNumber(labelObject.value.slice(1))
+				isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -411,8 +417,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -422,8 +428,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -439,8 +445,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -449,8 +455,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -459,8 +465,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -470,8 +476,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -481,8 +487,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},

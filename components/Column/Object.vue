@@ -6,7 +6,7 @@
         <NFlex vertical>
             <NFlex v-for="child in (field.children as Schema).filter(({ key }) => typeof value[key] !== 'undefined')"
                 align="center" inline>
-                <strong>{{ child.key }}:</strong>
+                <strong>{{ t(child.key) }}:</strong>
                 <LazyColumn :field="child" :value="value[child.key]" />
             </NFlex>
         </NFlex>
