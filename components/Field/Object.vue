@@ -1,7 +1,7 @@
 <template>
 	<NCollapse :default-expanded-names="field.expand ? field.id : undefined" display-directive="show"
 		arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
-		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :path="field.id" :name="field.id">
+		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :path="String(field.id)" :name="field.id">
 			<template #header>
 				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
 					:delay="1500" :options="dropdownOptions" @select="handleSelect">

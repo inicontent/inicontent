@@ -153,10 +153,17 @@ function generateSearchInput(searchArray: any) {
 			if (Array.isArray(item) && item[0])
 				RETURN[condition][item[0]] =
 					`${item[1] === "=" ? "" : item[1]}${item[2]}`
-			else RETURN[condition] = generateSearchInput(item)
+			// else RETURN[condition] = generateSearchInput(item)
 		}
 	}
-	return Object.keys(RETURN).length ? RETURN : undefined
+	// Helper to check if an object is empty or all its values are empty objects (recursively)
+	function isDeepEmpty(obj: any): boolean {
+		if (typeof obj !== "object" || obj === null) return false
+		const keys = Object.keys(obj)
+		if (keys.length === 0) return true
+		return keys.every((k) => isDeepEmpty(obj[k]))
+	}
+	return !isDeepEmpty(RETURN) ? RETURN : undefined
 }
 
 watch(whereQuery, (v) => {
