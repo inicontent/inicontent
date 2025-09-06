@@ -8,13 +8,13 @@
             </NIcon>
         </template>
     </NButton>
-    <NModal v-model:show="showModal" preset="card">
+    <NModal v-model:show="showModal" :title="t(field.key)" draggable preset="card" style="width: 600px;">
         <div v-html="value?.replaceAll('<img ', '<img style=\'width:100%\'') || ''"></div>
     </NModal>
 </template>
 
 <script lang="ts" setup>
-const { value } = defineProps<{ value?: string }>()
+const { field, value } = defineProps<{ field: Field; value?: string }>()
 const showModal = ref(false)
 const buttonHovered = ref(false)
 </script>

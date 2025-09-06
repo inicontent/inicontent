@@ -14,7 +14,7 @@
         <ColumnColor v-else-if="detectedFieldType === 'color'" :value />
         <ColumnUrl v-else-if="detectedFieldType === 'url'" :value />
         <ColumnEmail v-else-if="detectedFieldType === 'email'" :value />
-        <ColumnHtml v-else-if="detectedFieldType === 'html'" :value />
+        <ColumnHtml v-else-if="detectedFieldType === 'html'" :value :field />
         <ColumnPassword v-else-if="detectedFieldType === 'password'" :value />
         <ColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
         <ColumnDate v-else-if="detectedFieldType === 'date'" :value />
@@ -30,7 +30,7 @@
 const { field, value } = defineProps<{ field: Field; value?: any }>()
 
 let detectedFieldType = (field.subType ?? field.type) as
-	| DB_FieldType
-	| CMS_FieldType
+    | DB_FieldType
+    | CMS_FieldType
 if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key
 </script>

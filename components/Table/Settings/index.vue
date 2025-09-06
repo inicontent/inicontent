@@ -1,111 +1,108 @@
 <template>
 	<NGrid x-gap="12" cols="12" layout-shift-disabled>
 		<NGridItem :span="!$device.isMobile ? 10 : 12">
-			<NSpin :show="!!Loading.updateTable">
-				<NCard :title="t('tableSettings')" hoverable>
-					<template #header-extra>
-						<NButtonGroup>
-							<NTooltip :delay="1500">
-								<template #trigger>
-									<NPopconfirm :show-icon="false" @positive-click="deleteTable">
-										<template #trigger>
-											<NButton :disabled="isUnDeletable" type="error" secondary round
-												:loading="Loading.deleteTable">
+			<NCard :title="t('tableSettings')" hoverable>
+				<template #header-extra>
+					<NButtonGroup>
+						<NTooltip :delay="1500">
+							<template #trigger>
+								<NPopconfirm :show-icon="false" @positive-click="deleteTable">
+									<template #trigger>
+										<NButton :disabled="isUnDeletable" type="error" secondary round
+											:loading="Loading.deleteTable">
+											<template #icon>
+												<NIcon>
+													<Icon name="tabler:trash" />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("theFollowingActionIsIrreversible") }}
+								</NPopconfirm>
+							</template>
+							{{ t("deleteTable") }}
+						</NTooltip>
+						<NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:device-floppy" />
+								</NIcon>
+							</template>
+							<template v-if="!$device.isMobile" #default>
+								{{ t('save') }}
+							</template>
+						</NButton>
+					</NButtonGroup>
+				</template>
+				<NFlex vertical>
+					<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
+						<NForm ref="settingsFormRef" :model="tableCopy">
+							<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
+							<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
+								<NCascader multiple clearable filterable expand-trigger="hover" check-strategy="child"
+									:cascard="false" v-model:value="tableCopy.defaultSearchableColumns"
+									:options="searchInSelectOptions" />
+							</NFormItem>
+							<template v-if="tableCopy.displayAs === 'table'">
+								<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
+									<NCascader multiple clearable filterable expand-trigger="hover"
+										check-strategy="child" :cascard="false"
+										v-model:value="tableCopy.defaultTableColumns"
+										:options="searchInSelectOptions" />
+								</NFormItem>
+								<NFormItem path="localLabel" :label="t('label')">
+									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+										:render-tag="renderSingleLabel">
+										<template #input="{ submit, deactivate }">
+											<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
+												:options="searchInSelectOptions" @update:value="submit($event)"
+												@update:show="(value) => value ? '' : deactivate()" />
+										</template>
+										<template #trigger="{ activate, disabled }">
+											<NButton size="small" tertiary round
+												@click="activate(), focusSingleLabelSelect()" :disabled>
 												<template #icon>
 													<NIcon>
-														<Icon name="tabler:trash" />
+														<Icon name="tabler:plus" />
 													</NIcon>
 												</template>
 											</NButton>
 										</template>
-										{{ t("theFollowingActionIsIrreversible") }}
-									</NPopconfirm>
-								</template>
-								{{ t("deleteTable") }}
-							</NTooltip>
-							<NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:device-floppy" />
-									</NIcon>
-								</template>
-								<template v-if="!$device.isMobile" #default>
-									{{ t('save') }}
-								</template>
-							</NButton>
-						</NButtonGroup>
-					</template>
-					<NFlex vertical>
-						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-							<NForm ref="settingsFormRef" :model="tableCopy">
-								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
-								<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
-									<NCascader multiple clearable filterable expand-trigger="hover"
-										check-strategy="child" :cascard="false"
-										v-model:value="tableCopy.defaultSearchableColumns"
-										:options="searchInSelectOptions" />
+									</NDynamicTags>
 								</NFormItem>
-								<template v-if="tableCopy.displayAs === 'table'">
-									<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
-										<NCascader multiple clearable filterable expand-trigger="hover"
-											check-strategy="child" :cascard="false"
-											v-model:value="tableCopy.defaultTableColumns"
-											:options="searchInSelectOptions" />
-									</NFormItem>
-									<NFormItem path="localLabel" :label="t('label')">
-										<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
-											:render-tag="renderSingleLabel">
-											<template #input="{ submit, deactivate }">
-												<NSelect ref="singleLabelSelect" size="small" clearable filterable show
-													tag :options="searchInSelectOptions" @update:value="submit($event)"
-													@update:show="(value) => value ? '' : deactivate()" />
-											</template>
-											<template #trigger="{ activate, disabled }">
-												<NButton size="small" tertiary round
-													@click="activate(), focusSingleLabelSelect()" :disabled>
-													<template #icon>
-														<NIcon>
-															<Icon name="tabler:plus" />
-														</NIcon>
-													</template>
-												</NButton>
-											</template>
-										</NDynamicTags>
-									</NFormItem>
-								</template>
-								<template v-else>
-									<NFormItem path="groupBy" :label="t('groupBy')">
-										<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
-											:cascard="false" v-model:value="tableCopy.groupBy"
-											:options="groupBySelectOptions" />
-									</NFormItem>
-									<FieldMention :field="labelField" v-model="tableCopy.label" />
-								</template>
-								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
-							</NForm>
-						</NCard>
-						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
-							<template #header-extra>
-								<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
-									@select="pushToSchema">
-									<NButton secondary type="primary" round>
-										<template #icon>
-											<NIcon>
-												<Icon name="tabler:plus" />
-											</NIcon>
-										</template>
-									</NButton>
-								</NDropdown>
 							</template>
-							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-							<NForm size="small">
-								<LazyTableSettingsSchema v-model="tableCopy.schema"
-									v-model:expanded-names="expandedNames" />
-							</NForm>
-						</NCard>
-					</NFlex>
-				</NCard>
-			</NSpin>
+							<template v-else>
+								<NFormItem path="groupBy" :label="t('groupBy')">
+									<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
+										:cascard="false" v-model:value="tableCopy.groupBy"
+										:options="groupBySelectOptions" />
+								</NFormItem>
+								<FieldMention :field="labelField" v-model="tableCopy.label" />
+							</template>
+							<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
+						</NForm>
+					</NCard>
+					<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
+						<template #header-extra>
+							<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
+								@select="pushToSchema">
+								<NButton secondary type="primary" round @click="pushToSchema('string')">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:plus" />
+										</NIcon>
+									</template>
+								</NButton>
+							</NDropdown>
+						</template>
+						<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
+						<NForm size="small">
+							<LazyTableSettingsSchema v-model="tableCopy.schema"
+								v-model:expanded-names="expandedNames" />
+						</NForm>
+					</NCard>
+				</NFlex>
+			</NCard>
 		</NGridItem>
 		<NGridItem v-if="!$device.isMobile" span="2">
 			<NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
@@ -173,10 +170,10 @@ function pushToSchema(type: string) {
 	})
 	const newElementId = tableCopy.value.schema?.at(-3)?.id as string | undefined
 	if (newElementId) expandedNames.value = [newElementId]
-	setTimeout(
-		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
-		300,
-	)
+	// setTimeout(
+	// 	() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
+	// 	300,
+	// )
 }
 
 const appConfig = useAppConfig()
@@ -230,8 +227,7 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${
-					database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
@@ -275,8 +271,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${
-			database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
@@ -318,22 +313,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-						?.split(/(@\w+)/g)
-						.filter((value: string) => value.trim() != "")
-						.map((label: string) => {
-							if (label.startsWith("@"))
-								return {
-									label:
-										flattenCopySchema.value.find(
-											({ id }) => String(id) === label.slice(1),
-										)?.key ?? "",
-									value: label,
-								}
+					?.split(/(@\w+)/g)
+					.filter((value: string) => value.trim() != "")
+					.map((label: string) => {
+						if (label.startsWith("@"))
 							return {
-								label,
+								label:
+									flattenCopySchema.value.find(
+										({ id }) => String(id) === label.slice(1),
+									)?.key ?? "",
 								value: label,
 							}
-						})
+						return {
+							label,
+							value: label,
+						}
+					})
 				: undefined
 	},
 	{ immediate: true },
@@ -374,7 +369,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-				isNumber(labelObject.value.slice(1))
+					isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -417,8 +412,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -428,8 +423,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -445,8 +440,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 3,
 	},
@@ -455,8 +450,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -465,8 +460,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -476,8 +471,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},
@@ -487,8 +482,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-					disabled: true,
-				}
+				disabled: true,
+			}
 			: {},
 		width: 5,
 	},

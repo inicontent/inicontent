@@ -263,8 +263,6 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		onResponse({
 			response: {
 				_data: {
-					code,
-					message,
 					options: { total, totalPages },
 				},
 			},

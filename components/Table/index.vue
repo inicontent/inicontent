@@ -151,70 +151,70 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-								),
-						},
-					)
+					NButton,
+					{
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+							),
+					},
+				)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault()
-								if (!isMobile)
-									openDrawer(table.value?.slug as string, row.id, toRaw(row))
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									)
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault()
+							if (!isMobile)
+								openDrawer(table.value?.slug as string, row.id, toRaw(row))
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+								)
 						},
-						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+				)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => deleteItem(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () =>
-											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => deleteItem(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () =>
+										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	)
