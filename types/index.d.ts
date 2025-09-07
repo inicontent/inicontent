@@ -64,17 +64,17 @@ declare global {
 		min?: number
 		max?: number
 		date?:
-			| "date"
-			| "datetime"
-			| "daterange"
-			| "datetimerange"
-			| "month"
-			| "monthrange"
-			| "year"
-			| "yearrange"
-			| "quarter"
-			| "quarterrange"
-			| "week"
+		| "date"
+		| "datetime"
+		| "daterange"
+		| "datetimerange"
+		| "month"
+		| "monthrange"
+		| "year"
+		| "yearrange"
+		| "quarter"
+		| "quarterrange"
+		| "week"
 		expand?: boolean
 		params?: string
 		query?: any
@@ -90,17 +90,17 @@ declare global {
 	type Schema = Field[]
 	type FlowType = (
 		| [
-				"set",
-				string | null,
-				string | number | boolean | null | (string | number | boolean | null)[],
-		  ]
+			"set",
+			string | null,
+			string | number | boolean | null | (string | number | boolean | null)[],
+		]
 		| ["unset", null | string | string[]]
 		| ["error", null | string]
 		| [
-				`@${"user" | "data" | "where"}.${string | number}` | "@method",
-				ComparisonOperator,
-				string | number | boolean | null | (string | number | boolean | null)[],
-		  ]
+			`@${"user" | "data" | "where"}.${string | number}` | "@method",
+			ComparisonOperator,
+			string | number | boolean | null | (string | number | boolean | null)[],
+		]
 		| [null, null, null]
 	)[]
 	type Table = {
@@ -108,8 +108,8 @@ declare global {
 		slug: string
 		label?: string
 		icon?: string
-		defaultSearchableColumns?: string[]
-		defaultTableColumns?: string[]
+		defaultSearchableColumns?: number[]
+		defaultTableColumns?: number[]
 		allowedMethods?: string
 		schema?: Schema
 		onRequest?: FlowType[]

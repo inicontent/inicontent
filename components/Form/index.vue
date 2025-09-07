@@ -54,43 +54,84 @@ function countItems(items: Schema): number {
 	}, 0)
 }
 
-const mergeItems = (existing: Schema, updated: Schema): Schema =>
-	(
-		existing
-			.map((existedItem) => {
-				if (
-					existedItem.id === undefined ||
-					(typeof existedItem.id === "string" &&
-						existedItem.id.startsWith("temp-"))
-				)
-					return existedItem
+const mergeItems = (existing: Schema, updated: Schema): Schema => {
+	const merged = existing
+		.map((existedItem) => {
+			if (
+				existedItem.id === undefined ||
+				(typeof existedItem.id === "string" &&
+					(existedItem.id as string).startsWith("temp-"))
+			)
+				return existedItem;
 
-				const updatedItem = updated.find((item) => item.id === existedItem.id)
+			const updatedItem = updated.find((item) => item.id === existedItem.id);
 
-				if (!updatedItem) return null
+			if (!updatedItem) return null;
 
-				if (existedItem.children && isArrayOfObjects(existedItem.children)) {
-					if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
-						updatedItem.children = mergeItems(
-							existedItem.children as Schema,
-							updatedItem.children as Schema,
-						)
-					} else if (!updatedItem.children && existedItem.children) {
-						const existedCustomChildren = existedItem.children.filter(
-							(child) => !child.id,
-						)
-						if (existedCustomChildren.length)
-							updatedItem.children = existedCustomChildren
-						else delete updatedItem.children
-					}
+			if (existedItem.children && isArrayOfObjects(existedItem.children)) {
+				if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
+					updatedItem.children = mergeItems(
+						existedItem.children as Schema,
+						updatedItem.children as Schema,
+					);
+				} else if (!updatedItem.children && existedItem.children) {
+					const existedCustomChildren = existedItem.children.filter(
+						(child) => !child.id,
+					);
+					if (existedCustomChildren.length)
+						updatedItem.children = existedCustomChildren;
+					else delete updatedItem.children;
 				}
+			}
 
-				return { ...updatedItem, ...existedItem }
-			})
-			.filter(Boolean) as Schema
-	).concat(
-		updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
-	)
+			return { ...updatedItem, ...existedItem };
+		})
+		.filter(Boolean) as Schema;
+
+	// Insert new items in the order they appear in updated
+	return updated.map(item => {
+		const mergedItem = merged.find(m => m.id === item.id);
+		return mergedItem ? mergedItem : item;
+	});
+};
+
+// const mergeItems = (existing: Schema, updated: Schema): Schema =>
+// 	(
+// 		existing
+// 			.map((existedItem) => {
+// 				if (
+// 					existedItem.id === undefined ||
+// 					(typeof existedItem.id === "string" &&
+// 						(existedItem.id as string).startsWith("temp-"))
+// 				)
+// 					return existedItem
+
+// 				const updatedItem = updated.find((item) => item.id === existedItem.id)
+
+// 				if (!updatedItem) return null
+
+// 				if (existedItem.children && isArrayOfObjects(existedItem.children)) {
+// 					if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
+// 						updatedItem.children = mergeItems(
+// 							existedItem.children as Schema,
+// 							updatedItem.children as Schema,
+// 						)
+// 					} else if (!updatedItem.children && existedItem.children) {
+// 						const existedCustomChildren = existedItem.children.filter(
+// 							(child) => !child.id,
+// 						)
+// 						if (existedCustomChildren.length)
+// 							updatedItem.children = existedCustomChildren
+// 						else delete updatedItem.children
+// 					}
+// 				}
+
+// 				return { ...updatedItem, ...existedItem }
+// 			})
+// 			.filter(Boolean) as Schema
+// 	).concat(
+// 		updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
+// 	)
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
@@ -191,8 +232,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -224,8 +264,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",

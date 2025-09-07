@@ -515,11 +515,11 @@ async function setColumns() {
 						({ id }) =>
 							!tablesConfig.value[
 								table.value?.slug as string
-							]?.columns?.includes(id as string) &&
-							!table.value?.defaultTableColumns?.includes(id as string),
+							]?.columns?.includes(id) &&
+							!table.value?.defaultTableColumns?.includes(id),
 					)
 					: []),
-				...(table.value.defaultTableColumns as string[])
+				...table.value.defaultTableColumns
 					.map(
 						(id) =>
 							table.value?.schema?.find((field) => field.id === id) as Field,
@@ -531,7 +531,7 @@ async function setColumns() {
 			?.filter(
 				({ id }) =>
 					!tablesConfig.value[table.value?.slug as string]?.columns?.includes(
-						id as string,
+						id,
 					),
 			)
 			.map((field) => ({
