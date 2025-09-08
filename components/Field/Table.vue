@@ -104,8 +104,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
+		getPath(table.schema ?? [], columnID),
+	)
 	: field.searchIn
 
 const pagination = ref<pageInfo>()
@@ -119,14 +119,14 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true
 	const searchOrObject =
 		searchValue &&
-		(typeof searchValue !== "string" || searchValue.trim().length) &&
-		searchIn
+			(typeof searchValue !== "string" || searchValue.trim().length) &&
+			searchIn
 			? (searchIn.reduce((result, searchKey) => {
-					Object.assign(result, {
-						[searchKey]: `*%${searchValue}%`,
-					})
-					return result
-				}, {}) ?? false)
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				})
+				return result
+			}, {}) ?? false)
 			: false
 
 	let _where = ""
@@ -134,15 +134,15 @@ async function loadOptions(searchValue?: string | number) {
 		if (searchOrObject)
 			_where = Inison.stringify({
 				...((typeof field.where === "string"
-					? Inison.unstringify(field.where)
+					? Inison.unstringify(renderLabel({ ...(table as Table), label: field.where }))
 					: field.where) as any),
 				or: searchOrObject,
 			})
 		else
 			_where =
 				typeof field.where === "string"
-					? field.where
-					: Inison.stringify(field.where)
+					? renderLabel({ ...(table as Table), label: field.where })
+					: renderLabel({ ...(table as Table), label: Inison.stringify(field.where) })
 	} else if (searchOrObject)
 		_where = Inison.stringify({
 			or: searchOrObject,
@@ -199,7 +199,7 @@ async function handleScroll(e: Event) {
 		return
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-			currentTarget.scrollHeight &&
+		currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true

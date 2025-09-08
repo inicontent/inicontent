@@ -1,7 +1,9 @@
 <template>
-    <div v-html="value?.replaceAll('<img ', '<img style=\'width:100%\'') || ''"></div>
+    <div v-if="typeof value === 'string'"
+        v-html="value?.replaceAll('<img ', '<img style=\'width:100%\'').replaceAll('\n', '<br />') || ''"></div>
+    <div v-else>{{ value }}</div>
 </template>
 
 <script lang="ts" setup>
-const { value } = defineProps<{ value?: string }>()
+const { value } = defineProps<{ value?: string | number }>()
 </script>

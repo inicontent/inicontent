@@ -36,7 +36,7 @@
 								<NPopover scrollable style="max-height: 240px;border-radius:34px"
 									contentStyle="padding: 0">
 									<template #trigger>
-										<NButton size="tiny" round style="position: absolute;" secondary type="primary">
+										<NButton size="tiny" round class="dotsButton" secondary type="primary">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:dots" />
@@ -51,7 +51,7 @@
 										v-for="(slot, slotIndex) in ([] as VNode[]).concat(props.slots.item(element))"
 										:is="slot" :key="slotIndex" :item="element"></component>
 								</ClientOnly>
-								<template v-else>{{ renderLabel(table, element) }}</template>
+								<div v-else v-html="renderLabel(table, element).replaceAll('\n', '<br />')"></div>
 							</NCard>
 						</template>
 					</Draggable>
@@ -149,7 +149,7 @@ if (field?.options) {
 	}
 
 	nextTick(() => {
-		;(data.value as columnType[]).push(unsetColumn)
+		; (data.value as columnType[]).push(unsetColumn)
 
 		nextTick(async () => {
 			for await (const column of data.value as columnType[]) {
@@ -234,6 +234,18 @@ function adjustTotals(from: any, to: any) {
 
 
 <style scoped>
+.dotsButton {
+	position: absolute;
+}
+
+.ltr .dotsButton {
+	right: 10px;
+}
+
+.rtl .dotsButton {
+	left: 10px;
+}
+
 .kanban-scroll {
 	overflow-x: auto;
 	padding-bottom: 10px;

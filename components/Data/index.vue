@@ -2,9 +2,7 @@
     <NListItem>
         <template #prefix>
             <NButton text>
-                <NText strong>
-                    {{ t(field.key) }}:
-                </NText>
+                <strong>{{ t(field.key) }}:</strong>
             </NButton>
         </template>
         <template v-if="value === null || value === undefined || (Array.isArray(value) && value.length === 0)">
@@ -21,14 +19,14 @@
             <LazyColumnColor v-else-if="detectedFieldType === 'color'" :value />
             <LazyColumnUrl v-else-if="detectedFieldType === 'url'" :value />
             <LazyColumnEmail v-else-if="detectedFieldType === 'email'" :value />
-            <LazyDataHtml v-else-if="detectedFieldType === 'html'" :value />
+            <LazyDataHtml v-else-if="detectedFieldType === 'html' || detectedFieldType === 'textarea'" :value />
             <LazyColumnPassword v-else-if="detectedFieldType === 'password'" :value />
             <LazyColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
             <LazyColumnDate v-else-if="detectedFieldType === 'date'" :value />
             <LazyDataObject v-else-if="detectedFieldType === 'object'" :value :field />
             <LazyDataArray v-else-if="detectedFieldType === 'array'" :value :field />
             <LazyColumnText
-                v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'id', 'multiple'].includes(detectedFieldType)"
+                v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple'].includes(detectedFieldType)"
                 :value />
         </template>
     </NListItem>
@@ -38,7 +36,7 @@
 const { field, value } = defineProps<{ field: Field; value: any }>()
 
 let detectedFieldType = (field.subType ?? field.type) as
-	| DB_FieldType
-	| CMS_FieldType
+    | DB_FieldType
+    | CMS_FieldType
 if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key
 </script>

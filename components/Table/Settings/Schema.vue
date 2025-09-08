@@ -272,8 +272,7 @@ const widthOptions = [
 function onMoveCallback(evt: {
 	draggedContext: { index: number; futureIndex: number }
 }) {
-	const schemaLength = schema.value.length
-	const disabledIndexes = [0, schemaLength - 1, schemaLength - 2]
+	const disabledIndexes = schema.value.map(({ id }, index) => [0, -1, -2].includes(id as number) ? index : -3).filter(index => index !== -3)
 	return (
 		!disabledIndexes.includes(evt.draggedContext.index) &&
 		!disabledIndexes.includes(evt.draggedContext.futureIndex)

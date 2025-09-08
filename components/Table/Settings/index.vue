@@ -542,7 +542,10 @@ const labelField: Field = {
 	inputProps: {
 		filter: (pattern: string, option: { value: string }) => {
 			if (!pattern) return true
-			return option.value.startsWith(pattern)
+			if (typeof option.value === "string") {
+				return option.value.startsWith(pattern)
+			}
+			return pattern === option.value
 		},
 		type: "textarea",
 		autosize: {
