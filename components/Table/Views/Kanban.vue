@@ -1,6 +1,5 @@
 <template>
 	<div>
-
 		<ClientOnly>
 			<Teleport to="#navbarExtraButtons">
 				<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
@@ -167,7 +166,7 @@ const whereQuery = ref<string | undefined>(
 )
 
 const localSearchArray = ref<searchType | undefined>(
-	searchArray.value || { and: [[null, "=", null]] },
+	JSON.parse(JSON.stringify(searchArray.value ?? { and: [[null, "=", null]] })),
 )
 function executeSearch() {
 	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value))
@@ -183,12 +182,10 @@ watch(
 watch(
 	searchArray,
 	(value) => {
-		localSearchArray.value = value
+		localSearchArray.value = JSON.parse(JSON.stringify(value))
 		if (!value) {
-			if (whereQuery.value) {
-				whereQuery.value = undefined
-				executeFetch()
-			}
+			whereQuery.value = undefined
+			executeFetch()
 		} else {
 			const generatedSearchInput = generateSearchInput(value)
 			if (generatedSearchInput && whereQuery.value !== Inison.stringify(generatedSearchInput)) {
