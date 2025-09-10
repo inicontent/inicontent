@@ -115,7 +115,7 @@ const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
 )
 
-const localSearchArray = ref<searchType>(
+const localSearchArray = ref<searchType | undefined>(
 	searchArray.value || { and: [[null, "=", null]] },
 )
 function executeSearch() {
@@ -132,11 +132,15 @@ watch(
 watch(
 	searchArray,
 	(value) => {
+		localSearchArray.value = value
 		if (!value) {
-			if (whereQuery.value) whereQuery.value = undefined
+			if (whereQuery.value) {
+				whereQuery.value = undefined
+				pagination.onUpdatePage(1)
+			}
 		} else {
 			const generatedSearchInput = generateSearchInput(value)
-			if (generatedSearchInput) {
+			if (generatedSearchInput && whereQuery.value !== Inison.stringify(generatedSearchInput)) {
 				whereQuery.value = Inison.stringify(generatedSearchInput)
 				pagination.onUpdatePage(1)
 			}

@@ -54,105 +54,80 @@ function countItems(items: Schema): number {
 	}, 0)
 }
 
-const mergeItems = (existing: Schema, updated: Schema): Schema => {
-	const merged = existing
-		.map((existedItem) => {
-			if (
-				existedItem.id === undefined ||
-				(typeof existedItem.id === "string" &&
-					(existedItem.id as string).startsWith("temp-"))
-			)
-				return existedItem;
+function mergeItems(existing: Schema, updated: Schema): Schema {
+	const mergedSchema: Schema = []
 
-			const updatedItem = updated.find((item) => item.id === existedItem.id);
+	for (let index = 0; index < updated.length; index++) {
+		const item = updated[index];
+		if (!item) continue;
+		const existingItem = existing[index];
+		const existingSameItem = existing.find((_item) => _item.id === item.id);
 
-			if (!updatedItem) return null;
+		if (existingItem && (
+			existingItem.id === undefined ||
+			(typeof existingItem.id === "string" &&
+				(existingItem.id as string).startsWith("temp-")))
+		)
+			mergedSchema.push(existingItem);
 
-			if (existedItem.children && isArrayOfObjects(existedItem.children)) {
-				if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
-					updatedItem.children = mergeItems(
-						existedItem.children as Schema,
-						updatedItem.children as Schema,
-					);
-				} else if (!updatedItem.children && existedItem.children) {
-					const existedCustomChildren = existedItem.children.filter(
-						(child) => !child.id,
-					);
-					if (existedCustomChildren.length)
-						updatedItem.children = existedCustomChildren;
-					else delete updatedItem.children;
-				}
+
+		if (item.children && isArrayOfObjects(item.children)) {
+			if (existingSameItem?.children && isArrayOfObjects(existingSameItem.children)) {
+				item.children = mergeItems(
+					existingSameItem.children as Schema,
+					item.children as Schema,
+				)
+			} else if (!item.children && existingSameItem?.children && isArrayOfObjects(existingSameItem.children)) {
+				const existedCustomChildren = existingSameItem.children.filter(
+					(child) => child.id === undefined ||
+						(typeof child.id === "string" &&
+							(child.id as string).startsWith("temp-")),
+				)
+				if (existedCustomChildren.length)
+					item.children = existedCustomChildren
+				else delete item.children
 			}
+		}
 
-			return { ...updatedItem, ...existedItem };
-		})
-		.filter(Boolean) as Schema;
+		mergedSchema.push({ ...item, ...existingSameItem })
+	}
 
-	// Insert new items in the order they appear in updated
-	return updated.map(item => {
-		const mergedItem = merged.find(m => m.id === item.id);
-		return mergedItem ? mergedItem : item;
-	});
-};
+	// const nonAddedCustomItems = existing.filter((item) => !mergedSchema.some((e) => e.id === item.id));
 
-// const mergeItems = (existing: Schema, updated: Schema): Schema =>
-// 	(
-// 		existing
-// 			.map((existedItem) => {
-// 				if (
-// 					existedItem.id === undefined ||
-// 					(typeof existedItem.id === "string" &&
-// 						(existedItem.id as string).startsWith("temp-"))
-// 				)
-// 					return existedItem
-
-// 				const updatedItem = updated.find((item) => item.id === existedItem.id)
-
-// 				if (!updatedItem) return null
-
-// 				if (existedItem.children && isArrayOfObjects(existedItem.children)) {
-// 					if (updatedItem.children && isArrayOfObjects(updatedItem.children)) {
-// 						updatedItem.children = mergeItems(
-// 							existedItem.children as Schema,
-// 							updatedItem.children as Schema,
-// 						)
-// 					} else if (!updatedItem.children && existedItem.children) {
-// 						const existedCustomChildren = existedItem.children.filter(
-// 							(child) => !child.id,
-// 						)
-// 						if (existedCustomChildren.length)
-// 							updatedItem.children = existedCustomChildren
-// 						else delete updatedItem.children
-// 					}
-// 				}
-
-// 				return { ...updatedItem, ...existedItem }
-// 			})
-// 			.filter(Boolean) as Schema
-// 	).concat(
-// 		updated.filter((item) => !existing.some((e) => e.id === item.id)), // Add new items
-// 	)
+	return mergedSchema;
+}
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const POSTSchemasResp = useState<Record<string, apiResponse<{ schema: Schema; data: Item }>>>("POSTSchemas", () => ({}))
 
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
-	Loading.value.SCHEMA = true
-
 	const bodyContent = toRaw(modelValue.value)
 
 	try {
-		const response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
-			`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
-			{
-				method: bodyContent?.id ? "PUT" : "POST",
-				body: bodyContent,
-				params: {
-					locale: Language.value,
+		let response: apiResponse<{ schema: Schema; data: Item }>;
+
+		if (POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] && (Object.keys(bodyContent).length === 0 || JSON.stringify(bodyContent) === JSON.stringify(POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table]?.result.data))) {
+			response = POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] as apiResponse<{ schema: Schema; data: Item }>
+		} else {
+			Loading.value.SCHEMA = true
+
+			response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
+				{
+					method: bodyContent?.id ? "PUT" : "POST",
+					body: bodyContent,
+					params: {
+						locale: Language.value,
+					},
+					credentials: "include",
 				},
-				credentials: "include",
-			},
-		)
+			)
+
+			if (Object.keys(bodyContent).length === 0)
+				POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] = response
+		}
+
 		// Update the schema
 		if (response.result?.schema) {
 			const filteredSchema = response.result.schema?.filter(
@@ -168,10 +143,20 @@ async function fetchSchemaAndData() {
 							slug === (props.table ?? table.value?.slug ?? route.params.table),
 					)
 					if (targetTable?.schema)
-						schema.value = mergeItems(targetTable.schema, filteredSchema)
+						schema.value = mergeItems(targetTable.schema.filter(
+							(field) =>
+								!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
+									field.key,
+								),
+						), filteredSchema)
 					else schema.value = filteredSchema
 				} else if (table.value?.schema)
-					schema.value = mergeItems(table.value.schema, filteredSchema)
+					schema.value = mergeItems(table.value.schema.filter(
+						(field) =>
+							!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
+								field.key,
+							),
+					), filteredSchema)
 			} else if (countItems(schema.value) !== countItems(filteredSchema))
 				schema.value = mergeItems(schema.value, filteredSchema)
 		}

@@ -60,7 +60,7 @@
 			</template>
 			<slot name="default" :data>
 				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
-					:slots />
+					v-model:searchArray="searchArray" :slots />
 				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
 					v-model:searchArray="searchArray" ref="tableViewRef" :slots />
 			</slot>
