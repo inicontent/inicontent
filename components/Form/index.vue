@@ -56,29 +56,21 @@ function countItems(items: Schema): number {
 
 function mergeItems(existing: Schema, updated: Schema): Schema {
 	const mergedSchema: Schema = []
+	const customItemsIndex = existing.map((item, index) => item.id === undefined || (typeof item.id === "string" && (item.id as string).startsWith("temp-")) ? index : -1).filter(index => index !== -1);
 
 	for (let index = 0; index < updated.length; index++) {
 		const item = updated[index];
 		if (!item) continue;
-		const existingItem = existing[index];
-		const existingSameItem = existing.find((_item) => _item.id === item.id);
-
-		if (existingItem && (
-			existingItem.id === undefined ||
-			(typeof existingItem.id === "string" &&
-				(existingItem.id as string).startsWith("temp-")))
-		)
-			mergedSchema.push(existingItem);
-
+		const existingItem = existing.find((_item) => _item.id === item.id);
 
 		if (item.children && isArrayOfObjects(item.children)) {
-			if (existingSameItem?.children && isArrayOfObjects(existingSameItem.children)) {
+			if (existingItem?.children && isArrayOfObjects(existingItem.children)) {
 				item.children = mergeItems(
-					existingSameItem.children as Schema,
+					existingItem.children as Schema,
 					item.children as Schema,
 				)
-			} else if (!item.children && existingSameItem?.children && isArrayOfObjects(existingSameItem.children)) {
-				const existedCustomChildren = existingSameItem.children.filter(
+			} else if (!item.children && existingItem?.children && isArrayOfObjects(existingItem.children)) {
+				const existedCustomChildren = existingItem.children.filter(
 					(child) => child.id === undefined ||
 						(typeof child.id === "string" &&
 							(child.id as string).startsWith("temp-")),
@@ -89,10 +81,22 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 			}
 		}
 
-		mergedSchema.push({ ...item, ...existingSameItem })
+		mergedSchema.push({ ...item, ...existingItem })
 	}
 
-	// const nonAddedCustomItems = existing.filter((item) => !mergedSchema.some((e) => e.id === item.id));
+	for (let index = 0; index < customItemsIndex.length; index++) {
+		const elementIndex = customItemsIndex[index];
+
+		if (elementIndex === undefined || !existing[elementIndex]) continue;
+
+		if (elementIndex === 0)
+			mergedSchema.unshift(existing[elementIndex]);
+		else if (existing[elementIndex - 1]) {
+			const prevItemIndex = mergedSchema.findIndex(item => item.id === existing[elementIndex - 1]?.id);
+			if (prevItemIndex !== -1)
+				mergedSchema.splice(prevItemIndex + 1, 0, existing[elementIndex]);
+		}
+	}
 
 	return mergedSchema;
 }
@@ -104,11 +108,14 @@ const POSTSchemasResp = useState<Record<string, apiResponse<{ schema: Schema; da
 async function fetchSchemaAndData() {
 	const bodyContent = toRaw(modelValue.value)
 
-	try {
-		let response: apiResponse<{ schema: Schema; data: Item }>;
+	let response: apiResponse<{ schema: Schema; data: Item }>;
+	let setSchema = false;
 
-		if (POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] && (Object.keys(bodyContent).length === 0 || JSON.stringify(bodyContent) === JSON.stringify(POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table]?.result.data))) {
-			response = POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] as apiResponse<{ schema: Schema; data: Item }>
+	try {
+		const currentPOSTSchemaResp = POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table]
+
+		if (currentPOSTSchemaResp && (Object.keys(bodyContent).length === 0 || JSON.stringify(bodyContent) === JSON.stringify(currentPOSTSchemaResp?.result.data))) {
+			response = currentPOSTSchemaResp as apiResponse<{ schema: Schema; data: Item }>
 		} else {
 			Loading.value.SCHEMA = true
 
@@ -125,8 +132,10 @@ async function fetchSchemaAndData() {
 			)
 
 			if (Object.keys(bodyContent).length === 0)
-				POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] = response
+				setSchema = true
 		}
+
+		const currentSchema = toRaw(schema.value)
 
 		// Update the schema
 		if (response.result?.schema) {
@@ -136,29 +145,34 @@ async function fetchSchemaAndData() {
 						field.key,
 					),
 			)
-			if (!schema.value?.length) {
+			if (!currentSchema?.length) {
 				if (props.table) {
-					const targetTable = database.value.tables?.find(
+					const targetTableSchema = database.value.tables?.find(
 						({ slug }) =>
 							slug === (props.table ?? table.value?.slug ?? route.params.table),
+					)?.schema?.filter(
+						(field) =>
+							!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
+								field.key,
+							),
 					)
-					if (targetTable?.schema)
-						schema.value = mergeItems(targetTable.schema.filter(
-							(field) =>
-								!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
-									field.key,
-								),
-						), filteredSchema)
-					else schema.value = filteredSchema
+					if (targetTableSchema)
+						response.result.schema = mergeItems(targetTableSchema, filteredSchema)
+					else response.result.schema = filteredSchema
 				} else if (table.value?.schema)
-					schema.value = mergeItems(table.value.schema.filter(
+					response.result.schema = mergeItems(table.value.schema.filter(
 						(field) =>
 							!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
 								field.key,
 							),
 					), filteredSchema)
-			} else if (countItems(schema.value) !== countItems(filteredSchema))
-				schema.value = mergeItems(schema.value, filteredSchema)
+			} else if (countItems(currentSchema) !== countItems(filteredSchema))
+				response.result.schema = mergeItems(currentSchema, filteredSchema)
+
+			if (setSchema)
+				POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] = response
+
+			schema.value = response.result.schema
 		}
 
 		// Update data only if the API sends changes

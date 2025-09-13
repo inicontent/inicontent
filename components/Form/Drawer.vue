@@ -49,7 +49,7 @@
 						</NButton>
 					</NFlex>
 				</template>
-				<div class="drawerSpin" v-if="!drawer.schema?.length || !!Loading.CREATE || !!Loading.UPDATE">
+				<div class="drawerSpin" v-if="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE">
 					<NSpin />
 				</div>
 
