@@ -91,7 +91,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 
 		if (elementIndex === 0)
 			mergedSchema.unshift(existing[elementIndex]);
-		else if (existing[elementIndex - 1]) {
+		else if (existing[elementIndex - 1] && !updated.some(item => item.key === existing[elementIndex]?.key)) {
 			const prevItemIndex = mergedSchema.findIndex(item => item.id === existing[elementIndex - 1]?.id);
 			if (prevItemIndex !== -1)
 				mergedSchema.splice(prevItemIndex + 1, 0, existing[elementIndex]);
