@@ -103,7 +103,10 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const POSTSchemasResp = useState<Record<string, apiResponse<{ schema: Schema; data: Item }>>>("POSTSchemas", () => ({}))
-
+const filterDefaultColumns = (field: Field) =>
+	!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
+		field.key,
+	)
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
 	const bodyContent = toRaw(modelValue.value)
@@ -135,39 +138,23 @@ async function fetchSchemaAndData() {
 				setSchema = true
 		}
 
-		const currentSchema = toRaw(schema.value)
+		const currentSchema = toRaw(schema.value).filter(filterDefaultColumns)
 
 		// Update the schema
 		if (response.result?.schema) {
-			const filteredSchema = response.result.schema?.filter(
-				(field) =>
-					!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
-						field.key,
-					),
-			)
+			response.result.schema = response.result.schema.filter(filterDefaultColumns)
 			if (!currentSchema?.length) {
 				if (props.table) {
 					const targetTableSchema = database.value.tables?.find(
 						({ slug }) =>
 							slug === (props.table ?? table.value?.slug ?? route.params.table),
-					)?.schema?.filter(
-						(field) =>
-							!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
-								field.key,
-							),
-					)
+					)?.schema?.filter(filterDefaultColumns)
 					if (targetTableSchema)
-						response.result.schema = mergeItems(targetTableSchema, filteredSchema)
-					else response.result.schema = filteredSchema
+						response.result.schema = mergeItems(targetTableSchema, response.result.schema)
 				} else if (table.value?.schema)
-					response.result.schema = mergeItems(table.value.schema.filter(
-						(field) =>
-							!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
-								field.key,
-							),
-					), filteredSchema)
-			} else if (countItems(currentSchema) !== countItems(filteredSchema))
-				response.result.schema = mergeItems(currentSchema, filteredSchema)
+					response.result.schema = mergeItems(table.value.schema.filter(filterDefaultColumns), response.result.schema)
+			} else if (countItems(currentSchema) !== countItems(response.result.schema))
+				response.result.schema = mergeItems(currentSchema, response.result.schema)
 
 			if (setSchema)
 				POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] = response
