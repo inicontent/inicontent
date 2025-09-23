@@ -266,14 +266,12 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		},
 		onResponse({
 			response: {
-				_data: {
-					options: { total, totalPages },
-				},
+				_data,
 			},
 		}) {
 			Loading.value.data = false
-			pagination.pageCount = totalPages ?? 0
-			pagination.itemCount = total ?? 0
+			pagination.pageCount = _data?.options.totalPages ?? 0
+			pagination.itemCount = _data?.options.total ?? 0
 			// TODO
 			// if (![202, 404].includes(code)) window.$message.error(message)
 		},
@@ -475,7 +473,7 @@ async function setColumns() {
 												if (
 													tablesConfig?.value[
 														table.value?.slug as string
-													]?.columns?.includes(id as string)
+													]?.columns?.includes(id as number)
 												)
 													// @ts-ignore
 													tablesConfig.value[
@@ -493,15 +491,15 @@ async function setColumns() {
 													// @ts-ignore
 													tablesConfig.value[
 														table.value?.slug as string
-													].columns?.push(id as string)
+													].columns?.push(id as number)
 												}
 											},
 										},
 										() =>
 											h(Icon, {
-												name: tablesConfig.value[
+												name: id !== undefined && tablesConfig.value[
 													table.value?.slug as string
-												]?.columns?.includes(id as string)
+												]?.columns?.includes(id)
 													? "tabler:eye-off"
 													: "tabler:eye",
 											}),
@@ -516,7 +514,7 @@ async function setColumns() {
 			? [
 				...(tablesConfig.value[table.value?.slug as string]?.columns
 					? table.value.schema.filter(
-						({ id }) =>
+						({ id }) => id !== undefined &&
 							!tablesConfig.value[
 								table.value?.slug as string
 							]?.columns?.includes(id) &&
@@ -534,7 +532,7 @@ async function setColumns() {
 		)
 			?.filter(
 				({ id }) =>
-					!tablesConfig.value[table.value?.slug as string]?.columns?.includes(
+					id !== undefined && !tablesConfig.value[table.value?.slug as string]?.columns?.includes(
 						id,
 					),
 			)
@@ -667,7 +665,7 @@ async function setColumns() {
 			]),
 	] as DataTableColumns
 
-	if (cols.length > 2) columns.value = cols
+	if (cols.length > 2 || table.value?.defaultTableColumns) columns.value = cols
 
 	await nextTick()
 

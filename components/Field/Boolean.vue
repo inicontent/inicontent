@@ -14,12 +14,13 @@ import type { FormItemRule } from "naive-ui"
 const { field } = defineProps<{ field: Field }>()
 
 const modelValue = defineModel<boolean>()
+if (modelValue.value === null || modelValue.value === undefined) modelValue.value = false;
 
 const rule: FormItemRule = {
-	required: field.required,
-	validator: async () => {
-		await nextTick()
-		return fieldValidator(field, modelValue.value)
-	},
+    required: field.required,
+    validator: async () => {
+        await nextTick()
+        return fieldValidator(field, modelValue.value)
+    },
 }
 </script>

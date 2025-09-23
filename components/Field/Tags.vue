@@ -5,7 +5,7 @@
         </NFlex>
         <NDynamicTags size="large"
             :value="modelValue?.filter((value) => !field.defaultValue || !field.defaultValue.includes(value))"
-            @update:value="(value: string[]) => modelValue = [...value, ...(field.defaultValue ?? [])]"
+            @update:value="(value: string[]) => modelValue = [...value, ...(field.defaultValue ?? [])]" :renderTag
             :placeholder="t(field.key)" clearable v-bind="field.inputProps
                 ? typeof field.inputProps === 'function'
                     ? field.inputProps(modelValue) ?? {}
@@ -47,43 +47,59 @@
 import type { FormInst, FormItemRule } from "naive-ui"
 
 import { validateFieldType } from "inibase/utils"
+import { NTag } from "#components";
 
 const { field } = defineProps<{ field: Field }>()
 
-const modelValue = defineModel<string[]>()
+const modelValue = defineModel<(string | number)[]>()
 
 const fieldChildrenLabels = field.children
-	? flatFieldsList
-			.filter(({ key }) =>
-				([] as string[])
-					.concat(field.children as string | string[])
-					.includes(key),
-			)
-			.map(({ label }) => label)
-			.join(" | ")
-	: undefined
+    ? flatFieldsList
+        .filter(({ key }) =>
+            ([] as string[])
+                .concat(field.children as string | string[])
+                .includes(key),
+        )
+        .map(({ label }) => label)
+        .join(" | ")
+    : undefined
 
 const rule: FormItemRule = {
-	type: "array",
-	required: field.required,
-	min: field.min,
-	max: field.max,
-	validator: async () => {
-		await nextTick()
-		return fieldValidator(field, modelValue.value, validateFieldType)
-	},
+    type: "array",
+    required: field.required,
+    min: field.min,
+    max: field.max,
+    validator: async () => {
+        await nextTick()
+        return fieldValidator(field, modelValue.value, validateFieldType)
+    },
 }
 const dynamicTags = ref<FormInst>()
 const inputValue = ref()
 function addValue() {
-	if (inputValue.value) {
-		modelValue.value = [...(modelValue.value ?? []), inputValue.value]
-		inputValue.value = undefined
-	}
+    if (inputValue.value) {
+        modelValue.value = [...(modelValue.value ?? []), inputValue.value]
+        inputValue.value = undefined
+    }
 }
 watch(modelValue, () => {
-	try {
-		dynamicTags.value?.validate()
-	} catch {}
+    try {
+        dynamicTags.value?.validate()
+    } catch { }
 })
+
+function renderTag(tag: string, index: number) {
+    return h(
+        NTag,
+        {
+            size: "large",
+            disabled: index > 3,
+            closable: true,
+            onClose: () => {
+                modelValue.value?.splice(index, 1)
+            }
+        },
+        () => tag
+    )
+}
 </script>

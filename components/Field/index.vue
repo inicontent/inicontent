@@ -39,23 +39,23 @@
 <script lang="ts" setup>
 const field = defineModel<Field>("field", { required: true })
 const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
-	const fieldType = (field.value.subType ?? field.value.type) as
-		| DB_FieldType
-		| CMS_FieldType
-	if (Array.isArray(fieldType)) return getField(field.value).key
-	return fieldType
+    const fieldType = (field.value.subType ?? field.value.type) as
+        | DB_FieldType
+        | CMS_FieldType
+    if (Array.isArray(fieldType)) return getField(field.value).key
+    return fieldType
 })
 
-const modelValue = defineModel<any>()
+const modelValue = defineModel<any>({ default: () => ref().value })
 const database = useState<Database>("database")
 
 watchEffect(() => {
-	if (field.value.defaultValue && !modelValue.value)
-		modelValue.value = field.value.defaultValue
-	if (
-		(Array.isArray(field.value.type) && field.value.type.includes("array")) ||
-		(typeof field.value.type === "string" && field.value.type === "array")
-	)
-		field.value.isArray = true
+    if (field.value.defaultValue && !modelValue.value)
+        modelValue.value = field.value.defaultValue
+    if (
+        (Array.isArray(field.value.type) && field.value.type.includes("array")) ||
+        (typeof field.value.type === "string" && field.value.type === "array")
+    )
+        field.value.isArray = true
 })
 </script>

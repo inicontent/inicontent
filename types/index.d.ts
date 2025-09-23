@@ -205,7 +205,7 @@ declare global {
 	type TablesCookie = Record<
 		string,
 		{
-			columns?: string[]
+			columns?: number[]
 			view?: "kanban" | "table"
 			size?: "small" | "medium" | "large"
 		}
@@ -216,6 +216,7 @@ declare module "nuxt/schema" {
 		apiBase: string
 		idOne: string
 		database?: string
+		fileBase?: string
 	}
 }
 

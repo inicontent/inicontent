@@ -79,7 +79,7 @@
 
 					<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
 						<template #feedback>
-							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }}
+							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }} ({{ element.id }})
 						</template>
 						<NInput v-model:value="element.key" />
 					</NFormItem>

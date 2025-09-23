@@ -2,7 +2,6 @@ export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
 	telemetry: false,
-
 	modules: [
 		"@nuxtjs/device",
 		"@nuxt/fonts",
@@ -28,8 +27,5 @@ export default defineNuxtConfig({
 	vite: {
 		server: { hmr: { clientPort: 3434 } },
 	},
-	future: {
-		compatibilityVersion: 4,
-	},
-	compatibilityDate: "2025-05-18",
+	compatibilityDate: "latest",
 })

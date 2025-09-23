@@ -110,9 +110,11 @@ defineTranslation({
 	},
 })
 
-const { id } = defineProps<{
+const { id, open } = defineProps<{
 	id?: string | number
+	open?: boolean
 }>()
+const isOpen = ref(open)
 
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
@@ -126,8 +128,6 @@ const table = useState<Table>("table")
 onBeforeRouteLeave(() => {
 	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`)
 })
-
-const isOpen = ref(false)
 
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
@@ -161,7 +161,7 @@ watch(isOpen, (newValue) => {
 		execute()
 		firstTime = false
 	}
-})
+}, { immediate: true })
 
 function handleCollapseChange({
 	name,
@@ -170,9 +170,8 @@ function handleCollapseChange({
 	name: string | number
 	expanded: boolean
 }) {
-	if (name === "logs") {
+	if (name === "logs")
 		isOpen.value = expanded
-	}
 }
 
 function getTypeFromAction(

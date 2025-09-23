@@ -34,15 +34,15 @@ const options = computed(() =>
 	field.options
 		? isArrayOfArrays(field.options)
 			? (field.options as [string | number, string][]).map(([value]) => ({
-					value: value,
-					label: t(value),
-				}))
+				value: value,
+				label: t(value),
+			}))
 			: isArrayOfObjects(field.options)
 				? field.options
 				: (field.options as string[]).map((value) => ({
-						value: value,
-						label: t(value),
-					}))
+					value: value,
+					label: t(value),
+				}))
 		: [],
 )
 </script>

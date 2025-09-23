@@ -1,15 +1,15 @@
 <template>
-    <FieldWrapper :field :rule v-model="modelValue">
-        <NAutoComplete :options v-model:value="modelValue" :placeholder="t(field.key)" clearable v-bind="field.inputProps
-            ? typeof field.inputProps === 'function'
-                ? { ...(field.inputProps(modelValue) ?? {}), type: 'email', autocomplete: 'disabled' }
-                : { ...field.inputProps, type: 'email', autocomplete: 'disabled' }
-            : { type: 'email', autocomplete: 'disabled' }">
-            <template #suffix>
-                <component :is="getField(field).icon" />
-            </template>
-        </NAutoComplete>
-    </FieldWrapper>
+	<FieldWrapper :field :rule v-model="modelValue">
+		<NAutoComplete :options v-model:value="modelValue" :placeholder="t(field.key)" clearable v-bind="field.inputProps
+			? typeof field.inputProps === 'function'
+				? { ...(field.inputProps(modelValue) ?? {}), type: 'email', autocomplete: 'disabled' }
+				: { ...field.inputProps, type: 'email', autocomplete: 'disabled' }
+			: { type: 'email', autocomplete: 'disabled' }">
+			<template #suffix>
+				<component :is="getField(field).icon" />
+			</template>
+		</NAutoComplete>
+	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
@@ -40,7 +40,7 @@ const emailProviders = [
 
 const options = computed(() => {
 	return emailProviders.map((suffix) => {
-		const value = modelValue.value === null ? "" : modelValue.value
+		const value = !modelValue.value ? "" : modelValue.value
 		const prefix = value?.split("@")[0]
 		return {
 			label: prefix + suffix,

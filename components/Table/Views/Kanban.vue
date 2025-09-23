@@ -154,9 +154,7 @@ const field = table.value?.schema?.find(({ id }) => id === table.value?.groupBy)
 
 const UNSET_KEY = "__unset__" // internal sentinel
 
-const visibleColumns = computed(() =>
-	data.value?.filter((c) => c.key !== UNSET_KEY || c.items.length > 0),
-)
+const visibleColumns = ref();
 
 const route = useRoute()
 const router = useRouter()
@@ -283,9 +281,10 @@ if (field?.options) {
 	}
 
 	nextTick(() => {
-		if (data.value)
+		if (data.value) {
 			data.value.push(unsetColumn)
-
+			visibleColumns.value = data.value.filter((c) => c && (c.key !== UNSET_KEY || c.items.length > 0))
+		}
 		nextTick(executeFetch)
 	})
 }
