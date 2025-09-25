@@ -14,10 +14,6 @@ export default defineNuxtConfig({
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
-	experimental: {
-		buildCache: true,
-		payloadExtraction: false,
-	},
 	devServer: {
 		port: 3434, // "INIc" in binary
 	},

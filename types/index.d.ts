@@ -11,8 +11,8 @@ import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvide
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider"
 import type languages from "~/composables/Translation/languages"
 
-type onCreateCallback = (index: number) => any
-type onCreateType = string | number | boolean | Data | onCreateType[]
+// type onCreateCallback = (index: number) => any
+// type onCreateType = string | number | boolean | Data | onCreateType[]
 
 interface SingleLanguageTranslations {
 	[key: string]: string | SingleLanguageTranslations
