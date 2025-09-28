@@ -56,53 +56,60 @@ function countItems(items: Schema): number {
 
 function mergeItems(existing: Schema, updated: Schema): Schema {
 	const mergedSchema: Schema = []
-	const customItemsIndex = existing.map((item, index) => item.id === undefined || (typeof item.id === "string" && (item.id as string).startsWith("temp-")) ? index : -1).filter(index => index !== -1);
+	const customItemsIndex = existing
+		.map((item, index) =>
+			item.id === undefined ||
+			(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
+				? index
+				: -1,
+		)
+		.filter((index) => index !== -1)
 
 	for (let index = 0; index < updated.length; index++) {
-		const item = updated[index];
-		if (!item) continue;
-		const existingItem = existing.find((_item) => _item.id === item.id);
+		const item = updated[index]
+		if (!item) continue
+		const existingItem = existing.find((_item) => _item.id === item.id)
 
-		if (item.children && isArrayOfObjects(item.children)) {
-			if (existingItem?.children && isArrayOfObjects(existingItem.children)) {
-				item.children = mergeItems(
-					existingItem.children as Schema,
-					item.children as Schema,
-				)
-			} else if (!item.children && existingItem?.children && isArrayOfObjects(existingItem.children)) {
-				const existedCustomChildren = existingItem.children.filter(
-					(child) => child.id === undefined ||
-						(typeof child.id === "string" &&
-							(child.id as string).startsWith("temp-")),
-				)
-				if (existedCustomChildren.length)
-					item.children = existedCustomChildren
-				else delete item.children
-			}
-		}
+		if (
+			item.children &&
+			isArrayOfObjects(item.children) &&
+			existingItem?.children &&
+			isArrayOfObjects(existingItem.children)
+		)
+			item.children = mergeItems(
+				existingItem.children as Schema,
+				item.children as Schema,
+			)
 
-		mergedSchema.push({ ...item, ...existingItem })
+		mergedSchema.push({ ...item, ...existingItem, children: item.children })
+		console.log(mergedSchema)
 	}
 
 	for (let index = 0; index < customItemsIndex.length; index++) {
-		const elementIndex = customItemsIndex[index];
+		const elementIndex = customItemsIndex[index]
 
-		if (elementIndex === undefined || !existing[elementIndex]) continue;
+		if (elementIndex === undefined || !existing[elementIndex]) continue
 
-		if (elementIndex === 0)
-			mergedSchema.unshift(existing[elementIndex]);
-		else if (existing[elementIndex - 1] && !updated.some(item => item.key === existing[elementIndex]?.key)) {
-			const prevItemIndex = mergedSchema.findIndex(item => item.id === existing[elementIndex - 1]?.id);
+		if (elementIndex === 0) mergedSchema.unshift(existing[elementIndex])
+		else if (
+			existing[elementIndex - 1] &&
+			!updated.some((item) => item.key === existing[elementIndex]?.key)
+		) {
+			const prevItemIndex = mergedSchema.findIndex(
+				(item) => item.id === existing[elementIndex - 1]?.id,
+			)
 			if (prevItemIndex !== -1)
-				mergedSchema.splice(prevItemIndex + 1, 0, existing[elementIndex]);
+				mergedSchema.splice(prevItemIndex + 1, 0, existing[elementIndex])
 		}
 	}
 
-	return mergedSchema;
+	return mergedSchema
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
-const POSTSchemasResp = useState<Record<string, apiResponse<{ schema: Schema; data: Item }>>>("POSTSchemas", () => ({}))
+const POSTSchemasResp = useState<
+	Record<string, apiResponse<{ schema: Schema; data: Item }>>
+>("POSTSchemas", () => ({}))
 const filterDefaultColumns = (field: Field) =>
 	!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
 		field.key,
@@ -111,14 +118,25 @@ const filterDefaultColumns = (field: Field) =>
 async function fetchSchemaAndData() {
 	const bodyContent = toRaw(modelValue.value)
 
-	let response: apiResponse<{ schema: Schema; data: Item }>;
-	let setSchema = false;
+	let response: apiResponse<{ schema: Schema; data: Item }>
+	let setSchema = false
 
 	try {
-		const currentPOSTSchemaResp = POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table]
+		const currentPOSTSchemaResp =
+			POSTSchemasResp.value[
+				props.table ?? table.value?.slug ?? route.params.table
+			]
 
-		if (currentPOSTSchemaResp && (Object.keys(bodyContent).length === 0 || JSON.stringify(bodyContent) === JSON.stringify(currentPOSTSchemaResp?.result.data))) {
-			response = currentPOSTSchemaResp as apiResponse<{ schema: Schema; data: Item }>
+		if (
+			currentPOSTSchemaResp &&
+			(Object.keys(bodyContent).length === 0 ||
+				JSON.stringify(bodyContent) ===
+					JSON.stringify(currentPOSTSchemaResp?.result.data))
+		) {
+			response = currentPOSTSchemaResp as apiResponse<{
+				schema: Schema
+				data: Item
+			}>
 		} else {
 			Loading.value.SCHEMA = true
 
@@ -134,30 +152,46 @@ async function fetchSchemaAndData() {
 				},
 			)
 
-			if (Object.keys(bodyContent).length === 0)
-				setSchema = true
+			if (Object.keys(bodyContent).length === 0) setSchema = true
 		}
 
 		const currentSchema = toRaw(schema.value).filter(filterDefaultColumns)
 
 		// Update the schema
 		if (response.result?.schema) {
-			response.result.schema = response.result.schema.filter(filterDefaultColumns)
+			response.result.schema =
+				response.result.schema.filter(filterDefaultColumns)
 			if (!currentSchema?.length) {
 				if (props.table) {
-					const targetTableSchema = database.value.tables?.find(
-						({ slug }) =>
-							slug === (props.table ?? table.value?.slug ?? route.params.table),
-					)?.schema?.filter(filterDefaultColumns)
+					const targetTableSchema = database.value.tables
+						?.find(
+							({ slug }) =>
+								slug ===
+								(props.table ?? table.value?.slug ?? route.params.table),
+						)
+						?.schema?.filter(filterDefaultColumns)
 					if (targetTableSchema)
-						response.result.schema = mergeItems(targetTableSchema, response.result.schema)
+						response.result.schema = mergeItems(
+							targetTableSchema,
+							response.result.schema,
+						)
 				} else if (table.value?.schema)
-					response.result.schema = mergeItems(table.value.schema.filter(filterDefaultColumns), response.result.schema)
-			} else if (countItems(currentSchema) !== countItems(response.result.schema))
-				response.result.schema = mergeItems(currentSchema, response.result.schema)
+					response.result.schema = mergeItems(
+						table.value.schema.filter(filterDefaultColumns),
+						response.result.schema,
+					)
+			} else if (
+				countItems(currentSchema) !== countItems(response.result.schema)
+			)
+				response.result.schema = mergeItems(
+					currentSchema,
+					response.result.schema,
+				)
 
 			if (setSchema)
-				POSTSchemasResp.value[props.table ?? table.value?.slug ?? route.params.table] = response
+				POSTSchemasResp.value[
+					props.table ?? table.value?.slug ?? route.params.table
+				] = response
 
 			schema.value = response.result.schema
 		}
@@ -218,7 +252,8 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${
+					props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -250,7 +285,8 @@ async function DELETE() {
 
 	Loading.value.DELETE = true
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${
+			props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",

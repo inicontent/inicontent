@@ -97,7 +97,7 @@ const searchArray = ref<searchType>(
 )
 
 const columns = ref<DataTableColumns>()
-const data = ref()
+const data = ref<apiResponse<Item[]>>()
 
 const database = useState<Database>("database")
 const table = useState<Table>("table")
@@ -225,6 +225,7 @@ defineExpose<TableRef>({
 	search: searchArray as searchType,
 	columns: columns as any,
 	delete: deleteItem,
+	data: data
 })
 
 const slots = defineSlots<{

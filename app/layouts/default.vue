@@ -133,16 +133,16 @@ onMounted(() => {
 	}
 
 	// Optional: Remove the added classes after printing
-	window.onafterprint = () => {
-		// Remove the "printable-parent" class after printing
-		const elements = document.querySelectorAll(".printable-parent")
-		for (let i = 0; i < elements.length; i++)
-			elements[i]?.classList.remove("printable-parent")
+	// window.onafterprint = () => {
+	// 	// Remove the "printable-parent" class after printing
+	// 	const elements = document.querySelectorAll(".printable-parent")
+	// 	for (let i = 0; i < elements.length; i++)
+	// 		elements[i]?.classList.remove("printable-parent")
 
-		document
-			.querySelector(".printable-direct-parent")
-			?.classList.remove("printable-parent")
-	}
+	// 	document
+	// 		.querySelector(".printable-direct-parent")
+	// 		?.classList.remove("printable-parent")
+	// }
 })
 
 useHead({

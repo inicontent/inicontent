@@ -183,6 +183,7 @@ declare global {
 		search?: searchType
 		columns?: DataTableColumns<any>
 		delete: (id?: string | string[]) => Promise<void>
+		data?: apiResponse<Item[]>
 	}
 
 	type FormRef = {

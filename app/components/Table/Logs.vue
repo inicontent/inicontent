@@ -132,7 +132,6 @@ onBeforeRouteLeave(() => {
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
-		key: `${database.value.slug}/${table.value?.slug as string}/logs`,
 		query: {
 			where: id ? `{item:${id}}` : undefined,
 			options: Inison.stringify({
@@ -156,12 +155,16 @@ const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 )
 
 let firstTime = true
-watch(isOpen, (newValue) => {
-	if (newValue && firstTime) {
-		execute()
-		firstTime = false
-	}
-}, { immediate: true })
+watch(
+	isOpen,
+	(newValue) => {
+		if (newValue && firstTime) {
+			execute()
+			firstTime = false
+		}
+	},
+	{ immediate: true },
+)
 
 function handleCollapseChange({
 	name,
@@ -170,8 +173,7 @@ function handleCollapseChange({
 	name: string | number
 	expanded: boolean
 }) {
-	if (name === "logs")
-		isOpen.value = expanded
+	if (name === "logs") isOpen.value = expanded
 }
 
 function getTypeFromAction(

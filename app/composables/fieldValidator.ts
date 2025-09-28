@@ -43,10 +43,6 @@ export default function (
 
 			const regex = applyRegex(field, Inison.stringify(value))
 			if (regex instanceof Error) reject(regex)
-
-			if (extraValidator)
-				if (value.some((v: any) => !extraValidator(v, field)))
-					reject(new Error(`${t(field.key)} ${t("isNotValid")}`))
 		} else {
 			if (
 				value === undefined ||
@@ -59,11 +55,11 @@ export default function (
 
 			const regex = applyRegex(field, value)
 			if (regex instanceof Error) reject(regex)
-
-			if (extraValidator)
-				if (!extraValidator(value, field))
-					reject(new Error(`${t(field.key)} ${t("isNotValid")}`))
 		}
+
+		if (extraValidator)
+			if (!extraValidator(value, field))
+				reject(new Error(`${t(field.key)} ${t("isNotValid")}`))
 
 		resolve()
 	})

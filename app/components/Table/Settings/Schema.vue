@@ -4,8 +4,8 @@
 		<Draggable :list="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
 			:move="onMoveCallback">
 			<template #item="{ element, index }: { element: Field, index: number }">
-				<NCollapseItem :name="element.id" :id="`element-${element.id}`" :disabled="isDisabled(element.key)"
-					:title="element.key ? t(element.key) : '--'">
+				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
+					:disabled="isDisabled(element.key)" :title="element.key ? t(element.key) : '--'">
 					<template #header-extra>
 						<NFlex>
 							<NButtonGroup>

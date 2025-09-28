@@ -430,7 +430,6 @@ body {
 }
 
 .internalRichEditor table .resize-cursor {
-	cursor: ew-resize;
 	cursor: col-resize;
 }
 

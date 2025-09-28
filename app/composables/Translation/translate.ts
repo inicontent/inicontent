@@ -5,8 +5,11 @@ function formatUnfoundTranslation(
 	language: LanguagesType,
 ): string {
 	input = decodeURI(input)
-	if (input.includes(".")) input = input.split(".").pop() ?? ""
-
+	if (input.includes(".")) {
+		if(input.includes("..")) return input;
+		input = input.split(".").pop() ?? ""
+	}
+	
 	if (language !== "en" || input.toUpperCase() === input) return input
 
 	const lowercaseWords = [

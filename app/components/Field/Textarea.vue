@@ -1,11 +1,13 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<NInput v-model:value="modelValue" :placeholder="t(field.key)" clearable show-count type="textarea"
-			:rows="field.isTable ? 1 : 3" v-bind="field.inputProps
-				? typeof field.inputProps === 'function'
-					? field.inputProps(modelValue) ?? {}
-					: field.inputProps
-				: {}">
+			:rows="field.isTable ? 1 : undefined" :autosize="field.isTable ? false : {
+				minRows: 3,
+			}" v-bind="field.inputProps
+		? typeof field.inputProps === 'function'
+			? field.inputProps(modelValue) ?? {}
+			: field.inputProps
+		: {}">
 			<template #suffix>
 				<component :is="getField(field).icon" />
 			</template>

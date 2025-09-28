@@ -2,7 +2,7 @@
 	<NuxtLayout name="dashboard">
 		<NLayout position="absolute" has-sider>
 			<NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
-				isMenuOpen = !collapsed" style="z-index: 999" bordered show-trigger="bar" collapse-mode="width"
+				isMenuOpen = !collapsed" style="z-index: 1000" bordered show-trigger="bar" collapse-mode="width"
 				:collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
 				<NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
 					:options="menuOptions" :defaultValue :watch-props="['defaultValue']" accordion />
@@ -161,24 +161,10 @@ function renderSingleItem(table: Table): MenuOption {
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-				...(database.value.tables
-					.filter(
-						({ slug, allowedMethods, show }) =>
-							![
-								"users",
-								"sessions",
-								"assets",
-								"translations",
-								"pages",
-								"blocks",
-							].includes(slug) &&
-							allowedMethods?.includes("r") &&
-							show !== false,
-					)
-					.map(renderSingleItem) ?? []),
-				database.value.tables.filter(
+			...(database.value.tables
+				.filter(
 					({ slug, allowedMethods, show }) =>
-						[
+						![
 							"users",
 							"sessions",
 							"assets",
@@ -188,23 +174,37 @@ const menuOptions = computed(() =>
 						].includes(slug) &&
 						allowedMethods?.includes("r") &&
 						show !== false,
-				).length
-					? {
-							key: "divider-1",
-							type: "divider",
-						}
-					: undefined,
-				...(database.value.tables
-					?.filter(
-						({ slug, allowedMethods, show }) =>
-							["users", "sessions", "assets", "pages", "blocks"].includes(
-								slug,
-							) &&
-							allowedMethods?.includes("r") &&
-							show !== false,
-					)
-					.map(renderSingleItem) ?? []),
-			].filter((item) => item) as MenuOption[])
+				)
+				.map(renderSingleItem) ?? []),
+			database.value.tables.filter(
+				({ slug, allowedMethods, show }) =>
+					[
+						"users",
+						"sessions",
+						"assets",
+						"translations",
+						"pages",
+						"blocks",
+					].includes(slug) &&
+					allowedMethods?.includes("r") &&
+					show !== false,
+			).length
+				? {
+					key: "divider-1",
+					type: "divider",
+				}
+				: undefined,
+			...(database.value.tables
+				?.filter(
+					({ slug, allowedMethods, show }) =>
+						["users", "sessions", "assets", "pages", "blocks"].includes(
+							slug,
+						) &&
+						allowedMethods?.includes("r") &&
+						show !== false,
+				)
+				.map(renderSingleItem) ?? []),
+		].filter((item) => item) as MenuOption[])
 		: [],
 )
 </script>
