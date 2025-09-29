@@ -49,8 +49,7 @@
 		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
 			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-			:get-csv-cell="getCsvCell" :get-csv-header="getCsvHeader" :rowProps @scroll="handleScroll"
-			:size="tablesConfig[table.slug]?.size" />
+			:getCsvCell :getCsvHeader :rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
 		<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
 			:show="showDropdown" :onClickoutside @select="handleSelect" />
 	</div>
@@ -65,6 +64,7 @@ import type {
 	DataTableInst,
 	DropdownOption,
 } from "naive-ui"
+import type { VNodeChild } from "vue"
 
 import {
 	LazyColumn,
@@ -115,12 +115,30 @@ const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
 )
 
-const localSearchArray = ref<searchType | undefined>(
-	searchArray.value || { and: [[null, "=", null]] },
-)
-function executeSearch() {
-	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value))
+// Add a small deepClone helper
+function deepClone<T>(v: T): T | undefined {
+	if (v === undefined) return undefined
+	try {
+		// Use structuredClone if available (preserves more types)
+		if (typeof (globalThis as any).structuredClone === "function")
+			return (globalThis as any).structuredClone(v)
+	} catch (e) {
+		// ignore and fallback
+	}
+	// Fallback
+	return JSON.parse(JSON.stringify(v)) as T
 }
+
+// localSearchArray should start as a deep clone so mutations don't affect searchArray
+const localSearchArray = ref<searchType | undefined>(
+	deepClone(searchArray.value) ?? { and: [[null, "=", null]] },
+)
+
+function executeSearch() {
+	// Ensure we set a deep clone to avoid sharing nested references
+	searchArray.value = deepClone(localSearchArray.value)
+}
+
 watch(
 	localSearchArray,
 	(value) => {
@@ -129,10 +147,12 @@ watch(
 	},
 	{ deep: true },
 )
+
+// When external model changes, clone into localSearchArray to avoid linking refs
 watch(
 	searchArray,
 	(value) => {
-		localSearchArray.value = value
+		localSearchArray.value = deepClone(value) ?? { and: [[null, "=", null]] }
 		if (!value) {
 			if (whereQuery.value) {
 				whereQuery.value = undefined
@@ -140,7 +160,10 @@ watch(
 			}
 		} else {
 			const generatedSearchInput = generateSearchInput(value)
-			if (generatedSearchInput && whereQuery.value !== Inison.stringify(generatedSearchInput)) {
+			if (
+				generatedSearchInput &&
+				whereQuery.value !== Inison.stringify(generatedSearchInput)
+			) {
 				whereQuery.value = Inison.stringify(generatedSearchInput)
 				pagination.onUpdatePage(1)
 			}
@@ -264,11 +287,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		onRequest() {
 			Loading.value.data = true
 		},
-		onResponse({
-			response: {
-				_data,
-			},
-		}) {
+		onResponse({ response: { _data } }) {
 			Loading.value.data = false
 			pagination.pageCount = _data?.options.totalPages ?? 0
 			pagination.itemCount = _data?.options.total ?? 0
@@ -368,20 +387,95 @@ function rowProps(row: Item) {
 	}
 }
 
-const getCsvCell: DataTableGetCsvCell = (value) => {
-	if (["boolean", "string", "number"].includes(typeof value)) return value
+function getVNodeTextContent(vnode: VNodeChild): string {
+	if (vnode === null || vnode === undefined || vnode === false) return ""
+	// primitive text
+	if (typeof vnode === "string" || typeof vnode === "number") return String(vnode)
+
+	// arrays of VNodes
+	if (Array.isArray(vnode)) return vnode.map((n) => getVNodeTextContent(n)).join("")
+
+	// VNode shape (element/component)
+	const vn: any = vnode as any
+
+	// direct children string (common for elements)
+	if (typeof vn.children === "string") return vn.children
+
+	// children as array or single VNode
+	if (Array.isArray(vn.children)) return vn.children.map((c: any) => getVNodeTextContent(c)).join("")
+
+	// children as function (scoped slot) -> invoke safely
+	if (typeof vn.children === "function") {
+		try {
+			const res = vn.children()
+			return getVNodeTextContent(res)
+		} catch {
+			return ""
+		}
+	}
+
+	// children as slots object { default: fn, ... }
+	if (vn.children && typeof vn.children === "object") {
+		let out = ""
+		for (const key of Object.keys(vn.children)) {
+			const slot = (vn.children as Record<string, any>)[key]
+			if (typeof slot === "function") {
+				try {
+					out += getVNodeTextContent(slot())
+				} catch {
+					/* ignore */
+				}
+			} else {
+				out += getVNodeTextContent(slot)
+			}
+		}
+		if (out) return out
+	}
+
+	// if this vnode is a mounted component, prefer its rendered subTree
+	if (vn.component?.subTree) return getVNodeTextContent(vn.component.subTree)
+
+	// fallback empty
+	return ""
+}
+const getCsvCell: DataTableGetCsvCell = (value, row, column) => {
+	if (["boolean", "string", "number"].includes(typeof value))
+		return String(value)
+
+	if (column.type === "custom" && column.render)
+		return getVNodeTextContent((column as any).render(row))
+
 	if (!value) return null
-	if (isObject(value) && Object.hasOwn(value, "id")) return value.id
+
+	if (isObject(value) && Object.hasOwn(value, "id")) {
+		const columnField = table.value?.schema?.find(
+			({ key }) => key === column.key,
+		)
+		if (!columnField) return value.id
+
+		const columnTable = database.value.tables?.find(
+			({ slug }) => slug === columnField.table,
+		)
+		if (!columnTable) return value.id
+
+		return renderLabel(columnTable, value)
+	}
 	if (
 		Array.isArray(value) &&
 		isArrayOfObjects(value) &&
 		value.every((_v) => Object.hasOwn(_v, "id"))
-	)
-		value = value.map((_v) => _v.id)
+	) {
+		const columnTable = database.value.tables?.find(
+			({ slug }) => slug === column.key,
+		)
+		if (!columnTable) value = value.map((_v) => _v.id)
+		else value = value.map((_v) => renderLabel(columnTable, _v))
+	}
 	return `"${Inison.stringify(value)}"`
 }
 
 const getCsvHeader: DataTableGetCsvHeader = (col) => {
+	if (col.key === "actions") return ""
 	return (col.key as string) || "Unknown"
 }
 
@@ -497,11 +591,13 @@ async function setColumns() {
 										},
 										() =>
 											h(Icon, {
-												name: id !== undefined && tablesConfig.value[
-													table.value?.slug as string
-												]?.columns?.includes(id)
-													? "tabler:eye-off"
-													: "tabler:eye",
+												name:
+													id !== undefined &&
+														tablesConfig.value[
+															table.value?.slug as string
+														]?.columns?.includes(id)
+														? "tabler:eye-off"
+														: "tabler:eye",
 											}),
 									),
 							})),
@@ -514,7 +610,8 @@ async function setColumns() {
 			? [
 				...(tablesConfig.value[table.value?.slug as string]?.columns
 					? table.value.schema.filter(
-						({ id }) => id !== undefined &&
+						({ id }) =>
+							id !== undefined &&
 							!tablesConfig.value[
 								table.value?.slug as string
 							]?.columns?.includes(id) &&
@@ -532,9 +629,8 @@ async function setColumns() {
 		)
 			?.filter(
 				({ id }) =>
-					id !== undefined && !tablesConfig.value[table.value?.slug as string]?.columns?.includes(
-						id,
-					),
+					id !== undefined &&
+					!tablesConfig.value[table.value?.slug]?.columns?.includes(id),
 			)
 			.map((field) => ({
 				title: () =>
@@ -669,11 +765,12 @@ async function setColumns() {
 
 	await nextTick()
 
-	tableWidth.value = columns.value?.reduce(
-		(accumulator: number, { width }) =>
-			accumulator + ((width as number | undefined) ?? 0),
-		40,
-	) ?? 40
+	tableWidth.value =
+		columns.value?.reduce(
+			(accumulator: number, { width }) =>
+				accumulator + ((width as number | undefined) ?? 0),
+			40,
+		) ?? 40
 }
 watch([Language, checkedRowKeys, _data, tablesConfig], setColumns, {
 	deep: true,

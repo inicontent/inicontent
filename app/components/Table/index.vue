@@ -225,11 +225,11 @@ defineExpose<TableRef>({
 	search: searchArray as searchType,
 	columns: columns as any,
 	delete: deleteItem,
-	data: data
+	data: data as any,
 })
 
 const slots = defineSlots<{
-	default(props: { data: apiResponse<Item[]> | null }): any
+	default(props: { data?: apiResponse<Item[]> }): any
 	form(props: {
 		onAfterCreate: () => Promise<void>
 		onAfterUpdate: () => Promise<void>
@@ -463,7 +463,7 @@ async function toolsDropdownOnSelect(
 		}
 		case "exportCurrentData": {
 			tableViewRef.value.dataTableRef?.downloadCsv({
-				fileName: table.value.slug,
+				fileName: `${table.value.slug}-${new Date().toISOString().split("T")[0]}`,
 				keepOriginalData: false,
 			})
 			break

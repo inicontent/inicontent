@@ -13,7 +13,8 @@
 									v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)"
 									:options="fieldsList()" style="max-height: 200px;" scrollable
 									@select="(type) => pushToChildrenSchema(type, index)">
-									<NButton :disabled="!element.key" secondary round size="small">
+									<NButton :disabled="!element.key" secondary round size="small"
+										@click="pushToChildrenSchema('string', index)">
 										<template #icon>
 											<NIcon>
 												<Icon name="tabler:plus" />
@@ -272,7 +273,9 @@ const widthOptions = [
 function onMoveCallback(evt: {
 	draggedContext: { index: number; futureIndex: number }
 }) {
-	const disabledIndexes = schema.value.map(({ id }, index) => [0, -1, -2].includes(id as number) ? index : -3).filter(index => index !== -3)
+	const disabledIndexes = schema.value
+		.map(({ id }, index) => ([0, -1, -2].includes(id as number) ? index : -3))
+		.filter((index) => index !== -3)
 	return (
 		!disabledIndexes.includes(evt.draggedContext.index) &&
 		!disabledIndexes.includes(evt.draggedContext.futureIndex)
@@ -299,10 +302,10 @@ function isDisabled(key?: string) {
 	}
 	return false
 }
-const expandedNames = defineModel<string[]>("expandedNames")
-const expandedChildNames = ref<string[]>()
-function pushToChildrenSchema(type: string, index: number) {
-	if (!schema.value[index]) return;
+const expandedNames = defineModel<(string | number)[]>("expandedNames")
+const expandedChildNames = ref<(string | number)[]>()
+async function pushToChildrenSchema(type: string, index: number) {
+	if (!schema.value[index]) return
 	if (!schema.value[index].children) schema.value[index].children = [] as Schema
 		; (schema.value[index].children as Schema).push({
 			id: `temp-${randomID()}`,
@@ -310,9 +313,18 @@ function pushToChildrenSchema(type: string, index: number) {
 			required: false,
 			...handleSelectedSchemaType(type),
 		} as any)
-	expandedNames.value = [String(schema.value[index].id)]
-	const newElementId = ((schema.value[index].children as Schema).at(-1) as Field).id
-	expandedChildNames.value = [String(newElementId)]
+
+	if (!schema.value[index].id) return;
+
+	expandedNames.value = [schema.value[index].id]
+	const newElementId = (
+		(schema.value[index].children as Schema).at(-1) as Field
+	).id
+
+	if (!newElementId) return;
+
+	expandedChildNames.value = [newElementId]
+
 	setTimeout(
 		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
 		300,
@@ -446,8 +458,8 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 				return h(NInput, {
 					value: row[0].toString(),
 					onUpdateValue(v) {
-						if (!schemaItem.options?.[index]) return;
-						(schemaItem.options[index] as [string | number, string])[0] = v
+						if (!schemaItem.options?.[index]) return
+							; (schemaItem.options[index] as [string | number, string])[0] = v
 					},
 				})
 			},
@@ -461,8 +473,8 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					showAlpha: false,
 					value: row[1].toString(),
 					onUpdateValue(v) {
-						if (!schemaItem.options?.[index]) return;
-						(schemaItem.options[index] as [string | number, string])[1] = v
+						if (!schemaItem.options?.[index]) return
+							; (schemaItem.options[index] as [string | number, string])[1] = v
 					},
 				})
 			},
