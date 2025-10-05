@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<LazyFormCard v-if="dataObject" v-model="dataObject" />
-		<LazyTableLogs v-if="table.config?.log && data" :id="data.id" />
+		<LazyTableLogs v-if="table.config?.log && dataObject" :id="dataObject.id" />
 	</div>
 </template>
 
@@ -13,12 +13,17 @@ definePageMeta({
 	layout: "table",
 })
 
+onBeforeRouteUpdate((route, currentRoute) => {
+	if (route.fullPath !== currentRoute.fullPath.slice(0, -5))
+		clearNuxtState("currentItem")
+})
+
 const route = useRoute()
 const appConfig = useAppConfig()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const dataObject = ref<Item>({})
-const { data } = await useFetch<Item>(
+await useFetch<Item>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug
 	}/${route.params.id}`,
 	{
@@ -40,4 +45,7 @@ if (!dataObject.value?.id)
 		statusMessage: "item",
 		fatal: true,
 	})
+
+const currentItem = useState<Item>("currentItem")
+currentItem.value = dataObject.value
 </script>

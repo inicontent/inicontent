@@ -195,9 +195,9 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 		window.open(asset.publicURL)
 		return
 	}
-	if (asset.type === "folder") {
+	if (asset.type === "dir") {
 		if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`)
-		path.value = `${path.value}/${asset.name}`
+		path.value += `/${asset.name}`
 		return
 	}
 	CurrentAsset.value = asset

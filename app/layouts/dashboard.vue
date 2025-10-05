@@ -192,10 +192,10 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-					(breadcrumbArray.value[0] &&
+						(breadcrumbArray.value[0] &&
 						["database", "admin"].includes(breadcrumbArray.value[0])
-						? 3
-						: 2),
+							? 3
+							: 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -208,10 +208,14 @@ function breadCrumbItemLink(index: number) {
 		)
 		.join("/")
 }
-const itemLabel = useState("itemLabel")
+
+const table = useState<Table>("table")
+const currentItem = useState<Item>("currentItem")
+const itemLabel = computed(() => renderLabel(table.value, currentItem.value))
+
 function breadCrumbItemLabel(index: number) {
 	const childRoute = breadcrumbArray.value[index]
-	return isValidID(childRoute) && itemLabel.value
+	return isValidID(childRoute) && currentItem.value
 		? itemLabel.value
 		: t(childRoute === "admin" ? "adminPanel" : childRoute)
 }
@@ -261,7 +265,8 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
+					(user.value as User).id
 				}/edit`,
 			)
 			break
@@ -275,7 +280,8 @@ async function onSelectUserDropdown(v: string) {
 			break
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${
+					database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{ credentials: "include" },
 			)

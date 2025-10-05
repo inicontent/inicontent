@@ -9,7 +9,7 @@
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`"
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
 			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
 			:shouldUseThumbnailUrl="() => false" with-credentials>
@@ -26,7 +26,7 @@
 
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
 			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
-				<AssetCard targetID="assetsModal" :where="assetWhere">
+				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
 							<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
@@ -44,7 +44,7 @@
 import { isArrayOfObjects, isObject } from "inibase/utils"
 import type { FormItemRule, UploadFileInfo } from "naive-ui"
 import { Icon, NImage, NTooltip } from "#components"
-import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface";
+import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -163,8 +163,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-					(value) => value.id === asset.id,
-				)
+						(value) => value.id === asset.id,
+					)
 				: (modelValue.value as string[]).indexOf(asset.publicURL)
 			if (index > -1) modelValue.value.splice(index, 1)
 			else modelValue.value.push(value)
@@ -182,19 +182,19 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-				id: asset,
-				name: asset.split("/").pop(),
-				status: "finished",
-				url: asset,
-				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-			}
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+				}
 			: {
-				id: asset.id,
-				name: asset.name || asset.id,
-				status: "finished",
-				url: (asset as Asset).publicURL,
-				type: asset.type,
-			},
+					id: asset.id,
+					name: asset.name || asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+				},
 	) as UploadFileInfo[]
 }
 
@@ -214,17 +214,17 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 						!asset.file
 							? field.isArray
 								? (modelValue.value as Asset[]).find(
-									(item) => item.id === asset.id,
-								)
+										(item) => item.id === asset.id,
+									)
 								: modelValue.value
 							: {
-								id: fileIdObject.value[asset.id],
-								name: asset.name,
-								type: asset.type,
-								publicURL: asset.url,
-								size: asset.file?.size ?? 0,
-								createdAt: asset.file?.lastModified ?? 0,
-							},
+									id: fileIdObject.value[asset.id],
+									name: asset.name,
+									type: asset.type,
+									publicURL: asset.url,
+									size: asset.file?.size ?? 0,
+									createdAt: asset.file?.lastModified ?? 0,
+								},
 					) as Asset[]
 				if (finalFileList.length) {
 					modelValue.value = field.isArray ? finalFileList : finalFileList[0]
@@ -252,37 +252,46 @@ function onFinish({
 	fileIdObject.value[file.id] = result.id as string
 	return file
 }
-
+const table = useState<Table>("table")
+const currentItem = useState<Item>("currentItem")
 const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 	if (!appConfig.fileBase || !fileObject.file) return true
-	const assetsUrl = `${appConfig.apiBase}${database.value.slug ?? 'inicontent'}/assets${field.params ? `?${field.params}` : ''}`
+	const assetsUrl = `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets${field.suffix ? renderLabel({ ...table.value, label: field.suffix }, currentItem.value) : ""}`
 	try {
 		const fd = new FormData()
-		fd.append('file', fileObject.file)
-		const fbResponse = await fetch(appConfig.fileBase, { method: 'POST', body: fd, credentials: 'include' })
+		fd.append("file", fileObject.file)
+		const fbResponse = await fetch(appConfig.fileBase, {
+			method: "POST",
+			body: fd,
+			credentials: "include",
+		})
 		const fbJson = await fbResponse.json()
 		if (fbJson?.error) return true
 
 		const assetsResponse = await fetch(assetsUrl, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(fbJson),
-			credentials: 'include',
+			credentials: "include",
 		})
 		const assetsJson = await assetsResponse.json()
-		const result = (assetsJson?.result) ? assetsJson.result : fbJson
+		const result = assetsJson?.result ? assetsJson.result : fbJson
 
 		const id = `${String(Date.now())}-${fileObject.name || Math.random().toString(36).slice(2)}`
 		const uploadFile: any = {
 			id,
 			name: result.name || fileObject.name,
-			status: 'finished',
+			status: "finished",
 			url: result.publicURL || result.url,
-			type: result.type || fileObject.type || (field.accept?.includes('image') ? 'image/jpeg' : undefined),
+			type:
+				result.type ||
+				fileObject.type ||
+				(field.accept?.includes("image") ? "image/jpeg" : undefined),
 			file: fileObject.file,
 		}
 
-		fileIdObject.value[id] = (result && (result.id || result._id)) ? (result.id || result._id) : id
+		fileIdObject.value[id] =
+			result && (result.id || result._id) ? result.id || result._id : id
 		fileList.value = [...(fileList.value || []), uploadFile]
 		await nextTick()
 		await setModelValue(fileList.value)

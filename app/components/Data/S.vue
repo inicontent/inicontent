@@ -12,5 +12,5 @@
 </template>
 
 <script lang="ts" setup>
-const { schema, value, disableScroll } = defineProps<{ schema: Schema; value: Item; disableScroll: boolean }>()
+const { schema, value, disableScroll } = defineProps<{ schema: Schema; value: Item; disableScroll?: boolean }>()
 </script>

@@ -82,7 +82,6 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 			)
 
 		mergedSchema.push({ ...item, ...existingItem, children: item.children })
-		console.log(mergedSchema)
 	}
 
 	for (let index = 0; index < customItemsIndex.length; index++) {

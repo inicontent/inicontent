@@ -242,7 +242,7 @@ if (
 				}),
 			},
 			onResponse: ({ response }) => {
-				options.value = response._data.result.map(singleOption)
+				options.value = response._data?.result.map(singleOption)
 				Loading.value[`options_${field.key}`] = false
 			},
 			credentials: "include",

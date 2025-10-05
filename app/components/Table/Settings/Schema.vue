@@ -96,10 +96,10 @@
 							<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
 								v-model:value="element.accept" />
 						</NFormItem>
-						<NFormItem :label="t('uploadParams')">
-							<NInput v-model:value="element.params" />
+						<NFormItem :label="t('urlSuffix')">
+							<NInput v-model:value="element.suffix" />
 							<template #feedback>
-								{{ t('ie') }}: <strong>q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
+								{{ t('ie') }}: <strong>/@2?q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
 							</template>
 						</NFormItem>
 					</template>
@@ -307,21 +307,21 @@ const expandedChildNames = ref<(string | number)[]>()
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return
 	if (!schema.value[index].children) schema.value[index].children = [] as Schema
-		; (schema.value[index].children as Schema).push({
-			id: `temp-${randomID()}`,
-			key: null,
-			required: false,
-			...handleSelectedSchemaType(type),
-		} as any)
+	;(schema.value[index].children as Schema).push({
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	} as any)
 
-	if (!schema.value[index].id) return;
+	if (!schema.value[index].id) return
 
 	expandedNames.value = [schema.value[index].id]
 	const newElementId = (
 		(schema.value[index].children as Schema).at(-1) as Field
 	).id
 
-	if (!newElementId) return;
+	if (!newElementId) return
 
 	expandedChildNames.value = [newElementId]
 
@@ -459,7 +459,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[0].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[0] = v
+						;(schemaItem.options[index] as [string | number, string])[0] = v
 					},
 				})
 			},
@@ -474,7 +474,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[1].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[1] = v
+						;(schemaItem.options[index] as [string | number, string])[1] = v
 					},
 				})
 			},
@@ -496,7 +496,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 								schemaItem.options = [["", ""]]
 								return
 							}
-							; (schemaItem.options as [string | number, string][]).splice(
+							;(schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
 							)

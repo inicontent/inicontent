@@ -80,7 +80,7 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 async function importAsset() {
 	Loading.value.import = true
 	const data = await $fetch<apiResponse<Asset | Asset[]>>(
-		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.params ? `?${field.params}` : ""}`,
+		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}`,
 		{
 			method: "POST",
 			headers: {

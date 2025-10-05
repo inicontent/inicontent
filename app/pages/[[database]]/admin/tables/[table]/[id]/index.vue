@@ -73,7 +73,7 @@ import Inison from "inison"
 
 onBeforeRouteUpdate((route, currentRoute) => {
 	if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
-		clearNuxtState("itemLabel")
+		clearNuxtState("currentItem")
 })
 
 definePageMeta({
@@ -117,12 +117,12 @@ function PRINT() {
 	window.print()
 }
 
-const itemLabel = useState("itemLabel", () =>
-	renderLabel(table.value, data.value ?? undefined),
-)
+const currentItem = useState<Item>("currentItem")
+currentItem.value = data.value
+const itemLabel = renderLabel(table.value, data.value)
 
 useHead({
-	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel.value}`,
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel}`,
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],

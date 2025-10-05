@@ -1,5 +1,5 @@
 <template>
-	<NCard id="assetsContainer" style="height: fit-content;" :bordered="targetID === 'assetsContainer'">
+	<NCard id="assetsContainer" style="height: fit-content;" :bordered="!targetID">
 		<template #header>
 			<span v-if="isAssetRoute">{{ t("assets") }}</span>
 			<NBreadcrumb v-else>
@@ -15,7 +15,8 @@
 		<template #header-extra>
 			<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
 				:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
-				@update:file-list="onUpdateFileList" @finish="onFinishUpload" @remove="onRemoveUpload" with-credentials>
+				@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
+				@remove="onRemoveUpload" with-credentials>
 				<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
 					<template #trigger>
 						<NUploadTrigger :abstract="false">
@@ -62,7 +63,8 @@
 			</NUpload>
 		</template>
 		<NFlex vertical align="center">
-			<AssetGrid v-model="assets" :isAssetRoute :table :targetID>
+			<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
+				v-model:path="currentPath">
 				<template v-slot="slotProps">
 					<slot v-bind="slotProps"></slot>
 				</template>
@@ -79,6 +81,7 @@
 <script lang="ts" setup>
 import Inison from "inison"
 import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
+import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 defineTranslation({
 	ar: {
@@ -88,31 +91,29 @@ defineTranslation({
 	},
 })
 
-const { where } = defineProps({
-	targetID: {
-		type: String,
-		default: "assetsContainer",
-	},
-	where: {
-		type: Object,
-	},
-})
+const { where, suffix } = defineProps<{
+	targetID?: string
+	where?: any
+	suffix?: string
+}>()
 const appConfig = useAppConfig()
 
 const route = useRoute()
 const isAssetRoute = !!(route.params.path || route.params.path === "")
 
+const table = useState<Table>("table")
+const currentItem = useState<Item>("currentItem")
+const assetsTable = ref<Table>(table.value)
+
 const currentPath = ref<string>(
-	route.params.path
+	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${route.params.path
 		? `/${([] as string[]).concat(route.params.path).join("/")}`
-		: "",
+		: ""
+	}`,
 )
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
-const table = useState<Table>("table")
-
-const assetsTable = ref<Table>(table.value)
 if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
@@ -234,19 +235,52 @@ function onFinishUpload({
 	}
 	return file
 }
+const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
+	if (!appConfig.fileBase || !fileObject.file) return true
+	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`
+	try {
+		const fd = new FormData()
+		fd.append("file", fileObject.file)
+		const fbResponse = await fetch(appConfig.fileBase, {
+			method: "POST",
+			body: fd,
+			credentials: "include",
+		})
+		const fbJson = await fbResponse.json()
+		if (fbJson?.error) return true
+
+		const assetsResponse = await fetch(assetsUrl, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(fbJson),
+			credentials: "include",
+		})
+		const assetsJson = await assetsResponse.json()
+		const result = assetsJson?.result ? assetsJson.result : fbJson
+
+		if (assets.value) assets.value?.push(result)
+		else assets.value = [result]
+
+		if (!database.value.size) database.value.size = 0
+		database.value.size += result.size ?? 0
+
+		return false
+	} catch (e) {
+		return true
+	}
+}
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-			`${appConfig.apiBase}${
-				database.value.slug
-			}/assets${currentPath.value}/${file.name}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug
+		}/assets${currentPath.value}/${file.name}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name)
 	if (data.result) {
 		if (assets.value)

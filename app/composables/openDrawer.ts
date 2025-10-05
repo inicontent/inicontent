@@ -11,6 +11,7 @@ async function loadDrawer(index: number) {
 		const appConfig = useAppConfig()
 		const database = useState<Database>("database")
 		const Language = useCookie<LanguagesType>("language", { sameSite: true })
+		const currentItem = useState<Item>("currentItem")
 
 		drawer.show = false
 		const key = `Drawer_${drawer.table}_${drawer.id}`
@@ -39,6 +40,7 @@ async function loadDrawer(index: number) {
 			return
 		}
 		drawer.data = { ...response.result, ...(drawer.data ?? {}) }
+		currentItem.value = drawer.data as Item
 	}
 
 	drawer.show = true

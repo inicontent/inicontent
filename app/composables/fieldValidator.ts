@@ -1,6 +1,7 @@
+import { isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
 
-function applyRegex(field: Field, value?: string) {
+function applyRegex(field: Field, value?: string | (string | number)[]) {
 	if (field.regex && value) {
 		try {
 			const regex = new RegExp(field.regex)
@@ -9,7 +10,9 @@ function applyRegex(field: Field, value?: string) {
 				const timeout = setTimeout(() => {
 					throw new Error("Regex evaluation timeout")
 				}, 1000) // 1-second timeout
-				result = regex.test(String(value))
+				if (Array.isArray(value))
+					result = value.every((v) => regex.test(String(v)))
+				else result = regex.test(String(value))
 				clearTimeout(timeout)
 				return result
 			})()
@@ -41,7 +44,10 @@ export default function (
 			if (Array.isArray(value) && field.max && value.length > field.max)
 				reject(new Error(`${t(field.key)} ${t("isNotValid")}`))
 
-			const regex = applyRegex(field, Inison.stringify(value))
+			const regex = applyRegex(
+				field,
+				isArrayOfObjects(value) ? Inison.stringify(value) : value,
+			)
 			if (regex instanceof Error) reject(regex)
 		} else {
 			if (

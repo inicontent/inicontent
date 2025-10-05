@@ -390,10 +390,12 @@ function rowProps(row: Item) {
 function getVNodeTextContent(vnode: VNodeChild): string {
 	if (vnode === null || vnode === undefined || vnode === false) return ""
 	// primitive text
-	if (typeof vnode === "string" || typeof vnode === "number") return String(vnode)
+	if (typeof vnode === "string" || typeof vnode === "number")
+		return String(vnode)
 
 	// arrays of VNodes
-	if (Array.isArray(vnode)) return vnode.map((n) => getVNodeTextContent(n)).join("")
+	if (Array.isArray(vnode))
+		return vnode.map((n) => getVNodeTextContent(n)).join("")
 
 	// VNode shape (element/component)
 	const vn: any = vnode as any
@@ -402,7 +404,8 @@ function getVNodeTextContent(vnode: VNodeChild): string {
 	if (typeof vn.children === "string") return vn.children
 
 	// children as array or single VNode
-	if (Array.isArray(vn.children)) return vn.children.map((c: any) => getVNodeTextContent(c)).join("")
+	if (Array.isArray(vn.children))
+		return vn.children.map((c: any) => getVNodeTextContent(c)).join("")
 
 	// children as function (scoped slot) -> invoke safely
 	if (typeof vn.children === "function") {
@@ -502,7 +505,34 @@ function handleScroll() {
 }
 
 const tableWidth = ref<number>(0)
+function measureTextWidth(
+	text: string,
+	opts?: { min?: number; startWith?: number },
+): number {
+	const str = String(text ?? "")
 
+	// No element/font provided -> use a hidden span that inherits the document/body font
+	// (this avoids having to re-mention the font and matches browser defaults)
+	let span = (measureTextWidth as any)._span as HTMLSpanElement | undefined
+	if (!span) {
+		span = document.createElement("span")
+		const s = span.style
+		s.position = "absolute"
+		s.visibility = "hidden"
+		s.whiteSpace = "pre"
+		s.left = "-9999px"
+		s.top = "-9999px"
+			// do NOT set font styles here so the span inherits the document/body default font
+			; (measureTextWidth as any)._span = span
+	}
+	span.textContent = str || " "
+	if (!span.parentElement) document.body.appendChild(span)
+	const width = Math.ceil(span.getBoundingClientRect().width)
+	// keep span for reuse but clear text
+	span.textContent = ""
+	if (opts?.min) return Math.max(width + (opts?.startWith || 0), opts.min)
+	return width + (opts?.startWith || 0)
+}
 async function setColumns() {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
@@ -638,21 +668,18 @@ async function setColumns() {
 						getField(field).icon(),
 						h(NPerformantEllipsis, () => t(field.key)),
 					]),
-				width:
-					t(field.key).replaceAll(" ", "").length > 10
-						? t(field.key).replaceAll(" ", "").length *
-						(tablesConfig.value[table.value.slug]?.size === "small" ? 10 : 15)
-						: tablesConfig.value[table.value.slug]?.size === "small"
-							? 100
-							: 150,
+				width: measureTextWidth(t(field.key), {
+					startWith:
+						tablesConfig.value[table.value.slug]?.size === "small" ? 70 : 80,
+					min:
+						tablesConfig.value[table.value.slug]?.size === "small" ? 100 : 150,
+				}),
 				key: field.key,
 				sorter: !!_data.value?.result,
 				ellipsis: {
 					tooltip: true,
 				},
-				resizable:
-					(!Array.isArray(field.type) && field.type !== "array") ||
-					(Array.isArray(field.type) && !field.type.includes("array")),
+				resizable: !field.children || !isArrayOfObjects(field.children),
 				sortOrder: sort.value[field.key]
 					? `${sort.value[field.key]}end`
 					: undefined,
