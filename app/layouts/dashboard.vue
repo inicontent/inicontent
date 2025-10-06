@@ -192,10 +192,10 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(breadcrumbArray.value[0] &&
+					(breadcrumbArray.value[0] &&
 						["database", "admin"].includes(breadcrumbArray.value[0])
-							? 3
-							: 2),
+						? 3
+						: 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -219,7 +219,7 @@ function breadCrumbItemLabel(index: number) {
 		? itemLabel.value
 		: t(childRoute === "admin" ? "adminPanel" : childRoute)
 }
-const userDropdownOptions = [
+const userDropdownOptions = computed(() => [
 	{
 		label: t("settings"),
 		key: "settings",
@@ -259,14 +259,13 @@ const userDropdownOptions = [
 		show: !user.value?.id,
 		disabled: (route.name as string | undefined)?.endsWith("-auth"),
 	},
-]
+])
 
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
-					(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
 				}/edit`,
 			)
 			break
@@ -280,8 +279,7 @@ async function onSelectUserDropdown(v: string) {
 			break
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${
-					database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{ credentials: "include" },
 			)
