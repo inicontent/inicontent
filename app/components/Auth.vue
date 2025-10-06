@@ -10,12 +10,11 @@
 				</n-form>
 			</n-tab-pane>
 			<n-tab-pane name="signup" :tab="t('signup')" :disabled="!table.allowedMethods?.includes('c')">
-				<n-form ref="SignupFormRef" :model="SignupForm" @submit="SignupSubmit">
-					<FieldS v-model="SignupForm" :schema="SignupColumns" />
-					<n-button attr-type="submit" type="primary" block secondary strong :loading="Loading.Signup">
-						{{ t("signup") }}
-					</n-button>
-				</n-form>
+				<Form ref="SignupFormRef" v-model="SignupForm" table="users" @after-create="onAfterSignup" />
+				<n-button @click="SignupFormRef?.create" type="primary" block secondary strong
+					:loading="Loading.Signup">
+					{{ t("signup") }}
+				</n-button>
 			</n-tab-pane>
 		</n-tabs>
 	</n-card>
@@ -43,8 +42,8 @@ const tabsValue = ref((route.query.tab as string) ?? "signin") // Default tab
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const user = useState<User>("user")
-const SignupForm = useState(() => ({}))
-const SignupFormRef = ref<FormInst | null>(null)
+const SignupForm = useState(() => ({ role: "b4694ff1f8c483824582c1e2dc75f0f9" }))
+const SignupFormRef = ref<FormRef>()
 const SigninForm = ref({
 	username: "",
 	password: "",
@@ -61,62 +60,13 @@ const SigninColumns: Schema = [
 		required: true,
 	},
 ]
-const SignupColumns: Schema = database.value?.tables
-	?.find((item) => item.slug === "users")
-	?.schema?.filter(
-		(field) =>
-			!["id", "createdAt", "createdBy", "updatedAt", "role"].includes(
-				field.key,
-			),
-	) ?? [
-	{
-		key: "username",
-		type: "string",
-		required: true,
-	},
-	{
-		key: "email",
-		type: "email",
-		required: true,
-	},
-	{
-		key: "password",
-		type: "password",
-		required: true,
-	},
-]
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
-
-async function SignupSubmit(e: Event) {
-	e.preventDefault()
-	SignupFormRef.value?.validate(async (errors) => {
-		if (!errors) {
-			const bodyContent = toRaw(SignupForm.value)
-			if (Loading.value.Signup !== true) {
-				Loading.value.Signup = true
-				const data = await $fetch<Record<string, any>>(
-					`${appConfig.apiBase}${database.value.slug}/user`,
-					{
-						method: "POST",
-						body: bodyContent,
-						params: {
-							locale: Language.value,
-						},
-						credentials: "include",
-					},
-				)
-				if (data.result) {
-					window.$message.success(data.message)
-					tabsValue.value = "signin"
-					tabsInstRef.value?.syncBarPosition()
-				} else window.$message.error(data.message)
-				Loading.value.Signup = false
-			}
-		} else window.$message.error(t("inputsAreInvalid"))
-	})
+function onAfterSignup(data?: Item) {
+	SigninForm.value.username = data?.username || ""
+	tabsValue.value = "signin"
+	tabsInstRef.value?.syncBarPosition()
 }
-
 async function SigninSubmit(e: Event) {
 	e.preventDefault()
 	SigninFormRef.value?.validate(async (errors) => {
