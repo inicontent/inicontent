@@ -11,6 +11,7 @@ function getIconName(type?: string): string {
 	if (type.startsWith("video/")) return "video"
 	if (type.startsWith("audio/")) return "file-music"
 	if (type.startsWith("font/")) return "file-typography"
+	if (type === "application/pdf") return "file-type-pdf"
 	if (type === "application/zip") return "file-type-zip"
 	if (type === "application/x-7z-compressed") return "file-zip"
 	if (type === "application/msword") return "file-type-doc"

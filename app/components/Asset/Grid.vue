@@ -3,7 +3,8 @@
 		<NDrawer v-model:show="showDrawer" :placement="Language === 'ar' ? 'left' : 'right'" class="assetDrawer">
 			<NDrawerContent :native-scrollbar="false" v-if="CurrentAsset">
 				<NFlex vertical>
-					<NImage v-if="CurrentAsset?.type.startsWith('image/') || CurrentAsset?.type === 'application/pdf'"
+					<NImage
+						v-if="CurrentAsset?.type.startsWith('image/') || (CurrentAsset?.type === 'application/pdf' && CurrentAsset.publicURL.startsWith('https://cdn.inicontent.com/'))"
 						class="asset"
 						:src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
 						:preview-src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
@@ -56,7 +57,8 @@
 							<NFlex class="assetActions">
 								<slot :asset></slot>
 							</NFlex>
-							<NImage v-if="asset.type.startsWith('image/') || asset.type === 'application/pdf'"
+							<NImage
+								v-if="asset.type.startsWith('image/') || (asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
 								class="asset"
 								:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
 								preview-disabled :intersection-observer-options="{
@@ -189,6 +191,7 @@ function dropdownOnClickOutside(e: MouseEvent) {
 	const isRightClick = e.button === 2
 	if (!isRightClick) showDropdown.value = false
 }
+const route = useRoute()
 async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 	if (e.ctrlKey || e.metaKey) {
 		e.preventDefault()
@@ -196,7 +199,7 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 		return
 	}
 	if (asset.type === "dir") {
-		if (isAssetRoute) return navigateTo(`${path.value}/${asset.name}`)
+		if (isAssetRoute) return navigateTo(`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${path.value}/${asset.name}`)
 		path.value += `/${asset.name}`
 		return
 	}

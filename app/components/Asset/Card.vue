@@ -159,8 +159,8 @@ async function onUpdatePageSize(currentPageSize: number) {
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
-
-const { data: assets, refresh } = await useLazyAsyncData(
+const assets = ref<Asset[]>()
+const { data, refresh } = await useLazyAsyncData(
 	`assets${currentPath.value}`,
 	() =>
 		$fetch<apiResponse<Asset[]>>(
@@ -182,6 +182,8 @@ const { data: assets, refresh } = await useLazyAsyncData(
 		),
 	{
 		transform: ({ result, options: { totalPages, total } }) => {
+			assets.value = result
+			
 			Loading.value.AssetData = false
 
 			if (total === 0) showSizePicker.value = false
