@@ -3,6 +3,7 @@ export default defineNuxtConfig({
 	sourcemap: false,
 	telemetry: false,
 	modules: [
+		"@vite-pwa/nuxt",
 		"@nuxtjs/device",
 		"@nuxt/fonts",
 		"@nuxt/icon",
@@ -13,6 +14,46 @@ export default defineNuxtConfig({
 	},
 	imports: {
 		dirs: ["types/*.d.ts"],
+	},
+	pwa: {
+		manifest: {
+			name: "Inicontent",
+			short_name: "inic",
+			theme_color: "#ff9800",
+			icons: [
+				{
+					src: "/pwa-192x192.png",
+					sizes: "192x192",
+					type: "image/png",
+					purpose: "any",
+				},
+				{
+					src: "/pwa-512x512.png",
+					sizes: "512x512",
+					type: "image/png",
+					purpose: "any",
+				},
+				{
+					src: "/pwa-maskable-192x192.png",
+					sizes: "192x192",
+					type: "image/png",
+					purpose: "maskable",
+				},
+				{
+					src: "/pwa-maskable-512x512.png",
+					sizes: "512x512",
+					type: "image/png",
+					purpose: "maskable",
+				},
+			],
+		},
+		workbox: {
+			navigateFallback: "/",
+		},
+		devOptions: {
+			enabled: true,
+			type: "module",
+		},
 	},
 	devServer: {
 		port: 3434, // "INIc" in binary

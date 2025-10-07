@@ -36,8 +36,8 @@
 						</template>
 						<template #extra>
 							<NButtonGroup>
-								<NTooltip v-if="user?.role === appConfig.idOne" :delay="600" scrollable
-									style="max-height: 240px">
+								<NPopover v-if="user?.role === appConfig.idOne" :delay="600" scrollable
+									style="max-height: 240px;">
 									<template #trigger>
 										<NButton round size="small">{{ humanFileSize(
 											database?.size,
@@ -57,7 +57,7 @@
 											{{ humanFileSize(table?.size) }}
 										</NTag>
 									</NFlex>
-								</NTooltip>
+								</NPopover>
 								<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
 									<NButton round size="small">
 										<template #icon>
@@ -192,10 +192,10 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-					(breadcrumbArray.value[0] &&
+						(breadcrumbArray.value[0] &&
 						["database", "admin"].includes(breadcrumbArray.value[0])
-						? 3
-						: 2),
+							? 3
+							: 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -265,7 +265,8 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
+					(user.value as User).id
 				}/edit`,
 			)
 			break
@@ -279,7 +280,8 @@ async function onSelectUserDropdown(v: string) {
 			break
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${
+					database.value.slug ?? "inicontent"
 				}/auth/signout`,
 				{ credentials: "include" },
 			)
