@@ -739,8 +739,8 @@ async function setColumns() {
 						isMobile || tablesConfig.value[table.value.slug]?.size === "small"
 							? 70
 							: 150 +
-							(isSlotSet("itemExtraActions") &&
-								!isSlotEmpty("itemExtraActions")
+							(isSlotSet("itemExtraButtons") &&
+								!isSlotEmpty("itemExtraButtons")
 								? (props.slots.itemExtraButtons as any)().length * 20
 								: 0),
 					key: "actions",

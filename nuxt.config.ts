@@ -15,6 +15,14 @@ export default defineNuxtConfig({
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
+	routeRules: {
+		"/api/**": { proxy: { to: "https://api.inicontent.com/**" } }, // Proxy API requests to the Inicontent API
+	},
+	app: {
+		head: {
+			viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+		},
+	},
 	pwa: {
 		manifest: {
 			name: "Inicontent",
