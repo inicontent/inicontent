@@ -13,54 +13,64 @@
 			</NBreadcrumb>
 		</template>
 		<template #header-extra>
-			<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-				:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
-				@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
-				@remove="onRemoveUpload" with-credentials>
-				<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
+			<NButtonGroup round>
+				<NPopover>
 					<template #trigger>
-						<NUploadTrigger :abstract="false">
-							<NPopover>
-								<template #trigger>
-									<NButton round>
-										<template #icon>
-											<NIcon v-if="!UploadProgress">
-												<Icon name="tabler:plus" />
-											</NIcon>
-											<NIcon v-else-if="UploadProgress === 10000">
-												<Icon name="tabler:check" />
-											</NIcon>
-											<NSpin v-else-if="UploadProgress === 1000" :size="16" />
-											<NProgress v-else type="circle" :show-indicator="false"
-												:status="UploadProgress === 100 ? 'success' : 'warning'"
-												:percentage="UploadProgress" :stroke-width="20" />
-										</template>
-									</NButton>
-								</template>
-								<NInputGroup>
-									<NInput v-model:value="folder"
-										@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
-										:placeholder="t('folderName')">
-										<template #suffix>
-											<NIcon>
-												<Icon name="tabler:letter-case" />
-											</NIcon>
-										</template>
-									</NInput>
-									<NButton @click="createFolder">
-										<template #icon>
-											<NIcon>
-												<Icon name="tabler:folder-plus" />
-											</NIcon>
-										</template>
-									</NButton>
-								</NInputGroup>
-							</NPopover>
-						</NUploadTrigger>
+						<NButton round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:folder-plus" />
+								</NIcon>
+							</template>
+						</NButton>
 					</template>
-					<NUploadFileList></NUploadFileList>
+					<NInputGroup>
+						<NInput v-model:value="folder"
+							@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
+							:placeholder="t('folderName')" size="small">
+							<template #suffix>
+								<NIcon>
+									<Icon name="tabler:letter-case" />
+								</NIcon>
+							</template>
+						</NInput>
+						<NButton @click="createFolder" size="small" type="primary">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:arrow-right" />
+								</NIcon>
+							</template>
+						</NButton>
+					</NInputGroup>
 				</NPopover>
-			</NUpload>
+				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
+					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
+					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
+					@remove="onRemoveUpload" with-credentials>
+					<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
+						<template #trigger>
+							<NUploadTrigger :abstract="false">
+								<NButton round size="small"
+									:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'">
+									<template #icon>
+										<NIcon v-if="!UploadProgress">
+											<Icon name="tabler:upload" />
+										</NIcon>
+										<NIcon v-else-if="UploadProgress === 10000">
+											<Icon name="tabler:check" />
+										</NIcon>
+										<NSpin v-else-if="UploadProgress === 1000" :size="16" />
+										<NProgress v-else type="circle" :show-indicator="false"
+											:status="UploadProgress === 100 ? 'success' : 'warning'"
+											:percentage="UploadProgress" :stroke-width="20" />
+									</template>
+								</NButton>
+							</NUploadTrigger>
+						</template>
+						<NUploadFileList></NUploadFileList>
+					</NPopover>
+				</NUpload>
+			</NButtonGroup>
 		</template>
 		<NFlex vertical align="center">
 			<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
@@ -106,9 +116,10 @@ const currentItem = useState<Item>("currentItem")
 const assetsTable = ref<Table>(table.value)
 
 const currentPath = ref<string>(
-	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${route.params.path
-		? `/${([] as string[]).concat(route.params.path).join("/")}`
-		: ""
+	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${
+		route.params.path
+			? `/${([] as string[]).concat(route.params.path).join("/")}`
+			: ""
 	}`,
 )
 
@@ -159,8 +170,10 @@ async function onUpdatePageSize(currentPageSize: number) {
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const isRTL = computed(() => Language.value === "ar")
+
 const assets = ref<Asset[]>()
-const { data, refresh } = await useLazyAsyncData(
+const { refresh } = await useLazyAsyncData(
 	`assets${currentPath.value}`,
 	() =>
 		$fetch<apiResponse<Asset[]>>(
@@ -183,7 +196,7 @@ const { data, refresh } = await useLazyAsyncData(
 	{
 		transform: ({ result, options: { totalPages, total } }) => {
 			assets.value = result
-			
+
 			Loading.value.AssetData = false
 
 			if (total === 0) showSizePicker.value = false
@@ -273,16 +286,17 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-		`${appConfig.apiBase}${database.value.slug
-		}/assets${currentPath.value}/${file.name}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
+			`${appConfig.apiBase}${
+				database.value.slug
+			}/assets${currentPath.value}/${file.name}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		},
-	),
+		),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name)
 	if (data.result) {
 		if (assets.value)

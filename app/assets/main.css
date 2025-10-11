@@ -509,6 +509,16 @@ body {
 	border-radius: 0 !important;
 }
 
+#pageContent {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+#iniHeader {
+  top: env(safe-area-inset-top);
+}
+#container {
+  top: calc(env(safe-area-inset-top) + 64px);
+}
+
 @media (max-width: 768px) {
 	#tableCard > .n-card-header {
 		flex-direction: column;

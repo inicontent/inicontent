@@ -9,6 +9,9 @@ export default defineNuxtConfig({
 		"@nuxt/icon",
 		"nuxt-tiptap-editor",
 	],
+	icon: {
+		provider: "server",
+	},
 	tiptap: {
 		prefix: "Tiptap",
 	},
@@ -16,7 +19,7 @@ export default defineNuxtConfig({
 		dirs: ["types/*.d.ts"],
 	},
 	routeRules: {
-		"/api/**": { proxy: { to: "https://api.inicontent.com/**" } }, // Proxy API requests to the Inicontent API
+		"/ini/**": { proxy: { to: "https://api.inicontent.com/**" } }, // Proxy API requests to the Inicontent API
 	},
 	app: {
 		head: {
