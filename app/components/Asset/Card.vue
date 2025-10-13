@@ -44,7 +44,7 @@
 					</NInputGroup>
 				</NPopover>
 				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
+					:action="`https://api.inicontent.com/${database.slug}/assets${currentPath}`"
 					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
 					@remove="onRemoveUpload" with-credentials>
 					<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">

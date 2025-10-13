@@ -9,7 +9,7 @@
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
+			:action="`https://api.inicontent.com/${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
 			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
 			:shouldUseThumbnailUrl="() => false" with-credentials>
