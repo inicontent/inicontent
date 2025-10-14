@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
 	const user = useState<User>("user")
 	const database = useState<Database>("database")
-	const fromPath = useCookie("from")
+	const fromPath = useCookie("from", { sameSite: true })
 	if (user.value) {
 		if (["auth", "database-auth"].includes(to.name?.toString() ?? "")) {
 			return navigateTo(

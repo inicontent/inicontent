@@ -44,7 +44,7 @@
 					</NInputGroup>
 				</NPopover>
 				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}`"
+					:action="`https://api.inicontent.com/${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
 					@remove="onRemoveUpload" with-credentials>
 					<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
@@ -116,12 +116,15 @@ const currentItem = useState<Item>("currentItem")
 const assetsTable = ref<Table>(table.value)
 
 const currentPath = ref<string>(
-	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${
-		route.params.path
-			? `/${([] as string[]).concat(route.params.path).join("/")}`
-			: ""
+	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${route.params.path
+		? `/${([] as string[]).concat(route.params.path).join("/")}`
+		: ""
 	}`,
 )
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
@@ -286,17 +289,16 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
-			`${appConfig.apiBase}${
-				database.value.slug
-			}/assets${currentPath.value}/${file.name}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug
+		}/assets${currentPath.value}/${file.name}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name)
 	if (data.result) {
 		if (assets.value)

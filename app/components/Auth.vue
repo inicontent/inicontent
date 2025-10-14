@@ -33,7 +33,7 @@ defineTranslation({
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 
-const fromPath = useCookie("from")
+const fromPath = useCookie("from", { sameSite: true })
 
 const SigninFormRef = ref<FormInst | null>(null)
 const route = useRoute()
@@ -42,7 +42,9 @@ const tabsValue = ref((route.query.tab as string) ?? "signin") // Default tab
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const user = useState<User>("user")
-const SignupForm = useState(() => ({ role: "b4694ff1f8c483824582c1e2dc75f0f9" }))
+const SignupForm = useState(() => ({
+	role: "b4694ff1f8c483824582c1e2dc75f0f9",
+}))
 const SignupFormRef = ref<FormRef>()
 const SigninForm = ref({
 	username: "",
@@ -67,6 +69,11 @@ function onAfterSignup(data?: Item) {
 	tabsValue.value = "signin"
 	tabsInstRef.value?.syncBarPosition()
 }
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function SigninSubmit(e: Event) {
 	e.preventDefault()
 	SigninFormRef.value?.validate(async (errors) => {
@@ -86,6 +93,7 @@ async function SigninSubmit(e: Event) {
 					},
 				)
 				if (data.result?.id) {
+					sessionID.value = data.result.sessionID
 					window.$message.success(data.message)
 					user.value = data.result
 					database.value = (
