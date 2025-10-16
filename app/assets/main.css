@@ -487,10 +487,7 @@ body {
 
 #container {
 	top: calc(env(safe-area-inset-top) + 64px);
-	height: calc(100svh - 64px - env(safe-area-inset-bottom));
-	height: calc(100dvh - 64px - env(safe-area-inset-bottom));
-	height: calc(var(--vh, 1vh) * 100 - 64px - env(safe-area-inset-bottom));
-	min-height: -webkit-fill-available;
+	height: calc(100vh - 64px - env(safe-area-inset-bottom));
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
 }
