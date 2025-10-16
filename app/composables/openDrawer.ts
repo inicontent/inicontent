@@ -4,6 +4,10 @@ async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => [])
 	const drawer = Drawers.value[index]
 
+	const sessionID = useCookie<string | null>("sessionID", {
+		sameSite: true,
+	})
+
 	if (!drawer) return
 
 	if (drawer.id) {
@@ -28,6 +32,7 @@ async function loadDrawer(index: number) {
 						columns: table?.columns,
 					}),
 					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},

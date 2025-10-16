@@ -7,7 +7,7 @@
 					{{ t("assets") }}
 				</NBreadcrumbItem>
 				<NBreadcrumbItem v-for="(singlePath, index) in currentPath.split('/').slice(1)"
-					@click="currentPath = `/${currentPath.split('/').slice(1, index + 1).join('/')}`">
+					@click="currentPath = `${currentPath.split('/').slice(0, index + 2).join('/')}`">
 					{{ singlePath }}
 				</NBreadcrumbItem>
 			</NBreadcrumb>
@@ -44,7 +44,7 @@
 					</NInputGroup>
 				</NPopover>
 				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-					:action="`https://api.inicontent.com/${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
 					@remove="onRemoveUpload" with-credentials>
 					<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
@@ -132,7 +132,12 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
 			`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`,
-			{ credentials: "include" },
+			{
+				credentials: "include",
+				params: {
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
 		)
 	).result
 
@@ -192,6 +197,7 @@ const { refresh } = await useLazyAsyncData(
 					}),
 					where: where ? Inison.stringify(where) : undefined,
 					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},
@@ -245,7 +251,7 @@ function onFinishUpload({
 		)
 		file.url = response.result.publicURL
 		file.name = response.result.id as string
-		if (assets.value) assets.value?.push(response.result)
+		if (assets.value) assets.value?.unshift(response.result)
 		else assets.value = [response.result]
 		if (!database.value.size) database.value.size = 0
 		database.value.size += response.result.size ?? 0
@@ -255,8 +261,9 @@ function onFinishUpload({
 }
 const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 	if (!appConfig.fileBase || !fileObject.file) return true
-	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`
+	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}?${database.value.slug}_sid=${sessionID.value}`
 	try {
+		if (UploadProgress.value === 0) UploadProgress.value = 1
 		const fd = new FormData()
 		fd.append("file", fileObject.file)
 		const fbResponse = await fetch(appConfig.fileBase, {
@@ -276,7 +283,7 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 		const assetsJson = await assetsResponse.json()
 		const result = assetsJson?.result ? assetsJson.result : fbJson
 
-		if (assets.value) assets.value?.push(result)
+		if (assets.value) assets.value?.unshift(result)
 		else assets.value = [result]
 
 		if (!database.value.size) database.value.size = 0
@@ -295,6 +302,7 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 			method: "DELETE",
 			params: {
 				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},
@@ -321,9 +329,9 @@ async function createFolder() {
 			await navigateTo(
 				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${currentPath.value}`,
 			)
-	} else {
+		folder.value = ""
+	} else
 		window.$message.error(t("folderNameRequired"))
-	}
 }
 
 watch(currentPath, () => {

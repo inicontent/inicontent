@@ -40,42 +40,43 @@
 				</NFlex>
 			</NDrawerContent>
 		</NDrawer>
-		<NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
-			<template v-if="modelValue === undefined || Loading.AssetData" #default>
-				<NGridItem v-for="(_) in [...Array(22).keys()]">
-					<NSkeleton class="asset"></NSkeleton>
-				</NGridItem>
-			</template>
-			<template v-else #default>
-				<NGridItem v-for="(asset) in (modelValue as Asset[]).sort((a, b) => {
-					if (a.type === 'dir' && b.type !== 'dir') return -1;
-					if (a.type !== 'dir' && b.type === 'dir') return 1;
-					return 0;
-				})">
-					<div @contextmenu="handleContextMenu($event, asset)">
-						<NFlex vertical class="assetContainer">
-							<NFlex class="assetActions">
-								<slot :asset></slot>
+		<NImageGroup>
+			<NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
+				<template v-if="modelValue === undefined || Loading.AssetData" #default>
+					<NGridItem v-for="(_) in [...Array(22).keys()]">
+						<NSkeleton class="asset"></NSkeleton>
+					</NGridItem>
+				</template>
+				<template v-else #default>
+					<NGridItem v-for="(asset) in (modelValue as Asset[]).sort((a, b) => {
+						if (a.type === 'dir' && b.type !== 'dir') return -1;
+						if (a.type !== 'dir' && b.type === 'dir') return 1;
+						return 0;
+					})">
+						<div @contextmenu="handleContextMenu($event, asset)">
+							<NFlex vertical class="assetContainer">
+								<NFlex class="assetActions">
+									<slot :asset></slot>
+								</NFlex>
+								<NImage
+									v-if="asset.type.startsWith('image/') || (asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
+									class="asset"
+									:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
+									:intersection-observer-options="{
+										root: `#${targetID ?? 'container'}`
+									}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`" />
+								<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
+									<LazyAssetIcon :type="asset.type" class="icon" />
+								</NIcon>
+								<NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
+									{{ asset.name }}
+								</NPerformantEllipsis>
 							</NFlex>
-							<NImage
-								v-if="asset.type.startsWith('image/') || (asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
-								class="asset"
-								:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
-								preview-disabled :intersection-observer-options="{
-									root: `#${targetID ?? 'container'}`
-								}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
-								@click="handleOnClickAsset($event, asset)" />
-							<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
-								<LazyAssetIcon :type="asset.type" class="icon" />
-							</NIcon>
-							<NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
-								{{ asset.name }}
-							</NPerformantEllipsis>
-						</NFlex>
-					</div>
-				</NGridItem>
-			</template>
-		</NGrid>
+						</div>
+					</NGridItem>
+				</template>
+			</NGrid>
+		</NImageGroup>
 		<NDropdown v-if="table?.allowedMethods?.includes('u') || table?.allowedMethods?.includes('d')"
 			placement="bottom-start" trigger="manual" :x="x" :y="y" :show="showDropdown" :options="dropdownOptions"
 			@clickoutside="dropdownOnClickOutside" @select="(key: string) => dropdownOnSelect(key)" />
@@ -116,18 +117,23 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
 const CurrentAsset = ref<Asset>()
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		},
-	),
+		),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id)
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -151,7 +157,8 @@ const dropdownOptions = [
 		key: "rename",
 		disabled: true,
 		show:
-			table?.allowedMethods?.includes("u") && CurrentAsset.value?.type === "dir",
+			table?.allowedMethods?.includes("u") &&
+			CurrentAsset.value?.type === "dir",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
 	},
 	{
@@ -199,7 +206,10 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 		return
 	}
 	if (asset.type === "dir") {
-		if (isAssetRoute) return navigateTo(`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${path.value}/${asset.name}`)
+		if (isAssetRoute)
+			return navigateTo(
+				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${path.value}/${asset.name}`,
+			)
 		path.value += `/${asset.name}`
 		return
 	}
@@ -224,20 +234,20 @@ const renderToolbar: (
 	},
 	file?: Asset,
 ) => {
-		if (download.props && file?.publicURL)
-			download.props.onClick = (event: MouseEvent) => {
-				event?.preventDefault()
-				window.open(file.publicURL as string, "_blank")
-				close?.props?.onClick?.()
-			}
-		return [
-			rotateCounterclockwise,
-			rotateClockwise,
-			zoomIn,
-			zoomOut,
-			resizeToOriginalSize,
-			download,
-			close,
-		]
-	}
+	if (download.props && file?.publicURL)
+		download.props.onClick = (event: MouseEvent) => {
+			event?.preventDefault()
+			window.open(file.publicURL as string, "_blank")
+			close?.props?.onClick?.()
+		}
+	return [
+		rotateCounterclockwise,
+		rotateClockwise,
+		zoomIn,
+		zoomOut,
+		resizeToOriginalSize,
+		download,
+		close,
+	]
+}
 </script>

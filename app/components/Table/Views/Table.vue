@@ -274,6 +274,9 @@ const queryOptions = computed(() =>
 )
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
 
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
@@ -283,6 +286,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 			options: queryOptions,
 			where: whereQuery,
 			locale: Language.value,
+			[`${database.value.slug}_sid`]: sessionID.value,
 		},
 		onRequest() {
 			Loading.value.data = true
@@ -710,6 +714,7 @@ async function setColumns() {
 											params: {
 												return: false,
 												locale: Language.value,
+												[`${database.value.slug}_sid`]: sessionID.value,
 											},
 											credentials: "include",
 										},

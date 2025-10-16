@@ -115,6 +115,10 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 	await loadOptions(searchValue)
 }, 1000)
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true
 	const searchOrObject =
@@ -168,6 +172,7 @@ async function loadOptions(searchValue?: string | number) {
 				options: Inison.stringify({
 					columns: table?.columns,
 				}),
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			cache: "no-cache",
 			credentials: "include",
@@ -212,6 +217,7 @@ async function handleScroll(e: Event) {
 						page: pagination.value.page + 1,
 						columns: table?.columns,
 					}),
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				cache: "no-cache",
 				credentials: "include",
@@ -240,6 +246,7 @@ if (
 				where: Inison.stringify({
 					id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
 				}),
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			onResponse: ({ response }) => {
 				options.value = response._data?.result.map(singleOption)

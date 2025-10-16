@@ -87,7 +87,7 @@ async function SigninSubmit(e: Event) {
 						method: "PUT",
 						body: bodyContent,
 						params: {
-							locale: Language.value,
+							locale: Language.value
 						},
 						credentials: "include",
 					},
@@ -99,7 +99,11 @@ async function SigninSubmit(e: Event) {
 					database.value = (
 						await $fetch<apiResponse<Database>>(
 							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
-							{ credentials: "include" },
+							{
+								credentials: "include", params: {
+									[`${database.value.slug}_sid`]: sessionID.value
+								}
+							},
 						)
 					).result
 					await navigateTo(

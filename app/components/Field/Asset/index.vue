@@ -9,7 +9,7 @@
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`https://api.inicontent.com/${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
 			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
 			:shouldUseThumbnailUrl="() => false" with-credentials>
@@ -256,7 +256,7 @@ const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
 const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 	if (!appConfig.fileBase || !fileObject.file) return true
-	const assetsUrl = `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets${field.suffix ? renderLabel({ ...table.value, label: field.suffix }, currentItem.value) : ""}`
+	const assetsUrl = `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets${field.suffix ? renderLabel({ ...table.value, label: field.suffix }, currentItem.value) : ""}${field.suffix?.includes('?') ? '&' : '?'}${database.value.slug}_sid=${sessionID.value}`
 	try {
 		const fd = new FormData()
 		fd.append("file", fileObject.file)

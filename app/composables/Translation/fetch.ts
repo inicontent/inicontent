@@ -11,6 +11,11 @@ export default async function () {
 		"unfoundTranslations",
 	)
 
+	const database = useState<Database>("database")
+	const sessionID = useCookie<string | null>("sessionID", {
+		sameSite: true,
+	})
+
 	if (Language.value && unfoundTranslationsState.value) {
 		const fetchResult = (
 			await $fetch<apiResponse<Item[]>>(
@@ -22,6 +27,7 @@ export default async function () {
 						where: Inison.stringify({
 							original: `[]${Object.keys(unfoundTranslationsState.value).join(",")}`,
 							locale: Language.value,
+							[`${database.value.slug}_sid`]: sessionID.value,
 						}),
 						credentials: "include",
 					},

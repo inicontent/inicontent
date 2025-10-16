@@ -160,6 +160,10 @@ const translationSchema: Schema = [
 	},
 ]
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function updateDatabase() {
 	databaseRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -171,6 +175,9 @@ async function updateDatabase() {
 					method: "PUT",
 					body: bodyContent,
 					credentials: "include",
+					query: {
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
 				},
 			)
 			if (data.result) {
@@ -194,6 +201,9 @@ async function deleteDatabase() {
 		{
 			method: "DELETE",
 			credentials: "include",
+			query: {
+				[`${database.value.slug}_sid`]: sessionID.value,
+			},
 		},
 	)
 	if (data.result) {

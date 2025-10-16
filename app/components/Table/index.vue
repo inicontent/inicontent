@@ -113,6 +113,10 @@ if (tablesConfig.value[table.value.slug]?.view)
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return
 	Loading.value.data = true
@@ -123,6 +127,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 			query: {
 				where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
 				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},
@@ -132,7 +137,10 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
-			{ credentials: "include" },
+			{
+				credentials: "include",
+				query: { [`${database.value.slug}_sid`]: sessionID.value },
+			},
 		)
 	else
 		await refreshNuxtData(
@@ -151,70 +159,73 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-							),
-					},
-				)
+						NButton,
+						{
+							class: "viewItemButton",
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+								),
+						},
+					)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault()
-							if (!isMobile)
-								openDrawer(table.value?.slug as string, row.id, toRaw(row))
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-								)
+						NButton,
+						{
+							class: "editItemButton",
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault()
+								if (!isMobile)
+									openDrawer(table.value?.slug as string, row.id, toRaw(row))
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+									)
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-				)
+						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+					)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => deleteItem(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () =>
-										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => deleteItem(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										class: "deleteItemButton",
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
 	)
@@ -250,7 +261,10 @@ provide("isSlotSet", isSlotSet)
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
 		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
-		{ credentials: "include" },
+		{
+			credentials: "include",
+			query: { [`${database.value.slug}_sid`]: sessionID.value },
+		},
 	)
 
 defineTranslation({
@@ -296,7 +310,10 @@ async function jobNotification() {
 				const currentJobProgress = (
 					await $fetch<apiResponse<number>>(
 						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
-						{ credentials: "include" },
+						{
+							credentials: "include",
+							query: { [`${database.value.slug}_sid`]: sessionID.value },
+						},
 					)
 				).result
 
@@ -312,7 +329,7 @@ async function jobNotification() {
 									type: "primary",
 									onClick: () => {
 										window.open(
-											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download`,
+											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
 										)
 										notificationRef.value?.destroy()
 										notificationRef.value = undefined
@@ -456,7 +473,11 @@ async function toolsDropdownOnSelect(
 		case "exportAllData": {
 			await $fetch(
 				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
-				{ method: "POST", credentials: "include" },
+				{
+					method: "POST",
+					credentials: "include",
+					query: { [`${database.value.slug}_sid`]: sessionID.value },
+				},
 			)
 			table.value.currentJob = "export"
 			break

@@ -1,3 +1,7 @@
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database")
 	const appConfig = useAppConfig()
@@ -17,7 +21,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
 						? to.params.database || appConfig.database
 						: appConfig.database || to.params.database
 				}`,
-				{ credentials: "include" },
+				{
+					credentials: "include",
+					query: {
+						[`${
+							appConfig.database === "inicontent"
+								? to.params.database || appConfig.database
+								: appConfig.database || to.params.database
+						}_sid`]: sessionID.value,
+					},
+				},
 			)
 		).result
 

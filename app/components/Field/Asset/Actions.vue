@@ -77,10 +77,14 @@ const database = useState<Database>("database")
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function importAsset() {
 	Loading.value.import = true
 	const data = await $fetch<apiResponse<Asset | Asset[]>>(
-		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}`,
+		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
 		{
 			method: "POST",
 			headers: {

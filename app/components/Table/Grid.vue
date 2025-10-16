@@ -97,6 +97,10 @@ function getTableUrl(slug: string) {
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 const createTable = async () => {
 	if (newTableSlug.value) {
 		const bodyContent: string = toRaw(newTableSlug.value)
@@ -108,6 +112,7 @@ const createTable = async () => {
 				method: "POST",
 				params: {
 					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},

@@ -154,7 +154,7 @@ const field = table.value?.schema?.find(({ id }) => id === table.value?.groupBy)
 
 const UNSET_KEY = "__unset__" // internal sentinel
 
-const visibleColumns = ref();
+const visibleColumns = ref()
 
 const route = useRoute()
 const router = useRouter()
@@ -186,7 +186,10 @@ watch(
 			executeFetch()
 		} else {
 			const generatedSearchInput = generateSearchInput(value)
-			if (generatedSearchInput && whereQuery.value !== Inison.stringify(generatedSearchInput)) {
+			if (
+				generatedSearchInput &&
+				whereQuery.value !== Inison.stringify(generatedSearchInput)
+			) {
 				whereQuery.value = Inison.stringify(generatedSearchInput)
 				executeFetch()
 			}
@@ -220,14 +223,14 @@ watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query
 	return v
 		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
 		: router.push({
-			query: Query ?? {},
-		})
+				query: Query ?? {},
+			})
 })
 const isSearchDisabled = computed(
 	() =>
@@ -236,7 +239,7 @@ const isSearchDisabled = computed(
 			Object.keys(localSearchArray.value).length === 1 &&
 			(
 				localSearchArray.value[
-				Object.keys(localSearchArray.value)[0] as "and" | "or"
+					Object.keys(localSearchArray.value)[0] as "and" | "or"
 				]?.[0] as any
 			)[0] === null
 		),
@@ -283,11 +286,17 @@ if (field?.options) {
 	nextTick(() => {
 		if (data.value) {
 			data.value.push(unsetColumn)
-			visibleColumns.value = data.value.filter((c) => c && (c.key !== UNSET_KEY || c.items.length > 0))
+			visibleColumns.value = data.value.filter(
+				(c) => c && (c.key !== UNSET_KEY || c.items.length > 0),
+			)
 		}
 		nextTick(executeFetch)
 	})
 }
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
 
 async function executeFetch() {
 	for await (const column of data.value as columnType[]) {
@@ -299,7 +308,10 @@ async function executeFetch() {
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
-					where: whereQuery.value ? `${columnWhere.slice(0, -1)},${whereQuery.value.slice(1)}` : columnWhere,
+					where: whereQuery.value
+						? `${columnWhere.slice(0, -1)},${whereQuery.value.slice(1)}`
+						: columnWhere,
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},
@@ -343,6 +355,7 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 			params: {
 				return: false,
 				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},

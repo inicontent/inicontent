@@ -206,6 +206,11 @@ function removeTempIds(schema: Schema): Schema {
 		return field
 	})
 }
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {
 		if (!errors) {
@@ -227,13 +232,15 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${appConfig.apiBase}inicontent/databases/${
+					database.value.slug
 				}/${route.params.table}`,
 				{
 					method: "PUT",
 					body: bodyContent,
 					params: {
 						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",
 				},
@@ -271,12 +278,14 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${appConfig.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table}`,
 		{
 			method: "DELETE",
 			params: {
 				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},
@@ -313,22 +322,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-					?.split(/(@\w+)/g)
-					.filter((value: string) => value.trim() != "")
-					.map((label: string) => {
-						if (label.startsWith("@"))
+						?.split(/(@\w+)/g)
+						.filter((value: string) => value.trim() != "")
+						.map((label: string) => {
+							if (label.startsWith("@"))
+								return {
+									label:
+										flattenCopySchema.value.find(
+											({ id }) => String(id) === label.slice(1),
+										)?.key ?? "",
+									value: label,
+								}
 							return {
-								label:
-									flattenCopySchema.value.find(
-										({ id }) => String(id) === label.slice(1),
-									)?.key ?? "",
+								label,
 								value: label,
 							}
-						return {
-							label,
-							value: label,
-						}
-					})
+						})
 				: undefined
 	},
 	{ immediate: true },
@@ -369,7 +378,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isNumber(labelObject.value.slice(1))
+				isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -412,8 +421,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -423,8 +432,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -440,8 +449,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -450,8 +459,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -460,8 +469,8 @@ const generalSettingsSchema = reactive<Schema>([
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -471,8 +480,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},
@@ -482,8 +491,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 5,
 	},

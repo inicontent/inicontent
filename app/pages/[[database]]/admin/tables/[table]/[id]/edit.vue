@@ -23,6 +23,11 @@ const appConfig = useAppConfig()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 const dataObject = ref<Item>({})
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 await useFetch<Item>(
 	`${appConfig.apiBase}${database.value.slug}/${table.value.slug
 	}/${route.params.id}`,
@@ -31,6 +36,7 @@ await useFetch<Item>(
 			options: Inison.stringify({
 				columns: table.value.columns,
 			}),
+			[`${database.value.slug}_sid`]: sessionID.value,
 		},
 		transform: (input) => {
 			dataObject.value = input.result

@@ -191,10 +191,10 @@ function breadCrumbItemLink(index: number) {
 				.slice(
 					0,
 					index +
-						(breadcrumbArray.value[0] &&
+					(breadcrumbArray.value[0] &&
 						["database", "admin"].includes(breadcrumbArray.value[0])
-							? 3
-							: 2),
+						? 3
+						: 2),
 				)
 				.join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
 		)
@@ -260,12 +260,15 @@ const userDropdownOptions = computed(() => [
 	},
 ])
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "edit":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
-					(user.value as User).id
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
 				}/edit`,
 			)
 			break
@@ -279,10 +282,14 @@ async function onSelectUserDropdown(v: string) {
 			break
 		case "logout":
 			await $fetch(
-				`${appConfig.apiBase}${
-					database.value.slug ?? "inicontent"
+				`${appConfig.apiBase}${database.value.slug ?? "inicontent"
 				}/auth/signout`,
-				{ credentials: "include" },
+				{
+					credentials: "include", params: {
+						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
+				},
 			)
 			fromPath.value = undefined
 			user.value = undefined

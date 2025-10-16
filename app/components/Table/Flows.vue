@@ -315,6 +315,10 @@ const tableCopy = ref<any>(toRaw(table.value))
 const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 async function saveFlow() {
 	Loading.value.updateTable = true
 	const bodyContent = toRaw(tableCopy.value)
@@ -336,7 +340,7 @@ async function saveFlow() {
 				onRequest,
 			}))(bodyContent),
 			params: {
-				locale: Language.value,
+				locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},

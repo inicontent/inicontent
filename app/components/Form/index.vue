@@ -59,7 +59,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	const customItemsIndex = existing
 		.map((item, index) =>
 			item.id === undefined ||
-			(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
+				(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
 				? index
 				: -1,
 		)
@@ -113,6 +113,11 @@ const filterDefaultColumns = (field: Field) =>
 	!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
 		field.key,
 	)
+
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
 	const bodyContent = toRaw(modelValue.value)
@@ -123,14 +128,14 @@ async function fetchSchemaAndData() {
 	try {
 		const currentPOSTSchemaResp =
 			POSTSchemasResp.value[
-				props.table ?? table.value?.slug ?? route.params.table
+			props.table ?? table.value?.slug ?? route.params.table
 			]
 
 		if (
 			currentPOSTSchemaResp &&
 			(Object.keys(bodyContent).length === 0 ||
 				JSON.stringify(bodyContent) ===
-					JSON.stringify(currentPOSTSchemaResp?.result.data))
+				JSON.stringify(currentPOSTSchemaResp?.result.data))
 		) {
 			response = currentPOSTSchemaResp as apiResponse<{
 				schema: Schema
@@ -146,6 +151,7 @@ async function fetchSchemaAndData() {
 					body: bodyContent,
 					params: {
 						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",
 				},
@@ -251,8 +257,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -260,6 +265,7 @@ async function UPDATE() {
 					params: {
 						return: false,
 						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",
 				},
@@ -284,13 +290,13 @@ async function DELETE() {
 
 	Loading.value.DELETE = true
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
 			params: {
 				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},
@@ -330,6 +336,7 @@ async function CREATE() {
 					body: bodyContent,
 					params: {
 						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",
 				},

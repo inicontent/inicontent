@@ -129,6 +129,10 @@ onBeforeRouteLeave(() => {
 	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`)
 })
 
+const sessionID = useCookie<string | null>("sessionID", {
+	sameSite: true,
+})
+
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
@@ -142,6 +146,7 @@ const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 				],
 			}),
 			locale: Language.value,
+			[`${database.value.slug}_sid`]: sessionID.value,
 		},
 		immediate: false,
 		onRequest() {
