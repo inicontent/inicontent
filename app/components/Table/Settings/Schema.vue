@@ -307,12 +307,12 @@ const expandedChildNames = ref<(string | number)[]>()
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return
 	if (!schema.value[index].children) schema.value[index].children = [] as Schema
-		; (schema.value[index].children as Schema).push({
-			id: `temp-${randomID()}`,
-			key: null,
-			required: false,
-			...handleSelectedSchemaType(type),
-		} as any)
+	;(schema.value[index].children as Schema).push({
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	} as any)
 
 	if (!schema.value[index].id) return
 
@@ -395,7 +395,7 @@ function selectRenderLabelWithIcon(
 	])
 }
 
-const valuesTypeSelectOptions = flatFieldsList
+const valuesTypeSelectOptions = flatFieldsList()
 	?.filter(({ key }) =>
 		["string", "number", "password", "email", "url"].includes(key),
 	)
@@ -459,7 +459,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[0].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[0] = v
+						;(schemaItem.options[index] as [string | number, string])[0] = v
 					},
 				})
 			},
@@ -474,7 +474,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[1].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[1] = v
+						;(schemaItem.options[index] as [string | number, string])[1] = v
 					},
 				})
 			},
@@ -496,7 +496,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 								schemaItem.options = [["", ""]]
 								return
 							}
-							; (schemaItem.options as [string | number, string][]).splice(
+							;(schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
 							)

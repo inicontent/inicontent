@@ -1,51 +1,5 @@
 <template>
 	<div>
-		<ClientOnly>
-			<Teleport to="#navbarExtraButtons">
-				<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
-					placement="bottom-end" trigger="click" scrollable>
-					<template #trigger>
-						<NTooltip :delay="1500">
-							<template #trigger>
-								<NButton round>
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:search" />
-										</NIcon>
-									</template>
-								</NButton>
-							</template>
-							{{ t("search") }}
-						</NTooltip>
-					</template>
-					<template #footer>
-						<NFlex justify="end">
-							<NButtonGroup>
-								<NButton round type="error" secondary :loading="visibleColumns?.[0]?.loading"
-									:disabled="isSearchDisabled" @click="searchArray = undefined">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:x" />
-										</NIcon>
-									</template>
-									{{ t("reset") }}
-								</NButton>
-								<NButton round type="primary" secondary :loading="visibleColumns?.[0]?.loading"
-									:disabled="isSearchDisabled" @click="executeSearch">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:search" />
-										</NIcon>
-									</template>
-									{{ t("search") }}
-								</NButton>
-							</NButtonGroup>
-						</NFlex>
-					</template>
-					<LazyTableSearch v-model="localSearchArray" :callback="executeSearch" />
-				</NPopover>
-			</Teleport>
-		</ClientOnly>
 		<div class="kanban-scroll">
 			<div class="kanban-columns">
 				<NCard v-for="(column, index) in visibleColumns" :key="index" hoverable class="kanban-column">
@@ -73,8 +27,8 @@
 					</NTag>
 					<NScrollbar style="max-height: 350px;">
 						<Draggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }"
-							item-key="id" ghost-class="ghost" :sort="false" @move="({ to, from }) => from !== to"
-							@change="e => onItemDrop(e, column)">
+							item-key="id" ghost-class="ghost" :sort="false" @move="({ to, from }: any) => from !== to"
+							@change="(e: any) => onItemDrop(e, column)">
 							<template #item="{ element, index }">
 								<NCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
 									<component v-if="props.slots.itemActions" :is="props.slots.itemActions(element)" />
@@ -140,7 +94,8 @@ type columnType = {
 	loading?: boolean
 }
 
-const data = defineModel<columnType[]>("data")
+// const dataModel = defineModel<apiResponse<Item[]>>("data")
+const data = ref<columnType[]>()
 const searchArray = defineModel<searchType>("searchArray")
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
@@ -159,91 +114,13 @@ const visibleColumns = ref()
 const route = useRoute()
 const router = useRouter()
 
-const whereQuery = ref<string | undefined>(
-	route.query.search as string | undefined,
-)
+// Inject search-related state from parent
+const whereQuery = inject<Ref<string | undefined>>("whereQuery")
+const localSearchArray = inject<Ref<searchType | undefined>>("localSearchArray")
+const executeSearch = inject<() => void>("executeSearch")
+const isSearchDisabled = inject<ComputedRef<boolean>>("isSearchDisabled")
+const generateSearchInput = inject<(search: any) => Record<string, any> | undefined>("generateSearchInput")
 
-const localSearchArray = ref<searchType | undefined>(
-	JSON.parse(JSON.stringify(searchArray.value ?? { and: [[null, "=", null]] })),
-)
-function executeSearch() {
-	searchArray.value = JSON.parse(JSON.stringify(localSearchArray.value))
-}
-watch(
-	localSearchArray,
-	(value) => {
-		if (!value || !Object.keys(value).length)
-			localSearchArray.value = { and: [[null, "=", null]] }
-	},
-	{ deep: true },
-)
-watch(
-	searchArray,
-	(value) => {
-		localSearchArray.value = JSON.parse(JSON.stringify(value))
-		if (!value) {
-			whereQuery.value = undefined
-			executeFetch()
-		} else {
-			const generatedSearchInput = generateSearchInput(value)
-			if (
-				generatedSearchInput &&
-				whereQuery.value !== Inison.stringify(generatedSearchInput)
-			) {
-				whereQuery.value = Inison.stringify(generatedSearchInput)
-				executeFetch()
-			}
-		}
-	},
-	{ deep: true },
-)
-
-function generateSearchInput(searchArray: any) {
-	const RETURN: Record<string, any> = {}
-	for (const condition in searchArray) {
-		for (const item of searchArray[condition]) {
-			if (!RETURN[condition]) RETURN[condition] = {}
-			if (Array.isArray(item) && item[0])
-				RETURN[condition][item[0]] =
-					`${item[1] === "=" ? "" : item[1]}${item[2]}`
-			// else RETURN[condition] = generateSearchInput(item)
-		}
-	}
-	// Helper to check if an object is empty or all its values are empty objects (recursively)
-	function isDeepEmpty(obj: any): boolean {
-		if (typeof obj !== "object" || obj === null) return false
-		const keys = Object.keys(obj)
-		if (keys.length === 0) return true
-		return keys.every((k) => isDeepEmpty(obj[k]))
-	}
-	return !isDeepEmpty(RETURN) ? RETURN : undefined
-}
-
-watch(whereQuery, (v) => {
-	const { search, page, ...Query }: any = route.query
-	return v
-		? router.push({
-				query: {
-					...(Query ?? {}),
-					search: v,
-				},
-			})
-		: router.push({
-				query: Query ?? {},
-			})
-})
-const isSearchDisabled = computed(
-	() =>
-		!!(
-			localSearchArray.value &&
-			Object.keys(localSearchArray.value).length === 1 &&
-			(
-				localSearchArray.value[
-					Object.keys(localSearchArray.value)[0] as "and" | "or"
-				]?.[0] as any
-			)[0] === null
-		),
-)
 if (field?.options) {
 	if (isArrayOfArrays(field.options))
 		data.value = (field.options as [string | number, string][]).map(
@@ -298,6 +175,15 @@ const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 })
 
+// Watch searchArray changes and refetch data for Kanban view
+watch(
+	searchArray,
+	(value) => {
+		if (data.value) executeFetch()
+	},
+	{ deep: true },
+)
+
 async function executeFetch() {
 	for await (const column of data.value as columnType[]) {
 		column.loading = true
@@ -308,7 +194,7 @@ async function executeFetch() {
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
-					where: whereQuery.value
+					where: whereQuery?.value
 						? `${columnWhere.slice(0, -1)},${whereQuery.value.slice(1)}`
 						: columnWhere,
 					[`${database.value.slug}_sid`]: sessionID.value,
@@ -368,7 +254,7 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 		/* put card back visually */
 		const origin = data.value.find((c) => c.key === fromKey)
 		if (origin)
-			origin.items.push(targetColumn.items.splice(evt.added.newIndex, 1)[0])
+			origin.items.push(targetColumn.items.splice(evt.added.newIndex, 1)[0] as Item)
 
 		window.$message.error(_data.message)
 	}

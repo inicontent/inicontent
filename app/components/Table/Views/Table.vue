@@ -1,51 +1,5 @@
 <template>
 	<div>
-		<ClientOnly>
-			<Teleport to="#navbarExtraButtons">
-				<NPopover :disabled="!whereQuery && (!data?.result || !table?.schema)" style="max-height: 240px;"
-					:style="`width: ${isMobile ? '350px' : '500px'}`" placement="bottom-end" trigger="click" scrollable>
-					<template #trigger>
-						<NTooltip :delay="1500">
-							<template #trigger>
-								<NButton round :disabled="!whereQuery && (!data?.result || !table?.schema)">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:search" />
-										</NIcon>
-									</template>
-								</NButton>
-							</template>
-							{{ t("search") }}
-						</NTooltip>
-					</template>
-					<template #footer>
-						<NFlex justify="end">
-							<NButtonGroup>
-								<NButton round type="error" secondary :loading="Loading.data"
-									:disabled="isSearchDisabled" @click="searchArray = undefined">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:x" />
-										</NIcon>
-									</template>
-									{{ t("reset") }}
-								</NButton>
-								<NButton round type="primary" secondary :loading="Loading.data"
-									:disabled="isSearchDisabled" @click="executeSearch">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:search" />
-										</NIcon>
-									</template>
-									{{ t("search") }}
-								</NButton>
-							</NButtonGroup>
-						</NFlex>
-					</template>
-					<LazyTableSearch v-model="localSearchArray" :callback="executeSearch" />
-				</NPopover>
-			</Teleport>
-		</ClientOnly>
 		<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
 			:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
 			:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
@@ -104,16 +58,18 @@ const deleteItem = inject("deleteItem") as (
 
 const isSlotSet = inject("isSlotSet") as (slotName: string) => boolean
 
+// Inject search-related state from parent
+const whereQuery = inject<Ref<string | undefined>>("whereQuery")
+const localSearchArray = inject<Ref<searchType | undefined>>("localSearchArray")
+const executeSearch = inject<() => void>("executeSearch")
+const isSearchDisabled = inject<ComputedRef<boolean>>("isSearchDisabled")
+
 function isSlotEmpty(slotName: string): boolean {
 	// Check if all nodes are comments or have undefined children
 	return ((props.slots[slotName] as any)({}) as VNode[])?.every(
 		(vnode) => vnode.type === Comment || vnode.children === undefined,
 	)
 }
-
-const whereQuery = ref<string | undefined>(
-	route.query.search as string | undefined,
-)
 
 // Add a small deepClone helper
 function deepClone<T>(v: T): T | undefined {
@@ -129,94 +85,16 @@ function deepClone<T>(v: T): T | undefined {
 	return JSON.parse(JSON.stringify(v)) as T
 }
 
-// localSearchArray should start as a deep clone so mutations don't affect searchArray
-const localSearchArray = ref<searchType | undefined>(
-	deepClone(searchArray.value) ?? { and: [[null, "=", null]] },
-)
-
-function executeSearch() {
-	// Ensure we set a deep clone to avoid sharing nested references
-	searchArray.value = deepClone(localSearchArray.value)
-}
-
-watch(
-	localSearchArray,
-	(value) => {
-		if (!value || !Object.keys(value).length)
-			localSearchArray.value = { and: [[null, "=", null]] }
-	},
-	{ deep: true },
-)
-
-// When external model changes, clone into localSearchArray to avoid linking refs
+// Watch searchArray changes and reset pagination for Table view
 watch(
 	searchArray,
 	(value) => {
-		localSearchArray.value = deepClone(value) ?? { and: [[null, "=", null]] }
-		if (!value) {
-			if (whereQuery.value) {
-				whereQuery.value = undefined
-				pagination.onUpdatePage(1)
-			}
-		} else {
-			const generatedSearchInput = generateSearchInput(value)
-			if (
-				generatedSearchInput &&
-				whereQuery.value !== Inison.stringify(generatedSearchInput)
-			) {
-				whereQuery.value = Inison.stringify(generatedSearchInput)
-				pagination.onUpdatePage(1)
-			}
+		if (!value || value === undefined) {
+			// Reset to page 1 when search is cleared
+			pagination.onUpdatePage(1)
 		}
 	},
 	{ deep: true },
-)
-
-function generateSearchInput(searchArray: any) {
-	const RETURN: Record<string, any> = {}
-	for (const condition in searchArray) {
-		for (const item of searchArray[condition]) {
-			if (!RETURN[condition]) RETURN[condition] = {}
-			if (Array.isArray(item) && item[0])
-				RETURN[condition][item[0]] =
-					`${item[1] === "=" ? "" : item[1]}${item[2]}`
-			// else RETURN[condition] = generateSearchInput(item)
-		}
-	}
-	// Helper to check if an object is empty or all its values are empty objects (recursively)
-	function isDeepEmpty(obj: any): boolean {
-		if (typeof obj !== "object" || obj === null) return false
-		const keys = Object.keys(obj)
-		if (keys.length === 0) return true
-		return keys.every((k) => isDeepEmpty(obj[k]))
-	}
-	return !isDeepEmpty(RETURN) ? RETURN : undefined
-}
-
-watch(whereQuery, (v) => {
-	const { search, page, ...Query }: any = route.query
-	return v
-		? router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
-		: router.push({
-			query: Query ?? {},
-		})
-})
-const isSearchDisabled = computed(
-	() =>
-		!!(
-			localSearchArray.value &&
-			Object.keys(localSearchArray.value).length === 1 &&
-			(
-				localSearchArray.value[
-				Object.keys(localSearchArray.value)[0] as "and" | "or"
-				]?.[0] as any
-			)[0] === null
-		),
 )
 
 const pagination = reactive({
@@ -498,10 +376,25 @@ function handleSorterChange({
 }
 
 const checkedRowKeys = ref<string[]>([])
-
-const tablesConfig = useCookie<TablesCookie>("tablesConfig", {
-	default: () => ({}),
-	sameSite: true,
+const user = useState<User>("user")
+const tablesConfig = computed({
+	get: () => user.value?.config?.tables ?? {},
+	set: (v) => {
+		user.value.config = { ...(user.value.config ?? {}), tables: v }
+		$fetch(
+			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			{
+				method: "PUT",
+				body: user.value,
+				params: {
+					return: false,
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+			},
+		).catch((err) => window.$message.error(err.message))
+	},
 })
 
 function handleScroll() {
@@ -608,18 +501,25 @@ async function setColumns() {
 														table.value?.slug as string
 													].columns = tablesConfig.value[
 														table.value?.slug as string
-													]?.columns?.filter((itemID) => itemID !== id)
-												else {
-													if (
-														!tablesConfig?.value[table.value?.slug as string]
+													]?.columns?.filter(
+														(itemID: number) => itemID !== id,
 													)
-														tablesConfig.value[table.value?.slug as string] =
+												else {
+													const clonedTablesConfig = structuredClone(
+														toRaw(tablesConfig.value),
+													)
+													if (
+														!clonedTablesConfig[table.value?.slug as string]
+													)
+														clonedTablesConfig[table.value?.slug as string] =
 															{ columns: [] }
 
 													// @ts-ignore
-													tablesConfig.value[
+													clonedTablesConfig[
 														table.value?.slug as string
 													].columns?.push(id as number)
+
+													tablesConfig.value = clonedTablesConfig
 												}
 											},
 										},

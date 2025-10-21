@@ -231,14 +231,14 @@ const defaultField: fieldListOptionType = {
 	icon: renderIcon("question-mark"),
 }
 
-export const flatFieldsList = fieldsList().flatMap(
-	(field) => field.children || field,
-)
+export function flatFieldsList() {
+	return fieldsList().flatMap((field) => field.children || field)
+}
 
 export function getField(field: Field) {
 	if (field.table === "assets")
 		return (
-			flatFieldsList.find(
+			flatFieldsList().find(
 				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
 			) ?? defaultField
 		)
@@ -248,7 +248,7 @@ export function getField(field: Field) {
 			["table", "object"].includes(field.children as string)
 		)
 			return (
-				flatFieldsList.find(
+				flatFieldsList().find(
 					({ key }) => key === [field.type, field.children].join("-"),
 				) ?? defaultField
 			)
@@ -256,5 +256,5 @@ export function getField(field: Field) {
 	let fieldType = field.subType ?? field.type
 	if (Array.isArray(fieldType)) fieldType = "multiple"
 	if (!fieldType) return defaultField
-	return flatFieldsList.find(({ key }) => key === fieldType) ?? defaultField
+	return flatFieldsList().find(({ key }) => key === fieldType) ?? defaultField
 }

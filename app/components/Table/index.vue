@@ -48,6 +48,104 @@
 									{{ t("newItem") }}
 								</NTooltip>
 							</NDropdown>
+							<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
+								placement="bottom-end" trigger="click" scrollable>
+								<template #trigger>
+									<NTooltip :delay="1500">
+										<template #trigger>
+											<NButton round>
+												<template #icon>
+													<NIcon>
+														<Icon name="tabler:search" />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										{{ t("search") }}
+									</NTooltip>
+								</template>
+								<template #footer>
+									<NFlex justify="space-between">
+										<NTooltip :delay="500" placement="bottom">
+											<template #trigger>
+												<NPopover trigger="click" scrollable style="max-height: 300px;">
+													<template #trigger>
+														<NButton round type="success" size="small" secondary>
+															<template #icon>
+																<NIcon>
+																	<Icon name="tabler:bookmark" />
+																</NIcon>
+															</template>
+														</NButton>
+													</template>
+													<template #footer>
+														<NInputGroup style="width: 100%;">
+															<NInput v-model:value="newFilterName"
+																:placeholder="t('filterName')" size="small" round
+																@keyup.enter="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }" />
+															<NButton round type="success" secondary size="small"
+																:loading="false" :disabled="!newFilterName.trim()"
+																@click="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }">
+																<template #icon>
+																	<NIcon>
+																		<Icon name="tabler:plus" />
+																	</NIcon>
+																</template>
+															</NButton>
+														</NInputGroup>
+													</template>
+													<NEmpty v-if="favoriteFilters.length === 0" size="small"
+														:description="t('noFavoriteFilters')" />
+													<NFlex v-else vertical size="small" style="padding: 0 8px;">
+														<NFlex justify="space-between" v-for="filter in favoriteFilters"
+															:key="filter.id" block quaternary
+															@click="loadFavoriteFilter(filter)"
+															style="cursor: pointer;">
+															<template #default>
+																<NFlex justify="space-between" style="width: 100%;">
+																	<span>{{ filter.name }}</span>
+																	<NButton circle size="tiny" type="error" text
+																		@click.stop="deleteFavoriteFilter(filter.id)">
+																		<template #icon>
+																			<NIcon>
+																				<Icon name="tabler:trash" />
+																			</NIcon>
+																		</template>
+																	</NButton>
+																</NFlex>
+															</template>
+														</NFlex>
+													</NFlex>
+												</NPopover>
+											</template>
+											{{ t("favoriteFilters") }}
+										</NTooltip>
+
+										<NButtonGroup>
+											<NButton round type="error" secondary size="small" :loading="Loading.data"
+												:disabled="isSearchDisabled"
+												@click="searchArray = { and: [[null, '=', null]] }">
+												<template #icon>
+													<NIcon>
+														<Icon name="tabler:x" />
+													</NIcon>
+												</template>
+												{{ t("reset") }}
+											</NButton>
+											<NButton round type="primary" secondary size="small" :loading="Loading.data"
+												:disabled="isSearchDisabled" @click="executeSearch">
+												<template #icon>
+													<NIcon>
+														<Icon name="tabler:search" />
+													</NIcon>
+												</template>
+												{{ t("search") }}
+											</NButton>
+										</NButtonGroup>
+									</NFlex>
+								</template>
+								<LazyTableSearch v-model="localSearchArray" :callback="executeSearch" />
+							</NPopover>
 							<slot name="navbarExtraButtons"></slot>
 						</NButtonGroup>
 						<slot name="navbarExtraActions"></slot>
@@ -86,15 +184,138 @@ import {
 	NPopconfirm,
 	NProgress,
 	NTime,
+	NPopover,
+	NTooltip,
+	NFlex,
+	LazyTableSearch,
+	NDivider,
+	NScrollbar,
+	NEmpty,
+	NSpace,
+	NInput,
 } from "#components"
 
 const user = useState<User>("user")
 const route = useRoute()
+const router = useRouter()
 const searchArray = ref<searchType>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
 		: { and: [[null, "=", null]] },
 )
+
+// Search-related state
+const whereQuery = ref<string | undefined>(
+	route.query.search as string | undefined,
+)
+
+// Add a small deepClone helper
+function deepClone<T>(v: T): T | undefined {
+	if (v === undefined) return undefined
+	try {
+		// Use structuredClone if available (preserves more types)
+		if (typeof (globalThis as any).structuredClone === "function")
+			return (globalThis as any).structuredClone(v)
+	} catch (e) {
+		// ignore and fallback
+	}
+	// Fallback
+	return JSON.parse(JSON.stringify(v)) as T
+}
+
+// localSearchArray should start as a deep clone so mutations don't affect searchArray
+const localSearchArray = ref<searchType | undefined>(
+	deepClone(searchArray.value) ?? { and: [[null, "=", null]] },
+)
+
+function executeSearch() {
+	// Ensure we set a deep clone to avoid sharing nested references
+	const cloned = deepClone(localSearchArray.value)
+	if (cloned !== undefined) {
+		searchArray.value = cloned
+	}
+}
+
+function generateSearchInput(searchArray: any) {
+	const RETURN: Record<string, any> = {}
+	for (const condition in searchArray) {
+		for (const item of searchArray[condition]) {
+			if (!RETURN[condition]) RETURN[condition] = {}
+			if (Array.isArray(item) && item[0])
+				RETURN[condition][item[0]] =
+					`${item[1] === "=" ? "" : item[1]}${item[2]}`
+		}
+	}
+	// Helper to check if an object is empty or all its values are empty objects (recursively)
+	function isDeepEmpty(obj: any): boolean {
+		if (typeof obj !== "object" || obj === null) return false
+		const keys = Object.keys(obj)
+		if (keys.length === 0) return true
+		return keys.every((k) => isDeepEmpty(obj[k]))
+	}
+	return !isDeepEmpty(RETURN) ? RETURN : undefined
+}
+
+const isSearchDisabled = computed(
+	() =>
+		!!(
+			localSearchArray.value &&
+			Object.keys(localSearchArray.value).length === 1 &&
+			(
+				localSearchArray.value[
+					Object.keys(localSearchArray.value)[0] as "and" | "or"
+				]?.[0] as any
+			)[0] === null
+		),
+)
+
+watch(
+	localSearchArray,
+	(value) => {
+		if (!value || !Object.keys(value).length)
+			localSearchArray.value = { and: [[null, "=", null]] }
+	},
+	{ deep: true },
+)
+
+watch(
+	searchArray,
+	(value) => {
+		localSearchArray.value = deepClone(value) ?? { and: [[null, "=", null]] }
+		if (!value) {
+			if (whereQuery.value) {
+				whereQuery.value = undefined
+			}
+		} else {
+			const generatedSearchInput = generateSearchInput(value)
+			if (
+				generatedSearchInput &&
+				whereQuery.value !== Inison.stringify(generatedSearchInput)
+			) {
+				whereQuery.value = Inison.stringify(generatedSearchInput)
+			}
+		}
+	},
+	{ deep: true },
+)
+
+watch(whereQuery, (v) => {
+	const { search, page, ...Query }: any = route.query
+	return v
+		? router.push({
+				query: {
+					...(Query ?? {}),
+					search: v,
+				},
+			})
+		: router.push({
+				query: Query ?? {},
+			})
+})
+
+// UI states for favorite filters
+const showSaveFilterDialog = ref(false)
+const newFilterName = ref("")
 
 const columns = ref<DataTableColumns>()
 const data = ref<apiResponse<Item[]>>()
@@ -102,9 +323,50 @@ const data = ref<apiResponse<Item[]>>()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 
-const tablesConfig = useCookie<TablesCookie>("tablesConfig", {
-	default: () => ({}),
-	sameSite: true,
+const tablesConfig = computed({
+	get: () => user.value?.config?.tables ?? {},
+	set: (v) => {
+		user.value.config = { ...(user.value.config ?? {}), tables: v }
+		$fetch(
+			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			{
+				method: "PUT",
+				body: user.value,
+				params: {
+					return: false,
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+			},
+		).catch((err) => window.$message.error(err.message))
+	},
+})
+
+// Favorite filters management
+const favoriteFilters = computed({
+	get: () => {
+		const filters = user.value?.config?.filters ?? {}
+		return filters[table.value?.slug] ?? []
+	},
+	set: (v) => {
+		const allFilters = { ...(user.value?.config?.filters ?? {}) }
+		allFilters[table.value?.slug] = v
+		user.value.config = { ...(user.value.config ?? {}), filters: allFilters }
+		$fetch(
+			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			{
+				method: "PUT",
+				body: user.value,
+				params: {
+					return: false,
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+			},
+		).catch((err) => window.$message.error(err.message))
+	},
 })
 
 if (tablesConfig.value[table.value.slug]?.view)
@@ -152,6 +414,52 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 		)
 }
 provide("deleteItem", deleteItem)
+
+provide("whereQuery", whereQuery)
+provide("localSearchArray", localSearchArray)
+provide("executeSearch", executeSearch)
+provide("isSearchDisabled", isSearchDisabled)
+provide("generateSearchInput", generateSearchInput)
+
+// Favorite filters functions
+async function saveFavoriteFilter(filterName: string) {
+	if (!filterName.trim()) {
+		window.$message.error(t("filterNameCannotBeEmpty"))
+		return
+	}
+
+	// Check if filter name already exists
+	if (favoriteFilters.value.some((f: any) => f.name === filterName)) {
+		window.$message.error(t("filterNameAlreadyExists"))
+		return
+	}
+
+	const newFilter = {
+		id: Date.now().toString(),
+		name: filterName,
+		searchArray: deepClone(searchArray.value),
+		createdAt: new Date().toISOString(),
+	}
+
+	const updatedFilters = [...favoriteFilters.value, newFilter]
+	favoriteFilters.value = updatedFilters
+	window.$message.success(t("filterSavedSuccessfully"))
+}
+
+function loadFavoriteFilter(filter: any) {
+	searchArray.value = deepClone(filter.searchArray) ?? {
+		and: [[null, "=", null]],
+	}
+	window.$message.success(`${t("filterLoaded")}: ${filter.name}`)
+}
+
+function deleteFavoriteFilter(filterId: string) {
+	const updatedFilters = favoriteFilters.value.filter(
+		(f: any) => f.id !== filterId,
+	)
+	favoriteFilters.value = updatedFilters
+	window.$message.success(t("filterDeletedSuccessfully"))
+}
 
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
@@ -285,6 +593,18 @@ defineTranslation({
 		small: "صغير",
 		medium: "متوسط",
 		large: "كبير",
+		favoriteFilters: "المرشحات المفضلة",
+		saveCurrentFilter: "حفظ المرشح الحالي",
+		filterName: "اسم المرشح",
+		filterNameCannotBeEmpty: "اسم المرشح لا يمكن أن يكون فارغاً",
+		filterNameAlreadyExists: "اسم المرشح موجود بالفعل",
+		filterSavedSuccessfully: "تم حفظ المرشح بنجاح",
+		filterLoaded: "تم تحميل المرشح",
+		filterDeletedSuccessfully: "تم حذف المرشح بنجاح",
+		save: "حفظ",
+		cancel: "إلغاء",
+		delete: "حذف",
+		noFavoriteFilters: "لا توجد مرشحات مفضلة محفوظة",
 	},
 })
 
@@ -494,21 +814,23 @@ async function toolsDropdownOnSelect(
 		case "tableSizeL":
 		case "viewTable":
 		case "viewKanban": {
+			const clonedTablesConfig = structuredClone(toRaw(tablesConfig.value))
 			const displayAs = value === "viewKanban" ? "kanban" : undefined
-			if (!tablesConfig.value[table.value.slug])
-				tablesConfig.value[table.value.slug] = {}
+			if (!clonedTablesConfig[table.value.slug])
+				clonedTablesConfig[table.value.slug] = {}
 			// @ts-ignore
-			tablesConfig.value[table.value.slug].view = displayAs
+			clonedTablesConfig[table.value.slug].view = displayAs
 
 			if (value.startsWith("tableSize"))
 				// @ts-ignore
-				tablesConfig.value[table.value.slug].size = value.endsWith("S")
+				clonedTablesConfig[table.value.slug].size = value.endsWith("S")
 					? "small"
 					: value.endsWith("L")
 						? "large"
 						: undefined
 			else data.value = undefined
 			table.value.displayAs = displayAs
+			tablesConfig.value = clonedTablesConfig
 			break
 		}
 	}
