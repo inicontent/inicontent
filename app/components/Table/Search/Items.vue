@@ -8,18 +8,17 @@
 						table.schema, formatedItems?.toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
 					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
 				<template v-if="item[3]">
-					<NSelect size="small" :consistent-menu-width="false" tag filterable :value="item[1]"
-						@update:value="(v) => item[1] = v" :options="getAvailableComparisonOperator(item[3])"
-						style="width:33.33%" />
-					<Field :model-value="item[2]" @update:modelValue="(v) => {
-						if (v !== undefined) {
-							if (isObject(v) && Object.hasOwn(v, 'id'))
-								v = v.id
-							else if (isArrayOfObjects(v) && v.every(_v => Object.hasOwn(_v, 'id')))
-								v = v.map(({ id }) => id);
-							item[2] = Array.isArray(v) ? v.join(',') : v;
-						} else item[2] = undefined
-					}" :field="getFieldFromItem(item)" />
+					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
+						@update:value="(v) => updateOperator(item, v)"
+						:options="getAvailableComparisonOperator(item[3])" style="width:33.33%" />
+					<template v-if="isRelativeOperator(item[1])">
+						<NAutoComplete size="small" style="width:33.33%" :value="item[2] ?? ''"
+							:placeholder="t('relativePlaceholder')" :options="getRelativeAutocompleteOptions(item[2])"
+							:fallback-option="createRelativeFallback"
+							@update:value="(v) => updateRelativeValue(item, v)" @keydown.enter.prevent="callback()" />
+					</template>
+					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
+						:field="getFieldFromItem(item)" />
 				</template>
 				<NButton :disabled="formatedItems?.length === 1" @click="modelValue?.splice(index, 1)" circle
 					size="small">
@@ -43,11 +42,49 @@ import {
 } from "inibase/utils"
 import { Icon } from "#components"
 
+defineTranslation({
+	en: {
+		relativeGroup: "Relative",
+		relativePlaceholder: "e.g. 3 days ago",
+	},
+	ar: {
+		relativeGroup: "نسبي",
+		relativePlaceholder: "مثال: قبل 3 أيام",
+	},
+})
+
 const { callback } = defineProps<{ callback: CallableFunction }>()
 
 const modelValue = defineModel<searchTypeValue>({
 	default: [[null, "=", null]],
 })
+
+type OperatorOption = {
+	label?: string
+	value?: string
+	children?: OperatorOption[]
+	type?: string
+	key?: string
+}
+
+const relativeBaseSuggestionValues = [
+	"current",
+	"now",
+	"today",
+	"yesterday",
+	"tomorrow",
+	"this week",
+	"last week",
+	"last month",
+	"last year",
+]
+
+const relativeBaseAutocompleteOptions = relativeBaseSuggestionValues.map(
+	(value) => ({
+		label: value,
+		value,
+	}),
+)
 
 const formatedItems = computed(() =>
 	modelValue.value?.map((item) => {
@@ -78,11 +115,13 @@ function getFieldFromItem(item: searchTypeValueItem) {
 		},
 	}
 }
-function getAvailableComparisonOperator(field: Field): {
-	label: string
-	value: string
-}[] {
-	return comparisonOperatorOptions().filter(({ value }) => {
+
+function getAvailableComparisonOperator(field: Field) {
+	const baseOptions = comparisonOperatorOptions() as OperatorOption[]
+	const selectableOptions = baseOptions.filter((option) => {
+		const optionValue = option.value
+		if (!optionValue) return false
+
 		if (Array.isArray(field.type))
 			return [
 				"=",
@@ -95,16 +134,113 @@ function getAvailableComparisonOperator(field: Field): {
 				...(field.type.some((type: string) => ["number", "date"].includes(type))
 					? [">", ">=", "<", "<="]
 					: []),
-			].includes(value)
+			].includes(optionValue)
 
 		if (checkFieldType(field.type, ["number", "date"]))
-			return ["=", "!=", ">", ">=", "<", "<="].includes(value)
+			return ["=", "!=", ">", ">=", "<", "<="].includes(optionValue)
 		if (
 			checkFieldType(field.type, "array") ||
 			checkFieldType(field.type, "table")
 		)
-			return ![">", ">=", "<", "<="].includes(value)
-		return ![">", ">=", "<", "<=", "[]", "![]"].includes(value)
+			return ![">", ">=", "<", "<="].includes(optionValue)
+		return ![">", ">=", "<", "<=", "[]", "![]"].includes(optionValue)
 	})
+
+	if (checkFieldType(field.type, "date")) {
+		const relativeCandidates = selectableOptions.filter(
+			(option) =>
+				option.value &&
+				["=", "!=", ">", ">=", "<", "<="].includes(option.value),
+		)
+		if (relativeCandidates.length)
+			return [
+				{
+					value: "relative",
+					label: t("relativeGroup"),
+					children: relativeCandidates.map((option) => ({
+						label: option.label ?? option.value ?? "",
+						value: `r${option.value as string}`,
+					})),
+				},
+				...selectableOptions,
+			]
+	}
+
+	return selectableOptions
+}
+
+function updateOperator(item: searchTypeValueItem, value: string | null) {
+	if (value === null) {
+		item[1] = "="
+		item[2] = undefined
+		return
+	}
+	if (item[1] !== value) item[2] = undefined
+	item[1] = value
+}
+
+function isRelativeOperator(value: string | undefined) {
+	return typeof value === "string" && value.startsWith("r")
+}
+
+function getRelativeAutocompleteOptions(value: unknown) {
+	const input = typeof value === "string" ? value.trim() : ""
+	const numericPattern = /^[+-]?\d+$/
+	if (numericPattern.test(input)) {
+		const parsed = Number.parseInt(input, 10)
+		if (!Number.isFinite(parsed)) return relativeBaseAutocompleteOptions
+		const absolute = Math.abs(parsed)
+		if (absolute === 0) return relativeBaseAutocompleteOptions
+		const units = [
+			{ singular: "day", plural: "days" },
+			{ singular: "week", plural: "weeks" },
+			{ singular: "month", plural: "months" },
+			{ singular: "year", plural: "years" },
+		]
+		const numberText = absolute.toString()
+		const seen = new Set<string>()
+		const options: { label: string; value: string }[] = []
+		const addOption = (label: string) => {
+			const normalized = label.trim()
+			if (!normalized) return
+			const key = normalized.toLowerCase()
+			if (seen.has(key)) return
+			seen.add(key)
+			options.push({ label: normalized, value: normalized })
+		}
+		for (const { singular, plural } of units) {
+			const unitText = absolute === 1 ? singular : plural
+			const baseLabel = `${numberText} ${unitText}`
+			addOption(`${baseLabel} ago`)
+			addOption(`in ${baseLabel}`)
+		}
+		return options
+	}
+	return relativeBaseAutocompleteOptions
+}
+
+function createRelativeFallback(value: string) {
+	return { label: value, value }
+}
+
+function updateRelativeValue(
+	item: searchTypeValueItem,
+	value: string | null,
+) {
+	const sanitized = value?.trim()
+	item[2] = sanitized ? sanitized : undefined
+}
+
+function updateFieldValue(item: searchTypeValueItem, value: any) {
+	if (value !== undefined) {
+		if (isObject(value) && Object.hasOwn(value, "id"))
+			value = value.id
+		else if (
+			isArrayOfObjects(value) &&
+			value.every((_v: any) => Object.hasOwn(_v, "id"))
+		)
+			value = value.map((_value: any) => _value.id)
+		item[2] = Array.isArray(value) ? value.join(",") : value
+	} else item[2] = undefined
 }
 </script>

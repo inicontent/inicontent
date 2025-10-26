@@ -111,15 +111,15 @@ const UNSET_KEY = "__unset__" // internal sentinel
 
 const visibleColumns = ref()
 
-const route = useRoute()
-const router = useRouter()
-
 // Inject search-related state from parent
 const whereQuery = inject<Ref<string | undefined>>("whereQuery")
-const localSearchArray = inject<Ref<searchType | undefined>>("localSearchArray")
-const executeSearch = inject<() => void>("executeSearch")
-const isSearchDisabled = inject<ComputedRef<boolean>>("isSearchDisabled")
-const generateSearchInput = inject<(search: any) => Record<string, any> | undefined>("generateSearchInput")
+const whereQueryFetch = inject<ComputedRef<string | undefined>>(
+	"whereQueryFetch",
+)
+
+const effectiveWhereQuery = computed(
+	() => whereQueryFetch?.value ?? whereQuery?.value,
+)
 
 if (field?.options) {
 	if (isArrayOfArrays(field.options))
@@ -194,8 +194,8 @@ async function executeFetch() {
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
-					where: whereQuery?.value
-						? `${columnWhere.slice(0, -1)},${whereQuery.value.slice(1)}`
+					where: effectiveWhereQuery.value
+						? `${columnWhere.slice(0, -1)},${effectiveWhereQuery.value.slice(1)}`
 						: columnWhere,
 					[`${database.value.slug}_sid`]: sessionID.value,
 				},

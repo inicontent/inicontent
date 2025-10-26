@@ -49,7 +49,7 @@
 								</NTooltip>
 							</NDropdown>
 							<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
-								placement="bottom-end" trigger="click" scrollable>
+								placement="bottom-end" trigger="click" scrollable v-model:show="isSearchPopoverVisible">
 								<template #trigger>
 									<NTooltip :delay="1500">
 										<template #trigger>
@@ -188,16 +188,15 @@ import {
 	NTooltip,
 	NFlex,
 	LazyTableSearch,
-	NDivider,
-	NScrollbar,
 	NEmpty,
-	NSpace,
 	NInput,
 } from "#components"
+import { deepClone } from "~/composables"
 
 const user = useState<User>("user")
 const route = useRoute()
 const router = useRouter()
+const isSearchPopoverVisible = ref(false)
 const searchArray = ref<searchType>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
@@ -209,19 +208,17 @@ const whereQuery = ref<string | undefined>(
 	route.query.search as string | undefined,
 )
 
-// Add a small deepClone helper
-function deepClone<T>(v: T): T | undefined {
-	if (v === undefined) return undefined
-	try {
-		// Use structuredClone if available (preserves more types)
-		if (typeof (globalThis as any).structuredClone === "function")
-			return (globalThis as any).structuredClone(v)
-	} catch (e) {
-		// ignore and fallback
-	}
-	// Fallback
-	return JSON.parse(JSON.stringify(v)) as T
-}
+const whereQueryFetch = computed(() => {
+	const generated = generateSearchInput(searchArray.value, "fetch")
+	return generated ? Inison.stringify(generated) : undefined
+})
+
+
+const columns = ref<DataTableColumns>()
+const data = ref<apiResponse<Item[]>>()
+
+const database = useState<Database>("database")
+const table = useState<Table>("table")
 
 // localSearchArray should start as a deep clone so mutations don't affect searchArray
 const localSearchArray = ref<searchType | undefined>(
@@ -234,16 +231,32 @@ function executeSearch() {
 	if (cloned !== undefined) {
 		searchArray.value = cloned
 	}
+	isSearchPopoverVisible.value = false
 }
 
-function generateSearchInput(searchArray: any) {
+
+function generateSearchInput(
+	searchArray: any,
+	mode: "display" | "fetch" = "display",
+) {
 	const RETURN: Record<string, any> = {}
+	if (!searchArray) return undefined
 	for (const condition in searchArray) {
-		for (const item of searchArray[condition]) {
+		const items = searchArray[condition]
+		if (!Array.isArray(items)) continue
+		for (const item of items) {
+			if (!Array.isArray(item)) continue
+			const fieldKey = item[0]
+			if (!fieldKey) continue
 			if (!RETURN[condition]) RETURN[condition] = {}
-			if (Array.isArray(item) && item[0])
-				RETURN[condition][item[0]] =
-					`${item[1] === "=" ? "" : item[1]}${item[2]}`
+			const { operator, value } = prepareCriterionForMode(
+				typeof item[1] === "string" ? item[1] : "=",
+				item[2],
+				mode,
+			)
+			if (value === undefined) continue
+			const finalValue = value === undefined ? "" : value
+			RETURN[condition][fieldKey] = `${operator === "=" ? "" : operator}${finalValue}`
 		}
 	}
 	// Helper to check if an object is empty or all its values are empty objects (recursively)
@@ -256,6 +269,137 @@ function generateSearchInput(searchArray: any) {
 	return !isDeepEmpty(RETURN) ? RETURN : undefined
 }
 
+
+function decodeStoredCriterion(value: any): [string, any] {
+	const RELATIVE_OPERATORS = ["r>=", "r<=", "r!=", "r>", "r<", "r="] as const
+
+	if (typeof value === "string" && value.startsWith("r")) {
+		const matched = RELATIVE_OPERATORS.find((operator) =>
+			value.startsWith(operator),
+		)
+		if (matched)
+			return [matched, value.slice(matched.length)] as [string, any]
+	}
+	if (typeof value === "string") return FormatObjectCriteriaValue(value)
+	return ["=", value]
+}
+
+function prepareCriterionForMode(
+	operator: string | undefined,
+	rawValue: any,
+	mode: "display" | "fetch",
+) {
+	const normalizedOperator = typeof operator === "string" && operator ? operator : "="
+	if (mode === "fetch" && normalizedOperator.startsWith("r")) {
+		const absoluteValue = resolveRelativeDate(rawValue)
+		if (absoluteValue === undefined)
+			return { operator: normalizedOperator, value: undefined }
+		const strippedOperator =
+			normalizedOperator.length > 1 ? normalizedOperator.slice(1) : "="
+		return { operator: strippedOperator, value: absoluteValue }
+	}
+	return { operator: normalizedOperator, value: rawValue }
+}
+
+type RelativeUnit = "year" | "month" | "week" | "day" | "hour" | "minute" | "second"
+
+const relativeUnitMap: Record<string, RelativeUnit> = {
+	year: "year",
+	years: "year",
+	yr: "year",
+	yrs: "year",
+	month: "month",
+	months: "month",
+	mo: "month",
+	mos: "month",
+	week: "week",
+	weeks: "week",
+	wk: "week",
+	wks: "week",
+	day: "day",
+	days: "day",
+	d: "day",
+	hour: "hour",
+	hours: "hour",
+	hr: "hour",
+	hrs: "hour",
+	minute: "minute",
+	minutes: "minute",
+	min: "minute",
+	mins: "minute",
+	second: "second",
+	seconds: "second",
+	sec: "second",
+	secs: "second",
+}
+
+function resolveRelativeDate(rawValue: unknown): number | undefined {
+	if (rawValue === null || rawValue === undefined) return undefined
+	const text = String(rawValue).trim()
+	if (!text) return undefined
+	const lowered = text.toLowerCase()
+	if (["current", "now", "today"].includes(lowered)) return Date.now()
+	if (lowered === "yesterday") return shiftDate(new Date(), -1, "day")
+	if (lowered === "tomorrow") return shiftDate(new Date(), 1, "day")
+
+	let expression = lowered.replace(/\s+/g, " ").trim()
+	let implicitFuture = false
+	if (expression.startsWith("in ")) {
+		expression = expression.slice(3).trim()
+		implicitFuture = true
+	}
+
+	const match = expression.match(
+		/^([+-]?\d+)\s*([a-z]+)(?:\s+(ago|from now|later|after|before|ahead))?$/,
+	)
+	if (match) {
+		const amountText = match[1]
+		const unitToken = match[2]
+		if (!amountText || !unitToken) return undefined
+		let amount = Number.parseInt(amountText, 10)
+		if (!Number.isFinite(amount)) return undefined
+		const directionToken = match[3] ?? (implicitFuture ? "from now" : undefined)
+		if (directionToken === "ago" || directionToken === "before")
+			amount = -Math.abs(amount)
+		else if (directionToken)
+			amount = Math.abs(amount)
+		const mappedUnit = relativeUnitMap[unitToken]
+		if (!mappedUnit) return undefined
+		return shiftDate(new Date(), amount, mappedUnit)
+	}
+
+	const fallback = Date.parse(text)
+	return Number.isNaN(fallback) ? undefined : fallback
+}
+
+function shiftDate(baseDate: Date, amount: number, unit: RelativeUnit) {
+	const date = new Date(baseDate.getTime())
+	switch (unit) {
+		case "year":
+			date.setFullYear(date.getFullYear() + amount)
+			break
+		case "month":
+			date.setMonth(date.getMonth() + amount)
+			break
+		case "week":
+			date.setDate(date.getDate() + amount * 7)
+			break
+		case "day":
+			date.setDate(date.getDate() + amount)
+			break
+		case "hour":
+			date.setHours(date.getHours() + amount)
+			break
+		case "minute":
+			date.setMinutes(date.getMinutes() + amount)
+			break
+		case "second":
+			date.setSeconds(date.getSeconds() + amount)
+			break
+	}
+	return date.getTime()
+}
+
 const isSearchDisabled = computed(
 	() =>
 		!!(
@@ -263,7 +407,7 @@ const isSearchDisabled = computed(
 			Object.keys(localSearchArray.value).length === 1 &&
 			(
 				localSearchArray.value[
-					Object.keys(localSearchArray.value)[0] as "and" | "or"
+				Object.keys(localSearchArray.value)[0] as "and" | "or"
 				]?.[0] as any
 			)[0] === null
 		),
@@ -301,27 +445,22 @@ watch(
 
 watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query
+	console.log(v, route.query);
+
 	return v
 		? router.push({
-				query: {
-					...(Query ?? {}),
-					search: v,
-				},
-			})
+			query: {
+				...(Query ?? {}),
+				search: v,
+			},
+		})
 		: router.push({
-				query: Query ?? {},
-			})
+			query: Query ?? {},
+		})
 })
 
 // UI states for favorite filters
-const showSaveFilterDialog = ref(false)
 const newFilterName = ref("")
-
-const columns = ref<DataTableColumns>()
-const data = ref<apiResponse<Item[]>>()
-
-const database = useState<Database>("database")
-const table = useState<Table>("table")
 
 const tablesConfig = computed({
 	get: () => user.value?.config?.tables ?? {},
@@ -416,6 +555,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 provide("deleteItem", deleteItem)
 
 provide("whereQuery", whereQuery)
+provide("whereQueryFetch", whereQueryFetch)
 provide("localSearchArray", localSearchArray)
 provide("executeSearch", executeSearch)
 provide("isSearchDisabled", isSearchDisabled)
@@ -467,73 +607,73 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							class: "viewItemButton",
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-								),
-						},
-					)
+					NButton,
+					{
+						class: "viewItemButton",
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+							),
+					},
+				)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							class: "editItemButton",
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault()
-								if (!isMobile)
-									openDrawer(table.value?.slug as string, row.id, toRaw(row))
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									)
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						class: "editItemButton",
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault()
+							if (!isMobile)
+								openDrawer(table.value?.slug as string, row.id, toRaw(row))
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+								)
 						},
-						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+				)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => deleteItem(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										class: "deleteItemButton",
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () =>
-											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => deleteItem(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									class: "deleteItemButton",
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () =>
+										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	)
@@ -691,7 +831,7 @@ function generateSearchArray(searchQuery: any): searchType {
 			else
 				RETURN[condition as "and" | "or"]?.push([
 					key,
-					...FormatObjectCriteriaValue(value),
+					...decodeStoredCriterion(value),
 				])
 		}
 	}

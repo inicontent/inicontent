@@ -9,6 +9,7 @@
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
 import type { FormInst } from "naive-ui"
+import { debounce } from "~/composables"
 
 const props = defineProps<{
 	table?: string

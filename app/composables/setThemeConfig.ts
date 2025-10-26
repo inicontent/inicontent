@@ -1,3 +1,5 @@
+import { hexToRGB } from "~/composables"
+
 function adjustColor(hex: string, factor: number) {
 	// Convert hex to RGB
 	let [r, g, b] = hexToRGB(hex)

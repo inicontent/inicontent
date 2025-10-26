@@ -27,6 +27,7 @@ import type { pageInfo } from "inibase"
 import { isArrayOfObjects, isObject, isValidID } from "inibase/utils"
 import Inison from "inison"
 import type { FormItemRule } from "naive-ui"
+import { debounce } from "~/composables"
 
 const { field } = defineProps<{ field: Field }>()
 const modelValue = defineModel<Item | Item[]>()

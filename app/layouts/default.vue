@@ -41,6 +41,8 @@ import {
 
 import "~/assets/main.css"
 
+import { hexToRGB } from "~/composables"
+
 const rtlStyles: any = [
 	unstableListRtl,
 	unstablePageHeaderRtl,

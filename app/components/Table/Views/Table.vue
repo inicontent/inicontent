@@ -60,29 +60,19 @@ const isSlotSet = inject("isSlotSet") as (slotName: string) => boolean
 
 // Inject search-related state from parent
 const whereQuery = inject<Ref<string | undefined>>("whereQuery")
-const localSearchArray = inject<Ref<searchType | undefined>>("localSearchArray")
-const executeSearch = inject<() => void>("executeSearch")
-const isSearchDisabled = inject<ComputedRef<boolean>>("isSearchDisabled")
+const whereQueryFetch = inject<ComputedRef<string | undefined>>(
+	"whereQueryFetch",
+)
+
+const effectiveWhereQuery = computed(
+	() => whereQueryFetch?.value ?? whereQuery?.value,
+)
 
 function isSlotEmpty(slotName: string): boolean {
 	// Check if all nodes are comments or have undefined children
 	return ((props.slots[slotName] as any)({}) as VNode[])?.every(
 		(vnode) => vnode.type === Comment || vnode.children === undefined,
 	)
-}
-
-// Add a small deepClone helper
-function deepClone<T>(v: T): T | undefined {
-	if (v === undefined) return undefined
-	try {
-		// Use structuredClone if available (preserves more types)
-		if (typeof (globalThis as any).structuredClone === "function")
-			return (globalThis as any).structuredClone(v)
-	} catch (e) {
-		// ignore and fallback
-	}
-	// Fallback
-	return JSON.parse(JSON.stringify(v)) as T
 }
 
 // Watch searchArray changes and reset pagination for Table view
@@ -162,7 +152,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		key: `${database.value.slug}/${table.value?.slug as string}`,
 		query: {
 			options: queryOptions,
-			where: whereQuery,
+			where: effectiveWhereQuery,
 			locale: Language.value,
 			[`${database.value.slug}_sid`]: sessionID.value,
 		},
