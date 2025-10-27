@@ -445,7 +445,6 @@ watch(
 
 watch(whereQuery, (v) => {
 	const { search, page, ...Query }: any = route.query
-	console.log(v, route.query);
 
 	return v
 		? router.push({

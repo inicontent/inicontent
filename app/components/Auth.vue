@@ -23,6 +23,14 @@
 <script lang="ts" setup>
 import type { FormInst, TabsInst } from "naive-ui"
 
+const props = defineProps<{
+	modal?: boolean
+}>()
+
+const emit = defineEmits<{
+	loggedIn: []
+}>()
+
 defineTranslation({
 	ar: {
 		signin: "تسجيل الدخول",
@@ -106,16 +114,20 @@ async function SigninSubmit(e: Event) {
 							},
 						)
 					).result
-					await navigateTo(
-						fromPath.value &&
-							(fromPath.value.startsWith(`/${database.value.slug}`) ||
-								fromPath.value.startsWith("/admin")) &&
-							!fromPath.value.endsWith("/auth")
-							? fromPath.value
-							: route.params.database
-								? `/${database.value.slug}/admin`
-								: "/admin",
-					)
+					if (props.modal) {
+						emit('loggedIn')
+					} else {
+						await navigateTo(
+							fromPath.value &&
+								(fromPath.value.startsWith(`/${database.value.slug}`) ||
+									fromPath.value.startsWith("/admin")) &&
+								!fromPath.value.endsWith("/auth")
+								? fromPath.value
+								: route.params.database
+									? `/${database.value.slug}/admin`
+									: "/admin",
+						)
+					}
 				} else window.$message.error(data.message)
 				Loading.value.Signin = false
 			}
