@@ -47,7 +47,8 @@
 					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
 					@remove="onRemoveUpload" with-credentials>
-					<NPopover trigger="manual" placement="bottom-end" :show="UploadProgress > 0">
+					<NPopover trigger="manual" placement="bottom-end"
+						:show="UploadProgress > 0 && UploadProgress !== 1001">
 						<template #trigger>
 							<NUploadTrigger :abstract="false">
 								<NButton round size="small"
@@ -59,7 +60,8 @@
 										<NIcon v-else-if="UploadProgress === 10000">
 											<Icon name="tabler:check" />
 										</NIcon>
-										<NSpin v-else-if="UploadProgress === 1000" :size="16" />
+										<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+											:size="16" />
 										<NProgress v-else type="circle" :show-indicator="false"
 											:status="UploadProgress === 100 ? 'success' : 'warning'"
 											:percentage="UploadProgress" :stroke-width="20" />
@@ -263,7 +265,7 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 	if (!appConfig.fileBase || !fileObject.file) return true
 	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}?${database.value.slug}_sid=${sessionID.value}`
 	try {
-		if (UploadProgress.value === 0) UploadProgress.value = 1
+		if (UploadProgress.value === 0) UploadProgress.value = 1001
 		const fd = new FormData()
 		fd.append("file", fileObject.file)
 		const fbResponse = await fetch(appConfig.fileBase, {
