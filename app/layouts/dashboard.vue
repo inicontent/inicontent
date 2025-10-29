@@ -314,7 +314,7 @@ const languagesDropdownOptions = database.value?.secondaryLanguages?.map(
 const showAuthModal = ref(false)
 
 async function checkAuth() {
-	if (showAuthModal.value) return;
+	if (showAuthModal.value || String(route.name).endsWith('auth')) return;
 	try {
 		const data = await $fetch<{ result: boolean }>(
 			`${appConfig.apiBase}${database.value.slug}/auth/current`,
@@ -338,7 +338,9 @@ function onLoggedIn() {
 
 onMounted(() => {
 	checkAuth()
-	const interval = setInterval(checkAuth, 60000) // Check every 1 minute
-	onUnmounted(() => clearInterval(interval))
+	if (!String(route.name).endsWith("auth")) {
+		const interval = setInterval(checkAuth, 60000) // Check every 1 minute
+		onUnmounted(() => clearInterval(interval))
+	}
 })
 </script>
