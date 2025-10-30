@@ -316,6 +316,12 @@ const showAuthModal = ref(false)
 
 async function checkAuth() {
 	if (showAuthModal.value || String(route.name).endsWith('auth')) return;
+
+	if (!sessionID.value) {
+		showAuthModal.value = true
+		return;
+	}
+
 	try {
 		const data = await $fetch<{ result: boolean }>(
 			`${appConfig.apiBase}${database.value.slug}/auth/current`,
