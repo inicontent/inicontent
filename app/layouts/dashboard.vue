@@ -87,7 +87,8 @@
 				</NLayoutHeader>
 			</NScrollbar>
 			<NLayoutContent id="container" position="absolute"
-				content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content">
+				content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content"
+				:native-scrollbar="false">
 				<slot></slot>
 			</NLayoutContent>
 		</NLayout>
