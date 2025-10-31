@@ -1,6 +1,12 @@
-import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import { default as t } from "./Translation/translate"
 import { default as defineTranslation } from "./Translation/define"
+
+// Type definition for tag colors (replacement for naive-ui TagColor)
+type TagColor = {
+	color?: string
+	borderColor?: string
+	textColor?: string
+}
 
 export { default as translationLanguages } from "./Translation/languages"
 export { default as defineTranslation } from "./Translation/define"
