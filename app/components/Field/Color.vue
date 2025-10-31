@@ -1,6 +1,6 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <input type="color" class="color-picker" :modes="['hex']" :actions="['clear']" v-model:value="modelValue" v-bind="field.inputProps
+        <NColorPicker :modes="['hex']" :actions="['clear']" v-model:value="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps
@@ -9,6 +9,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

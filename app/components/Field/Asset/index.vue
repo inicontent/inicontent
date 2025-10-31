@@ -1,31 +1,31 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<template #label>
-			<div class="flex" inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
+			<div class="flex items-center gap-2" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 			</div>
 		</template>
 
-		<UInput type="file" directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
+		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
 			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
 			:shouldUseThumbnailUrl="() => false" with-credentials>
-			<UInput type="file"Dragger v-if="!field.isTable">
-				<span size="48" depth="3">
+			<NUploadDragger v-if="!field.isTable">
+				<NIcon size="48" depth="3">
 					<Icon name="tabler:upload" />
-				</div>
+				</NIcon>
 			</NUploadDragger>
-			<div class="flex" v-else align="center" size="small">
+			<div v-else class="flex items-center gap-2">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 			</div>
-		</UInput>
+		</NUpload>
 
 		<USlideover v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-			<USlideoverContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+			<div id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
 				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
@@ -42,7 +42,9 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
-import { Icon, NImage, NTooltip } from "#components"
+import type { UploadFileInfo } from "naive-ui"
+import { Icon, NImage, NUpload, NUploadDragger, NIcon, NTooltip } from "#components"
+import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 const { field } = defineProps<{ field: Field }>()
 
