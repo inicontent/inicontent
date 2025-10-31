@@ -656,6 +656,7 @@ async function setColumns() {
 											scrollable: true,
 											style: "max-height: 240px;border-radius:34px",
 											contentStyle: "padding: 0",
+											trigger: "hover"
 										},
 										{
 											trigger: () =>
