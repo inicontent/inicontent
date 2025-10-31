@@ -291,6 +291,8 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 		if (!database.value.size) database.value.size = 0
 		database.value.size += result.size ?? 0
 
+		UploadProgress.value = 0
+
 		return false
 	} catch (e) {
 		return true
