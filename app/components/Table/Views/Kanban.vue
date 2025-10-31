@@ -2,67 +2,67 @@
 	<div>
 		<div class="kanban-scroll">
 			<div class="kanban-columns">
-				<NCard v-for="(column, index) in visibleColumns" :key="index" hoverable class="kanban-column">
-					<NTag size="large" :color="column.color"
+				<UCard v-for="(column, index) in visibleColumns" :key="index" hoverable class="kanban-column">
+					<UBadge size="large" :color="column.color"
 						style="width: 100%; justify-content: space-between; flex-direction: row-reverse; margin-bottom: 20px"
 						:bordered="false" round>
 						{{ column.label }}
-						<NButton circle :color="column.color?.textColor" size="tiny" :text-color="column.color?.color">
+						<UButton circle :color="column.color?.textColor" size="tiny" :text-color="column.color?.color">
 							{{ column.pagination?.total || 0 }}
-						</NButton>
+						</UButton>
 						<template #icon>
-							<NButton circle secondary size="tiny" @click.prevent="() => {
+							<UButton circle secondary size="tiny" @click.prevent="() => {
 								if (!isMobile)
 									openDrawer(table?.slug as string, undefined, { [field?.key as string]: column.key === UNSET_KEY ? '' : column.key })
 								else
 									navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table?.slug}/new`);
 							}">
 								<template #icon>
-									<NIcon :color="column.color?.textColor">
+									<span :color="column.color?.textColor">
 										<Icon name="tabler:plus" />
-									</NIcon>
+									</div>
 								</template>
-							</NButton>
+							</UButton>
 						</template>
-					</NTag>
-					<NScrollbar style="max-height: 350px;">
+					</UBadge>
+					<div class="overflow-auto" style="max-height: 350px;">
 						<Draggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }"
 							item-key="id" ghost-class="ghost" :sort="false" @move="({ to, from }: any) => from !== to"
 							@change="(e: any) => onItemDrop(e, column)">
 							<template #item="{ element, index }">
-								<NCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
+								<UCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
 									<component v-if="props.slots.itemActions" :is="props.slots.itemActions(element)" />
 									<component v-else-if="props.slots.itemExtraActions"
 										:is="props.slots.itemExtraActions(element)" />
-									<NPopover scrollable style="max-height: 240px;border-radius:34px"
+									<UPopover scrollable style="max-height: 240px;border-radius:34px"
 										contentStyle="padding: 0">
 										<template #trigger>
-											<NButton size="tiny" round class="dotsButton" secondary type="primary">
+											<UButton size="tiny" round class="dotsButton" secondary type="primary">
 												<template #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:dots" />
-													</NIcon>
+													</div>
 												</template>
-											</NButton>
+											</UButton>
 										</template>
 										<component :is="renderItemButtons(column.items[index])" />
-									</NPopover>
+									</UPopover>
 									<ClientOnly v-if="props.slots.item">
 										<component
 											v-for="(slot, slotIndex) in ([] as VNode[]).concat(props.slots.item(element))"
 											:is="slot" :key="slotIndex" :item="element"></component>
 									</ClientOnly>
 									<div v-else v-html="renderLabel(table, element).replaceAll('\n', '<br />')"></div>
-								</NCard>
+								</UCard>
 							</template>
 						</Draggable>
 						<template v-if="column.items.length === 0 && column.loading">
-							<NSkeleton :height="calculateHeight" style="border-radius: 8px;margin-bottom: 10px;" />
-							<NSkeleton :height="calculateHeight" style="border-radius: 8px;" />
+							<div class="animate-pulse bg-gray-200" :height="calculateHeight" style="border-radius: 8px;margin-bottom: 10px;" />
+							<div class="animate-pulse bg-gray-200" :height="calculateHeight" style="border-radius: 8px;" />
 						</template>
-						<NEmpty v-else-if="column.items.length === 0" style="height: 100%;justify-content: center" />
-					</NScrollbar>
-				</NCard>
+						<div class="text-center py-8 text-gray-500" v-else-if="column.items.length === 0" style="height: 100%;justify-content: center" />
+					</div>
+				</UCard>
 			</div>
 		</div>
 	</div>

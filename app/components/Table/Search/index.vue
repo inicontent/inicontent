@@ -1,48 +1,48 @@
 <template>
-	<NCollapse :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
-		<NCollapseItem v-for="(_items, condition, index) in modelValue" :key="condition" :name="index.toString()"
+	<UAccordion :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
+		<UAccordionItem v-for="(_items, condition, index) in modelValue" :key="condition" :name="index.toString()"
 			:title="t(`${condition}Group`)">
 			<template #header-extra>
-				<NButtonGroup>
-					<NDropdown :options="conditionDropdownOptions" style="max-height: 200px;" scrollable
+				<UButtonGroup>
+					<UDropdown :options="conditionDropdownOptions" style="max-height: 200px;" scrollable
 						@select="(value: 'and' | 'or') => modelValue[condition]?.push({ [value]: [[null, '=', null]] })">
-						<NButton round type="primary" secondary @click="modelValue[condition]?.push([null, '=', null])"
+						<UButton round type="primary" secondary @click="modelValue[condition]?.push([null, '=', null])"
 							circle size="small">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:plus" />
-								</NIcon>
+								</div>
 							</template>
-						</NButton>
-					</NDropdown>
+						</UButton>
+					</UDropdown>
 
-					<NTooltip :delay="1500">
+					<UTooltip :delay="1500">
 						<template #trigger>
-							<NButton round type="info" secondary @click="() => toggleCondition(condition)" circle
+							<UButton round type="info" secondary @click="() => toggleCondition(condition)" circle
 								size="small">
 								<template #icon>
-									<NIcon>
+									<div class="inline-block">
 										<Icon name="tabler:switch-horizontal" />
-									</NIcon>
+									</div>
 								</template>
-							</NButton>
+							</UButton>
 						</template>
 						{{ t(
 							`convert_to_${condition === "and" ? "or" : "and"}_group`,
 						) }}
-					</NTooltip>
-					<NButton round type="error" secondary @click="delete modelValue[condition]" circle size="small">
+					</UTooltip>
+					<UButton round type="error" secondary @click="delete modelValue[condition]" circle size="small">
 						<template #icon>
-							<NIcon>
+							<div class="inline-block">
 								<Icon name="tabler:trash" />
-							</NIcon>
+							</div>
 						</template>
-					</NButton>
-				</NButtonGroup>
+					</UButton>
+				</div>
 			</template>
 			<TableSearchItems v-model="modelValue[condition]" :callback />
-		</NCollapseItem>
-	</NCollapse>
+		</UAccordionItem>
+	</UAccordion>
 </template>
 
 <script lang="ts" setup>

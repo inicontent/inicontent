@@ -1,344 +1,344 @@
 <template>
-  <NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-    <NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+  <USlideover v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
+    <USlideoverContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
       <AssetCard targetID="assetsModal">
         <template v-slot="{ asset }">
-          <NRadio v-if="asset.type !== 'dir'"
+          <URadio v-if="asset.type !== 'dir'"
             @update:checked="(editor?.chain().focus().setImage({ src: asset.publicURL }).run(), showAssetsModal = false)" />
         </template>
       </AssetCard>
-    </NDrawerContent>
-  </NDrawer>
+    </div>
+  </USlideover>
 
-  <NFlex class="richEditorWrapper" vertical style="width: 100%">
-    <NScrollbar x-scrollable>
-      <NFlex :wrap="false" align="center">
-        <NButtonGroup size="small">
-          <NButton @click="editor?.chain().focus().toggleBold().run()"
+  <div class="flex" class="richEditorWrapper" vertical style="width: 100%">
+    <div class="overflow-auto" x-scrollable>
+      <div class="flex" :wrap="false" align="center">
+        <UButtonGroup size="small">
+          <UButton @click="editor?.chain().focus().toggleBold().run()"
             :disabled="!editor?.can().chain().focus().toggleBold().run()"
             :type="editor?.isActive('bold') ? 'primary' : 'default'">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:bold" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton @click="editor?.chain().focus().toggleItalic().run()"
+          <UButton @click="editor?.chain().focus().toggleItalic().run()"
             :disabled="!editor?.can().chain().focus().toggleItalic().run()"
             :type="editor?.isActive('italic') ? 'primary' : 'default'">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:italic" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton @click="editor?.chain().focus().toggleUnderline().run()"
+          <UButton @click="editor?.chain().focus().toggleUnderline().run()"
             :disabled="!editor?.can().chain().focus().toggleUnderline().run()"
             :type="editor?.isActive('underline') ? 'primary' : 'default'">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:underline" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton :type="editor?.isActive('strike') ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive('strike') ? 'primary' : 'default'"
             @click="editor?.chain().focus().toggleStrike().run()"
             :disabled="!editor?.can().chain().focus().toggleStrike().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:strikethrough" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NPopselect :disabled="!editor?.can().chain().focus().toggleHeading({ level: 1 }).run()" size="small"
+          <UPopover :disabled="!editor?.can().chain().focus().toggleHeading({ level: 1 }).run()" size="small"
             :render-label="renderHeadingOption" :value="editor?.getAttributes('heading').level"
             @update:value="(value) => editor?.chain().focus().toggleHeading({ level: value }).run()"
             :options="headingOptions">
-            <NButton :type="editor?.isActive('heading') ? 'primary' : 'default'">
-              <NIcon>
+            <UButton :type="editor?.isActive('heading') ? 'primary' : 'default'">
+              <div class="inline-block">
                 <Icon name="tabler:heading" />
-              </NIcon>
-            </NButton>
-          </NPopselect>
+              </div>
+            </UButton>
+          </UPopover>
 
-          <NPopselect size="small" scrollable :render-label="renderFontSizeOption"
+          <UPopover size="small" scrollable :render-label="renderFontSizeOption"
             :value="editor?.getAttributes('font-size').size?.replace('px', '')"
             @update:value="(value: string) => editor?.chain().focus().setFontSize(value).run()"
             :options="fontSizeOptions">
-            <NButton @click="editor?.chain().focus().unsetFontSize().run()">
-              <NIcon>
+            <UButton @click="editor?.chain().focus().unsetFontSize().run()">
+              <div class="inline-block">
                 <Icon name="tabler:text-size" />
-              </NIcon>
-            </NButton>
-          </NPopselect>
+              </div>
+            </UButton>
+          </UPopover>
 
-          <NPopover>
+          <UPopover>
             <template #trigger>
-              <NButton :style="{ color: fontColor }"
+              <UButton :style="{ color: fontColor }"
                 :disabled="!editor?.can().chain().focus().setColor('#ff9800').run()">
-                <NIcon>
+                <div class="inline-block">
                   <Icon name="tabler:color-picker" />
-                </NIcon>
-              </NButton>
+                </div>
+              </UButton>
             </template>
             <LazyFieldHtmlColorPicker :modelValue="fontColor"
               @update:modelValue="(value) => (fontColor = value, editor?.chain().focus().setColor(value).run())" />
-          </NPopover>
+          </UPopover>
 
-          <NPopover>
+          <UPopover>
             <template #trigger>
-              <NButton @click="editor?.chain().focus().toggleHighlight().run()" :style="{ color: fontBgColor }">
-                <NIcon>
+              <UButton @click="editor?.chain().focus().toggleHighlight().run()" :style="{ color: fontBgColor }">
+                <div class="inline-block">
                   <Icon name="tabler:highlight" />
-                </NIcon>
-              </NButton>
+                </div>
+              </UButton>
             </template>
             <LazyFieldHtmlColorPicker :modelValue="fontBgColor"
               @update:modelValue="(value) => (fontBgColor = value, editor?.chain().focus().toggleHighlight({ color: value }).run())" />
-          </NPopover>
+          </UPopover>
 
-        </NButtonGroup>
-
-
-        <NDivider vertical />
+        </div>
 
 
-        <NButtonGroup size="small">
+        <UDivider vertical />
 
-          <NButton @click="showAssetsModal = true">
-            <NIcon>
+
+        <UButtonGroup size="small">
+
+          <UButton @click="showAssetsModal = true">
+            <div class="inline-block">
               <Icon name="tabler:upload" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
           <!-- TO-DO: Fix URL -->
-          <NPopover @update:show="(show: boolean) => {
+          <UPopover @update:show="(show: boolean) => {
             if (show) url = editor?.getAttributes('link').href
             else url = undefined
           }">
             <template #trigger>
-              <NButton :type="editor?.isActive('link') ? 'primary' : 'default'">
-                <NIcon>
+              <UButton :type="editor?.isActive('link') ? 'primary' : 'default'">
+                <div class="inline-block">
                   <Icon name="tabler:link" />
-                </NIcon>
-              </NButton>
+                </div>
+              </UButton>
             </template>
-            <NFlex :reverse="Language === 'ar'" :wrap="false">
-              <NInput :input-props="{ type: 'url' }" size="small" v-model="url" />
-              <NButtonGroup>
-                <NButton :type="'error'" @click="editor?.chain().focus().unsetLink().run()"
+            <div class="flex" :reverse="Language === 'ar'" :wrap="false">
+              <UInput :input-props="{ type: 'url' }" size="small" v-model="url" />
+              <UButtonGroup>
+                <UButton :type="'error'" @click="editor?.chain().focus().unsetLink().run()"
                   :disabled="!editor?.isActive('link')">
-                  <NIcon>
+                  <div class="inline-block">
                     <Icon name="tabler:link-off" />
-                  </NIcon>
-                </NButton>
-                <NButton type="primary" @click="setLink">
-                  <NIcon>
+                  </div>
+                </UButton>
+                <UButton type="primary" @click="setLink">
+                  <div class="inline-block">
                     <Icon name="tabler:arrow-right" />
-                  </NIcon>
-                </NButton>
-              </NButtonGroup>
-            </NFlex>
-          </NPopover>
+                  </div>
+                </UButton>
+              </div>
+            </div>
+          </UPopover>
 
-          <NButton :type="editor?.isActive('bulletList') ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive('bulletList') ? 'primary' : 'default'"
             @click="editor?.chain().focus().toggleBulletList().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:list-numbers" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton :type="editor?.isActive('orderedList') ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive('orderedList') ? 'primary' : 'default'"
             @click="editor?.chain().focus().toggleOrderedList().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:list" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-        </NButtonGroup>
-
-
-        <NDivider vertical />
+        </div>
 
 
-        <NButtonGroup size="small">
+        <UDivider vertical />
 
-          <NButton :type="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'default'"
+
+        <UButtonGroup size="small">
+
+          <UButton :type="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('left').run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:align-left" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton :type="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('center').run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:align-center" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton :type="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('right').run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:align-right" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
 
-          <NButton :type="editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
+          <UButton :type="editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().setTextAlign('justify').run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:align-justified" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
 
 
-          <NButton
+          <UButton
             :type="editor?.isActive({ textAlign: 'left' }) || editor?.isActive({ textAlign: 'center' }) || editor?.isActive({ textAlign: 'right' }) || editor?.isActive({ textAlign: 'justify' }) ? 'primary' : 'default'"
             @click="editor?.chain().focus().unsetTextAlign().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:text-wrap" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-        </NButtonGroup>
+        </div>
 
-        <NDivider vertical />
+        <UDivider vertical />
 
 
-        <NButtonGroup size="small">
-          <NButton @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
-            <NIcon>
+        <UButtonGroup size="small">
+          <UButton @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
+            <div class="inline-block">
               <Icon name="tabler:table-plus" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
           <template
             v-if="editor?.isActive('table') || editor?.isActive('tableCell') || editor?.isActive('tableHeader') || editor?.isActive('tableRow')">
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().deleteTable().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().deleteTable().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:table-minus" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('deleteTable') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().addColumnAfter().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().addColumnAfter().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:column-insert-right" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('addColumnAfter') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().addColumnBefore().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().addColumnBefore().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:column-insert-left" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('addColumnBefore') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().deleteColumn().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().deleteColumn().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:column-remove" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('deleteColumn') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().addRowBefore().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().addRowBefore().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:row-insert-top" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('addRowBefore') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().addColumnBefore().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().addColumnBefore().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:column-insert-left" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('addColumnBefore') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().addRowAfter().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().addRowAfter().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:row-insert-bottom" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('addRowAfter') }}
-            </NTooltip>
+            </UTooltip>
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().deleteRow().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().deleteRow().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:row-remove" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('deleteRow') }}
-            </NTooltip>
+            </UTooltip>
 
 
-            <NTooltip>
+            <UTooltip>
               <template #trigger>
-                <NButton @click="editor?.chain().focus().mergeCells().run()">
-                  <NIcon>
+                <UButton @click="editor?.chain().focus().mergeCells().run()">
+                  <div class="inline-block">
                     <Icon name="tabler:table-row" />
-                  </NIcon>
-                </NButton>
+                  </div>
+                </UButton>
               </template>
               {{ t('mergeCells') }}
-            </NTooltip>
+            </UTooltip>
 
           </template>
-        </NButtonGroup>
+        </div>
 
-        <NDivider vertical />
+        <UDivider vertical />
 
-        <NButtonGroup size="small">
-          <NButton @click="editor?.chain().focus().undo().run()"
+        <UButtonGroup size="small">
+          <UButton @click="editor?.chain().focus().undo().run()"
             :disabled="!editor?.can().chain().focus().undo().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:arrow-back-up" />
-            </NIcon>
-          </NButton>
+            </div>
+          </UButton>
 
-          <NButton @click="editor?.chain().focus().redo().run()"
+          <UButton @click="editor?.chain().focus().redo().run()"
             :disabled="!editor?.can().chain().focus().redo().run()">
-            <NIcon>
+            <div class="inline-block">
               <Icon name="tabler:arrow-forward-up" />
-            </NIcon>
-          </NButton>
-        </NButtonGroup>
+            </div>
+          </UButton>
+        </div>
 
-      </NFlex>
-    </NScrollbar>
+      </div>
+    </div>
 
-    <NScrollbar class="externalRichEditor">
+    <div class="overflow-auto" class="externalRichEditor">
       <TiptapEditorContent class="internalRichEditor" :editor="editor" />
-    </NScrollbar>
-  </NFlex>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

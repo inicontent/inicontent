@@ -8,62 +8,62 @@
 		subType: field.children === 'table' ? 'array-table' : 'tags',
 		isArray: true,
 	}" v-model="modelValue" />
-	<NCollapse v-else-if="field.isTable === false || field.children.filter(
+	<UAccordion v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
 	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
 		:default-expanded-names="field.expand ? field.id : undefined" v-model:expanded-names="parentExpanded" accordion>
 		<template #arrow>
-			<NIcon>
+			<div class="inline-block">
 				<Icon name="tabler:chevron-left" v-if="!!modelValue?.length" />
-			</NIcon>
+			</div>
 		</template>
-		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="field.id"
+		<UAccordionItem style="margin: 0 0 20px;" display-directive="show" :name="field.id"
 			:disabled="!modelValue?.length">
 			<template #header>
-				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+				<UDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
 					:delay="1500" :options="dropdownOptions" @select="handleSelect">
 					{{ t(field.key) }}
-				</NDropdown>
+				</UDropdown>
 			</template>
 			<template #header-extra>
-				<NFlex>
+				<div class="flex">
 					<component v-if="field.extraActions" :is="field.extraActions"></component>
-					<NButtonGroup>
-						<NButton v-if="!field.disableActions" size="small" round @click="handleAddNewItem">
+					<UButtonGroup>
+						<UButton v-if="!field.disableActions" size="small" round @click="handleAddNewItem">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:plus" />
-								</NIcon>
+								</div>
 							</template>
-						</NButton>
+						</UButton>
 						<component v-if="field.extraButtons" :is="field.extraButtons"></component>
-					</NButtonGroup>
-				</NFlex>
+					</div>
+				</div>
 			</template>
-			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
+			<UAccordion display-directive="show" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
-				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
+				<UAccordionItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
 					:name="`${field.id}.${index}`">
 					<template #header>
 						{{ getCollapseItemTitle(field, (_item as Item), index) }}
 					</template>
 					<template #header-extra>
-						<NFlex>
+						<div class="flex">
 							<component v-if="field.itemExtraActions" :is="field.itemExtraActions(index)"></component>
-							<NButtonGroup>
-								<NButton size="small" round type="error" quaternary
+							<UButtonGroup>
+								<UButton size="small" round type="error" quaternary
 									:disabled="typeof field.inputProps === 'function' ? field.inputProps(index)?.disabled : field.inputProps?.disabled"
 									@click="handleDeleteItem(index)">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:trash" />
-										</NIcon>
+										</div>
 									</template>
-								</NButton>
+								</UButton>
 								<component v-if="field.itemExtraButtons" :is="field.itemExtraButtons(index)">
 								</component>
-							</NButtonGroup>
-						</NFlex>
+							</div>
+						</div>
 					</template>
 					<div class="collapseContentPadding">
 						<LazyFieldS v-model="(modelValue[index] as Item)" :schema="(field.children as Schema).map((child) => ({
@@ -73,35 +73,35 @@
 							...(typeof child.render === 'function' ? { render: child.render(index) } : {})
 						}))" />
 					</div>
-				</NCollapseItem>
-			</NCollapse>
-		</NCollapseItem>
-	</NCollapse>
-	<NCard v-else :bordered="false" content-style="padding-left: 0; padding-right: 0;"
+				</UAccordionItem>
+			</UAccordion>
+		</UAccordionItem>
+	</UAccordion>
+	<UCard v-else :bordered="false" content-style="padding-left: 0; padding-right: 0;"
 		header-style="padding-top: 0; padding-left: 0; padding-right: 0;">
 		<template #header>
-			<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
+			<UDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
 				:delay="1500" :options="dropdownOptions" @select="handleSelect">
 				{{ t(field.key) }}
-			</NDropdown>
+			</UDropdown>
 		</template>
 		<template #header-extra>
-			<NFlex>
+			<div class="flex">
 				<component v-if="field.extraActions" :is="field.extraActions"></component>
-				<NButtonGroup>
-					<NButton v-if="!field.disableActions" size="small" round @click="handleAddNewItem">
+				<UButtonGroup>
+					<UButton v-if="!field.disableActions" size="small" round @click="handleAddNewItem">
 						<template #icon>
-							<NIcon>
+							<div class="inline-block">
 								<Icon name="tabler:plus" />
-							</NIcon>
+							</div>
 						</template>
-					</NButton>
+					</UButton>
 					<component v-if="field.extraButtons" :is="field.extraButtons"></component>
-				</NButtonGroup>
-			</NFlex>
+				</div>
+			</div>
 		</template>
-		<NDataTable v-if="field.children" :columns :data="(modelValue as Item[])" :scroll-x="tableWidth" />
-	</NCard>
+		<UTable v-if="field.children" :columns :data="(modelValue as Item[])" :scroll-x="tableWidth" />
+	</UCard>
 </template>
 
 <script setup lang="ts">

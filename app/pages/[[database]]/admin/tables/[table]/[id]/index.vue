@@ -1,71 +1,71 @@
 <template>
-    <NFlex vertical>
+    <div class="flex flex-col">
         <LazyFormDrawer v-if="!$device.isMobile" />
-        <NCard style="height: fit-content">
+        <UCard style="height: fit-content">
             <template #header>
-                <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>
+                <div class="truncate">{{ t(table.slug) }}: {{ itemLabel }}</div>
             </template>
             <template v-if="table.schema && table.schema.length > 4" #header-extra>
-                <NButtonGroup>
-                    <NTooltip v-if="table.allowedMethods?.includes('u')" :delay="1500">
+                <UButtonGroup>
+                    <UTooltip v-if="table.allowedMethods?.includes('u')" :delay="1500">
                         <template #trigger>
-                            <NButton secondary round type="info">
+                            <UButton secondary round type="info">
                                 <template #icon>
                                     <NuxtLink
                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
-                                        <NIcon>
+                                        <div class="inline-block">
                                             <Icon name="tabler:pencil" />
-                                        </NIcon>
+                                        </div>
                                     </NuxtLink>
                                 </template>
-                            </NButton>
+                            </UButton>
                         </template>
                         {{ t('edit') }}
-                    </NTooltip>
+                    </UTooltip>
 
-                    <NTooltip :delay="1500">
+                    <UTooltip :delay="1500">
                         <template #trigger>
-                            <NButton type="primary" @click="PRINT" round secondary>
+                            <UButton type="primary" @click="PRINT" round secondary>
                                 <template #icon>
-                                    <NIcon>
+                                    <div class="inline-block">
                                         <Icon name="tabler:printer" />
-                                    </NIcon>
+                                    </div>
                                 </template>
-                            </NButton>
+                            </UButton>
                         </template>
                         {{ t('print') }}
-                    </NTooltip>
-                </NButtonGroup>
+                    </UTooltip>
+                </div>
             </template>
             <template #action>
-                <NButtonGroup>
-                    <NButton v-if="table.allowedMethods?.includes('u')" secondary round type="info">
+                <UButtonGroup>
+                    <UButton v-if="table.allowedMethods?.includes('u')" secondary round type="info">
                         <template #icon>
                             <NuxtLink
                                 :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
-                                <NIcon>
+                                <div class="inline-block">
                                     <Icon name="tabler:pencil" />
-                                </NIcon>
+                                </div>
                             </NuxtLink>
                         </template>
 
                         {{ t('edit') }}
-                    </NButton>
+                    </UButton>
 
-                    <NButton type="primary" @click="PRINT" round secondary>
+                    <UButton type="primary" @click="PRINT" round secondary>
                         <template #icon>
-                            <NIcon>
+                            <div class="inline-block">
                                 <Icon name="tabler:printer" />
-                            </NIcon>
+                            </div>
                         </template>
                         {{ t('print') }}
-                    </NButton>
-                </NButtonGroup>
+                    </UButton>
+                </div>
             </template>
             <LazyDataS v-if="data && table.schema" :value="data" :schema="table.schema" />
-        </NCard>
+        </UCard>
         <LazyTableLogs v-if="table.config?.log && data" :id="data.id" />
-    </NFlex>
+    </div>
 </template>
 
 <script lang="ts" setup>

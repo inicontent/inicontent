@@ -1,8 +1,8 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NPopover trigger="manual" v-model:show="showPopover" :onClickoutside>
+        <UPopover trigger="manual" v-model:show="showPopover" :onClickoutside>
             <template #trigger>
-                <NInput :inputProps="{ class: 'IconPickerInput' }" @focus="showPopover = true"
+                <UInput :inputProps="{ class: 'IconPickerInput' }" @focus="showPopover = true"
                     v-model:value="searchQuery" :default-value="modelValue" :placeholder="t(field.key)" clearable
                     v-bind="field.inputProps
                         ? typeof field.inputProps === 'function'
@@ -14,16 +14,16 @@
                     </template>
 
                     <template #suffix>
-                        <NIcon>
+                        <div class="inline-block">
                             <Icon name="tabler:icons" />
-                        </NIcon>
+                        </div>
                     </template>
-                </NInput>
+                </UInput>
             </template>
-            <NVirtualList v-if="formatedIconsList.length" style="max-height: 250px" :item-size="42" :distance="0"
+            <div class="virtual-list" v-if="formatedIconsList.length" style="max-height: 250px" :item-size="42" :distance="0"
                 :items="formatedIconsList" ignore-item-resize>
                 <template #default="{ item }: { item: { key: string; value: string } }">
-                    <NButton :key="item.key" strong :secondary="modelValue === item.value"
+                    <UButton :key="item.key" strong :secondary="modelValue === item.value"
                         :quaternary="modelValue !== item.value" round
                         :type="modelValue === item.value ? 'primary' : 'default'" @click="modelValue = item.value"
                         class="IconPickerItem">
@@ -31,11 +31,11 @@
                             <Icon :name="`tabler:${item.value}`" />
                         </template>
                         <span> {{ item.value }}</span>
-                    </NButton>
+                    </UButton>
                 </template>
-            </NVirtualList>
-            <NEmpty v-else />
-        </NPopover>
+            </div>
+            <div class="text-center py-8 text-gray-500" v-else />
+        </UPopover>
     </FieldWrapper>
 </template>
 

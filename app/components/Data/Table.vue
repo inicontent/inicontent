@@ -1,8 +1,8 @@
 <template>
-    <NFlex>
+    <div class="flex">
         <LazyColumnTableEditable v-if="isEditable" :field="field" :values="values" />
         <LazyColumnTableReadonly v-else :field="field" :values="values" />
-    </NFlex>
+    </div>
 </template>
 
 <script lang="ts" setup>

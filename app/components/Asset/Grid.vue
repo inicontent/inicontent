@@ -1,87 +1,87 @@
 <template>
 	<template v-if="(modelValue && modelValue.length) || Loading.AssetData">
-		<NDrawer v-model:show="showDrawer" :placement="Language === 'ar' ? 'left' : 'right'" class="assetDrawer">
-			<NDrawerContent :native-scrollbar="false" v-if="CurrentAsset">
-				<NFlex vertical>
-					<NImage
+		<USlideover v-model:show="showDrawer" :placement="Language === 'ar' ? 'left' : 'right'" class="assetDrawer">
+			<USlideoverContent :native-scrollbar="false" v-if="CurrentAsset">
+				<div class="flex flex-col">
+					<NuxtImg
 						v-if="CurrentAsset?.type.startsWith('image/') || (CurrentAsset?.type === 'application/pdf' && CurrentAsset.publicURL.startsWith('https://cdn.inicontent.com/'))"
 						class="asset"
 						:src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
 						:preview-src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
 						:img-props="{ class: 'image' }"
 						:renderToolbar="(props) => renderToolbar(props, CurrentAsset)" />
-					<NIcon v-else class="asset">
-						<NA :href="CurrentAsset.publicURL" target="_blank">
+					<span v-else class="asset">
+						<a :href="CurrentAsset.publicURL" target="_blank">
 							<LazyAssetIcon :type="CurrentAsset.type" class="icon" />
-						</NA>
-					</NIcon>
+						</a>
+					</div>
 					<div v-if="CurrentAsset.name">
-						<NText strong>{{ t("name") }}: </NText>
-						<NText>{{ CurrentAsset.name }}</NText>
+						<span strong>{{ t("name") }}: </span>
+						<span>{{ CurrentAsset.name }}</span>
 					</div>
 					<div>
-						<NText strong>{{ t("size") }}: </NText>
-						<NText>{{ humanFileSize(CurrentAsset.size) }}</NText>
+						<span strong>{{ t("size") }}: </span>
+						<span>{{ humanFileSize(CurrentAsset.size) }}</span>
 					</div>
 					<div>
-						<NText strong>{{ t("type") }}: </NText>
-						<NText>{{ CurrentAsset.type }}</NText>
+						<span strong>{{ t("type") }}: </span>
+						<span>{{ CurrentAsset.type }}</span>
 					</div>
 					<div>
-						<NText strong>{{ t("link") }}: </NText>
-						<NA :href="CurrentAsset.publicURL" target="_blank">{{ decodeURIComponent(CurrentAsset.publicURL)
+						<span strong>{{ t("link") }}: </span>
+						<a :href="CurrentAsset.publicURL" target="_blank">{{ decodeURIComponent(CurrentAsset.publicURL)
 						}}
-						</NA>
+						</a>
 					</div>
 					<div>
-						<NText strong>{{ t("createdAt") }}: </NText>
-						<NTime :time="CurrentAsset.createdAt" />
+						<span strong>{{ t("createdAt") }}: </span>
+						<time :time="CurrentAsset.createdAt" />
 					</div>
-				</NFlex>
-			</NDrawerContent>
-		</NDrawer>
-		<NImageGroup>
-			<NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
+				</div>
+			</div>
+		</USlideover>
+		<NuxtImgGroup>
+			<div class="grid" :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
 				<template v-if="modelValue === undefined || Loading.AssetData" #default>
-					<NGridItem v-for="(_) in [...Array(22).keys()]">
-						<NSkeleton class="asset"></NSkeleton>
-					</NGridItem>
+					<div class="grid"Item v-for="(_) in [...Array(22).keys()]">
+						<div class="animate-pulse bg-gray-200" class="asset"></div>
+					</div>
 				</template>
 				<template v-else #default>
-					<NGridItem v-for="(asset) in (modelValue as Asset[]).sort((a, b) => {
+					<div class="grid"Item v-for="(asset) in (modelValue as Asset[]).sort((a, b) => {
 						if (a.type === 'dir' && b.type !== 'dir') return -1;
 						if (a.type !== 'dir' && b.type === 'dir') return 1;
 						return 0;
 					})">
 						<div @contextmenu="handleContextMenu($event, asset)">
-							<NFlex vertical class="assetContainer">
-								<NFlex class="assetActions">
+							<div class="flex flex-col" class="assetContainer">
+								<div class="flex" class="assetActions">
 									<slot :asset></slot>
-								</NFlex>
-								<NImage
+								</div>
+								<NuxtImg
 									v-if="asset.type.startsWith('image/') || (asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
 									class="asset"
 									:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
 									:intersection-observer-options="{
 										root: `#${targetID ?? 'container'}`
 									}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`" />
-								<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
+								<span v-else class="asset" @click="handleOnClickAsset($event, asset)">
 									<LazyAssetIcon :type="asset.type" class="icon" />
-								</NIcon>
-								<NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
+								</div>
+								<div class="truncate" expand-trigger="click" :tooltip="false" line-clamp="1">
 									{{ asset.name }}
-								</NPerformantEllipsis>
-							</NFlex>
+								</div>
+							</div>
 						</div>
-					</NGridItem>
+					</div>
 				</template>
-			</NGrid>
+			</div>
 		</NImageGroup>
-		<NDropdown v-if="table?.allowedMethods?.includes('u') || table?.allowedMethods?.includes('d')"
+		<UDropdown v-if="table?.allowedMethods?.includes('u') || table?.allowedMethods?.includes('d')"
 			placement="bottom-start" trigger="manual" :x="x" :y="y" :show="showDropdown" :options="dropdownOptions"
 			@clickoutside="dropdownOnClickOutside" @select="(key: string) => dropdownOnSelect(key)" />
 	</template>
-	<NEmpty v-else />
+	<div class="text-center py-8 text-gray-500" v-else />
 </template>
 
 <script lang="ts" setup>

@@ -1,45 +1,45 @@
 <template>
-    <NFlex vertical size="large">
-        <NCard :bordered="false" style="background:none">
+    <div class="flex flex-col" size="large">
+        <UCard :bordered="false" style="background:none">
             <template #header>
-                <NFlex justify="space-between" align="center">
-                    <NH2 style="margin:0">{{ tableTitle }}</NH2>
-                    <NTag type="info">{{ t('apiDocumentation') }}</NTag>
-                </NFlex>
+                <div class="flex" justify="space-between" align="center">
+                    <h3 class="font-semibold"2 style="margin:0">{{ tableTitle }}</NH2>
+                    <UBadge type="info">{{ t('apiDocumentation') }}</UBadge>
+                </div>
             </template>
-            <NText type="secondary">{{ overviewText }}</NText>
-            <NDivider />
-            <NFlex vertical :size="8">
-                <NText strong>{{ t('availableMethods') }}</NText>
-                <NFlex wrap :size="8">
-                    <NTag v-for="method in allowedMethodTags" :key="method.key" :type="method.type" round>
+            <span type="secondary">{{ overviewText }}</span>
+            <hr class="my-4" />
+            <div class="flex flex-col" :size="8">
+                <span strong>{{ t('availableMethods') }}</span>
+                <div class="flex" wrap :size="8">
+                    <UBadge v-for="method in allowedMethodTags" :key="method.key" :type="method.type" round>
                         {{ method.http }}
-                    </NTag>
-                </NFlex>
-            </NFlex>
-        </NCard>
+                    </UBadge>
+                </div>
+            </div>
+        </UCard>
 
-        <NCard v-for="section in sections" :key="section.key" :id="section.key"
+        <UCard v-for="section in sections" :key="section.key" :id="section.key"
             :class="['api-section', { 'api-section--active': section.key === activeSectionKey }]">
             <template #header>
-                <NFlex align="center" justify="space-between">
-                    <NH3 style="margin:0">{{ section.title }}</NH3>
-                    <NTag v-if="section.http" :type="section.tagType" round>{{ section.http }}</NTag>
-                </NFlex>
+                <div class="flex" align="center" justify="space-between">
+                    <h3 class="font-semibold"3 style="margin:0">{{ section.title }}</NH3>
+                    <UBadge v-if="section.http" :type="section.tagType" round>{{ section.http }}</UBadge>
+                </div>
             </template>
-            <NFlex vertical size="small">
-                <NText>{{ section.description }}</NText>
-                <NList v-if="section.endpoints.length" bordered>
-                    <NListItem v-for="endpoint in section.endpoints" :key="endpoint.path">
+            <div class="flex flex-col" size="small">
+                <span>{{ section.description }}</span>
+                <ul class="list" v-if="section.endpoints.length" bordered>
+                    <ul class="list"Item v-for="endpoint in section.endpoints" :key="endpoint.path">
                         <code class="api-endpoint">{{ endpoint.display }}</code>
-                    </NListItem>
-                </NList>
-                <NAlert v-if="section.note" type="info" :show-icon="false">
+                    </li>
+                </ul>
+                <alert v-if="section.note" type="info" :show-icon="false">
                     {{ section.note }}
                 </NAlert>
                 <div v-if="section.fields.length" class="api-fields">
-                    <NText strong>{{ t('availableFields') }}</NText>
-                    <NTable size="small" :single-line="false">
+                    <span strong>{{ t('availableFields') }}</span>
+                    <UTable size="small" :single-line="false">
                         <thead>
                             <tr>
                                 <th>{{ t('fieldKey') }}</th>
@@ -58,15 +58,15 @@
                                 <td>{{ field.description ?? 'N/A' }}</td>
                             </tr>
                         </tbody>
-                    </NTable>
+                    </UTable>
                 </div>
                 <div v-if="section.example" class="api-example">
-                    <NText strong>{{ t('exampleCurl') }}</NText>
+                    <span strong>{{ t('exampleCurl') }}</span>
                     <pre><code>{{ section.example }}</code></pre>
                 </div>
-            </NFlex>
-        </NCard>
-    </NFlex>
+            </div>
+        </UCard>
+    </div>
 </template>
 
 <script setup lang="ts">

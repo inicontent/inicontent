@@ -1,7 +1,7 @@
 <template>
-    <NIcon>
+    <div class="inline-block">
         <Icon :name="`tabler:${value}`" />
-    </NIcon>
+    </div>
 </template>
 
 <script setup lang="ts">

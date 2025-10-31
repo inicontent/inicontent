@@ -1,31 +1,31 @@
 <template>
-	<NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
+	<UAccordion style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
 		v-model:expanded-names="expandedNames">
 		<Draggable :list="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
 			:move="onMoveCallback">
 			<template #item="{ element, index }: { element: Field, index: number }">
-				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
+				<UAccordionItem :name="element.id" :id="`element-${element.id}`" class="element"
 					:disabled="isDisabled(element.key)" :title="element.key ? t(element.key) : '--'">
 					<template #header-extra>
-						<NFlex>
-							<NButtonGroup>
-								<NDropdown
+						<div class="flex">
+							<UButtonGroup>
+								<UDropdown
 									v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)"
 									:options="fieldsList()" style="max-height: 200px;" scrollable
 									@select="(type) => pushToChildrenSchema(type, index)">
-									<NButton :disabled="!element.key" secondary round size="small"
+									<UButton :disabled="!element.key" secondary round size="small"
 										@click="pushToChildrenSchema('string', index)">
 										<template #icon>
-											<NIcon>
+											<div class="inline-block">
 												<Icon name="tabler:plus" />
-											</NIcon>
+											</div>
 										</template>
-									</NButton>
-								</NDropdown>
-								<NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
+									</UButton>
+								</UDropdown>
+								<UDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
 									style="max-height: 200px" trigger="click" scrollable
 									@select="(type) => schema[index] = changeFieldType(element, type)">
-									<NButton round strong secondary size="small" type="primary"
+									<UButton round strong secondary size="small" type="primary"
 										:disabled="isDisabled(element.key)">
 										<template #icon>
 											<component :is="getField(element).icon" />
@@ -33,170 +33,170 @@
 										<template v-if="!$device.isMobile" #default>
 											{{ getField(element).label }}
 										</template>
-									</NButton>
-								</NDropdown>
-							</NButtonGroup>
+									</UButton>
+								</UDropdown>
+							</div>
 
-							<NButtonGroup v-if="!isDisabled(element.key)">
-								<NTooltip :delay="1500">
+							<UButtonGroup v-if="!isDisabled(element.key)">
+								<UTooltip :delay="1500">
 									<template #trigger>
-										<NPopselect v-model:value="element.width" :options="widthOptions">
-											<NButton round strong secondary size="small" type="info">
+										<UPopover v-model:value="element.width" :options="widthOptions">
+											<UButton round strong secondary size="small" type="info">
 												<template v-if="!$device.isMobile" #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:arrow-autofit-width" />
-													</NIcon>
+													</div>
 												</template>
 												1/{{ element.width ?? 1 }}
-											</NButton>
-										</NPopselect>
+											</UButton>
+										</UPopover>
 									</template>
 									{{ t('width') }}
-								</NTooltip>
-								<NTooltip :delay="1500">
+								</UTooltip>
+								<UTooltip :delay="1500">
 									<template #trigger>
-										<NButton round secondary size="small"
+										<UButton round secondary size="small"
 											:type="element.required ? 'error' : 'tertiary'"
 											@click="element.required = !element.required">
 											<template #icon>
-												<NIcon>
+												<div class="inline-block">
 													<Icon name="tabler:asterisk" />
-												</NIcon>
+												</div>
 											</template>
-										</NButton>
+										</UButton>
 									</template>
 									{{ t('required') }}
-								</NTooltip>
-								<NButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
+								</UTooltip>
+								<UButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:trash" />
-										</NIcon>
+										</div>
 									</template>
-								</NButton>
-							</NButtonGroup>
-						</NFlex>
+								</UButton>
+							</div>
+						</div>
 					</template>
 
-					<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
+					<UFormItem :label="t('fieldName')" style="margin-bottom:20px">
 						<template #feedback>
 							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }} ({{ element.id }})
 						</template>
-						<NInput v-model:value="element.key" />
-					</NFormItem>
+						<UInput v-model:value="element.key" />
+					</UFormGroup>
 
-					<NFormItem
+					<UFormItem
 						v-if="element.table === 'assets' || !element.children || !isArrayOfObjects(element.children)"
 						:label="t('fieldDescription')">
-						<NInput v-model:value="element.description" />
-					</NFormItem>
+						<UInput v-model:value="element.description" />
+					</UFormGroup>
 
 					<template v-if="element.table === 'assets'">
-						<NFormItem :label="t('allowedFiles')">
-							<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
+						<UFormItem :label="t('allowedFiles')">
+							<USelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
 								v-model:value="element.accept" />
-						</NFormItem>
-						<NFormItem :label="t('urlSuffix')">
-							<NInput v-model:value="element.suffix" />
+						</UFormGroup>
+						<UFormItem :label="t('urlSuffix')">
+							<UInput v-model:value="element.suffix" />
 							<template #feedback>
 								{{ t('ie') }}: <strong>/@2?q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
 							</template>
-						</NFormItem>
+						</UFormGroup>
 					</template>
 					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
-						<NFormItem :label="t('options')" class="formItemFlex">
+						<UFormItem :label="t('options')" class="formItemFlex">
 							<template v-if="isArrayOfArrays(element.options)">
-								<NDataTable :columns="labelsColoringColumns(element)" :data="element.options" />
-								<NButton type="primary" secondary style="width:100%"
+								<UTable :columns="labelsColoringColumns(element)" :data="element.options" />
+								<UButton type="primary" secondary style="width:100%"
 									@click="(element.options as [string, string][]).push(['', ''])">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:plus" />
-										</NIcon>
+										</div>
 									</template>
 									{{ t('add') }}
-								</NButton>
+								</UButton>
 							</template>
-							<NSelect v-else
+							<USelect v-else
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
 								@update:value="(value: string[]) => element.options = [...new Set(value)]" filterable
 								multiple tag :show-arrow="false" :show="false" />
-						</NFormItem>
-						<NFormItem :label="t('labelsColoring')" label-placement="left">
-							<NSwitch :value="isArrayOfArrays(element.options)"
+						</UFormGroup>
+						<UFormItem :label="t('labelsColoring')" label-placement="left">
+							<UToggle :value="isArrayOfArrays(element.options)"
 								@update:value="(value) => toggleLabelsColoring(element, value)" />
-						</NFormItem>
-						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
+						</UFormGroup>
+						<UFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
 							label-placement="left">
-							<NSwitch v-model:value="element.custom" />
-						</NFormItem>
+							<UToggle v-model:value="element.custom" />
+						</UFormGroup>
 					</template>
 					<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
-						<NFormItem :label="t('expandByDefault')" label-placement="left">
-							<NSwitch v-model:value="element.expand" />
-						</NFormItem>
+						<UFormItem :label="t('expandByDefault')" label-placement="left">
+							<UToggle v-model:value="element.expand" />
+						</UFormGroup>
 					</template>
 					<template v-else-if="Array.isArray(element.type) && !element.subType">
-						<NFormItem :label="t('valuesType')">
-							<NSelect v-model:value="element.type" filterable multiple :min="1"
+						<UFormItem :label="t('valuesType')">
+							<USelect v-model:value="element.type" filterable multiple :min="1"
 								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
-						</NFormItem>
+						</UFormGroup>
 					</template>
 					<template v-else-if="element.subType === 'tags'">
-						<NFormItem :label="t('valuesType')">
-							<NSelect v-model:value="(element.children as any)" filterable multiple
+						<UFormItem :label="t('valuesType')">
+							<USelect v-model:value="(element.children as any)" filterable multiple
 								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
-						</NFormItem>
+						</UFormGroup>
 					</template>
 					<template
 						v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
-						<NFormItem :label="t('tableName')">
-							<NSelect filterable v-model:value="element.table" :options="tableSelectOptions" />
-						</NFormItem>
-						<NFormItem :label="t('extendWhere')">
-							<NInput v-model:value="(element.where as string)" />
+						<UFormItem :label="t('tableName')">
+							<USelect filterable v-model:value="element.table" :options="tableSelectOptions" />
+						</UFormGroup>
+						<UFormItem :label="t('extendWhere')">
+							<UInput v-model:value="(element.where as string)" />
 							<template #feedback>
 								{{ t('useInison') }} / {{ t('ie') }}:
 								{<strong>subCategory</strong>:<strong>null</strong>}
 							</template>
-						</NFormItem>
+						</UFormGroup>
 					</template>
 
 					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
-						<NFormItem :label="t('minimumItems')">
-							<NInputNumber :value="element.min"
+						<UFormItem :label="t('minimumItems')">
+							<UInputNumber :value="element.min"
 								@update:value="(value) => { if (value) element.min = value; else delete element.min }" />
-						</NFormItem>
-						<NFormItem :label="t('maximumItems')">
-							<NInputNumber :value="element.max"
+						</UFormGroup>
+						<UFormItem :label="t('maximumItems')">
+							<UInputNumber :value="element.max"
 								@update:value="(value) => { if (value) element.max = value; else delete element.max }" />
-						</NFormItem>
+						</UFormGroup>
 					</template>
 
-					<NFormItem :label="t('unique')" label-placement="left"
+					<UFormItem :label="t('unique')" label-placement="left"
 						v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
-						<NSwitch :value="element.unique ? true : false"
+						<UToggle :value="element.unique ? true : false"
 							@update:value="(value) => element.unique = value" :checked-value="true"
 							:unchecked-value="false" />
-					</NFormItem>
-					<NFormItem v-if="element.unique" :label="t('uniqueGroup')">
-						<NSelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
+					</UFormGroup>
+					<UFormItem v-if="element.unique" :label="t('uniqueGroup')">
+						<USelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
 							@update:value="(value) => element.unique = value" :options="uniqueGroupOptions" tag
 							filterable clearable />
-					</NFormItem>
+					</UFormGroup>
 
-					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+					<UFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
 						:label="t('regex')">
-						<NInput v-model:value="element.regex" />
-					</NFormItem>
+						<UInput v-model:value="element.regex" />
+					</UFormGroup>
 
 					<LazyTableSettingsSchema
 						v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
 						v-model="element.children" v-model:expanded-names="expandedChildNames" />
-				</NCollapseItem>
+				</UAccordionItem>
 			</template>
 		</Draggable>
-	</NCollapse>
+	</UAccordion>
 </template>
 
 <script lang="ts" setup>

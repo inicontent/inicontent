@@ -1,42 +1,42 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<template #label>
-			<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
+			<div class="flex" inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
-			</NFlex>
+			</div>
 		</template>
 
-		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
+		<UInput type="file" directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
 			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
 			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
 			:shouldUseThumbnailUrl="() => false" with-credentials>
-			<NUploadDragger v-if="!field.isTable">
-				<NIcon size="48" depth="3">
+			<UInput type="file"Dragger v-if="!field.isTable">
+				<span size="48" depth="3">
 					<Icon name="tabler:upload" />
-				</NIcon>
+				</div>
 			</NUploadDragger>
-			<NFlex v-else align="center" size="small">
+			<div class="flex" v-else align="center" size="small">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
-			</NFlex>
-		</NUpload>
+			</div>
+		</UInput>
 
-		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+		<USlideover v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
+			<USlideoverContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
 				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
-							<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
+							<UCheckbox v-if="field.isArray" :checked="getChecked(asset)"
 								@update:checked="handleSelectAsset(asset)" />
-							<NRadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
+							<URadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
 						</template>
 					</template>
 				</AssetCard>
-			</NDrawerContent>
-		</NDrawer>
+			</div>
+		</USlideover>
 	</FieldWrapper>
 </template>
 

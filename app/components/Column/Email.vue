@@ -1,7 +1,7 @@
 <template>
-    <NA :href="`mailto:${value}`" target="_blank">
+    <a :href="`mailto:${value}`" target="_blank">
         {{ value }}
-    </NA>
+    </a>
 </template>
 
 <script lang="ts" setup>

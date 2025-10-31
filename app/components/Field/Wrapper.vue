@@ -1,37 +1,37 @@
 <template>
-	<NFormItem :label="t(field.key)" :rule :path="String(field.id)" :style="{ flex: fieldFlex }"
+	<UFormItem :label="t(field.key)" :rule :path="String(field.id)" :style="{ flex: fieldFlex }"
 		v-bind="field.labelProps">
 		<slot></slot>
 		<template #label>
-			<NFlex v-if="field.description" align="center" :size="0">
-				<NDropdown
+			<div class="flex" v-if="field.description" align="center" :size="0">
+				<UDropdown
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="800" :options="dropdownOptions"
 					@select="handleSelect">
 					{{ t(field.key) }}
-				</NDropdown>
-				<NTooltip>
+				</UDropdown>
+				<UTooltip>
 					<template #trigger>
-						<NButton circle text size="tiny">
+						<UButton circle text size="tiny">
 							<template #icon>
 								<Icon name="tabler:question-mark" />
 							</template>
-						</NButton>
+						</UButton>
 					</template>
 					{{ t(field.description) }}
-				</NTooltip>
-			</NFlex>
+				</UTooltip>
+			</div>
 			<template v-else>
-				<NDropdown
+				<UDropdown
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="1500" :options="dropdownOptions" size="small"
 					@select="handleSelect">
 					{{ t(field.key) }}
-				</NDropdown>
+				</UDropdown>
 			</template>
 			<slot name="label"></slot>
 		</template>
-	</NFormItem>
+	</UFormGroup>
 </template>
 
 <script lang="ts" setup>

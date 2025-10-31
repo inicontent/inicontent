@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
+		<USelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
 			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="Loading[`options_${field.key}`]"
 			:multiple="!!field.isArray" :consistent-menu-width="false" max-tag-count="responsive"
 			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
@@ -9,16 +9,16 @@
 					: field.inputProps
 				: {}">
 			<template #action>
-				<NFlex justify="center">
-					<NButton :disabled="!table?.allowedMethods?.includes('c')" round strong secondary type="primary"
+				<div class="flex" justify="center">
+					<UButton :disabled="!table?.allowedMethods?.includes('c')" round strong secondary type="primary"
 						@click="() => openDrawer(field.table as string)">
 						<template #icon>
 							<Icon name="tabler:plus" />
 						</template>
-					</NButton>
-				</NFlex>
+					</UButton>
+				</div>
 			</template>
-		</NSelect>
+		</USelect>
 	</FieldWrapper>
 </template>
 

@@ -1,17 +1,17 @@
 <template>
     <div v-if="value === null || value === undefined || (Array.isArray(value) && value.length === 0)">
         <ColumnBoolean v-if="detectedFieldType === 'boolean'" />
-        <NText :depth="3" v-else>--</NText>
+        <span :depth="3" v-else>--</span>
     </div>
     <div v-else>
         <ColumnRole v-if="detectedFieldType === 'role'" :value />
         <ColumnId v-else-if="['id', 'ip'].includes(detectedFieldType)" :value />
-        <NScrollbar v-else-if="['table', 'tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)"
+        <div class="overflow-auto" v-else-if="['table', 'tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)"
             x-scrollable>
             <ColumnAsset v-if="field.table === 'assets'" :value />
             <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
             <ColumnTags v-else-if="['tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)" :value :field />
-        </NScrollbar>
+        </div>
         <ColumnColor v-else-if="detectedFieldType === 'color'" :value />
         <ColumnUrl v-else-if="detectedFieldType === 'url'" :value />
         <ColumnEmail v-else-if="detectedFieldType === 'email'" :value />

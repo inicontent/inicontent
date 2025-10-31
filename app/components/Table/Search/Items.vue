@@ -1,18 +1,18 @@
 <template>
-	<NFlex item-style="width: 100%">
+	<div class="flex" item-style="width: 100%">
 		<template v-for="(item, index) in formatedItems">
-			<NInputGroup v-if="Array.isArray(item)">
-				<NCascader size="small" :consistent-menu-width="false" filterable :value="item[0]"
+			<UInputGroup v-if="Array.isArray(item)">
+				<USelectMenu size="small" :consistent-menu-width="false" filterable :value="item[0]"
 					@update:value="(v) => item[0] = v"
 					:options="generateSearchInOptions(
 						table.schema, formatedItems?.toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
 					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
 				<template v-if="item[3]">
-					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
+					<USelectMenu size="small" filterable check-strategy="child" :value="item[1]"
 						@update:value="(v) => updateOperator(item, v)"
 						:options="getAvailableComparisonOperator(item[3])" style="width:33.33%" />
 					<template v-if="isRelativeOperator(item[1])">
-						<NAutoComplete size="small" style="width:33.33%" :value="item[2] ?? ''"
+						<autoComplete size="small" style="width:33.33%" :value="item[2] ?? ''"
 							:placeholder="t('relativePlaceholder')" :options="getRelativeAutocompleteOptions(item[2])"
 							:fallback-option="createRelativeFallback"
 							@update:value="(v) => updateRelativeValue(item, v)" @keydown.enter.prevent="callback()" />
@@ -20,18 +20,18 @@
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
 						:field="getFieldFromItem(item)" />
 				</template>
-				<NButton :disabled="formatedItems?.length === 1" @click="modelValue?.splice(index, 1)" circle
+				<UButton :disabled="formatedItems?.length === 1" @click="modelValue?.splice(index, 1)" circle
 					size="small">
 					<template #icon>
-						<NIcon>
+						<div class="inline-block">
 							<Icon name="tabler:minus" />
-						</NIcon>
+						</div>
 					</template>
-				</NButton>
-			</NInputGroup>
+				</UButton>
+			</div>
 			<LazyTableSearch v-else v-model="(modelValue[index] as searchType)" :callback />
 		</template>
-	</NFlex>
+	</div>
 </template>
 
 <script lang="ts" setup>

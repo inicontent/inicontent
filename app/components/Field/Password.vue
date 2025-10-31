@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NInput type="password" show-password-on="click" v-model:value="localModelValue" :placeholder="t(field.key)"
+		<UInput type="password" show-password-on="click" v-model:value="localModelValue" :placeholder="t(field.key)"
 			clearable v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
@@ -9,7 +9,7 @@
 			<template #suffix>
 				<component :is="getField(field).icon" />
 			</template>
-		</NInput>
+		</UInput>
 	</FieldWrapper>
 </template>
 

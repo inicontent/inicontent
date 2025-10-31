@@ -1,11 +1,11 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
+		<UInput v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
 			? typeof field.inputProps === 'function'
 				? field.inputProps(modelValue) ?? {}
 				: field.inputProps
 			: {}">
-		</NMention>
+		</UInput>
 	</FieldWrapper>
 </template>
 

@@ -1,13 +1,13 @@
 <template>
 	<NuxtLayout name="dashboard">
-		<NLayout position="absolute" has-sider>
-			<NLayoutSider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
+		<div class="layout" position="absolute" has-sider>
+			<div class="layout"Sider v-if="database?.slug" :collapsed="!isMenuOpen" @update-collapsed="(collapsed) =>
 				isMenuOpen = !collapsed" style="z-index: 1000" bordered show-trigger="bar" collapse-mode="width"
 				:collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
-				<NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
+				<nav class="menu" :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
 					:options="menuOptions" :defaultValue :watch-props="['defaultValue']" accordion />
 			</NLayoutSider>
-			<NLayoutContent id="pageContent" position="absolute" :content-style="{
+			<div class="layout"Content id="pageContent" position="absolute" :content-style="{
 				padding: $device.isMobile
 					? '24px 12px'
 					: Language === 'ar'
@@ -18,8 +18,8 @@
 					style="width: 100%;height: 100%;right: 0;top: 0;position: absolute;background-color: #0000006e;z-index: 99;cursor: pointer;">
 				</div>
 				<slot></slot>
-			</NLayoutContent>
-		</NLayout>
+			</div>
+		</div>
 	</NuxtLayout>
 </template>
 

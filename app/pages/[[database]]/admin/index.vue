@@ -1,7 +1,7 @@
 <template>
-	<NCard :title="t('tables')" style="background:none" :bordered="false">
+	<UCard :title="t('tables')" style="background:none" :bordered="false">
 		<TableGrid v-model="database" />
-	</NCard>
+	</UCard>
 </template>
 
 <script setup lang="ts">

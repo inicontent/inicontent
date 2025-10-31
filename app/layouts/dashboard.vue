@@ -1,101 +1,101 @@
 <template>
 	<NuxtLayout name="default">
-		<NLayout position="absolute">
-			<NScrollbar id="iniHeader" style="max-height: 65px" xScrollable trigger="none">
-				<NLayoutHeader style="height: 64px; padding: 15px 24px" bordered>
-					<NPageHeader>
+		<div class="layout" position="absolute">
+			<div class="overflow-auto" id="iniHeader" style="max-height: 65px" xScrollable trigger="none">
+				<div class="layout"Header style="height: 64px; padding: 15px 24px" bordered>
+					<header class="page-header">
 						<template #avatar>
 							<NuxtLink v-if="String($route.matched[0]?.name).startsWith('database')"
 								:to="`/${$route.params.database ?? ''}`">
-								<NTag strong round :bordered="false" style="cursor:pointer;font-weight:600"
+								<UBadge strong round :bordered="false" style="cursor:pointer;font-weight:600"
 									:style="ThemeConfig.revert && Theme === 'dark' ? 'color:#000;background-color:#fff' : ''">
 									<template #avatar>
-										<NAvatar fallbackSrc="/favicon.ico" :style='{
+										<avatar fallbackSrc="/favicon.ico" :style='{
 											backgroundColor: "transparent"
 										}' :src='database?.icon?.publicURL ?? "/favicon.ico"' />
 									</template>
 									{{ t(database?.slug ?? 'inicontent') }}
-								</NTag>
+								</UBadge>
 							</NuxtLink>
-							<NTag v-else strong round :bordered="false">
+							<UBadge v-else strong round :bordered="false">
 								<template #avatar>
-									<NAvatar fallbackSrc="/favicon.ico"
+									<avatar fallbackSrc="/favicon.ico"
 										:src='database?.icon?.publicURL ?? "/favicon.ico"' />
 								</template>
 								{{ t(database?.slug ?? 'inicontent') }}
-							</NTag>
+							</UBadge>
 						</template>
 						<template #title v-if='showBreadcrumb'>
-							<NBreadcrumb>
-								<NBreadcrumbItem v-for="(_, index) of breadcrumbArray">
+							<nav class="breadcrumb">
+								<span class="breadcrumb-item" v-for="(_, index) of breadcrumbArray">
 									<NuxtLink :to="breadCrumbItemLink(index)">
 										{{ breadCrumbItemLabel(index) }}
 									</NuxtLink>
-								</NBreadcrumbItem>
-							</NBreadcrumb>
+								</span>
+							</nav>
 						</template>
 						<template #extra>
-							<NButtonGroup>
-								<NPopover v-if="user?.role === appConfig.idOne" :delay="600" scrollable
+							<UButtonGroup>
+								<UPopover v-if="user?.role === appConfig.idOne" :delay="600" scrollable
 									style="max-height: 240px;">
 									<template #trigger>
-										<NButton round size="small">{{ humanFileSize(
+										<UButton round size="small">{{ humanFileSize(
 											database?.size,
-										) }}</NButton>
+										) }}</UButton>
 									</template>
-									<NFlex vertical>
-										<NTag v-for="table in database.tables" round
+									<div class="flex flex-col">
+										<UBadge v-for="table in database.tables" round
 											style="width:fit-content;padding-inline-start: 0; margin: auto;"
 											:bordered="false">
-											<NTag style="width:fit-content;margin-inline-end: 8px;" :bordered="false"
+											<UBadge style="width:fit-content;margin-inline-end: 8px;" :bordered="false"
 												type="primary" round strong>
 												<template #avatar>
 													<LazyTableIcon :table="table" />
 												</template>
 												{{ t(table.slug) }}
-											</NTag>
+											</UBadge>
 											{{ humanFileSize(table?.size) }}
-										</NTag>
-									</NFlex>
-								</NPopover>
-								<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-									<NButton round size="small">
+										</UBadge>
+									</div>
+								</UPopover>
+								<UDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+									<UButton round size="small">
 										<template #icon>
-											<NIcon>
+											<div class="inline-block">
 												<Icon name="tabler:user" />
-											</NIcon>
+											</div>
 										</template>
 										<template v-if="user">
-											<NText strong>{{ user.username.charAt(0).toUpperCase() +
-												user.username.slice(1) }}</NText>
+											<span strong>{{ user.username.charAt(0).toUpperCase() +
+												user.username.slice(1) }}</span>
 										</template>
-									</NButton>
-								</NDropdown>
-								<NDropdown v-if="languagesDropdownOptions?.length" :value="Language"
+									</UButton>
+								</UDropdown>
+								<UDropdown v-if="languagesDropdownOptions?.length" :value="Language"
 									:options="languagesDropdownOptions" @select="(v) => Language = v">
-									<NButton round size="small">
+									<UButton round size="small">
 										<template #icon>
-											<NIcon>
+											<div class="inline-block">
 												<Icon name="tabler:language" />
-											</NIcon>
+											</div>
 										</template>
-									</NButton>
-								</NDropdown>
-							</NButtonGroup>
+									</UButton>
+								</UDropdown>
+							</div>
 						</template>
-					</NPageHeader>
+					</header>
 				</NLayoutHeader>
-			</NScrollbar>
-			<NLayoutContent id="container" position="absolute"
+			</div>
+			<div class="layout"Content id="container" position="absolute"
 				content-style="display: flex;justify-content: center;align-items: center;padding: 24px 0;height: max-content"
 				:native-scrollbar="false">
 				<slot></slot>
-			</NLayoutContent>
-		</NLayout>
+			</div>
+		</div>
 
-		<NModal v-model:show="showAuthModal" :mask-closable="false" :close-on-esc="false">
+		<UModal v-model:show="showAuthModal" :mask-closable="false" :close-on-esc="false">
 			<Auth modal @logged-in="onLoggedIn" />
-		</NModal>
+		</UModal>
 	</NuxtLayout>
 </template>
 

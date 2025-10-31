@@ -1,12 +1,12 @@
 <template>
-    <NFlex :wrap="false" align="center" :size="5">
-        <NIcon v-if="value" style="cursor: pointer;" size="medium" @click="copyID">
+    <div class="flex" :wrap="false" align="center" :size="5">
+        <span v-if="value" style="cursor: pointer;" size="medium" @click="copyID">
             <Icon name="tabler:copy" />
-        </NIcon>
-        <NPerformantEllipsis>
+        </div>
+        <div class="truncate">
             {{ value }}
-        </NPerformantEllipsis>
-    </NFlex>
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>

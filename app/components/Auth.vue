@@ -1,22 +1,22 @@
 <template>
-	<NCard hoverable style="max-width: 300px">
-		<NTabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
-			<NTabPane name="signin" :tab="t('signin')">
-				<NForm ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
+	<UCard hoverable style="max-width: 300px">
+		<UTabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
+			<div name="signin" :tab="t('signin')">
+				<UForm ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
 					<FieldS v-model="SigninForm" :schema="SigninColumns" />
-					<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
+					<UButton attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
 						{{ t("signin") }}
-					</NButton>
-				</NForm>
-			</NTabPane>
-			<NTabPane name="signup" :tab="t('signup')" :disabled="!table?.allowedMethods?.includes('c')">
+					</UButton>
+				</UForm>
+			</div>
+			<div name="signup" :tab="t('signup')" :disabled="!table?.allowedMethods?.includes('c')">
 				<Form ref="SignupFormRef" v-model="SignupForm" table="users" @after-create="onAfterSignup" />
-				<NButton @click="SignupFormRef?.create" type="primary" block secondary strong :loading="Loading.Signup">
+				<UButton @click="SignupFormRef?.create" type="primary" block secondary strong :loading="Loading.Signup">
 					{{ t("signup") }}
-				</NButton>
-			</NTabPane>
-		</NTabs>
-	</NCard>
+				</UButton>
+			</div>
+		</UTabs>
+	</UCard>
 </template>
 
 <script lang="ts" setup>

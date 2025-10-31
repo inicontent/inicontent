@@ -1,13 +1,13 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NRadioGroup v-model:value="modelValue" v-bind="field.inputProps
+		<URadioGroup v-model:value="modelValue" v-bind="field.inputProps
 			? typeof field.inputProps === 'function'
 				? field.inputProps(modelValue) ?? {}
 				: field.inputProps
 			: {}">
-			<NFlex>
-				<NRadio v-for="{ label, value } in options" :value :label />
-			</NFlex>
+			<div class="flex">
+				<URadio v-for="{ label, value } in options" :value :label />
+			</div>
 		</NRadioGroup>
 	</FieldWrapper>
 </template>

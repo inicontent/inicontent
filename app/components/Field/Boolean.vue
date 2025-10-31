@@ -1,6 +1,6 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NSwitch v-model:value="modelValue" v-bind="field.inputProps
+        <UToggle v-model:value="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps

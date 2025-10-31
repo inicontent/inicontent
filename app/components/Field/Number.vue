@@ -1,6 +1,6 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NInputNumber v-model:value="modelValue" :placeholder="t(field.key)" :show-button="false" clearable v-bind="field.inputProps
+        <UInputNumber v-model:value="modelValue" :placeholder="t(field.key)" :show-button="false" clearable v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps

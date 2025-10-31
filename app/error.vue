@@ -1,6 +1,18 @@
 <template>
 	<NuxtLayout name="dashboard">
-		<NResult :status="code" :title="message" />
+		<div class="flex items-center justify-center min-h-screen">
+			<UCard>
+				<div class="text-center p-8">
+					<div class="text-6xl font-bold mb-4" :class="code === 'error' ? 'text-red-500' : 'text-yellow-500'">
+						{{ error?.statusCode || '500' }}
+					</div>
+					<div class="text-xl font-semibold mb-2">{{ message }}</div>
+					<UButton @click="() => navigateTo('/')" class="mt-4">
+						{{ t('goHome') }}
+					</UButton>
+				</div>
+			</UCard>
+		</div>
 	</NuxtLayout>
 </template>
 
@@ -30,6 +42,7 @@ defineTranslation({
 		table: "الجدول",
 		item: "العنصر",
 		page: "الصفحة",
+		goHome: "العودة للصفحة الرئيسية",
 	},
 })
 

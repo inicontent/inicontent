@@ -1,9 +1,9 @@
 <template>
     <FieldWrapper ref="dynamicTags" :field :rule>
-        <NFlex v-if="field.defaultValue" style="margin-right: 8px;">
-            <NTag v-for="value in field.defaultValue" size="large">{{ t(value) }}</NTag>
-        </NFlex>
-        <NDynamicTags size="large"
+        <div class="flex" v-if="field.defaultValue" style="margin-right: 8px;">
+            <UBadge v-for="value in field.defaultValue" size="large">{{ t(value) }}</UBadge>
+        </div>
+        <div class="dynamic-tags" size="large"
             :value="modelValue?.filter((value) => !field.defaultValue || !field.defaultValue.includes(value))"
             @update:value="(value: string[]) => modelValue = [...value, ...(field.defaultValue ?? [])]" :renderTag
             :placeholder="t(field.key)" clearable v-bind="field.inputProps
@@ -12,14 +12,14 @@
                     : field.inputProps
                 : {}">
             <template #input="{ deactivate }">
-                <NInput v-model:value="inputValue" @keyup.enter="addValue" @keyup.esc="deactivate" @blur="deactivate"
+                <UInput v-model:value="inputValue" @keyup.enter="addValue" @keyup.esc="deactivate" @blur="deactivate"
                     :placeholder="t(field.key)" clearable v-bind="field.inputProps
                         ? typeof field.inputProps === 'function'
                             ? field.inputProps(modelValue) ?? {}
                             : field.inputProps
                         : {}">
                     <template #suffix>
-                        <NTooltip :delay="1500">
+                        <UTooltip :delay="1500">
                             <template #trigger>
                                 <component :is="getField(
                                     field
@@ -28,18 +28,18 @@
                             <template v-if="fieldChildrenLabels" #default>
                                 {{ t('thisInputSupports') }}: {{ fieldChildrenLabels }}
                             </template>
-                        </NTooltip>
+                        </UTooltip>
                     </template>
-                </NInput>
+                </UInput>
             </template>
             <template #trigger="{ activate, disabled }">
-                <NButton type="primary" dashed :disabled="disabled" @click="activate()">
+                <UButton type="primary" dashed :disabled="disabled" @click="activate()">
                     <template #icon>
                         <Icon name="tabler:plus" />
                     </template>
-                </NButton>
+                </UButton>
             </template>
-        </NDynamicTags>
+        </div>
     </FieldWrapper>
 </template>
 

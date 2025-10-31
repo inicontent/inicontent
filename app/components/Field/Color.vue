@@ -1,6 +1,6 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NColorPicker :modes="['hex']" :actions="['clear']" v-model:value="modelValue" v-bind="field.inputProps
+        <input type="color" class="color-picker" :modes="['hex']" :actions="['clear']" v-model:value="modelValue" v-bind="field.inputProps
             ? typeof field.inputProps === 'function'
                 ? field.inputProps(modelValue) ?? {}
                 : field.inputProps

@@ -5,32 +5,32 @@
 				<slot name="form" :onAfterCreate :onAfterUpdate></slot>
 			</template>
 		</LazyFormDrawer>
-		<NCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
+		<UCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
-				<NFlex align="center" id="navbarActions" style="flex-direction: row-reverse;">
+				<div class="flex" align="center" id="navbarActions" style="flex-direction: row-reverse;">
 					<slot name="navbarActions">
-						<NButtonGroup id="navbarExtraButtons">
-							<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
-								<NTooltip :delay="1500">
+						<UButtonGroup id="navbarExtraButtons">
+							<UDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
+								<UTooltip :delay="1500">
 									<template #trigger>
-										<NButton round>
+										<UButton round>
 											<template #icon>
-												<NIcon>
+												<div class="inline-block">
 													<Icon name="tabler:tools" />
-												</NIcon>
+												</div>
 											</template>
-										</NButton>
+										</UButton>
 									</template>
 									{{ t("tools") }}
-								</NTooltip>
-							</NDropdown>
+								</UTooltip>
+							</UDropdown>
 
-							<NDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
+							<UDropdown v-if="table.allowedMethods?.includes('c')" placement="bottom" trigger="hover"
 								size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
-								<NTooltip placement="top" :delay="1500">
+								<UTooltip placement="top" :delay="1500">
 									<template #trigger>
-										<NButton round :disabled="!table.schema" tag="a"
+										<UButton round :disabled="!table.schema" tag="a"
 											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
 											@click.prevent="() => {
 												if (!isMobile)
@@ -39,122 +39,122 @@
 													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
 											}">
 											<template #icon>
-												<NIcon>
+												<div class="inline-block">
 													<Icon name="tabler:plus" />
-												</NIcon>
+												</div>
 											</template>
-										</NButton>
+										</UButton>
 									</template>
 									{{ t("newItem") }}
-								</NTooltip>
-							</NDropdown>
-							<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
+								</UTooltip>
+							</UDropdown>
+							<UPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
 								placement="bottom-end" trigger="click" scrollable v-model:show="isSearchPopoverVisible">
 								<template #trigger>
-									<NTooltip :delay="1500">
+									<UTooltip :delay="1500">
 										<template #trigger>
-											<NButton round>
+											<UButton round>
 												<template #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:search" />
-													</NIcon>
+													</div>
 												</template>
-											</NButton>
+											</UButton>
 										</template>
 										{{ t("search") }}
-									</NTooltip>
+									</UTooltip>
 								</template>
 								<template #footer>
-									<NFlex justify="space-between">
-										<NTooltip :delay="500" placement="bottom">
+									<div class="flex" justify="space-between">
+										<UTooltip :delay="500" placement="bottom">
 											<template #trigger>
-												<NPopover trigger="click" scrollable style="max-height: 300px;">
+												<UPopover trigger="click" scrollable style="max-height: 300px;">
 													<template #trigger>
-														<NButton round type="success" size="small" secondary>
+														<UButton round type="success" size="small" secondary>
 															<template #icon>
-																<NIcon>
+																<div class="inline-block">
 																	<Icon name="tabler:bookmark" />
-																</NIcon>
+																</div>
 															</template>
-														</NButton>
+														</UButton>
 													</template>
 													<template #footer>
-														<NInputGroup style="width: 100%;">
-															<NInput v-model:value="newFilterName"
+														<UInputGroup style="width: 100%;">
+															<UInput v-model:value="newFilterName"
 																:placeholder="t('filterName')" size="small" round
 																@keyup.enter="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }" />
-															<NButton round type="success" secondary size="small"
+															<UButton round type="success" secondary size="small"
 																:loading="false" :disabled="!newFilterName.trim()"
 																@click="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }">
 																<template #icon>
-																	<NIcon>
+																	<div class="inline-block">
 																		<Icon name="tabler:plus" />
-																	</NIcon>
+																	</div>
 																</template>
-															</NButton>
-														</NInputGroup>
+															</UButton>
+														</div>
 													</template>
-													<NEmpty v-if="favoriteFilters.length === 0" size="small"
+													<div class="text-center py-8 text-gray-500" v-if="favoriteFilters.length === 0" size="small"
 														:description="t('noFavoriteFilters')" />
-													<NFlex v-else vertical size="small" style="padding: 0 8px;">
-														<NFlex justify="space-between" v-for="filter in favoriteFilters"
+													<div class="flex" v-else vertical size="small" style="padding: 0 8px;">
+														<div class="flex" justify="space-between" v-for="filter in favoriteFilters"
 															:key="filter.id" block quaternary
 															@click="loadFavoriteFilter(filter)"
 															style="cursor: pointer;">
 															<template #default>
-																<NFlex justify="space-between" style="width: 100%;">
+																<div class="flex" justify="space-between" style="width: 100%;">
 																	<span>{{ filter.name }}</span>
-																	<NButton circle size="tiny" type="error" text
+																	<UButton circle size="tiny" type="error" text
 																		@click.stop="deleteFavoriteFilter(filter.id)">
 																		<template #icon>
-																			<NIcon>
+																			<div class="inline-block">
 																				<Icon name="tabler:trash" />
-																			</NIcon>
+																			</div>
 																		</template>
-																	</NButton>
-																</NFlex>
+																	</UButton>
+																</div>
 															</template>
-														</NFlex>
-													</NFlex>
-												</NPopover>
+														</div>
+													</div>
+												</UPopover>
 											</template>
 											{{ t("favoriteFilters") }}
-										</NTooltip>
+										</UTooltip>
 
-										<NButtonGroup>
-											<NButton round type="error" secondary size="small" :loading="Loading.data"
+										<UButtonGroup>
+											<UButton round type="error" secondary size="small" :loading="Loading.data"
 												:disabled="isSearchDisabled"
 												@click="() => { localSearchArray = { and: [[null, '=', null]] }; whereQuery = undefined; executeSearch() }">
 												<template #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:x" />
-													</NIcon>
+													</div>
 												</template>
 												{{ t("reset") }}
-											</NButton>
-											<NButton round type="primary" secondary size="small" :loading="Loading.data"
+											</UButton>
+											<UButton round type="primary" secondary size="small" :loading="Loading.data"
 												:disabled="isSearchDisabled" @click="executeSearch">
 												<template #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:search" />
-													</NIcon>
+													</div>
 												</template>
 												{{ t("search") }}
-											</NButton>
-										</NButtonGroup>
-									</NFlex>
+											</UButton>
+										</div>
+									</div>
 								</template>
 								<LazyTableSearch v-model="localSearchArray" :callback="executeSearch" />
-							</NPopover>
+							</UPopover>
 							<slot name="navbarExtraButtons"></slot>
-						</NButtonGroup>
+						</div>
 						<slot name="navbarExtraActions"></slot>
 					</slot>
 					<template v-if="isSlotSet('navbarActions')">
 						<div id="navbarExtraButtons"></div>
 						<div id="navbarExtraActions"></div>
 					</template>
-				</NFlex>
+				</div>
 			</template>
 			<slot name="default" :data>
 				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
@@ -162,7 +162,7 @@
 				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
 					v-model:searchArray="searchArray" ref="tableViewRef" :slots />
 			</slot>
-		</NCard>
+		</UCard>
 		<LazyTableLogs v-if="table.config?.log" />
 	</div>
 </template>

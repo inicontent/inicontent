@@ -1,40 +1,40 @@
 <template>
-    <NFlex vertical size="large" style="padding: 24px 0">
-        <NCard :bordered="false" style="background:none">
+    <div class="flex flex-col" size="large" style="padding: 24px 0">
+        <UCard :bordered="false" style="background:none">
             <template #header>
-                <NH2 style="margin: 0">{{ t('publicApiTitle') }}</NH2>
+                <h3 class="font-semibold"2 style="margin: 0">{{ t('publicApiTitle') }}</NH2>
             </template>
-            <NText type="secondary">{{ t('publicApiDescription') }}</NText>
-            <NAlert type="info" :show-icon="false" style="margin-top: 12px">
+            <span type="secondary">{{ t('publicApiDescription') }}</span>
+            <alert type="info" :show-icon="false" style="margin-top: 12px">
                 {{ t('publicApiHint') }}
                 <NuxtLink :to="authPath" style="margin-inline-start: 6px">
                     {{ t('loginLink') }}
                 </NuxtLink>
             </NAlert>
-        </NCard>
+        </UCard>
 
-        <NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:3">
-            <NGridItem v-for="tableOption in publicTables" :key="tableOption.slug">
-                <NCard hoverable>
+        <div class="grid" :x-gap="12" :y-gap="12" cols="1 500:2 800:3">
+            <div class="grid"Item v-for="tableOption in publicTables" :key="tableOption.slug">
+                <UCard hoverable>
                     <template #header>
-                        <NFlex align="center">
-                            <NIconWrapper :border-radius="50" style="font-style: normal">
+                        <div class="flex" align="center">
+                            <div class="inline-flex items-center justify-center" :border-radius="50" style="font-style: normal">
                                 <LazyTableIcon :table="tableOption" />
-                            </NIconWrapper>
-                            <NH4 style="margin: 0">{{ t(tableOption.slug) }}</NH4>
-                        </NFlex>
+                            </div>
+                            <h3 class="font-semibold"4 style="margin: 0">{{ t(tableOption.slug) }}</NH4>
+                        </div>
                     </template>
-                    <NFlex vertical :size="8">
-                        <NText strong>{{ t('readAccess') }}</NText>
-                        <NText type="secondary">{{ t('listEndpoint') }}</NText>
+                    <div class="flex flex-col" :size="8">
+                        <span strong>{{ t('readAccess') }}</span>
+                        <span type="secondary">{{ t('listEndpoint') }}</span>
                         <code class="api-endpoint">{{ `${tableOption.http} ${tableOption.collectionPath}` }}</code>
-                        <NText type="secondary">{{ t('singleEndpoint') }}</NText>
+                        <span type="secondary">{{ t('singleEndpoint') }}</span>
                         <code class="api-endpoint">{{ `${tableOption.http} ${tableOption.singlePath}` }}</code>
-                    </NFlex>
-                </NCard>
-            </NGridItem>
-        </NGrid>
-    </NFlex>
+                    </div>
+                </UCard>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">

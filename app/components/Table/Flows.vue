@@ -1,63 +1,63 @@
 <template>
 	<div>
-		<NButton class="flowSaveButton" round secondary :loading="Loading.updateTable" type="primary" size="large"
+		<UButton class="flowSaveButton" round secondary :loading="Loading.updateTable" type="primary" size="large"
 			@click="saveFlow">
 			<template #icon>
-				<NIcon>
+				<div class="inline-block">
 					<Icon name="tabler:device-floppy" />
-				</NIcon>
+				</div>
 			</template>
-		</NButton>
-		<NTabs type="segment" animated v-model:value="currentFlow">
-			<NTabPane v-for="flowName of flowNames" :name="flowName" :tab="t(flowName)">
+		</UButton>
+		<UTabs type="segment" animated v-model:value="currentFlow">
+			<div v-for="flowName of flowNames" :name="flowName" :tab="t(flowName)">
 				<Draggable v-model="tableCopy[flowName]" group="flows" itemKey="id" handle=".handle" class="masonry">
 					<template #item="{ element, index }">
-						<NCard class="flowCard" hoverable content-style="padding: 0">
-							<NButton class="handle" secondary type="primary" size="small">
+						<UCard class="flowCard" hoverable content-style="padding: 0">
+							<UButton class="handle" secondary type="primary" size="small">
 								{{ index + 1 }}
-							</NButton>
-							<NButtonGroup class="flowCardButtons" vertical size="small">
-								<NButton secondary type="primary" @click="currentFlowCard =
+							</UButton>
+							<UButtonGroup class="flowCardButtons" vertical size="small">
+								<UButton secondary type="primary" @click="currentFlowCard =
 									currentFlowCard ===
 										`${currentFlow}-${index}`
 										? undefined
 										: `${currentFlow}-${index}`">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:eye"
 												v-if="currentFlowCard === `${currentFlow}-${index}`" />
 											<Icon name="tabler:pencil" v-else />
-										</NIcon>
+										</div>
 									</template>
-								</NButton>
-								<NButton secondary type="error"
+								</UButton>
+								<UButton secondary type="error"
 									@click="() => { if (currentFlowCard === `${currentFlow}-${index}`) currentFlowCard = undefined; tableCopy[flowName]?.splice(index, 1) }">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:trash" />
-										</NIcon>
+										</div>
 									</template>
-								</NButton>
-							</NButtonGroup>
-							<NScrollbar x-scrollable>
+								</UButton>
+							</div>
+							<div class="overflow-auto" x-scrollable>
 								<template v-if="currentFlowCard === `${currentFlow}-${index}`">
 									<Draggable v-model="element.value" group="rules" itemKey="id" handle=".inputHandle"
 										class="flowCardRulesEdit">
 										<template #item="{ element: rule, index: ruleIndex }">
-											<NInputGroup :key="rule.id" class="flowCardRulesGroupInput">
+											<UInputGroup :key="rule.id" class="flowCardRulesGroupInput">
 												<template v-if="rule.value[0] === 'set'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="success"
+													<UDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+														<UButton class="inputHandle" size="small" type="success"
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
 															secondary style="width: 47px;">
 															{{ t('set') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small" style="height: fit-content;"
+														</UButton>
+													</UDropdown>
+													<USelectMenu size="small" style="height: fit-content;"
 														:options="generateFlowCascaderOptions(true, true)"
 														check-strategy="child" expand-trigger="click" show-path
 														separator="." filterable v-model:value="rule.value[1]" />
-													<NSelect size="small"
+													<USelect size="small"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
 														style="overflow: hidden;" :consistent-menu-width="false"
 														filterable tag
@@ -66,14 +66,14 @@
 														@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
 												</template>
 												<template v-else-if="rule.value[0] === 'error'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="error" secondary
+													<UDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+														<UButton class="inputHandle" size="small" type="error" secondary
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
 															style="width: 96px;">
 															{{ t('throwError') }}
-														</NButton>
-													</NDropdown>
-													<NSelect size="small"
+														</UButton>
+													</UDropdown>
+													<USelect size="small"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
 														style="overflow: hidden;" :consistent-menu-width="false"
 														filterable tag
@@ -81,14 +81,14 @@
 														v-model:value="rule.value[1]" />
 												</template>
 												<template v-else-if="rule.value[0] === 'unset'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="warning"
+													<UDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+														<UButton class="inputHandle" size="small" type="warning"
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
 															secondary style="width: 96px;">
 															{{ t('unset') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small"
+														</UButton>
+													</UDropdown>
+													<USelectMenu size="small"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
 														style="overflow: hidden;height: fit-content;"
 														:options="generateFlowCascaderOptions()" check-strategy="parent"
@@ -96,24 +96,24 @@
 														v-model:value="rule.value[1]" multiple :max-tag-count="1" />
 												</template>
 												<template v-else>
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="info" secondary
+													<UDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+														<UButton class="inputHandle" size="small" type="info" secondary
 															style="width: 37px;"
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }">
 															{{ t('if') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small"
+														</UButton>
+													</UDropdown>
+													<USelectMenu size="small"
 														style="height: fit-content;max-width: 156px;"
 														:options="[...generateFlowCascaderOptions(true, true, true), { label: '@method', value: '@method' }]"
 														check-strategy="child" expand-trigger="click" show-path
 														separator="." filterable v-model:value="rule.value[0]" />
-													<NSelect size="small" style="width: 136px;"
+													<USelect size="small" style="width: 136px;"
 														:consistent-menu-width="false" filterable
 														:render-tag="({ option }) => option.value"
 														:options="checkFieldType(formatValue(rule.value[0], undefined, 'type', 'string'), ['number', 'date']) ? comparisonOperatorOptions().filter(({ value }) => !['*', '!*'].includes(value)) : comparisonOperatorOptions().filter(({ value }) => !['>', '>=', '<', '<=', ...(rule[0] === '@method' ? ['*', '!*'] : [])].includes(value))"
 														v-model:value="rule.value[1]" />
-													<NSelect size="small" style="overflow: hidden;"
+													<USelect size="small" style="overflow: hidden;"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
 														:consistent-menu-width="false" filterable tag
 														:options="generateFlowSelectOptions(rule.value[0], false, true)"
@@ -122,124 +122,124 @@
 														:value="((['[]', '![]'].includes(rule.value[1] ?? '') ? rule.value[2] : rule.value[2]) as string)"
 														@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
 												</template>
-											</NInputGroup>
+											</div>
 										</template>
 										<template #footer>
-											<NDropdown show-arrow :options="addRuleDropdownOptions"
+											<UDropdown show-arrow :options="addRuleDropdownOptions"
 												@select="(value) => pushRuleToFlow(element.value, value)">
-												<NButton style="margin: auto" round dashed
+												<UButton style="margin: auto" round dashed
 													@click="pushRuleToFlow(element.value, 'if')">
 													<template #icon>
-														<NIcon>
+														<div class="inline-block">
 															<Icon name="tabler:plus" />
-														</NIcon>
+														</div>
 													</template>
-												</NButton>
-											</NDropdown>
+												</UButton>
+											</UDropdown>
 										</template>
 									</Draggable>
 								</template>
-								<NEmpty v-else-if="!element.value.length" />
-								<NFlex v-else vertical style="padding: 20px 22px;">
+								<div class="text-center py-8 text-gray-500" v-else-if="!element.value.length" />
+								<div class="flex" v-else vertical style="padding: 20px 22px;">
 									<template v-for="{ value: [firstValue, secondValue, thirdValue] } of element.value">
 										<template v-if="firstValue === 'set'">
-											<NFlex align="center" :wrap="false">
-												<NFlex :wrap="false" :size="0">
-													<NTag type="success" :bordered="false" style="padding: 0 13px"
+											<div class="flex" align="center" :wrap="false">
+												<div class="flex" :wrap="false" :size="0">
+													<UBadge type="success" :bordered="false" style="padding: 0 13px"
 														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0' : '50px 0 0 50px' }">
 														{{ t('set') }}
-													</NTag>
-													<NTag type="primary" :bordered="false"
+													</UBadge>
+													<UBadge type="primary" :bordered="false"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px' : '0 50px 50px 0', padding: '0 10px 0' }">
 														{{ formatValue(secondValue) }}
-													</NTag>
-												</NFlex>
-												<NTag v-if="thirdValue === undefined" :bordered="false" round>--
-												</NTag>
-												<NFlex v-else :wrap="false" :size="[4, 8]">
-													<NTag
+													</UBadge>
+												</div>
+												<UBadge v-if="thirdValue === undefined" :bordered="false" round>--
+												</UBadge>
+												<div class="flex" v-else :wrap="false" :size="[4, 8]">
+													<UBadge
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
 														{{ formatValue(value, secondValue) }}
-													</NTag>
-												</NFlex>
-											</NFlex>
+													</UBadge>
+												</div>
+											</div>
 										</template>
 										<template v-else-if="firstValue === 'error'">
-											<NFlex :wrap="false" :size="0">
-												<NTag type="error" :bordered="false"
+											<div class="flex" :wrap="false" :size="0">
+												<UBadge type="error" :bordered="false"
 													:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0' : '50px 0 0 50px' }"
 													style="padding: 0 13px;">
 													{{ t('throwError') }}
-												</NTag>
-												<NTag :bordered="false"
+												</UBadge>
+												<UBadge :bordered="false"
 													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px' : '0 50px 50px 0', padding: '0 10px 0' }">
 													{{ secondValue ? t(secondValue) : '--' }}
-												</NTag>
-											</NFlex>
+												</UBadge>
+											</div>
 										</template>
 										<template v-else-if="firstValue === 'unset'">
-											<NFlex :wrap="false" :size="0">
-												<NTag type="warning" :bordered="false" round
+											<div class="flex" :wrap="false" :size="0">
+												<UBadge type="warning" :bordered="false" round
 													:style="{ margin: Language === 'ar' ? '0 0 0 10px' : '0 10px 0 0' }">
 													{{ t('unset') }}
-												</NTag>
-												<NFlex
+												</UBadge>
+												<div class="flex"
 													v-if="(Array.isArray(secondValue) && secondValue.length) || secondValue"
 													:size="[4, 8]">
-													<NTag
+													<UBadge
 														v-for="value of ([] as string[]).concat(secondValue as string | string[])"
 														:bordered="false" round>
 														{{ formatValue(value) }}
-													</NTag>
-												</NFlex>
-												<NTag v-else :bordered="false" round>
+													</UBadge>
+												</div>
+												<UBadge v-else :bordered="false" round>
 													--
-												</NTag>
-											</NFlex>
+												</UBadge>
+											</div>
 										</template>
 										<template v-else>
-											<NFlex align="center" :wrap="false">
-												<NFlex :wrap="false" :size="0">
-													<NTag type="info" :bordered="false" style="padding: 0 13px;"
+											<div class="flex" align="center" :wrap="false">
+												<div class="flex" :wrap="false" :size="0">
+													<UBadge type="info" :bordered="false" style="padding: 0 13px;"
 														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0' : '50px 0 0 50px' }">
 														{{ t('if') }}
-													</NTag>
-													<NTag type="primary" :bordered="false"
+													</UBadge>
+													<UBadge type="primary" :bordered="false"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px' : '0 50px 50px 0', padding: '0 10px 0' }">
 														{{ formatValue(firstValue) }}
-													</NTag>
-												</NFlex>
-												<NTooltip :delay="1500">
+													</UBadge>
+												</div>
+												<UTooltip :delay="1500">
 													<template #trigger>
-														<NTag round :bordered="false" size="small">
+														<UBadge round :bordered="false" size="small">
 															{{ secondValue }}
-														</NTag>
+														</UBadge>
 													</template>
 													{{comparisonOperatorOptions().find(
 														({ value }) => value === (secondValue ?? '='),
 													)?.label}}
-												</NTooltip>
-												<NTag v-if="thirdValue === undefined" :bordered="false" round>--
-												</NTag>
-												<NFlex v-else :wrap="false" :size="[4, 8]">
-													<NTag
+												</UTooltip>
+												<UBadge v-if="thirdValue === undefined" :bordered="false" round>--
+												</UBadge>
+												<div class="flex" v-else :wrap="false" :size="[4, 8]">
+													<UBadge
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
 														{{ value === null ? '@null' : formatValue(value, firstValue) }}
-													</NTag>
-												</NFlex>
-											</NFlex>
+													</UBadge>
+												</div>
+											</div>
 										</template>
 									</template>
-								</NFlex>
-							</NScrollbar>
-						</NCard>
+								</div>
+							</div>
+						</UCard>
 					</template>
 					<template #footer>
-						<NPopover placement="bottom" :delay="1500">
+						<UPopover placement="bottom" :delay="1500">
 							<template #trigger>
-								<NCard style="cursor: pointer;" content-style="padding: 34px 0" hoverable @click="() => {
+								<UCard style="cursor: pointer;" content-style="padding: 34px 0" hoverable @click="() => {
 									if (tableCopy[flowName] && Array.isArray(tableCopy[flowName]))
 										currentFlowCard = `${currentFlow}-${tableCopy[flowName].push({ id: randomID(), value: [] }) - 1}`;
 									else {
@@ -247,19 +247,19 @@
 										currentFlowCard = `${currentFlow}-${0}`;
 									}
 								}">
-									<NFlex justify="center" align="center">
-										<NIcon :size="36">
+									<div class="flex" justify="center" align="center">
+										<span :size="36">
 											<Icon name="tabler:plus" />
-										</NIcon>
-									</NFlex>
-								</NCard>
+										</div>
+									</div>
+								</UCard>
 							</template>
 							{{ t('newCard') }}
-						</NPopover>
+						</UPopover>
 					</template>
 				</Draggable>
-			</NTabPane>
-		</NTabs>
+			</div>
+		</UTabs>
 	</div>
 </template>
 

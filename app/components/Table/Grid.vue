@@ -1,68 +1,68 @@
 <template>
-	<NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
-		<NGridItem v-for="table in filteredTables" :key="table.slug">
-			<NCard hoverable>
+	<div class="grid" :x-gap="12" :y-gap="12" cols="1 500:2 800:4">
+		<div class="grid"Item v-for="table in filteredTables" :key="table.slug">
+			<UCard hoverable>
 				<template #header>
 					<NuxtLink :to="getTableUrl(table.slug)">
-						<NFlex align="center">
-							<NIconWrapper :border-radius="50" style="font-style: normal">
+						<div class="flex" align="center">
+							<div class="inline-flex items-center justify-center" :border-radius="50" style="font-style: normal">
 								<LazyTableIcon :table="table" />
-							</NIconWrapper>
-							<NH4 style="margin: 0">{{ t(table.slug) }}</NH4>
-						</NFlex>
+							</div>
+							<h3 class="font-semibold"4 style="margin: 0">{{ t(table.slug) }}</NH4>
+						</div>
 					</NuxtLink>
 				</template>
 				<template #header-extra>
-					<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
-						<NButton circle size="small">
+					<UDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
+						<UButton circle size="small">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:dots" />
-								</NIcon>
+								</div>
 							</template>
-						</NButton>
-					</NDropdown>
+						</UButton>
+					</UDropdown>
 				</template>
-			</NCard>
-		</NGridItem>
+			</UCard>
+		</div>
 
-		<NGridItem v-if="user?.role === appConfig.idOne">
-			<NPopover placement="bottom">
+		<div class="grid"Item v-if="user?.role === appConfig.idOne">
+			<UPopover placement="bottom">
 				<template #trigger>
-					<NPopover trigger="click" v-model:show="showPopover">
+					<UPopover trigger="click" v-model:show="showPopover">
 						<template #trigger>
-							<NCard style="cursor: pointer" content-style="padding: 15px 0" hoverable
+							<UCard style="cursor: pointer" content-style="padding: 15px 0" hoverable
 								@click="showPopover = !showPopover">
-								<NFlex justify="center" align="center">
-									<NIcon size="36">
+								<div class="flex" justify="center" align="center">
+									<span size="36">
 										<Icon name="tabler:plus" />
-									</NIcon>
-								</NFlex>
-							</NCard>
+									</div>
+								</div>
+							</UCard>
 						</template>
-						<NInputGroup>
-							<NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
+						<UInputGroup>
+							<UInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
 								:placeholder="t('tableSlug')">
 								<template #suffix>
-									<NIcon>
+									<div class="inline-block">
 										<Icon name="tabler:letter-case" />
-									</NIcon>
+									</div>
 								</template>
-							</NInput>
-							<NButton @click="createTable" :loading="Loading.Table">
+							</UInput>
+							<UButton @click="createTable" :loading="Loading.Table">
 								<template #icon>
-									<NIcon>
+									<div class="inline-block">
 										<Icon name="tabler:chevron-right" />
-									</NIcon>
+									</div>
 								</template>
-							</NButton>
-						</NInputGroup>
-					</NPopover>
+							</UButton>
+						</div>
+					</UPopover>
 				</template>
 				{{ t('newTable') }}
-			</NPopover>
-		</NGridItem>
-	</NGrid>
+			</UPopover>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>

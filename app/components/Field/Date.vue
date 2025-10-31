@@ -1,6 +1,6 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NDatePicker :month-format="field.date && field.date === 'month' ? 'MMM' : 'MM'" format="dd-MM-yyyy"
+        <UInput type="date" :month-format="field.date && field.date === 'month' ? 'MMM' : 'MM'" format="dd-MM-yyyy"
             :type="field.date ?? 'date'" :actions="null" v-model:value="modelValue" clearable
             :placeholder="t(field.key)" v-bind="field.inputProps
                 ? typeof field.inputProps === 'function'

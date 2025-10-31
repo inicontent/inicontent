@@ -1,14 +1,14 @@
 <template>
-    <NTooltip :delay="isRelativeDateNotifShown ? 2500 : 500" trigger="hover"
+    <UTooltip :delay="isRelativeDateNotifShown ? 2500 : 500" trigger="hover"
         @update:show="(show) => !show ? isRelativeDateNotifShown = true : ''">
         <template #trigger>
-            <NTime style="cursor: pointer;" @click.prevent="isRelative = !isRelative" :time="Number(value)"
+            <time style="cursor: pointer;" @click.prevent="isRelative = !isRelative" :time="Number(value)"
                 :type="isRelative ? 'relative' : 'date'">
                 {{ value }}
-            </NTime>
+            </time>
         </template>
         {{ t('clickToToggleDate') }}
-    </NTooltip>
+    </UTooltip>
 </template>
 
 <script lang="ts" setup>

@@ -1,116 +1,116 @@
 <template>
-	<NGrid x-gap="12" cols="12" layout-shift-disabled>
-		<NGridItem :span="!$device.isMobile ? 10 : 12">
-			<NCard :title="t('tableSettings')" hoverable>
+	<div class="grid" x-gap="12" cols="12" layout-shift-disabled>
+		<div class="grid"Item :span="!$device.isMobile ? 10 : 12">
+			<UCard :title="t('tableSettings')" hoverable>
 				<template #header-extra>
-					<NButtonGroup>
-						<NTooltip :delay="1500">
+					<UButtonGroup>
+						<UTooltip :delay="1500">
 							<template #trigger>
-								<NPopconfirm :show-icon="false" @positive-click="deleteTable">
+								<UPopover :show-icon="false" @positive-click="deleteTable">
 									<template #trigger>
-										<NButton :disabled="isUnDeletable" type="error" secondary round
+										<UButton :disabled="isUnDeletable" type="error" secondary round
 											:loading="Loading.deleteTable">
 											<template #icon>
-												<NIcon>
+												<div class="inline-block">
 													<Icon name="tabler:trash" />
-												</NIcon>
+												</div>
 											</template>
-										</NButton>
+										</UButton>
 									</template>
 									{{ t("theFollowingActionIsIrreversible") }}
-								</NPopconfirm>
+								</UPopover>
 							</template>
 							{{ t("deleteTable") }}
-						</NTooltip>
-						<NButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
+						</UTooltip>
+						<UButton round type="primary" secondary :loading="Loading.updateTable" @click="updateTable">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:device-floppy" />
-								</NIcon>
+								</div>
 							</template>
 							<template v-if="!$device.isMobile" #default>
 								{{ t('save') }}
 							</template>
-						</NButton>
-					</NButtonGroup>
+						</UButton>
+					</div>
 				</template>
-				<NFlex vertical>
-					<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-						<NForm ref="settingsFormRef" :model="tableCopy">
+				<div class="flex flex-col">
+					<UCard :title="t('generalSettings')" id="generalSettings" hoverable>
+						<UForm ref="settingsFormRef" :model="tableCopy">
 							<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
-							<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
-								<NCascader multiple clearable filterable expand-trigger="hover" check-strategy="child"
+							<UFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
+								<USelectMenu multiple clearable filterable expand-trigger="hover" check-strategy="child"
 									:cascard="false" v-model:value="tableCopy.defaultSearchableColumns"
 									:options="searchInSelectOptions" />
-							</NFormItem>
+							</UFormGroup>
 							<template v-if="tableCopy.displayAs === 'table'">
-								<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
-									<NCascader multiple clearable filterable expand-trigger="hover"
+								<UFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
+									<USelectMenu multiple clearable filterable expand-trigger="hover"
 										check-strategy="child" :cascard="false"
 										v-model:value="tableCopy.defaultTableColumns"
 										:options="searchInSelectOptions" />
-								</NFormItem>
-								<NFormItem path="localLabel" :label="t('label')">
-									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+								</UFormGroup>
+								<UFormItem path="localLabel" :label="t('label')">
+									<div class="dynamic-tags" v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
 										<template #input="{ submit, deactivate }">
-											<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
+											<USelect ref="singleLabelSelect" size="small" clearable filterable show tag
 												:options="searchInSelectOptions" @update:value="submit($event)"
 												@update:show="(value) => value ? '' : deactivate()" />
 										</template>
 										<template #trigger="{ activate, disabled }">
-											<NButton size="small" tertiary round
+											<UButton size="small" tertiary round
 												@click="activate(), focusSingleLabelSelect()" :disabled>
 												<template #icon>
-													<NIcon>
+													<div class="inline-block">
 														<Icon name="tabler:plus" />
-													</NIcon>
+													</div>
 												</template>
-											</NButton>
+											</UButton>
 										</template>
-									</NDynamicTags>
-								</NFormItem>
+									</div>
+								</UFormGroup>
 							</template>
 							<template v-else>
-								<NFormItem path="groupBy" :label="t('groupBy')">
-									<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
+								<UFormItem path="groupBy" :label="t('groupBy')">
+									<USelectMenu clearable filterable expand-trigger="hover" check-strategy="child"
 										:cascard="false" v-model:value="tableCopy.groupBy"
 										:options="groupBySelectOptions" />
-								</NFormItem>
+								</UFormGroup>
 								<FieldMention :field="labelField" v-model="tableCopy.label" />
 							</template>
 							<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
-						</NForm>
-					</NCard>
-					<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
+						</UForm>
+					</UCard>
+					<UCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
 						<template #header-extra>
-							<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
+							<UDropdown :options="fieldsList()" style="max-height: 200px" scrollable
 								@select="pushToSchema">
-								<NButton secondary type="primary" round @click="pushToSchema('string')">
+								<UButton secondary type="primary" round @click="pushToSchema('string')">
 									<template #icon>
-										<NIcon>
+										<div class="inline-block">
 											<Icon name="tabler:plus" />
-										</NIcon>
+										</div>
 									</template>
-								</NButton>
-							</NDropdown>
+								</UButton>
+							</UDropdown>
 						</template>
-						<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-						<NForm size="small">
+						<div class="text-center py-8 text-gray-500" v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
+						<UForm size="small">
 							<LazyTableSettingsSchema v-model="tableCopy.schema"
 								v-model:expanded-names="expandedNames" />
-						</NForm>
-					</NCard>
-				</NFlex>
-			</NCard>
-		</NGridItem>
-		<NGridItem v-if="!$device.isMobile" span="2">
-			<NAnchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
-				<NAnchorLink :title="t('generalSettings')" href="#generalSettings" />
-				<NAnchorLink :title="t('schemaSettings')" href="#schemaSettings" />
+						</UForm>
+					</UCard>
+				</div>
+			</UCard>
+		</div>
+		<div class="grid"Item v-if="!$device.isMobile" span="2">
+			<anchor affix listen-to="#container" :top="88" style="z-index: 1;" :bound="90">
+				<anchorLink :title="t('generalSettings')" href="#generalSettings" />
+				<anchorLink :title="t('schemaSettings')" href="#schemaSettings" />
 			</NAnchor>
-		</NGridItem>
-	</NGrid>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>

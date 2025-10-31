@@ -1,7 +1,7 @@
 <template>
-    <NA :href="value" target="_blank">
+    <a :href="value" target="_blank">
         {{ value }}
-    </NA>
+    </a>
 </template>
 
 <script lang="ts" setup>

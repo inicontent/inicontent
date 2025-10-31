@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NAutoComplete :options v-model:value="modelValue" :placeholder="t(field.key)" clearable v-bind="field.inputProps
+		<autoComplete :options v-model:value="modelValue" :placeholder="t(field.key)" clearable v-bind="field.inputProps
 			? typeof field.inputProps === 'function'
 				? { ...(field.inputProps(modelValue) ?? {}), type: 'email', autocomplete: 'disabled' }
 				: { ...field.inputProps, type: 'email', autocomplete: 'disabled' }

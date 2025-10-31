@@ -1,54 +1,54 @@
 <template>
-    <NTooltip :delay="1500">
+    <UTooltip :delay="1500">
         <template #trigger>
-            <NButton circle secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
+            <UButton circle secondary size="tiny" @click.prevent.stop="showAssetsModal = true">
                 <template #icon>
-                    <NIcon>
+                    <div class="inline-block">
                         <Icon name="tabler:books" />
-                    </NIcon>
+                    </div>
                 </template>
-            </NButton>
+            </UButton>
         </template>
         {{ t('gallery') }}
-    </NTooltip>
-    <NPopover trigger="click">
+    </UTooltip>
+    <UPopover trigger="click">
         <template #trigger>
-            <NTooltip :delay="1500" placement="bottom">
+            <UTooltip :delay="1500" placement="bottom">
                 <template #trigger>
-                    <NButton circle secondary size="tiny" @click.prevent.stop="importInputRef?.focus()">
+                    <UButton circle secondary size="tiny" @click.prevent.stop="importInputRef?.focus()">
                         <template #icon>
-                            <NIcon>
+                            <div class="inline-block">
                                 <Icon name="tabler:link" />
-                            </NIcon>
+                            </div>
                         </template>
-                    </NButton>
+                    </UButton>
                 </template>
                 {{ t('import') }}
-            </NTooltip>
+            </UTooltip>
         </template>
-        <NInputGroup>
-            <NInput :input-props="{ type: 'url' }" ref="importInputRef" v-model:value="assetURLs"
+        <UInputGroup>
+            <UInput :input-props="{ type: 'url' }" ref="importInputRef" v-model:value="assetURLs"
                 :placeholder="t('assetLink')" clearable @keydown.enter.prevent="importAsset">
                 <template #suffix>
-                    <NIcon>
+                    <div class="inline-block">
                         <Icon name="tabler:link" />
-                    </NIcon>
+                    </div>
                 </template>
-            </NInput>
-            <NTooltip :delay="1500">
+            </UInput>
+            <UTooltip :delay="1500">
                 <template #trigger>
-                    <NButton :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
+                    <UButton :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
                         <template #icon>
-                            <NIcon>
+                            <div class="inline-block">
                                 <Icon name="tabler:arrow-right" />
-                            </NIcon>
+                            </div>
                         </template>
-                    </NButton>
+                    </UButton>
                 </template>
                 {{ t('import') }}
-            </NTooltip>
-        </NInputGroup>
-    </NPopover>
+            </UTooltip>
+        </div>
+    </UPopover>
 </template>
 
 <script lang="ts" setup>

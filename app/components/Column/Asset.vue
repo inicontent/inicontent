@@ -1,14 +1,14 @@
 <template>
-	<NImageGroup>
-		<NFlex :wrap="false">
+	<NuxtImgGroup>
+		<div class="flex" :wrap="false">
 			<template v-for="file in ([] as Asset[]).concat(value)">
-				<NTooltip v-if="file.type.startsWith('image/') || file.type === 'application/pdf'"
+				<UTooltip v-if="file.type.startsWith('image/') || file.type === 'application/pdf'"
 					:disabled="!file.name">
 					<template #trigger>
 						<div style="position: relative;">
 							<Icon v-if="file.type === 'application/pdf'" name="tabler:file-filled"
 								style="position: absolute;color: rgb(var(--primaryColor));top: 2px;" />
-							<NImage lazy
+							<NuxtImg lazy
 								:src="file.type === 'application/pdf' ? `${file.publicURL}?fit=100` : file.publicURL"
 								:preview-src="file.type === 'application/pdf' ? `${file.publicURL}?raw` : file.publicURL"
 								:width="32" :height="32" object-fit="cover" style="height: 100%;"
@@ -16,17 +16,17 @@
 						</div>
 					</template>
 					{{ file.name }}
-				</NTooltip>
-				<NButton v-else tag="a" :href="file.publicURL" target="_blank" secondary type="primary" round>
+				</UTooltip>
+				<UButton v-else tag="a" :href="file.publicURL" target="_blank" secondary type="primary" round>
 					<template #icon>
-						<NIcon>
+						<div class="inline-block">
 							<LazyAssetIcon :type="file.type" />
-						</NIcon>
+						</div>
 					</template>
 					{{ file.name }}
-				</NButton>
+				</UButton>
 			</template>
-		</NFlex>
+		</div>
 	</NImageGroup>
 </template>
 

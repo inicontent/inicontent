@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NSelect v-model:value="modelValue" :placeholder="t(field.key)" :options :tag="!!field.custom"
+		<USelect v-model:value="modelValue" :placeholder="t(field.key)" :options :tag="!!field.custom"
 			max-tag-count="responsive" :consistent-menu-width="false" :multiple="!!field.isArray" filterable clearable
 			v-bind="field.inputProps
 				? typeof field.inputProps === 'function'

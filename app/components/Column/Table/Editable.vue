@@ -1,5 +1,5 @@
 <template>
-    <NButton v-for="value in values" tag="a"
+    <UButton v-for="value in values" tag="a"
         :href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${field.table}/${value.id}/edit`"
         @click.prevent.stop="handleClick(value)" :loading="Loading[`Drawer_${field.table}_${value.id}`]" size="small"
         round>
@@ -7,7 +7,7 @@
             <LazyTableIcon :table="table" />
         </template>
         {{ renderLabel(table, value) }}
-    </NButton>
+    </UButton>
 </template>
 
 <script lang="ts" setup>
