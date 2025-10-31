@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware(async () => {
 		sameSite: true,
 	})
 
-	if (!user.value)
+	if (!user.value) {
 		user.value = (
 			await $fetch<apiResponse<User>>(
 				`${appConfig.apiBase}${database.value.slug}/auth/current`,
@@ -17,4 +17,7 @@ export default defineNuxtRouteMiddleware(async () => {
 				},
 			)
 		).result
+		if (!sessionID.value && user.value?.sessionID) sessionID.value = user.value.sessionID
+		if (!user.value) sessionID.value = null
+	}
 })

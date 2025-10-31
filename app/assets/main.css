@@ -509,6 +509,10 @@ body {
 	border-radius: 0 !important;
 }
 
+.rtl .n-input-group .n-input--round {
+  border-radius: 0 calc(var(--n-height) / 2) calc(var(--n-height) / 2) 0 !important;
+}
+
 #pageContent {
 	padding-bottom: env(safe-area-inset-bottom);
 }
