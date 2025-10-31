@@ -42,9 +42,7 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
-import type { FormItemRule, UploadFileInfo } from "naive-ui"
 import { Icon, NImage, NTooltip } from "#components"
-import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 const { field } = defineProps<{ field: Field }>()
 

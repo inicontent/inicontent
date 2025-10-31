@@ -14,7 +14,6 @@
 
 <script lang="ts" setup>
 import { isEmail } from "inibase/utils"
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

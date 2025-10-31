@@ -201,7 +201,6 @@
 
 <script lang="ts" setup>
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
-import type { DataTableColumns, SelectOption } from "naive-ui"
 import Draggable from "vuedraggable"
 import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components"
 

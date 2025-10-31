@@ -44,7 +44,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormInst, FormItemRule } from "naive-ui"
 
 import { validateFieldType } from "inibase/utils"
 import { NTag } from "#components"

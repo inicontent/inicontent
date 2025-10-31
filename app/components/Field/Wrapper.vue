@@ -37,7 +37,6 @@
 <script lang="ts" setup>
 import { isObject, isStringified } from "inibase/utils"
 import Inison from "inison"
-import type { DropdownOption, FormItemRule } from "naive-ui"
 import { Icon, NIcon } from "#components"
 
 const { field, rule } = defineProps<{ field: Field; rule: FormItemRule }>()

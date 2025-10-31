@@ -20,7 +20,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormInst, TabsInst } from "naive-ui"
 
 const props = defineProps<{
 	modal?: boolean

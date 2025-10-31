@@ -85,7 +85,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { ImageRenderToolbarProps } from "naive-ui"
 import type { VNodeChild } from "vue"
 import { Icon, NIcon } from "#components"
 

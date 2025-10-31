@@ -92,8 +92,6 @@
 
 <script lang="ts" setup>
 import Inison from "inison"
-import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
-import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 defineTranslation({
 	ar: {

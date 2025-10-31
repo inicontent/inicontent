@@ -107,7 +107,6 @@
 <script setup lang="ts">
 import { isArrayOfObjects, isStringified } from "inibase/utils"
 import Inison from "inison"
-import type { DataTableColumns, DropdownOption } from "naive-ui"
 import {
 	Icon,
 	LazyField,

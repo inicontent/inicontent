@@ -1,66 +1,91 @@
 <template>
-	<n-grid cols="12" :x-gap="12" item-responsive responsive="screen">
-		<n-grid-item span="12 l:11">
-			<n-card :title="t('settings')" hoverable>
-				<template #header-extra>
-					<n-flex>
-						<n-tooltip :delay="1500">
-							<template #trigger>
-								<n-popconfirm :show-icon="false" @positive-click="deleteDatabase">
-									<template #trigger>
-										<n-button type="error" tertiary round :loading="Loading.deleteDatabase">
-											<template #icon>
-												<NIcon>
-													<Icon name="tabler:trash" />
-												</NIcon>
-											</template>
-										</n-button>
-									</template>
-									{{ t("theFollowingActionIsIrreversible") }}
-								</n-popconfirm>
-							</template>
-							{{ t("deleteDatabase") }}
-						</n-tooltip>
-						<n-button @click="updateDatabase" type="primary" secondary round
-							:loading="Loading.updateDatabase">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:device-floppy" />
-								</NIcon>
-							</template>
-							{{ t("save") }}
-						</n-button>
-					</n-flex>
+	<div class="grid grid-cols-12 gap-3">
+		<div class="col-span-12 lg:col-span-11">
+			<UCard>
+				<template #header>
+					<div class="flex justify-between items-center">
+						<h3 class="text-lg font-semibold">{{ t('settings') }}</h3>
+						<div class="flex gap-2">
+							<UTooltip :text="t('deleteDatabase')" :delay="1500">
+								<UButton
+									color="red"
+									variant="ghost"
+									icon="i-heroicons-trash"
+									:loading="Loading.deleteDatabase"
+									@click="confirmDelete"
+								/>
+							</UTooltip>
+							<UButton
+								color="primary"
+								variant="soft"
+								icon="i-heroicons-document-check"
+								:loading="Loading.updateDatabase"
+								@click="updateDatabase"
+							>
+								{{ t("save") }}
+							</UButton>
+						</div>
+					</div>
 				</template>
-				<n-flex vertical>
-					<n-card id="general" :title="t('generalSettings')" hoverable>
-						<n-form ref="databaseRef" :model="databaseCopy">
+				<div class="flex flex-col gap-4">
+					<UCard id="general">
+						<template #header>
+							<h4 class="font-semibold">{{ t('generalSettings') }}</h4>
+						</template>
+						<UForm ref="databaseRef" :state="databaseCopy">
 							<FieldS v-model="databaseCopy" :schema="databaseSchema" />
-						</n-form>
-					</n-card>
-					<n-card id="translation" :title="t('translationSettings')" hoverable>
-						<n-form ref="databaseRef" :model="databaseCopy">
+						</UForm>
+					</UCard>
+					<UCard id="translation">
+						<template #header>
+							<h4 class="font-semibold">{{ t('translationSettings') }}</h4>
+						</template>
+						<UForm ref="databaseRef" :state="databaseCopy">
 							<FieldS v-model="databaseCopy" :schema="translationSchema" />
-						</n-form>
-					</n-card>
-					<n-card id="email" :title="t('emailSettings')" hoverable>
-						<n-empty :description="t('soon')" />
-					</n-card>
-				</n-flex>
-			</n-card>
-		</n-grid-item>
-		<n-grid-item v-if="!$device.isMobile" span="0 l:1">
-			<n-anchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
-				<n-anchor-link :title="t('generalSettings')" href="#general" />
-				<n-anchor-link :title="t('translationSettings')" href="#translation" />
-				<n-anchor-link :title="t('emailSettings')" href="#email" />
-			</n-anchor>
-		</n-grid-item>
-	</n-grid>
+						</UForm>
+					</UCard>
+					<UCard id="email">
+						<template #header>
+							<h4 class="font-semibold">{{ t('emailSettings') }}</h4>
+						</template>
+						<div class="text-center text-gray-500 py-8">
+							{{ t('soon') }}
+						</div>
+					</UCard>
+				</div>
+			</UCard>
+		</div>
+		<div v-if="!$device.isMobile" class="hidden lg:block lg:col-span-1">
+			<div class="sticky top-24">
+				<nav class="flex flex-col gap-2">
+					<a href="#general" class="text-sm hover:text-primary">{{ t('generalSettings') }}</a>
+					<a href="#translation" class="text-sm hover:text-primary">{{ t('translationSettings') }}</a>
+					<a href="#email" class="text-sm hover:text-primary">{{ t('emailSettings') }}</a>
+				</nav>
+			</div>
+		</div>
+	</div>
+	<UModal v-model="showDeleteModal">
+		<UCard>
+			<template #header>
+				<h3 class="text-lg font-semibold">{{ t("deleteDatabase") }}</h3>
+			</template>
+			<p>{{ t("theFollowingActionIsIrreversible") }}</p>
+			<template #footer>
+				<div class="flex justify-end gap-2">
+					<UButton color="gray" variant="ghost" @click="showDeleteModal = false">
+						{{ t("cancel") }}
+					</UButton>
+					<UButton color="red" @click="deleteDatabase">
+						{{ t("delete") }}
+					</UButton>
+				</div>
+			</template>
+		</UCard>
+	</UModal>
 </template>
 
 <script lang="ts" setup>
-import type { FormInst } from "naive-ui"
 
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "global"],
@@ -89,6 +114,8 @@ defineTranslation({
 		emailSettings: "إعدادات البريد",
 		deleteDatabase: "حذف قاعدة البيانات",
 		soon: "قريباً",
+		cancel: "إلغاء",
+		delete: "حذف",
 	},
 })
 const appConfig = useAppConfig()
@@ -96,8 +123,13 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const route = useRoute()
 const router = useRouter()
 const database = useState<Database>("database")
-const databaseRef = ref<FormInst>()
+const databaseRef = ref<any>()
 const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)))
+const showDeleteModal = ref(false)
+
+function confirmDelete() {
+	showDeleteModal.value = true
+}
 
 const databaseSchema: Schema = [
 	{
@@ -195,6 +227,7 @@ async function updateDatabase() {
 	})
 }
 async function deleteDatabase() {
+	showDeleteModal.value = false
 	Loading.value.deleteDatabase = true
 	const data = await $fetch<apiResponse>(
 		`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,

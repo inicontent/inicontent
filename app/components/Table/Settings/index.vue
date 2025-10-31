@@ -115,7 +115,6 @@
 
 <script lang="ts" setup>
 import { flattenSchema, isArrayOfObjects, isNumber } from "inibase/utils"
-import type { FormInst } from "naive-ui"
 import { Icon, NTag } from "#components"
 
 onMounted(() => {

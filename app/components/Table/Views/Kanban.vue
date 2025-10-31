@@ -72,7 +72,6 @@
 import type { pageInfo } from "inibase"
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
-import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import Draggable from "vuedraggable"
 
 defineTranslation({

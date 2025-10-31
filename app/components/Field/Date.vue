@@ -11,7 +11,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

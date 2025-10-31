@@ -31,7 +31,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { ImageRenderToolbarProps } from "naive-ui"
 import type { VNodeChild } from "vue"
 import { Icon, NButton, NIcon, NTooltip } from "#components"
 

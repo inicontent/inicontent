@@ -12,7 +12,6 @@
 
 <script lang="ts" setup>
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

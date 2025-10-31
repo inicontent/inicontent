@@ -52,7 +52,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { NInput } from "naive-ui"
 
 defineTranslation({
 	ar: {

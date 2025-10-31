@@ -271,7 +271,6 @@ import {
 	isObject,
 	isValidID,
 } from "inibase/utils"
-import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui"
 import Draggable from "vuedraggable"
 import { Icon, NIcon } from "#components"
 
