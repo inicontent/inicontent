@@ -1,14 +1,13 @@
 <template>
-	<NForm :model="modelValue" ref="formValidationRef">
+	<UForm :model="modelValue" ref="formValidationRef">
 		<slot :data="modelValue" :schema>
 			<FieldS v-model="modelValue" v-model:schema="schema" />
 		</slot>
-	</NForm>
+	</UForm>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
-import type { FormInst } from "naive-ui"
 import { debounce } from "~/composables"
 
 const props = defineProps<{

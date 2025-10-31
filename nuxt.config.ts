@@ -3,6 +3,7 @@ export default defineNuxtConfig({
 	sourcemap: false,
 	telemetry: false,
 	modules: [
+		"@nuxt/ui",
 		"@vite-pwa/nuxt",
 		"@nuxtjs/device",
 		"@nuxt/fonts",

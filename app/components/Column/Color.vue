@@ -1,7 +1,7 @@
 <template>
-    <NTag round :style="{ backgroundColor: value }">
-        <NText style="mix-blend-mode: difference;">{{ value }}</NText>
-    </NTag>
+    <UBadge round :style="{ backgroundColor: value }">
+        <span style="mix-blend-mode: difference;">{{ value }}</span>
+    </UBadge>
 </template>
 
 <script lang="ts" setup>

@@ -1,18 +1,18 @@
 <template>
-    <NPopover v-if="values.length > 1" style="max-height: 240px" scrollable trigger="hover" placement="top">
+    <UPopover v-if="values.length > 1" style="max-height: 240px" scrollable trigger="hover" placement="top">
         <template #trigger>
-            <NButton size="small" round>
+            <UButton size="small" round>
                 <template v-if="table" #icon>
                     <LazyTableIcon :table="table" />
                 </template>
                 {{ values.length }}
-            </NButton>
+            </UButton>
         </template>
-        <NFlex vertical>
+        <div class="flex flex-col">
             <LazyColumnTableEditable v-if="isEditable" :field="field" :values="values" />
             <LazyColumnTableReadonly v-else :field="field" :values="values" />
-        </NFlex>
-    </NPopover>
+        </div>
+    </UPopover>
     <template v-else>
         <LazyColumnTableEditable v-if="isEditable" :field="field" :values="values" />
         <LazyColumnTableReadonly v-else :field="field" :values="values" />

@@ -1,17 +1,16 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NMention v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
+		<UInput v-model:value="modelValue" :placeholder="t(field.key)" :options clearable v-bind="field.inputProps
 			? typeof field.inputProps === 'function'
 				? field.inputProps(modelValue) ?? {}
 				: field.inputProps
 			: {}">
-		</NMention>
+		</UInput>
 	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils"
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

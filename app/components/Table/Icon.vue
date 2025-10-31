@@ -1,10 +1,10 @@
 <template>
-    <NIcon>
+    <div class="inline-block">
         <Icon
             v-if="table.icon || ['assets', 'translations', 'users', 'sessions', 'pages', 'blocks'].includes(table.slug)"
             :name="getTableIcon(table)" />
         <span v-else>{{ t(table.slug).charAt(0).toUpperCase() }}</span>
-    </NIcon>
+    </div>
 </template>
 
 <script setup lang="ts">

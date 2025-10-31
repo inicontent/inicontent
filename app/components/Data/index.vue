@@ -1,21 +1,21 @@
 <template>
-    <NListItem>
+    <ul class="list"Item>
         <template #prefix>
-            <NButton text>
+            <UButton text>
                 <strong>{{ t(field.key) }}:</strong>
-            </NButton>
+            </UButton>
         </template>
         <template v-if="value === null || value === undefined || (Array.isArray(value) && value.length === 0)">
             <LazyColumnBoolean v-if="detectedFieldType === 'boolean'" />
-            <NText :depth="3" v-else>--</NText>
+            <span :depth="3" v-else>--</span>
         </template>
         <template v-else>
             <LazyColumnRole v-if="detectedFieldType === 'role'" :value />
-            <NScrollbar v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
+            <div class="overflow-auto" v-else-if="['table', 'tags', 'select', 'checkbox'].includes(detectedFieldType)" x-scrollable>
                 <LazyColumnAsset v-if="detectedFieldType === 'table' && field.table === 'assets'" :value />
                 <LazyDataTable v-else-if="detectedFieldType === 'table'" :value :field />
                 <LazyColumnTags v-else-if="['tags', 'select', 'checkbox'].includes(detectedFieldType)" :field :value />
-            </NScrollbar>
+            </div>
             <LazyColumnColor v-else-if="detectedFieldType === 'color'" :value />
             <LazyColumnUrl v-else-if="detectedFieldType === 'url'" :value />
             <LazyColumnEmail v-else-if="detectedFieldType === 'email'" :value />
@@ -29,7 +29,7 @@
                 v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple'].includes(detectedFieldType)"
                 :value />
         </template>
-    </NListItem>
+    </li>
 </template>
 
 <script lang="ts" setup>

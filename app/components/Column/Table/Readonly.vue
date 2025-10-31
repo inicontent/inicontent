@@ -1,10 +1,10 @@
 <template>
-    <NButton v-for="value in values" disabled size="small" round>
+    <UButton v-for="value in values" disabled size="small" round>
         <template v-if="table" #icon>
             <LazyTableIcon :table="table" />
         </template>
         {{ renderLabel(table, value) }}
-    </NButton>
+    </UButton>
 </template>
 
 <script lang="ts" setup>

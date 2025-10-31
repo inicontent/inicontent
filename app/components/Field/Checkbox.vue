@@ -1,20 +1,19 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NCheckboxGroup v-model:value="modelValue" v-bind="field.inputProps
+		<UCheckboxGroup v-model:value="modelValue" v-bind="field.inputProps
 			? typeof field.inputProps === 'function'
 				? field.inputProps(modelValue) ?? {}
 				: field.inputProps
 			: {}">
-			<NFlex>
-				<NCheckbox v-for="{ label, value } in options" :value :label />
-			</NFlex>
-		</NCheckboxGroup>
+			<div class="flex">
+				<UCheckbox v-for="{ label, value } in options" :value :label />
+			</div>
+		</div>
 	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

@@ -1,7 +1,7 @@
 <template>
-    <NPerformantEllipsis>
+    <div class="truncate">
         {{ value }}
-    </NPerformantEllipsis>
+    </div>
 </template>
 
 <script lang="ts" setup>

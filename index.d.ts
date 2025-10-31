@@ -6,10 +6,40 @@ import type {
 	FieldType as dbFieldType,
 	pageInfo,
 } from "inibase"
-import type { DataTableColumns, SelectOption } from "naive-ui"
-import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider"
-import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider"
 import type languages from "~/composables/Translation/languages"
+
+// Generic type definitions to replace naive-ui types
+type SelectOption = {
+	label: string
+	value: string | number
+	disabled?: boolean
+	children?: SelectOption[]
+}
+
+type DataTableColumns<T = any> = {
+	key: string
+	title?: string
+	render?: (row: T) => any
+	width?: number
+	align?: 'left' | 'center' | 'right'
+	fixed?: 'left' | 'right'
+	sorter?: boolean | ((a: T, b: T) => number)
+}[]
+
+type MessageApiInjection = {
+	info: (content: string, options?: any) => void
+	success: (content: string, options?: any) => void
+	warning: (content: string, options?: any) => void
+	error: (content: string, options?: any) => void
+	loading: (content: string, options?: any) => void
+}
+
+type NotificationApiInjection = {
+	info: (options: { title: string; content?: string; duration?: number }) => void
+	success: (options: { title: string; content?: string; duration?: number }) => void
+	warning: (options: { title: string; content?: string; duration?: number }) => void
+	error: (options: { title: string; content?: string; duration?: number }) => void
+}
 
 // type onCreateCallback = (index: number) => any
 // type onCreateType = string | number | boolean | Data | onCreateType[]

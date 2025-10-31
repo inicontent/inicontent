@@ -1,130 +1,130 @@
 <template>
     <div>
         <LazyFormDrawer></LazyFormDrawer>
-        <NSpin :show="!!Loading.CREATE || !!Loading.DELETE || !!Loading.UPDATE">
-            <NCard style="height: fit-content">
+        <div class="animate-spin" :show="!!Loading.CREATE || !!Loading.DELETE || !!Loading.UPDATE">
+            <UCard style="height: fit-content">
                 <template #header>
-                    <NPerformantEllipsis>{{ t(table.slug) }}: {{ isEdit ? itemLabel : t('newItem') }}
-                    </NPerformantEllipsis>
+                    <div class="truncate">{{ t(table.slug) }}: {{ isEdit ? itemLabel : t('newItem') }}
+                    </div>
                 </template>
                 <template v-if="formRef?.schema && formRef?.schema.length > 4" #header-extra>
-                    <NButtonGroup v-if="isEdit">
-                        <NTooltip :delay="1500">
+                    <UButtonGroup v-if="isEdit">
+                        <UTooltip :delay="1500">
                             <template #trigger>
-                                <NButton type="info" secondary round>
+                                <UButton type="info" secondary round>
                                     <template #icon>
                                         <NuxtLink
                                             :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
-                                            <NIcon>
+                                            <div class="inline-block">
                                                 <Icon name="tabler:eye" />
-                                            </NIcon>
+                                            </div>
                                         </NuxtLink>
                                     </template>
-                                </NButton>
+                                </UButton>
                             </template>
                             {{ t('view') }}
-                        </NTooltip>
-                        <NPopconfirm @positive-click="formRef?.delete">
+                        </UTooltip>
+                        <UPopover @positive-click="formRef?.delete">
                             <template #trigger>
-                                <NTooltip :delay="1500">
+                                <UTooltip :delay="1500">
                                     <template #trigger>
-                                        <NButton secondary round type="error" :loading="Loading.DELETE">
+                                        <UButton secondary round type="error" :loading="Loading.DELETE">
                                             <template #icon>
-                                                <NIcon>
+                                                <div class="inline-block">
                                                     <Icon name="tabler:trash" />
-                                                </NIcon>
+                                                </div>
                                             </template>
-                                        </NButton>
+                                        </UButton>
                                     </template>
                                     {{ t('delete') }}
-                                </NTooltip>
+                                </UTooltip>
                             </template>
                             {{ t("theFollowingActionIsIrreversible") }}
-                        </NPopconfirm>
+                        </UPopover>
 
-                        <NTooltip :delay="1500">
+                        <UTooltip :delay="1500">
                             <template #trigger>
-                                <NButton secondary round type="primary" @click="formRef?.update"
+                                <UButton secondary round type="primary" @click="formRef?.update"
                                     :loading="Loading.UPDATE || Loading.SCHEMA">
                                     <template #icon>
-                                        <NIcon>
+                                        <div class="inline-block">
                                             <Icon name="tabler:device-floppy" />
-                                        </NIcon>
+                                        </div>
                                     </template>
-                                </NButton>
+                                </UButton>
                             </template>
                             {{ t('update') }}
-                        </NTooltip>
-                    </NButtonGroup>
-                    <NTooltip v-else :delay="1500">
+                        </UTooltip>
+                    </div>
+                    <UTooltip v-else :delay="1500">
                         <template #trigger>
-                            <NButton secondary round type="primary" @click="formRef?.create"
+                            <UButton secondary round type="primary" @click="formRef?.create"
                                 :loading="Loading.CREATE || Loading.SCHEMA">
                                 <template #icon>
-                                    <NIcon>
+                                    <div class="inline-block">
                                         <Icon name="tabler:send" />
-                                    </NIcon>
+                                    </div>
                                 </template>
-                            </NButton>
+                            </UButton>
                         </template>
                         {{ t('publish') }}
-                    </NTooltip>
+                    </UTooltip>
                 </template>
                 <template #action>
-                    <NFlex justify="end">
-                        <NButtonGroup v-if="isEdit">
-                            <NButton type="info" secondary round>
+                    <div class="flex" justify="end">
+                        <UButtonGroup v-if="isEdit">
+                            <UButton type="info" secondary round>
                                 <template #icon>
                                     <NuxtLink
                                         :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
-                                        <NIcon>
+                                        <div class="inline-block">
                                             <Icon name="tabler:eye" />
-                                        </NIcon>
+                                        </div>
                                     </NuxtLink>
                                 </template>
                                 {{ t('view') }}
-                            </NButton>
-                            <NPopconfirm @positive-click="formRef?.delete">
+                            </UButton>
+                            <UPopover @positive-click="formRef?.delete">
                                 <template #trigger>
-                                    <NButton secondary round type="error" :loading="Loading.DELETE">
+                                    <UButton secondary round type="error" :loading="Loading.DELETE">
                                         <template #icon>
-                                            <NIcon>
+                                            <div class="inline-block">
                                                 <Icon name="tabler:trash" />
-                                            </NIcon>
+                                            </div>
                                         </template>
                                         {{ t('delete') }}
-                                    </NButton>
+                                    </UButton>
                                 </template>
                                 {{ t("theFollowingActionIsIrreversible") }}
-                            </NPopconfirm>
+                            </UPopover>
 
-                            <NButton secondary round type="primary" @click="formRef?.update"
+                            <UButton secondary round type="primary" @click="formRef?.update"
                                 :loading="Loading.UPDATE || Loading.SCHEMA">
                                 <template #icon>
-                                    <NIcon>
+                                    <div class="inline-block">
                                         <Icon name="tabler:device-floppy" />
-                                    </NIcon>
+                                    </div>
                                 </template>
                                 {{ t('update') }}
-                            </NButton>
-                        </NButtonGroup>
-                        <NButton v-else secondary round type="primary" @click="formRef?.create"
+                            </UButton>
+                        </div>
+                        <UButton v-else secondary round type="primary" @click="formRef?.create"
                             :loading="Loading.CREATE || Loading.SCHEMA">
                             <template #icon>
-                                <NIcon>
+                                <div class="inline-block">
                                     <Icon name="tabler:send" />
-                                </NIcon>
+                                </div>
                             </template>
                             {{ t('publish') }}
-                        </NButton>
+                        </UButton>
                         <slot name="extraActions"></slot>
-                    </NFlex>
+                    </div>
                 </template>
                 <slot>
                     <Form ref="formRef" v-model="modelValue"></Form>
                 </slot>
-            </NCard>
-        </NSpin>
+            </UCard>
+        </div>
     </div>
 </template>
 

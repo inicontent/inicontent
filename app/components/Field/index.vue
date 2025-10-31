@@ -33,7 +33,7 @@
     <LazyFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field />
     <LazyFieldArray v-else-if="detectedFieldType === 'array'" v-model="modelValue" :field />
     <component v-else-if="detectedFieldType === 'custom' && field.render" :is="field.render"></component>
-    <NEmpty v-else :description="`${t('fieldTypeNotExisting')}: '${String(detectedFieldType)}'`" />
+    <div class="text-center py-8 text-gray-500" v-else :description="`${t('fieldTypeNotExisting')}: '${String(detectedFieldType)}'`" />
 </template>
 
 <script lang="ts" setup>

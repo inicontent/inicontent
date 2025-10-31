@@ -6,13 +6,21 @@
 </template>
 
 <script lang="ts" setup>
-import { useOsTheme } from "naive-ui"
-
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
-const osThemeRef = useOsTheme()
 const isManual = ref(false)
+
+// Detect OS theme preference
+const getOsTheme = (): "dark" | "light" => {
+	if (import.meta.client && window.matchMedia) {
+		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+	}
+	return "light"
+}
+
+const osTheme = ref(getOsTheme())
+
 if (!Theme.value) {
-	Theme.value = osThemeRef.value ?? "light"
+	Theme.value = osTheme.value
 } else {
 	isManual.value = true
 }
@@ -21,16 +29,22 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 watch(Theme, () => {
 	setThemeConfig()
-	if (Theme.value !== osThemeRef.value) {
+	if (Theme.value !== osTheme.value) {
 		isManual.value = true
 	}
 })
 
-watch(osThemeRef, (newOsTheme) => {
-	if (!isManual.value && newOsTheme) {
-		Theme.value = newOsTheme
-	}
-})
+// Listen for OS theme changes
+if (import.meta.client && window.matchMedia) {
+	const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+	mediaQuery.addEventListener("change", (e) => {
+		const newOsTheme = e.matches ? "dark" : "light"
+		osTheme.value = newOsTheme
+		if (!isManual.value) {
+			Theme.value = newOsTheme
+		}
+	})
+}
 
 useHead({
 	bodyAttrs: {

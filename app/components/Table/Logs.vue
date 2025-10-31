@@ -1,74 +1,74 @@
 <template>
-	<NCollapse :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
-		<NCollapseItem name="logs">
+	<UAccordion :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
+		<UAccordionItem name="logs">
 			<template #header>
-				<NH4 style="margin: 0">{{ t('latestActivities') }}</NH4>
+				<h3 class="font-semibold"4 style="margin: 0">{{ t('latestActivities') }}</NH4>
 			</template>
-			<NSpin :show="Loading.logs">
-				<NScrollbar v-if="data?.result" style="max-height: 340px">
-					<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
-						<NTimelineItem v-for="log in data.result?.filter((log) => log.actions?.length)" :key="log.id"
+			<div class="animate-spin" :show="Loading.logs">
+				<div class="overflow-auto" v-if="data?.result" style="max-height: 340px">
+					<timeline :item-placement="Language === 'ar' ? 'right' : 'left'">
+						<timelineItem v-for="log in data.result?.filter((log) => log.actions?.length)" :key="log.id"
 							:type="getTypeFromAction((log.actions[0] as Actions[0])[0])">
 							<template #header>
-								<NFlex align="center" size="small">
-									<NText type="primary">{{ renderLabel(usersTable, log.madeBy) }}</NText>
+								<div class="flex" align="center" size="small">
+									<span type="primary">{{ renderLabel(usersTable, log.madeBy) }}</span>
 									<template v-if="(log.actions[0] as Actions[0])[0] === 'create'">
 										{{ t('created') }} {{ t("newItem") }}:
-										<NButtonGroup>
-											<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+										<UButtonGroup>
+											<UButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
 												size="small" type="primary">
 												{{ renderLabel(table, item, `[${t('removed')}]`) }}
-											</NButton>
-										</NButtonGroup>
+											</UButton>
+										</div>
 									</template>
 									<template v-else-if="(log.actions[0] as Actions[0])[0] === 'delete'">
 										{{ t('deleted') }} {{ t("anItem") }}
 									</template>
 									<template v-else>
 										{{ t('updated') }}
-										<NButtonGroup>
-											<NButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
+										<UButtonGroup>
+											<UButton v-for="item in ([] as Item[]).concat(log.item)" round secondary
 												size="small" type="primary">{{ renderLabel(table, item) }}
-											</NButton>
-										</NButtonGroup>
+											</UButton>
+										</div>
 										{{ t('asFollow') }}:
 									</template>
-								</NFlex>
+								</div>
 							</template>
-							<NFlex vertical style="line-height: 2.5;">
+							<div class="flex flex-col" style="line-height: 2.5;">
 								<template v-for="action in log.actions">
-									<NText v-if="action[0] === 'unset'">{{ t(action[0]) }} <NTag :bordered="false" round
+									<span v-if="action[0] === 'unset'">{{ t(action[0]) }} <UBadge :bordered="false" round
 											type="warning">{{
-												t(action[1]) }}</NTag>
-									</NText>
-									<NText v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }}
-										<NTag :bordered="false" round type="error">{{ t(action[1]) }}</NTag>
-									</NText>
-									<NText v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <NTag
-											:bordered="false" round type="success">{{ t(action[1]) }}</NTag>
-									</NText>
-									<NText v-else-if="action[0] === 'set'">{{ t(action[0]) }} <NTag :bordered="false"
-											round type="info">{{ t(action[1]) }}</NTag> {{ t("as") }} <NTag
+												t(action[1]) }}</UBadge>
+									</span>
+									<span v-else-if="action[0] === 'remove'">{{ t(action[0]) }} {{ t("from") }}
+										<UBadge :bordered="false" round type="error">{{ t(action[1]) }}</UBadge>
+									</span>
+									<span v-else-if="action[0] === 'add'">{{ t(action[0]) }} {{ t("to") }} <UBadge
+											:bordered="false" round type="success">{{ t(action[1]) }}</UBadge>
+									</span>
+									<span v-else-if="action[0] === 'set'">{{ t(action[0]) }} <UBadge :bordered="false"
+											round type="info">{{ t(action[1]) }}</UBadge> {{ t("as") }} <UBadge
 											:bordered="false" round>{{ t(action[2]) }}
-										</NTag>
-									</NText>
-									<NText v-else-if="action[0] === 'update'">{{ t(action[0]) }} <NTag :bordered="false"
+										</UBadge>
+									</span>
+									<span v-else-if="action[0] === 'update'">{{ t(action[0]) }} <UBadge :bordered="false"
 											round type="info">
-											{{ t(action[1]) }}</NTag> {{
+											{{ t(action[1]) }}</UBadge> {{
 												t("to") }}
-										<NTag :bordered="false" round>{{ t(action[2]) }}</NTag>
-									</NText>
+										<UBadge :bordered="false" round>{{ t(action[2]) }}</UBadge>
+									</span>
 								</template>
-							</NFlex>
+							</div>
 							<template #footer>
-								<NTime :time="log.createdAt" type="relative" />
+								<time :time="log.createdAt" type="relative" />
 							</template>
 						</NTimelineItem>
 					</NTimeline>
-				</NScrollbar>
-			</NSpin>
-		</NCollapseItem>
-	</NCollapse>
+				</div>
+			</div>
+		</UAccordionItem>
+	</UAccordion>
 </template>
 
 <script lang="ts" setup>

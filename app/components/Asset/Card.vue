@@ -1,5 +1,5 @@
 <template>
-	<NCard id="assetsContainer" style="height: fit-content;" :bordered="!targetID">
+	<UCard id="assetsContainer" style="height: fit-content;" :bordered="!targetID">
 		<template #header>
 			<span v-if="isAssetRoute">{{ t("assets") }}</span>
 			<NBreadcrumb v-else>
@@ -13,18 +13,18 @@
 			</NBreadcrumb>
 		</template>
 		<template #header-extra>
-			<NButtonGroup round>
-				<NPopover>
+			<div class="flex gap-2 rounded-full">
+				<UPopover>
 					<template #trigger>
-						<NButton round size="small">
+						<UButton round size="small">
 							<template #icon>
-								<NIcon>
+								<span>
 									<Icon name="tabler:folder-plus" />
-								</NIcon>
+								</span>
 							</template>
-						</NButton>
+						</UButton>
 					</template>
-					<NInputGroup>
+					<div class="flex">
 						<NInput v-model:value="folder"
 							@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
 							:placeholder="t('folderName')" size="small">
@@ -34,47 +34,47 @@
 								</NIcon>
 							</template>
 						</NInput>
-						<NButton @click="createFolder" size="small" type="primary">
+						<UButton @click="createFolder" size="small" color="primary">
 							<template #icon>
-								<NIcon>
+								<span>
 									<Icon name="tabler:arrow-right" />
-								</NIcon>
+								</span>
 							</template>
-						</NButton>
-					</NInputGroup>
-				</NPopover>
+						</UButton>
+					</div>
+				</UPopover>
 				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
 					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
 					@remove="onRemoveUpload" with-credentials>
-					<NPopover trigger="manual" placement="bottom-end"
+					<UPopover trigger="manual" placement="bottom-end"
 						:show="UploadProgress > 0 && UploadProgress !== 1001">
 						<template #trigger>
 							<NUploadTrigger :abstract="false">
-								<NButton round size="small"
+								<UButton round size="small"
 									:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'">
 									<template #icon>
-										<NIcon v-if="!UploadProgress">
+										<span v-if="!UploadProgress">
 											<Icon name="tabler:upload" />
-										</NIcon>
-										<NIcon v-else-if="UploadProgress === 10000">
+										</span>
+										<span v-else-if="UploadProgress === 10000">
 											<Icon name="tabler:check" />
-										</NIcon>
-										<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+										</span>
+										<div v-else-if="UploadProgress === 1000 || UploadProgress === 1001" class="animate-spin"
 											:size="16" />
-										<NProgress v-else type="circle" :show-indicator="false"
+										<UProgress v-else type="circle" :show-indicator="false"
 											:status="UploadProgress === 100 ? 'success' : 'warning'"
 											:percentage="UploadProgress" :stroke-width="20" />
 									</template>
-								</NButton>
+								</UButton>
 							</NUploadTrigger>
 						</template>
 						<NUploadFileList></NUploadFileList>
-					</NPopover>
+					</UPopover>
 				</NUpload>
-			</NButtonGroup>
+			</div>
 		</template>
-		<NFlex vertical align="center">
+		<div class="flex flex-col items-center">
 			<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
 				v-model:path="currentPath">
 				<template v-slot="slotProps">
@@ -85,8 +85,8 @@
 				:page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
 				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="page" :page-size="pageSize"
 				:item-count="itemCount" />
-		</NFlex>
-	</NCard>
+		</div>
+	</UCard>
 </template>
 
 
@@ -94,6 +94,7 @@
 import Inison from "inison"
 import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
+import { NUpload, NUploadTrigger, NUploadFileList, NInput, NIcon, NBreadcrumb, NBreadcrumbItem, NPagination } from "#components"
 
 defineTranslation({
 	ar: {

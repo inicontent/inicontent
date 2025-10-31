@@ -1,114 +1,37 @@
 <template>
-	<NConfigProvider v-bind="configProviderProps">
+	<div>
 		<NuxtLoadingIndicator :color="ThemeConfig.primaryColor" :height=2 />
+		<UNotifications />
 		<slot></slot>
-	</NConfigProvider>
+	</div>
 </template>
 
 <script setup lang="ts">
-import {
-	type ConfigProviderProps,
-	arDZ,
-	createDiscreteApi,
-	darkTheme,
-	dateArDZ,
-	dateEnUS,
-	enUS,
-	unstableAvatarGroupRtl,
-	unstableButtonGroupRtl,
-	unstableButtonRtl,
-	unstableCardRtl,
-	unstableCheckboxRtl,
-	unstableCollapseRtl,
-	unstableDataTableRtl,
-	unstableDialogRtl,
-	unstableDrawerRtl,
-	unstableFlexRtl,
-	unstableInputNumberRtl,
-	unstableInputRtl,
-	unstableListRtl,
-	unstableMessageRtl,
-	unstableNotificationRtl,
-	unstablePageHeaderRtl,
-	unstablePaginationRtl,
-	unstableRadioRtl,
-	unstableScrollbarRtl,
-	unstableSelectRtl,
-	unstableStepsRtl,
-	unstableTableRtl,
-	unstableTagRtl,
-} from "naive-ui"
-
 import "~/assets/main.css"
 
 import { hexToRGB } from "~/composables"
-
-const rtlStyles: any = [
-	unstableListRtl,
-	unstablePageHeaderRtl,
-	unstableButtonGroupRtl,
-	unstableButtonRtl,
-	unstableCardRtl,
-	unstableScrollbarRtl,
-	unstableMessageRtl,
-	unstableCollapseRtl,
-	unstableDrawerRtl,
-	unstableInputNumberRtl,
-	unstableCheckboxRtl,
-	unstableRadioRtl,
-	unstableTagRtl,
-	unstableTableRtl,
-	unstableInputRtl,
-	unstableAvatarGroupRtl,
-	unstableFlexRtl,
-	unstableSelectRtl,
-	unstableDataTableRtl,
-	unstableDialogRtl,
-	unstablePaginationRtl,
-	unstableNotificationRtl,
-	unstableStepsRtl,
-]
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
 
-const Locales = {
-	ar: arDZ,
-	en: enUS,
-}
-const dateLocales = {
-	ar: dateArDZ,
-	en: dateEnUS,
+const toast = useToast()
+
+// Create message and notification APIs compatible with the old naive-ui API
+const message: MessageApiInjection = {
+	info: (content: string) => toast.add({ title: content, color: 'blue' }),
+	success: (content: string) => toast.add({ title: content, color: 'green' }),
+	warning: (content: string) => toast.add({ title: content, color: 'yellow' }),
+	error: (content: string) => toast.add({ title: content, color: 'red' }),
+	loading: (content: string) => toast.add({ title: content, icon: 'i-heroicons-arrow-path', timeout: 0 }),
 }
 
-const configProviderProps = computed<ConfigProviderProps>(() => ({
-	dir: Language.value === "ar" ? "rtl" : "ltr",
-	rtl: Language.value === "ar" ? rtlStyles : undefined,
-	theme: Theme.value === "dark" ? darkTheme : undefined,
-	themeOverrides: {
-		common: {
-			...ThemeConfig.value,
-			fontFamily: "Cairo",
-			fontFamilyMono: "Cairo",
-		},
-	},
-	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
-	dateLocale: dateLocales[Language.value as "ar" | "en"] ?? dateLocales.en,
-}))
-const { message, notification } = createDiscreteApi(
-	["message", "notification"],
-	{
-		messageProviderProps: {
-			keepAliveOnHover: true,
-			closable: true,
-			containerStyle: {
-				top: "70px",
-			},
-		},
-		configProviderProps,
-	},
-)
+const notification: NotificationApiInjection = {
+	info: (options) => toast.add({ ...options, color: 'blue' }),
+	success: (options) => toast.add({ ...options, color: 'green' }),
+	warning: (options) => toast.add({ ...options, color: 'yellow' }),
+	error: (options) => toast.add({ ...options, color: 'red' }),
+}
 
 onMounted(() => {
 	window.$message = message

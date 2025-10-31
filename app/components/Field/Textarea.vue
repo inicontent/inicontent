@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NInput v-model:value="modelValue" :placeholder="t(field.key)" clearable show-count type="textarea"
+		<UInput v-model:value="modelValue" :placeholder="t(field.key)" clearable show-count type="textarea"
 			:rows="field.isTable ? 1 : undefined" :autosize="field.isTable ? false : {
 				minRows: 3,
 			}" v-bind="field.inputProps
@@ -11,12 +11,11 @@
 			<template #suffix>
 				<component :is="getField(field).icon" />
 			</template>
-		</NInput>
+		</UInput>
 	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
-import type { FormItemRule } from "naive-ui"
 
 const { field } = defineProps<{ field: Field }>()
 

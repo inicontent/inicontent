@@ -1,14 +1,14 @@
 <template>
-	<NTooltip :show="tooltipShow && !isEdit && isEditable" @update:show="(show) => tooltipShow = show" :delay="1500">
+	<UTooltip :show="tooltipShow && !isEdit && isEditable" @update:show="(show) => tooltipShow = show" :delay="1500">
 		<template #trigger>
-			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onContextmenu
+			<div class="animate-spin" :show="!!loading" size="small" style="min-height: 22px" :onContextmenu
 				:class="{ 'editable': !isEdit && isEditable }">
 				<LazyColumn v-if="!isEdit" :field="field" :value="modelValue" />
 				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
-			</NSpin>
+			</div>
 		</template>
 		{{ t('rightClickToEdit') }}
-	</NTooltip>
+	</UTooltip>
 </template>
 
 <script lang="ts" setup>

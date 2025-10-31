@@ -1,10 +1,10 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<template #label>
-			<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
+			<div class="flex items-center gap-2" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
-			</NFlex>
+			</div>
 		</template>
 
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
@@ -18,32 +18,32 @@
 					<Icon name="tabler:upload" />
 				</NIcon>
 			</NUploadDragger>
-			<NFlex v-else align="center" size="small">
+			<div v-else class="flex items-center gap-2">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
-			</NFlex>
+			</div>
 		</NUpload>
 
-		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+		<USlideover v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
+			<div id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
 				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
-							<NCheckbox v-if="field.isArray" :checked="getChecked(asset)"
+							<UCheckbox v-if="field.isArray" :checked="getChecked(asset)"
 								@update:checked="handleSelectAsset(asset)" />
-							<NRadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
+							<URadio v-else :checked="getChecked(asset)" @update:checked="handleSelectAsset(asset)" />
 						</template>
 					</template>
 				</AssetCard>
-			</NDrawerContent>
-		</NDrawer>
+			</div>
+		</USlideover>
 	</FieldWrapper>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
-import type { FormItemRule, UploadFileInfo } from "naive-ui"
-import { Icon, NImage, NTooltip } from "#components"
+import type { UploadFileInfo } from "naive-ui"
+import { Icon, NImage, NUpload, NUploadDragger, NIcon, NTooltip } from "#components"
 import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 
 const { field } = defineProps<{ field: Field }>()

@@ -1,16 +1,16 @@
 <template>
-    <NButton circle @click="showModal = true" :disabled="!value || value.length < 8" size="small"
+    <UButton circle @click="showModal = true" :disabled="!value || value.length < 8" size="small"
         @mouseover="buttonHovered = true" @mouseout="buttonHovered = false">
         <template #icon>
-            <NIcon>
+            <div class="inline-block">
                 <Icon name="tabler:zoom-in" v-if="buttonHovered" />
                 <Icon name="tabler:brackets-angle" v-else />
-            </NIcon>
+            </div>
         </template>
-    </NButton>
-    <NModal v-model:show="showModal" :title="t(field.key)" draggable preset="card" style="width: 600px;">
+    </UButton>
+    <UModal v-model:show="showModal" :title="t(field.key)" draggable preset="card" style="width: 600px;">
         <div v-html="value?.replaceAll('<img ', '<img style=\'width:100%\'') || ''"></div>
-    </NModal>
+    </UModal>
 </template>
 
 <script lang="ts" setup>

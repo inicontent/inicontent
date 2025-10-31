@@ -1,40 +1,40 @@
 <template>
-    <NCard :title="t('apiDocumentation')" style="background:none" :bordered="false">
-        <NGrid :x-gap="12" :y-gap="12" cols="1 500:2 800:3">
-            <NGridItem v-for="tableOption in documentedTables" :key="tableOption.slug">
-                <NCard hoverable>
+    <UCard :title="t('apiDocumentation')" style="background:none" :bordered="false">
+        <div class="grid" :x-gap="12" :y-gap="12" cols="1 500:2 800:3">
+            <div class="grid"Item v-for="tableOption in documentedTables" :key="tableOption.slug">
+                <UCard hoverable>
                     <template #header>
                         <NuxtLink :to="tableOption.url">
-                            <NFlex align="center">
-                                <NIconWrapper :border-radius="50" style="font-style: normal">
+                            <div class="flex" align="center">
+                                <div class="inline-flex items-center justify-center" :border-radius="50" style="font-style: normal">
                                     <LazyTableIcon :table="tableOption" />
-                                </NIconWrapper>
-                                <NH4 style="margin: 0">{{ t(tableOption.slug) }}</NH4>
-                            </NFlex>
+                                </div>
+                                <h3 class="font-semibold"4 style="margin: 0">{{ t(tableOption.slug) }}</NH4>
+                            </div>
                         </NuxtLink>
                     </template>
                     <template #header-extra>
-                        <NButton tag="div" size="small" quaternary>
+                        <UButton tag="div" size="small" quaternary>
                             <NuxtLink :to="tableOption.url">
-                                <NFlex align="center" size="small">
+                                <div class="flex" align="center" size="small">
                                     <Icon name="tabler:arrow-up-right" />
                                     <span>{{ t('openDocumentation') }}</span>
-                                </NFlex>
+                                </div>
                             </NuxtLink>
-                        </NButton>
+                        </UButton>
                     </template>
-                    <NFlex vertical size="small">
-                        <NText type="secondary">{{ t('availableMethods') }}</NText>
-                        <NFlex wrap :size="6">
-                            <NTag v-for="method in tableOption.methods" :key="method.key" :type="method.type" round>
+                    <div class="flex flex-col" size="small">
+                        <span type="secondary">{{ t('availableMethods') }}</span>
+                        <div class="flex" wrap :size="6">
+                            <UBadge v-for="method in tableOption.methods" :key="method.key" :type="method.type" round>
                                 {{ `${method.http} - ${method.label}` }}
-                            </NTag>
-                        </NFlex>
-                    </NFlex>
-                </NCard>
-            </NGridItem>
-        </NGrid>
-    </NCard>
+                            </UBadge>
+                        </div>
+                    </div>
+                </UCard>
+            </div>
+        </div>
+    </UCard>
 </template>
 
 <script setup lang="ts">

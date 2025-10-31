@@ -1,7 +1,7 @@
 <template>
-	<NFlex>
+	<div class="flex">
 		<Field v-for="field of formatedSchema" :field="field" v-model="modelValue[field.key]" />
-	</NFlex>
+	</div>
 </template>
 
 <script lang="ts" setup>

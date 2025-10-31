@@ -1,22 +1,22 @@
 <template><template v-for="(drawer, index) in Drawers" :key="index">
-		<NDrawer :onEsc :show="drawer.show || false" @update:show="(show) => onUpdateShow(index, show)"
+		<USlideover :onEsc :show="drawer.show || false" @update:show="(show) => onUpdateShow(index, show)"
 			:width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
 			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
 			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
-			<NDrawerContent closable>
+			<USlideoverContent closable>
 				<template #header>
 					<span v-if="drawer.id">
 						{{ t('edit') }}
 						<NuxtLink
 							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
-							<NText type="primary">
+							<span type="primary">
 								{{ itemsLabels[index] }}
-								<NIcon size="small">
+								<span size="small">
 									<Icon name="tabler:external-link" />
-								</NIcon>
-							</NText>
+								</div>
+							</span>
 						</NuxtLink>
 					</span>
 					<span v-else>
@@ -25,32 +25,32 @@
 				</template>
 
 				<template #footer>
-					<NFlex :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
-						<NButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
+					<div class="flex" :style="{ width: '100%' }" :justify="!$device.isMobile ? 'space-between' : 'end'">
+						<UButton v-if="!$device.isMobile" round secondary type="info" @click="toggleDrawerWidth(index)">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:chevron-right"
 										v-if="drawer.width && (typeof drawer.width === 'string' || drawer.width >= screenHalf)" />
 									<Icon name="tabler:chevron-left" v-else />
-								</NIcon>
+								</div>
 							</template>
-						</NButton>
+						</UButton>
 
-						<NButton round secondary type="primary"
+						<UButton round secondary type="primary"
 							:disabled="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
 							<template #icon>
-								<NIcon>
+								<div class="inline-block">
 									<Icon name="tabler:device-floppy" />
-								</NIcon>
+								</div>
 							</template>
 							{{ drawer.id ? t('update') : t('create') }}
-						</NButton>
-					</NFlex>
+						</UButton>
+					</div>
 				</template>
 				<div class="drawerSpin" v-if="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE">
-					<NSpin />
+					<div class="animate-spin" />
 				</div>
 
 				<slot @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
@@ -58,8 +58,8 @@
 						@after-create="() => onAfterUpdateCreate(index)"
 						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
 				</slot>
-			</NDrawerContent>
-		</NDrawer>
+			</div>
+		</USlideover>
 	</template></template>
 
 <script setup lang="ts">
