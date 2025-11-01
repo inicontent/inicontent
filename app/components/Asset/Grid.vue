@@ -40,6 +40,21 @@
 				</NFlex>
 			</NDrawerContent>
 		</NDrawer>
+		<NModal :show="currentPreviewAsset !== undefined" @mask-click="onClosePreview" @close="onClosePreview"
+			@esc="onClosePreview" :width="800">
+			<NSpin :show="previewLoading" size="large" style="width: 80%;">
+				<video v-if="currentPreviewAsset?.type.startsWith('video/')" controls autoplay
+					style="width:100%;height:auto" :style="{ visibility: previewLoading ? 'hidden' : 'visible' }"
+					@loadeddata="previewLoading = false" @canplay="previewLoading = false"
+					@error="previewLoading = false">
+					<source :src="currentPreviewAsset?.publicURL" :type="currentPreviewAsset?.type" />
+				</video>
+				<object v-else-if="currentPreviewAsset?.type === 'application/pdf' && pdfObjectUrl" :data="pdfObjectUrl"
+					type="application/pdf" style="width:100%;height:80vh;"
+					:style="{ visibility: previewLoading ? 'hidden' : 'visible' }"
+					@load="previewLoading = false"></object>
+			</NSpin>
+		</NModal>
 		<NImageGroup>
 			<NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:11">
 				<template v-if="modelValue === undefined || Loading.AssetData" #default>
@@ -58,16 +73,29 @@
 								<NFlex class="assetActions">
 									<slot :asset></slot>
 								</NFlex>
-								<NImage
-									v-if="asset.type.startsWith('image/') || (asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
-									class="asset"
+								<NImage v-if="asset.type.startsWith('image/')" class="asset"
 									:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
 									:intersection-observer-options="{
 										root: `#${targetID ?? 'container'}`
 									}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`" />
-								<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
-									<LazyAssetIcon :type="asset.type" class="icon" />
-								</NIcon>
+								<NImage
+									v-else-if="(asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
+									class="asset" :src="`${asset.publicURL}?raw`" :intersection-observer-options="{
+										root: `#${targetID ?? 'container'}`
+									}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
+								<NImage v-else-if="asset.type.startsWith('video/') && videoThumbs[assetKey(asset)]"
+									class="asset" :src="videoThumbs[assetKey(asset)]" :intersection-observer-options="{
+										root: `#${targetID ?? 'container'}`
+									}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
+								<NSpin v-else
+									:show="asset.type.startsWith('video/') && generatingVideo[assetKey(asset)]"
+									size="small">
+									<NIcon class="asset" @click="handleOnClickAsset($event, asset)"
+										@mouseenter="asset.type.startsWith('video/') && !videoThumbs[assetKey(asset)] && generateVideoThumb(asset)"
+										v-intersect="() => { if (asset.type.startsWith('video/') && !videoThumbs[assetKey(asset)]) generateVideoThumb(asset) }">
+										<LazyAssetIcon :type="asset.type" class="icon" />
+									</NIcon>
+								</NSpin>
 								<NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
 									{{ asset.name }}
 								</NPerformantEllipsis>
@@ -86,7 +114,7 @@
 
 <script lang="ts" setup>
 import type { ImageRenderToolbarProps } from "naive-ui"
-import type { VNodeChild } from "vue"
+import type { VNodeChild, Directive } from "vue"
 import { Icon, NIcon } from "#components"
 
 const path = defineModel<string>("path", {
@@ -102,6 +130,7 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 defineTranslation({
 	ar: {
+		info: "معلومات",
 		name: "الإسم",
 		size: "الحجم",
 		type: "النوع",
@@ -124,16 +153,16 @@ const sessionID = useCookie<string | null>("sessionID", {
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true
 	const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id)
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -145,8 +174,13 @@ async function deleteAsset(asset: Asset) {
 	} else window.$message.error(data?.message ?? t("error"))
 	Loading.value[`deleteAsset${asset.id}`] = false
 }
-const dropdownOptions = [
+const dropdownOptions = computed(() => [
 	{
+		label: t("info"),
+		key: "info",
+		show: CurrentAsset.value?.type.startsWith("image/") || CurrentAsset.value?.type.startsWith("video/") || CurrentAsset.value?.type === "application/pdf",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:info-square-rounded" })),
+	}, {
 		label: t("delete"),
 		key: "delete",
 		show: table?.allowedMethods?.includes("d"),
@@ -168,12 +202,16 @@ const dropdownOptions = [
 		show: table?.allowedMethods?.includes("u"),
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:upload" })),
 	},
-]
+])
 
 function dropdownOnSelect(key: string) {
 	switch (key) {
 		case "delete":
 			deleteAsset(CurrentAsset.value as Asset)
+			showDropdown.value = false
+			break
+		case "info":
+			showDrawer.value = true
 			showDropdown.value = false
 			break
 		default:
@@ -199,6 +237,10 @@ function dropdownOnClickOutside(e: MouseEvent) {
 	if (!isRightClick) showDropdown.value = false
 }
 const route = useRoute()
+
+const currentPreviewAsset = ref<Asset>()
+const previewLoading = ref(false)
+const pdfObjectUrl = ref<string | null>(null)
 async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 	if (e.ctrlKey || e.metaKey) {
 		e.preventDefault()
@@ -213,8 +255,133 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 		path.value += `/${asset.name}`
 		return
 	}
+	if (asset.type.startsWith("video/") || asset.type === "application/pdf") {
+		e.preventDefault()
+		currentPreviewAsset.value = asset
+		previewLoading.value = true
+		if (asset.type === 'application/pdf')
+			await loadPdfObjectUrl(asset.publicURL)
+		return;
+	}
 	CurrentAsset.value = asset
 	showDrawer.value = true
+}
+
+// Video thumbnail generation state and helper
+const videoThumbs = reactive<Record<string, string | undefined>>({})
+const generatingVideo = reactive<Record<string, boolean>>({})
+
+function assetKey(asset: Asset): string {
+	// Prefer a stable unique key
+	return String(asset.id ?? asset.publicURL ?? asset.name)
+}
+
+async function generateVideoThumb(asset: Asset, timeSec = 0.5) {
+	if (!asset.type.startsWith('video/')) return
+	const key = assetKey(asset)
+	if (videoThumbs[key] !== undefined) return videoThumbs[key]
+	try {
+		generatingVideo[key] = true
+		const dataUrl = await new Promise<string | undefined>((resolve) => {
+			const video = document.createElement('video')
+			// Requires proper CORS headers on the asset URL
+			video.crossOrigin = 'anonymous'
+			video.preload = 'metadata'
+			video.muted = true
+			video.src = asset.publicURL
+
+			const cleanup = () => {
+				video.removeEventListener('loadeddata', onLoaded)
+				video.removeEventListener('seeked', onSeeked)
+				video.removeEventListener('error', onError)
+			}
+			const onError = () => { cleanup(); resolve(undefined) }
+			const onLoaded = () => {
+				try {
+					const target = Number.isFinite(video.duration) ? Math.min(timeSec, Math.max(0, video.duration - 0.1)) : 0
+					if (target > 0) {
+						video.currentTime = target
+					} else {
+						onSeeked()
+					}
+				} catch {
+					onError()
+				}
+			}
+			const onSeeked = () => {
+				try {
+					const canvas = document.createElement('canvas')
+					canvas.width = video.videoWidth || 320
+					canvas.height = video.videoHeight || 180
+					const ctx = canvas.getContext('2d')
+					if (!ctx) { cleanup(); resolve(undefined); return }
+					ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+					const url = canvas.toDataURL('image/jpeg', 0.8)
+					cleanup()
+					resolve(url)
+				} catch {
+					cleanup(); resolve(undefined)
+				}
+			}
+
+			video.addEventListener('loadeddata', onLoaded, { once: true })
+			video.addEventListener('seeked', onSeeked, { once: true })
+			video.addEventListener('error', onError, { once: true })
+		})
+		videoThumbs[key] = dataUrl
+	} catch {
+		videoThumbs[key] = undefined
+	}
+	generatingVideo[key] = false
+	return videoThumbs[key]
+}
+
+function onClosePreview() {
+	currentPreviewAsset.value = undefined
+	previewLoading.value = false
+	if (pdfObjectUrl.value) {
+		URL.revokeObjectURL(pdfObjectUrl.value)
+		pdfObjectUrl.value = null
+	}
+}
+
+async function loadPdfObjectUrl(url: string) {
+	try {
+		const response = await fetch(url, { credentials: 'include' })
+		const blob = await response.blob()
+		if (blob.type !== 'application/pdf') throw new Error('Not a PDF')
+		if (pdfObjectUrl.value) URL.revokeObjectURL(pdfObjectUrl.value)
+		pdfObjectUrl.value = URL.createObjectURL(blob)
+	} catch (e) {
+		// Fallback: keep spinner off and avoid blocking UI
+		pdfObjectUrl.value = null
+		previewLoading.value = false
+	}
+}
+
+// Intersection observer directive for lazy actions
+const vIntersect: Directive<HTMLElement, () => void> = {
+	mounted(el, binding) {
+		const callback = binding.value
+		if (typeof callback !== 'function') return
+		const observer = new IntersectionObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.isIntersecting) {
+					callback()
+					observer.disconnect()
+					break
+				}
+			}
+		})
+		observer.observe(el)
+			// store on element for potential cleanup
+			; (el as any).__io__ = observer
+	},
+	unmounted(el) {
+		const observer: IntersectionObserver | undefined = (el as any).__io__
+		if (observer) observer.disconnect()
+		delete (el as any).__io__
+	}
 }
 
 const renderToolbar: (
@@ -234,20 +401,20 @@ const renderToolbar: (
 	},
 	file?: Asset,
 ) => {
-	if (download.props && file?.publicURL)
-		download.props.onClick = (event: MouseEvent) => {
-			event?.preventDefault()
-			window.open(file.publicURL as string, "_blank")
-			close?.props?.onClick?.()
-		}
-	return [
-		rotateCounterclockwise,
-		rotateClockwise,
-		zoomIn,
-		zoomOut,
-		resizeToOriginalSize,
-		download,
-		close,
-	]
-}
+		if (download.props && file?.publicURL)
+			download.props.onClick = (event: MouseEvent) => {
+				event?.preventDefault()
+				window.open(file.publicURL as string, "_blank")
+				close?.props?.onClick?.()
+			}
+		return [
+			rotateCounterclockwise,
+			rotateClockwise,
+			zoomIn,
+			zoomOut,
+			resizeToOriginalSize,
+			download,
+			close,
+		]
+	}
 </script>

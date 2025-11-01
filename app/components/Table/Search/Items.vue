@@ -9,13 +9,15 @@
 					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
 				<template v-if="item[3]">
 					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
-						@update:value="(v) => updateOperator(item, v)"
-						:options="getAvailableComparisonOperator(item[3])" style="width:33.33%" />
+						@update:value="(v) => item[1] = v" :options="getAvailableComparisonOperator(item[3])"
+						style="width:33.33%" />
 					<template v-if="isRelativeOperator(item[1])">
-						<NAutoComplete size="small" style="width:33.33%" :value="item[2] ?? ''"
-							:placeholder="t('relativePlaceholder')" :options="getRelativeAutocompleteOptions(item[2])"
-							:fallback-option="createRelativeFallback"
-							@update:value="(v) => updateRelativeValue(item, v)" @keydown.enter.prevent="callback()" />
+						<NSelect size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
+							:value="(item[2] as string | null) ?? null"
+							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null)"
+							filterable remote clearable :on-search="(pattern) => handleRelativeSearch(index, pattern)"
+							@update:value="(v) => updateRelativeValue(item, v as string | null)"
+							@keydown.enter.prevent="callback()" />
 					</template>
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
 						:field="getFieldFromItem(item)" />
@@ -50,6 +52,25 @@ defineTranslation({
 	ar: {
 		relativeGroup: "نسبي",
 		relativePlaceholder: "مثال: قبل 3 أيام",
+		day: "يوم",
+		days: "أيام",
+		week: "أسبوع",
+		weeks: "أسابيع",
+		month: "شهر",
+		months: "شهور",
+		year: "سنة",
+		years: "سنوات",
+		ago: "مضت",
+		in: "خلال",
+		now: "الآن",
+		yesterday: "أمس",
+		tomorrow: "غدًا",
+		"last week": "الأسبوع الماضي",
+		"last month": "الشهر الماضي",
+		"last year": "السنة الماضية",
+		"next week": "الأسبوع القادم",
+		"next month": "الشهر القادم",
+		"next year": "السنة القادمة",
 	},
 })
 
@@ -67,93 +88,24 @@ type OperatorOption = {
 	key?: string
 }
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
-
-const englishRelativeSuggestions = [
-	"current",
+const relativeBaseSuggestionValues = [
 	"now",
-	"today",
 	"yesterday",
 	"tomorrow",
-	"this week",
 	"last week",
 	"last month",
 	"last year",
+	"next week",
+	"next month",
+	"next year",
 ]
 
-const arabicRelativeSuggestions = [
-	"الآن",
-	"الان",
-	"اليوم",
-	"أمس",
-	"امس",
-	"غداً",
-	"غدا",
-	"هذا الأسبوع",
-	"هذا الاسبوع",
-	"الأسبوع الماضي",
-	"الاسبوع الماضي",
-	"الشهر الماضي",
-	"السنة الماضية",
-]
-
-const isArabicLanguage = computed(() => Language.value?.startsWith("ar"))
-
-const relativeBaseSuggestionValues = computed(() =>
-	isArabicLanguage.value ? arabicRelativeSuggestions : englishRelativeSuggestions,
-)
-
-const relativeBaseAutocompleteOptions = computed(() =>
-	relativeBaseSuggestionValues.value.map((value) => ({
-		label: value,
+const relativeBaseAutocompleteOptions = relativeBaseSuggestionValues.map(
+	(value) => ({
+		label: t(value),
 		value,
-	})),
+	}),
 )
-
-const arabicDigitMap: Record<string, string> = {
-	"٠": "0",
-	"١": "1",
-	"٢": "2",
-	"٣": "3",
-	"٤": "4",
-	"٥": "5",
-	"٦": "6",
-	"٧": "7",
-	"٨": "8",
-	"٩": "9",
-	"۰": "0",
-	"۱": "1",
-	"۲": "2",
-	"۳": "3",
-	"۴": "4",
-	"۵": "5",
-	"۶": "6",
-	"۷": "7",
-	"۸": "8",
-	"۹": "9",
-}
-
-function normalizeRelativeNumericInput(value: string) {
-	return value.replace(/[٠-٩۰-۹]/g, (digit) => arabicDigitMap[digit] ?? digit)
-}
-
-const localeDigitMap: Record<string, string> = {
-	"0": "٠",
-	"1": "١",
-	"2": "٢",
-	"3": "٣",
-	"4": "٤",
-	"5": "٥",
-	"6": "٦",
-	"7": "٧",
-	"8": "٨",
-	"9": "٩",
-}
-
-function localizeDigits(value: string) {
-	if (!isArabicLanguage.value) return value
-	return value.replace(/[0-9]/g, (digit) => localeDigitMap[digit] ?? digit)
-}
 
 const formatedItems = computed(() =>
 	modelValue.value?.map((item) => {
@@ -238,81 +190,59 @@ function getAvailableComparisonOperator(field: Field) {
 	return selectableOptions
 }
 
-function updateOperator(item: searchTypeValueItem, value: string | null) {
-	if (value === null) {
-		item[1] = "="
-		item[2] = undefined
-		return
-	}
-	if (item[1] !== value) item[2] = undefined
-	item[1] = value
-}
-
 function isRelativeOperator(value: string | undefined) {
 	return typeof value === "string" && value.startsWith("r")
 }
 
 function getRelativeAutocompleteOptions(value: unknown) {
 	const input = typeof value === "string" ? value.trim() : ""
-	const normalizedInput = normalizeRelativeNumericInput(input)
 	const numericPattern = /^[+-]?\d+$/
-	if (numericPattern.test(normalizedInput)) {
-		const parsed = Number.parseInt(normalizedInput, 10)
-		if (!Number.isFinite(parsed)) return relativeBaseAutocompleteOptions.value
+	if (numericPattern.test(input)) {
+		const parsed = Number.parseInt(input, 10)
+		if (!Number.isFinite(parsed)) return relativeBaseAutocompleteOptions
 		const absolute = Math.abs(parsed)
-		if (absolute === 0) return relativeBaseAutocompleteOptions.value
+		if (absolute === 0) return relativeBaseAutocompleteOptions
 		const units = [
-			{
-				en: { singular: "day", plural: "days" },
-				ar: { singular: "يوم", plural: "أيام" },
-			},
-			{
-				en: { singular: "week", plural: "weeks" },
-				ar: { singular: "أسبوع", plural: "أسابيع" },
-			},
-			{
-				en: { singular: "month", plural: "months" },
-				ar: { singular: "شهر", plural: "أشهر" },
-			},
-			{
-				en: { singular: "year", plural: "years" },
-				ar: { singular: "سنة", plural: "سنوات" },
-			},
+			{ singular: "day", plural: "days" },
+			{ singular: "week", plural: "weeks" },
+			{ singular: "month", plural: "months" },
+			{ singular: "year", plural: "years" },
 		]
 		const numberText = absolute.toString()
-		const localizedNumberText = localizeDigits(numberText)
-		const seen = new Set<string>()
 		const options: { label: string; value: string }[] = []
-		const addOption = (label: string) => {
-			const normalizedLabel = label.trim()
-			if (!normalizedLabel) return
-			const key = normalizedLabel.toLowerCase()
-			if (seen.has(key)) return
-			seen.add(key)
-			options.push({ label: normalizedLabel, value: normalizedLabel })
+
+		for (const { singular, plural } of units) {
+			const unitText = t(absolute === 1 ? singular : plural)
+			const baseLabel = `${numberText} ${unitText}`
+			options.push({ label: `${baseLabel} ${t('ago')}`, value: `${baseLabel} ago` })
 		}
-		for (const {
-			en,
-			ar,
-		} of units) {
-			const unitConfig = isArabicLanguage.value ? ar : en
-			const unitText = absolute === 1 ? unitConfig.singular : unitConfig.plural
-			const baseLabel = `${localizedNumberText} ${unitText}`
-			if (isArabicLanguage.value) {
-				addOption(`قبل ${baseLabel}`)
-				addOption(`بعد ${baseLabel}`)
-			} else {
-				addOption(`${baseLabel} ago`)
-				addOption(`in ${baseLabel}`)
-			}
+		for (const { singular, plural } of units) {
+			const unitText = t(absolute === 1 ? singular : plural)
+			const baseLabel = `${numberText} ${unitText}`
+			options.push({ label: `${t('in')} ${baseLabel}`, value: `in ${baseLabel}` })
 		}
 		return options
 	}
-	return relativeBaseAutocompleteOptions.value
+	return relativeBaseAutocompleteOptions
 }
 
-function createRelativeFallback(value: string) {
-	return { label: value, value }
+// NSelect support (remote filter): state and helpers
+const relativeSelectOptions = ref<Record<number, { label: string; value: string }[]>>({})
+
+function getRelativeSelectOptions(pattern: unknown, currentValue: string | null) {
+	// Reuse existing generator, ensure current value is present
+	const options = getRelativeAutocompleteOptions(pattern)
+	const list = Array.isArray(options) ? [...options] : []
+	if (currentValue && !list.some((o) => o.value === currentValue)) {
+		list.unshift({ label: currentValue, value: currentValue })
+	}
+	return list
+}
+
+function handleRelativeSearch(index: number, pattern: string) {
+	const currentItem = modelValue.value?.[index]
+	const currentValue = Array.isArray(currentItem) ? (currentItem[2] as string | null) : null
+	relativeSelectOptions.value[index] = getRelativeSelectOptions(pattern, currentValue)
 }
 
 function updateRelativeValue(

@@ -303,161 +303,74 @@ function prepareCriterionForMode(
 
 type RelativeUnit = "year" | "month" | "week" | "day" | "hour" | "minute" | "second"
 
-const arabicDigitMap: Record<string, string> = {
-	"٠": "0",
-	"١": "1",
-	"٢": "2",
-	"٣": "3",
-	"٤": "4",
-	"٥": "5",
-	"٦": "6",
-	"٧": "7",
-	"٨": "8",
-	"٩": "9",
-	"۰": "0",
-	"۱": "1",
-	"۲": "2",
-	"۳": "3",
-	"۴": "4",
-	"۵": "5",
-	"۶": "6",
-	"۷": "7",
-	"۸": "8",
-	"۹": "9",
-}
-
-function normalizeRelativeToken(value: string) {
-	return value
-		.normalize("NFC")
-		.toLowerCase()
-		.replace(/[٠-٩۰-۹]/g, (digit) => arabicDigitMap[digit] ?? digit)
-		.replace(/[\u064B-\u065F\u0670\u0640]/g, "")
-		.replace(/[إأآ]/g, "ا")
-		.replace(/ؤ/g, "و")
-		.replace(/ئ/g, "ي")
-		.replace(/ة/g, "ه")
-		.replace(/ى/g, "ي")
-		.replace(/\s+/g, " ")
-		.trim()
-}
-
-const relativeUnitSynonyms: Record<RelativeUnit, string[]> = {
-	year: [
-		"year",
-		"years",
-		"yr",
-		"yrs",
-		"سنة",
-		"سنوات",
-		"عام",
-		"اعوام",
-		"سنه",
-		"سنين",
-	],
-	month: [
-		"month",
-		"months",
-		"mo",
-		"mos",
-		"شهر",
-		"اشهر",
-		"شهور",
-		"أشهر",
-		"شهرًا",
-		"شهرا",
-	],
-	week: ["week", "weeks", "wk", "wks", "أسبوع", "اسبوع", "أسابيع", "اسابيع"],
-	day: ["day", "days", "d", "يوم", "ايام", "أيام", "يومًا", "يوما"],
-	hour: ["hour", "hours", "hr", "hrs", "ساعة", "ساعات", "الساعة"],
-	minute: ["minute", "minutes", "min", "mins", "دقيقة", "دقائق"],
-	second: ["second", "seconds", "sec", "secs", "ثانية", "ثواني", "ثوان"],
-}
-
-const relativeUnitMap = Object.fromEntries(
-	Object.entries(relativeUnitSynonyms).flatMap(([unit, tokens]) =>
-		tokens.map((token) => [normalizeRelativeToken(token), unit as RelativeUnit]),
-	),
-) as Record<string, RelativeUnit>
-
-const directionSynonyms: Record<"past" | "future", string[]> = {
-	past: ["ago", "before", "earlier", "منذ", "قبل"],
-	future: [
-		"from now",
-		"later",
-		"after",
-		"ahead",
-		"بعد",
-		"لاحقا",
-		"لاحقاً",
-		"لاحقًا",
-		"من الان",
-	],
-}
-
-const directionTokenMap = Object.fromEntries(
-	Object.entries(directionSynonyms).flatMap(([direction, tokens]) =>
-		tokens.map((token) => [normalizeRelativeToken(token), direction as "past" | "future"]),
-	),
-) as Record<string, "past" | "future">
-
-const leadingDirectionTokens: Record<"past" | "future", string[]> = {
-	past: ["منذ", "قبل", "before"],
-	future: ["بعد", "لاحقا", "لاحقاً", "لاحقًا", "after"],
+const relativeUnitMap: Record<string, RelativeUnit> = {
+	year: "year",
+	years: "year",
+	yr: "year",
+	yrs: "year",
+	month: "month",
+	months: "month",
+	mo: "month",
+	mos: "month",
+	week: "week",
+	weeks: "week",
+	wk: "week",
+	wks: "week",
+	day: "day",
+	days: "day",
+	d: "day",
+	hour: "hour",
+	hours: "hour",
+	hr: "hour",
+	hrs: "hour",
+	minute: "minute",
+	minutes: "minute",
+	min: "minute",
+	mins: "minute",
+	second: "second",
+	seconds: "second",
+	sec: "second",
+	secs: "second",
 }
 
 function resolveRelativeDate(rawValue: unknown): number | undefined {
 	if (rawValue === null || rawValue === undefined) return undefined
 	const text = String(rawValue).trim()
 	if (!text) return undefined
-	const normalized = normalizeRelativeToken(text)
-	if (!normalized) return undefined
-	if (["current", "now", "today", "الان", "اليوم"].includes(normalized))
-		return Date.now()
-	if (["yesterday", "امس"].includes(normalized))
-		return shiftDate(new Date(), -1, "day")
-	if (["tomorrow", "غدا"].includes(normalized))
-		return shiftDate(new Date(), 1, "day")
+	const lowered = text.toLowerCase()
+	if (lowered === "now") return Date.now()
+	if (lowered === "yesterday") return shiftDate(new Date(), -1, "day")
+	if (lowered === "tomorrow") return shiftDate(new Date(), 1, "day")
+	if (lowered === "last week") return shiftDate(new Date(), -1, "week")
+	if (lowered === "last month") return shiftDate(new Date(), -1, "month")
+	if (lowered === "last year") return shiftDate(new Date(), -1, "year")
+	if (lowered === "next week") return shiftDate(new Date(), 1, "week")
+	if (lowered === "next month") return shiftDate(new Date(), 1, "month")
+	if (lowered === "next year") return shiftDate(new Date(), 1, "year")
 
-	let expression = normalized
+	let expression = lowered.replace(/\s+/g, " ").trim()
 	let implicitFuture = false
 	if (expression.startsWith("in ")) {
 		expression = expression.slice(3).trim()
 		implicitFuture = true
 	}
 
-	let leadingDirection: "past" | "future" | undefined
-	for (const direction of Object.keys(leadingDirectionTokens) as Array<
-		"past" | "future"
-	>) {
-		for (const token of leadingDirectionTokens[direction]) {
-			const normalizedToken = normalizeRelativeToken(token)
-			if (expression.startsWith(`${normalizedToken} `)) {
-				leadingDirection = direction
-				expression = expression.slice(normalizedToken.length).trim()
-				break
-			}
-		}
-		if (leadingDirection) break
-	}
-
-	const match = expression.match(/^([+-]?\d+)\s*([\p{L}]+)(?:\s+(.+))?$/u)
+	const match = expression.match(
+		/^([+-]?\d+)\s*([a-z]+)(?:\s+(ago|from now|later|after|before|ahead))?$/,
+	)
 	if (match) {
 		const amountText = match[1]
 		const unitToken = match[2]
 		if (!amountText || !unitToken) return undefined
 		let amount = Number.parseInt(amountText, 10)
 		if (!Number.isFinite(amount)) return undefined
-		const mappedUnit = relativeUnitMap[normalizeRelativeToken(unitToken)]
+		const directionToken = match[3] ?? (implicitFuture ? "from now" : undefined)
+		if (directionToken === "ago")
+			amount = -Math.abs(amount)
+		else if (directionToken)
+			amount = Math.abs(amount)
+		const mappedUnit = relativeUnitMap[unitToken]
 		if (!mappedUnit) return undefined
-		const trailingToken = match[3] ? normalizeRelativeToken(match[3]) : undefined
-		let direction =
-			trailingToken && directionTokenMap[trailingToken]
-				? directionTokenMap[trailingToken]
-				: undefined
-		if (!direction && leadingDirection) direction = leadingDirection
-		if (!direction && implicitFuture) direction = "future"
-		if (direction === "past") amount = -Math.abs(amount)
-		else if (direction === "future") amount = Math.abs(amount)
 		return shiftDate(new Date(), amount, mappedUnit)
 	}
 
