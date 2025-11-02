@@ -5,13 +5,14 @@
 			:move="onMoveCallback">
 			<template #item="{ element, index }: { element: Field, index: number }">
 				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
-					:disabled="isDisabled(element.key)" :title="element.key ? t(element.key) : '--'">
+					:disabled="isDisabled(element.key)"
+					:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'">
 					<template #header-extra>
 						<NFlex>
 							<NButtonGroup>
 								<NDropdown
 									v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)"
-									:options="fieldsList()" style="max-height: 200px;" scrollable
+									:options="fieldTypeOptions" style="max-height: 200px;" scrollable
 									@select="(type) => pushToChildrenSchema(type, index)">
 									<NButton :disabled="!element.key" secondary round size="small"
 										@click="pushToChildrenSchema('string', index)">
@@ -22,16 +23,16 @@
 										</template>
 									</NButton>
 								</NDropdown>
-								<NDropdown :disabled="isDisabled(element.key)" :options="fieldsList()"
+								<NDropdown :disabled="isDisabled(element.key)" :options="fieldTypeOptions"
 									style="max-height: 200px" trigger="click" scrollable
 									@select="(type) => schema[index] = changeFieldType(element, type)">
 									<NButton round strong secondary size="small" type="primary"
 										:disabled="isDisabled(element.key)">
 										<template #icon>
-											<component :is="getField(element).icon" />
+											<component :is="getFieldCached(element).icon" />
 										</template>
 										<template v-if="!$device.isMobile" #default>
-											{{ getField(element).label }}
+											{{ getFieldCached(element).label }}
 										</template>
 									</NButton>
 								</NDropdown>
@@ -82,7 +83,7 @@
 						<template #feedback>
 							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }} ({{ element.id }})
 						</template>
-						<NInput v-model:value="element.key" />
+						<NInput :value="getDisplayKey(element)" @update:value="(v) => onKeyInput(element, v)" />
 					</NFormItem>
 
 					<NFormItem
@@ -119,7 +120,7 @@
 							</template>
 							<NSelect v-else
 								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
-								@update:value="(value: string[]) => element.options = [...new Set(value)]" filterable
+								@update:value="(value: string[]) => handleOptionsUpdate(element, value)" filterable
 								multiple tag :show-arrow="false" :show="false" />
 						</NFormItem>
 						<NFormItem :label="t('labelsColoring')" label-placement="left">
@@ -163,14 +164,20 @@
 					</template>
 
 					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
-						<NFormItem :label="t('minimumItems')">
-							<NInputNumber :value="element.min"
-								@update:value="(value) => { if (value) element.min = value; else delete element.min }" />
-						</NFormItem>
-						<NFormItem :label="t('maximumItems')">
-							<NInputNumber :value="element.max"
-								@update:value="(value) => { if (value) element.max = value; else delete element.max }" />
-						</NFormItem>
+						<NGrid :x-gap="12" :y-gap="12" cols="1 500:2">
+							<NGridItem>
+								<NFormItem :label="t('minimumItems')">
+									<NInputNumber :value="element.min"
+										@update:value="(value) => { if (value) element.min = value; else delete element.min }" />
+								</NFormItem>
+							</NGridItem>
+							<NGridItem>
+								<NFormItem :label="t('maximumItems')">
+									<NInputNumber :value="element.max"
+										@update:value="(value) => { if (value) element.max = value; else delete element.max }" />
+								</NFormItem>
+							</NGridItem>
+						</NGrid>
 					</template>
 
 					<NFormItem :label="t('unique')" label-placement="left"
@@ -283,36 +290,39 @@ function onMoveCallback(evt: {
 }
 
 function isDisabled(key?: string) {
-	if (key) {
-		const defaultFields: string[] = ["id", "createdAt", "updatedAt"]
-		switch (table.value.slug) {
-			case "users":
-				defaultFields.push("username", "email", "password", "role", "createdBy")
-				break
-			case "pages":
-				defaultFields.push("slug", "content", "seo")
-				break
-			case "blocks":
-				defaultFields.push("name", "config", "hideOn")
-				break
-			default:
-				break
-		}
-		return defaultFields.includes(key)
-	}
-	return false
+	if (!key) return false
+	return disabledKeysSet.value.has(key)
 }
+
+// Cache for disabled keys based on current table slug
+const disabledKeysSet = computed<Set<string>>(() => {
+	const base: string[] = ["id", "createdAt", "updatedAt"]
+	switch (table.value.slug) {
+		case "users":
+			base.push("username", "email", "password", "role", "createdBy")
+			break
+		case "pages":
+			base.push("slug", "content", "seo")
+			break
+		case "blocks":
+			base.push("name", "config", "hideOn")
+			break
+		default:
+			break
+	}
+	return new Set(base)
+})
 const expandedNames = defineModel<(string | number)[]>("expandedNames")
 const expandedChildNames = ref<(string | number)[]>()
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return
 	if (!schema.value[index].children) schema.value[index].children = [] as Schema
-	;(schema.value[index].children as Schema).push({
-		id: `temp-${randomID()}`,
-		key: null,
-		required: false,
-		...handleSelectedSchemaType(type),
-	} as any)
+		; (schema.value[index].children as Schema).push({
+			id: `temp-${randomID()}`,
+			key: null,
+			required: false,
+			...handleSelectedSchemaType(type),
+		} as any)
 
 	if (!schema.value[index].id) return
 
@@ -405,6 +415,9 @@ const valuesTypeSelectOptions = flatFieldsList()
 		icon: field.icon,
 	}))
 
+// Cache field type options to avoid recomputing heavy dropdown option lists on each re-render
+const fieldTypeOptions = computed(() => fieldsList())
+
 const tableSelectOptions = computed(() =>
 	database.value.tables?.map(({ slug }) => ({
 		label: t(slug),
@@ -459,7 +472,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[0].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-						;(schemaItem.options[index] as [string | number, string])[0] = v
+							; (schemaItem.options[index] as [string | number, string])[0] = v
 					},
 				})
 			},
@@ -474,7 +487,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					value: row[1].toString(),
 					onUpdateValue(v) {
 						if (!schemaItem.options?.[index]) return
-						;(schemaItem.options[index] as [string | number, string])[1] = v
+							; (schemaItem.options[index] as [string | number, string])[1] = v
 					},
 				})
 			},
@@ -496,7 +509,7 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 								schemaItem.options = [["", ""]]
 								return
 							}
-							;(schemaItem.options as [string | number, string][]).splice(
+							; (schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
 							)
@@ -507,6 +520,63 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 			},
 		},
 	]
+}
+
+// Normalize select options: support comma-separated values entered at once
+function normalizeOptionsInput(values: string[]): string[] {
+	const out: string[] = []
+	for (const raw of values) {
+		// Split on comma, trim whitespace around items
+		const parts = String(raw)
+			.split(',')
+			.map(s => s.trim())
+			.filter(s => s.length > 0)
+		out.push(...parts)
+	}
+	// Deduplicate while preserving order
+	const seen = new Set<string>()
+	return out.filter(v => {
+		if (seen.has(v)) return false
+		seen.add(v)
+		return true
+	})
+}
+
+function handleOptionsUpdate(element: Field, value: string[]) {
+	const normalized = normalizeOptionsInput(value)
+	element.options = normalized
+}
+
+
+// Debounced key input handling to avoid committing reactive changes on every keystroke
+const keyBuffer = ref<Record<string, string>>({})
+const keyCommitTimers = new Map<string, ReturnType<typeof setTimeout>>()
+function getDisplayKey(element: Field) {
+	const id = String(element.id ?? "")
+	const buffered = keyBuffer.value[id]
+	return buffered !== undefined ? buffered : (element.key ?? "")
+}
+
+// Memoize getField(element) by a stable signature of the element's type/subType
+const getFieldCache = new Map<string, ReturnType<typeof getField>>()
+function getFieldCached(element: Field) {
+	const key = `${Array.isArray(element.type) ? element.type.join(',') : element.type}-${element.subType ?? ''}`
+	const cached = getFieldCache.get(key)
+	if (cached) return cached
+	const v = getField(element)
+	getFieldCache.set(key, v)
+	return v
+}
+function onKeyInput(element: Field, v: string) {
+	const id = String(element.id ?? "")
+	keyBuffer.value[id] = v
+	const existing = keyCommitTimers.get(id)
+	if (existing) clearTimeout(existing)
+	const timeout = setTimeout(() => {
+		element.key = v
+		keyCommitTimers.delete(id)
+	}, 200)
+	keyCommitTimers.set(id, timeout)
 }
 </script>
 
