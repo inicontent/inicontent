@@ -151,6 +151,7 @@ defineTranslation({
 			GB: "ج.ب",
 			TB: "ت.ب",
 		},
+		uploadFailed: "فشل الرفع",
 	},
 })
 

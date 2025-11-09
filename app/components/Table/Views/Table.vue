@@ -39,7 +39,7 @@ const props = defineProps<{
 }>()
 
 const columns = defineModel<DataTableColumns>("columns")
-const searchArray = defineModel<searchType>("searchArray")
+const searchString = defineModel<string>("searchString")
 const data = defineModel<apiResponse<Item[]>>("data")
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
@@ -58,16 +58,6 @@ const deleteItem = inject("deleteItem") as (
 
 const isSlotSet = inject("isSlotSet") as (slotName: string) => boolean
 
-// Inject search-related state from parent
-const whereQuery = inject<Ref<string | undefined>>("whereQuery")
-const whereQueryFetch = inject<ComputedRef<string | undefined>>(
-	"whereQueryFetch",
-)
-
-const effectiveWhereQuery = computed(
-	() => whereQueryFetch?.value ?? whereQuery?.value,
-)
-
 function isSlotEmpty(slotName: string): boolean {
 	// Check if all nodes are comments or have undefined children
 	return ((props.slots[slotName] as any)({}) as VNode[])?.every(
@@ -75,9 +65,8 @@ function isSlotEmpty(slotName: string): boolean {
 	)
 }
 
-// Watch searchArray changes and reset pagination for Table view
 watch(
-	searchArray,
+	searchString,
 	(value) => {
 		if (!value || value === undefined) {
 			// Reset to page 1 when search is cleared
@@ -152,7 +141,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		key: `${database.value.slug}/${table.value?.slug as string}`,
 		query: {
 			options: queryOptions,
-			where: effectiveWhereQuery,
+			where: searchString,
 			locale: Language.value,
 			[`${database.value.slug}_sid`]: sessionID.value,
 		},

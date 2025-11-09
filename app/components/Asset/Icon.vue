@@ -9,6 +9,7 @@ function getIconName(type?: string): string {
 	if (!type) return "file-text"
 	if (type === "dir") return "folder"
 	if (type.startsWith("video/")) return "video"
+	if (type.startsWith("image/")) return "photo"
 	if (type.startsWith("audio/")) return "file-music"
 	if (type.startsWith("font/")) return "file-typography"
 	if (type === "application/pdf") return "file-type-pdf"

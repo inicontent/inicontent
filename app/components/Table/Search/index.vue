@@ -40,7 +40,7 @@
 					</NButton>
 				</NButtonGroup>
 			</template>
-			<TableSearchItems v-model="modelValue[condition]" :callback />
+			<TableSearchItems v-model="modelValue[condition]" v-model:schema="schema" :callback />
 		</NCollapseItem>
 	</NCollapse>
 </template>
@@ -57,7 +57,13 @@ defineTranslation({
 	},
 })
 
-const { callback } = defineProps<{ callback: CallableFunction }>()
+const { callback } = defineProps<{ callback?: CallableFunction }>()
+
+const table = useState<Table>("table")
+
+const schema = defineModel<Table['schema']>("schema")
+if (!schema.value)
+	schema.value = table.value?.schema
 
 const modelValue = defineModel<searchType>({
 	default: { and: [[null, "=", null]] },

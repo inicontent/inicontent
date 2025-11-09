@@ -48,104 +48,7 @@
 									{{ t("newItem") }}
 								</NTooltip>
 							</NDropdown>
-							<NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '350px' : '500px'}`"
-								placement="bottom-end" trigger="click" scrollable v-model:show="isSearchPopoverVisible">
-								<template #trigger>
-									<NTooltip :delay="1500">
-										<template #trigger>
-											<NButton round>
-												<template #icon>
-													<NIcon>
-														<Icon name="tabler:search" />
-													</NIcon>
-												</template>
-											</NButton>
-										</template>
-										{{ t("search") }}
-									</NTooltip>
-								</template>
-								<template #footer>
-									<NFlex justify="space-between">
-										<NTooltip :delay="500" placement="bottom">
-											<template #trigger>
-												<NPopover trigger="click" scrollable style="max-height: 300px;">
-													<template #trigger>
-														<NButton round type="success" size="small" secondary>
-															<template #icon>
-																<NIcon>
-																	<Icon name="tabler:bookmark" />
-																</NIcon>
-															</template>
-														</NButton>
-													</template>
-													<template #footer>
-														<NInputGroup style="width: 100%;">
-															<NInput v-model:value="newFilterName"
-																:placeholder="t('filterName')" size="small" round
-																@keyup.enter="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }" />
-															<NButton round type="success" secondary size="small"
-																:loading="false" :disabled="!newFilterName.trim()"
-																@click="() => { saveFavoriteFilter(newFilterName); newFilterName = '' }">
-																<template #icon>
-																	<NIcon>
-																		<Icon name="tabler:plus" />
-																	</NIcon>
-																</template>
-															</NButton>
-														</NInputGroup>
-													</template>
-													<NEmpty v-if="favoriteFilters.length === 0" size="small"
-														:description="t('noFavoriteFilters')" />
-													<NFlex v-else vertical size="small" style="padding: 0 8px;">
-														<NFlex justify="space-between" v-for="filter in favoriteFilters"
-															:key="filter.id" block quaternary
-															@click="loadFavoriteFilter(filter)"
-															style="cursor: pointer;">
-															<template #default>
-																<NFlex justify="space-between" style="width: 100%;">
-																	<span>{{ filter.name }}</span>
-																	<NButton circle size="tiny" type="error" text
-																		@click.stop="deleteFavoriteFilter(filter.id)">
-																		<template #icon>
-																			<NIcon>
-																				<Icon name="tabler:trash" />
-																			</NIcon>
-																		</template>
-																	</NButton>
-																</NFlex>
-															</template>
-														</NFlex>
-													</NFlex>
-												</NPopover>
-											</template>
-											{{ t("favoriteFilters") }}
-										</NTooltip>
-
-										<NButtonGroup>
-											<NButton round type="error" secondary size="small" :loading="Loading.data"
-												:disabled="isSearchDisabled"
-												@click="() => { localSearchArray = { and: [[null, '=', null]] }; whereQuery = undefined; executeSearch() }">
-												<template #icon>
-													<NIcon>
-														<Icon name="tabler:x" />
-													</NIcon>
-												</template>
-												{{ t("reset") }}
-											</NButton>
-											<NButton round type="primary" secondary size="small" :loading="Loading.data"
-												:disabled="isSearchDisabled" @click="executeSearch">
-												<template #icon>
-													<NIcon>
-														<Icon name="tabler:search" />
-													</NIcon>
-												</template>
-												{{ t("search") }}
-											</NButton>
-										</NButtonGroup>
-									</NFlex>
-								</template>
-								<LazyTableSearch v-model="localSearchArray" :callback="executeSearch" />
-							</NPopover>
+							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" />
 							<slot name="navbarExtraButtons"></slot>
 						</NButtonGroup>
 						<slot name="navbarExtraActions"></slot>
@@ -158,9 +61,9 @@
 			</template>
 			<slot name="default" :data>
 				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
-					v-model:searchArray="searchArray" :slots />
+					v-model:searchString="searchString" :slots />
 				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
-					v-model:searchArray="searchArray" ref="tableViewRef" :slots />
+					v-model:searchString="searchString" ref="tableViewRef" :slots />
 			</slot>
 		</NCard>
 		<LazyTableLogs v-if="table.config?.log" />
@@ -168,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormatObjectCriteriaValue, isStringified } from "inibase/utils"
+import { isStringified } from "inibase/utils"
 import Inison from "inison"
 import type {
 	DataTableColumns,
@@ -184,35 +87,24 @@ import {
 	NPopconfirm,
 	NProgress,
 	NTime,
-	NPopover,
 	NTooltip,
 	NFlex,
-	LazyTableSearch,
-	NEmpty,
-	NInput,
 } from "#components"
-import { deepClone } from "~/composables"
+import { generateSearchArray } from "~/composables/search"
 
 const user = useState<User>("user")
 const route = useRoute()
 const router = useRouter()
-const isSearchPopoverVisible = ref(false)
+const { isMobile } = useDevice()
+
+const searchString = ref<string>(
+	route.query.search as string | undefined ?? "",
+)
 const searchArray = ref<searchType>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
 		: { and: [[null, "=", null]] },
 )
-
-// Search-related state
-const whereQuery = ref<string | undefined>(
-	route.query.search as string | undefined,
-)
-
-const whereQueryFetch = computed(() => {
-	const generated = generateSearchInput(searchArray.value, "fetch")
-	return generated ? Inison.stringify(generated) : ""
-})
-
 
 const columns = ref<DataTableColumns>()
 const data = ref<apiResponse<Item[]>>()
@@ -220,283 +112,25 @@ const data = ref<apiResponse<Item[]>>()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 
-// localSearchArray should start as a deep clone so mutations don't affect searchArray
-const localSearchArray = ref<searchType | undefined>(
-	deepClone(searchArray.value) ?? { and: [[null, "=", null]] },
-)
-
-function executeSearch() {
-	// Ensure we set a deep clone to avoid sharing nested references
-	const cloned = deepClone(localSearchArray.value)
-	if (cloned !== undefined) {
-		searchArray.value = cloned
-	}
-	isSearchPopoverVisible.value = false
-}
-
-
-function generateSearchInput(
-	searchArray: any,
-	mode: "display" | "fetch" = "display",
-) {
-	const RETURN: Record<string, any> = {}
-	if (!searchArray) return undefined
-	for (const condition in searchArray) {
-		const items = searchArray[condition]
-		if (!Array.isArray(items)) continue
-		for (const item of items) {
-			if (!Array.isArray(item)) continue
-			const fieldKey = item[0]
-			if (!fieldKey) continue
-			if (!RETURN[condition]) RETURN[condition] = {}
-			const { operator, value } = prepareCriterionForMode(
-				typeof item[1] === "string" ? item[1] : "=",
-				item[2],
-				mode,
-			)
-			if (value === undefined) continue
-			const finalValue = value === undefined ? "" : value
-			RETURN[condition][fieldKey] = `${operator === "=" ? "" : operator}${finalValue}`
-		}
-	}
-	// Helper to check if an object is empty or all its values are empty objects (recursively)
-	function isDeepEmpty(obj: any): boolean {
-		if (typeof obj !== "object" || obj === null) return false
-		const keys = Object.keys(obj)
-		if (keys.length === 0) return true
-		return keys.every((k) => isDeepEmpty(obj[k]))
-	}
-	return !isDeepEmpty(RETURN) ? RETURN : undefined
-}
-
-
-function decodeStoredCriterion(value: any): [string, any] {
-	const RELATIVE_OPERATORS = ["r>=", "r<=", "r!=", "r>", "r<", "r="] as const
-
-	if (typeof value === "string" && value.startsWith("r")) {
-		const matched = RELATIVE_OPERATORS.find((operator) =>
-			value.startsWith(operator),
-		)
-		if (matched)
-			return [matched, value.slice(matched.length)] as [string, any]
-	}
-	if (typeof value === "string") return FormatObjectCriteriaValue(value)
-	return ["=", value]
-}
-
-function prepareCriterionForMode(
-	operator: string | undefined,
-	rawValue: any,
-	mode: "display" | "fetch",
-) {
-	const normalizedOperator = typeof operator === "string" && operator ? operator : "="
-	if (mode === "fetch" && normalizedOperator.startsWith("r")) {
-		const absoluteValue = resolveRelativeDate(rawValue)
-		if (absoluteValue === undefined)
-			return { operator: normalizedOperator, value: undefined }
-		const strippedOperator =
-			normalizedOperator.length > 1 ? normalizedOperator.slice(1) : "="
-		return { operator: strippedOperator, value: absoluteValue }
-	}
-	return { operator: normalizedOperator, value: rawValue }
-}
-
-type RelativeUnit = "year" | "month" | "week" | "day" | "hour" | "minute" | "second"
-
-const relativeUnitMap: Record<string, RelativeUnit> = {
-	year: "year",
-	years: "year",
-	yr: "year",
-	yrs: "year",
-	month: "month",
-	months: "month",
-	mo: "month",
-	mos: "month",
-	week: "week",
-	weeks: "week",
-	wk: "week",
-	wks: "week",
-	day: "day",
-	days: "day",
-	d: "day",
-	hour: "hour",
-	hours: "hour",
-	hr: "hour",
-	hrs: "hour",
-	minute: "minute",
-	minutes: "minute",
-	min: "minute",
-	mins: "minute",
-	second: "second",
-	seconds: "second",
-	sec: "second",
-	secs: "second",
-}
-
-function resolveRelativeDate(rawValue: unknown): number | undefined {
-	if (rawValue === null || rawValue === undefined) return undefined
-	const text = String(rawValue).trim()
-	if (!text) return undefined
-	const lowered = text.toLowerCase()
-	if (lowered === "now") return Date.now()
-	if (lowered === "yesterday") return shiftDate(new Date(), -1, "day")
-	if (lowered === "tomorrow") return shiftDate(new Date(), 1, "day")
-	if (lowered === "last week") return shiftDate(new Date(), -1, "week")
-	if (lowered === "last month") return shiftDate(new Date(), -1, "month")
-	if (lowered === "last year") return shiftDate(new Date(), -1, "year")
-	if (lowered === "next week") return shiftDate(new Date(), 1, "week")
-	if (lowered === "next month") return shiftDate(new Date(), 1, "month")
-	if (lowered === "next year") return shiftDate(new Date(), 1, "year")
-
-	let expression = lowered.replace(/\s+/g, " ").trim()
-	let implicitFuture = false
-	if (expression.startsWith("in ")) {
-		expression = expression.slice(3).trim()
-		implicitFuture = true
-	}
-
-	const match = expression.match(
-		/^([+-]?\d+)\s*([a-z]+)(?:\s+(ago|from now|later|after|before|ahead))?$/,
-	)
-	if (match) {
-		const amountText = match[1]
-		const unitToken = match[2]
-		if (!amountText || !unitToken) return undefined
-		let amount = Number.parseInt(amountText, 10)
-		if (!Number.isFinite(amount)) return undefined
-		const directionToken = match[3] ?? (implicitFuture ? "from now" : undefined)
-		if (directionToken === "ago")
-			amount = -Math.abs(amount)
-		else if (directionToken)
-			amount = Math.abs(amount)
-		const mappedUnit = relativeUnitMap[unitToken]
-		if (!mappedUnit) return undefined
-		return shiftDate(new Date(), amount, mappedUnit)
-	}
-
-	const fallback = Date.parse(text)
-	return Number.isNaN(fallback) ? undefined : fallback
-}
-
-function shiftDate(baseDate: Date, amount: number, unit: RelativeUnit) {
-	const date = new Date(baseDate.getTime())
-	switch (unit) {
-		case "year":
-			date.setFullYear(date.getFullYear() + amount)
-			break
-		case "month":
-			date.setMonth(date.getMonth() + amount)
-			break
-		case "week":
-			date.setDate(date.getDate() + amount * 7)
-			break
-		case "day":
-			date.setDate(date.getDate() + amount)
-			break
-		case "hour":
-			date.setHours(date.getHours() + amount)
-			break
-		case "minute":
-			date.setMinutes(date.getMinutes() + amount)
-			break
-		case "second":
-			date.setSeconds(date.getSeconds() + amount)
-			break
-	}
-	return date.getTime()
-}
-
-const isSearchDisabled = computed(
-	() =>
-		!!(
-			localSearchArray.value &&
-			Object.keys(localSearchArray.value).length === 1 &&
-			(
-				localSearchArray.value[
-				Object.keys(localSearchArray.value)[0] as "and" | "or"
-				]?.[0] as any
-			)[0] === null
-		),
-)
-
 watch(
-	localSearchArray,
-	(value) => {
-		if (!value || !Object.keys(value).length)
-			localSearchArray.value = { and: [[null, "=", null]] }
-	},
-	{ deep: true },
-)
+	searchString,
+	(v) => {
+		const { search, page, ...Query }: any = route.query
 
-watch(
-	searchArray,
-	(value) => {
-		localSearchArray.value = deepClone(value) ?? { and: [[null, "=", null]] }
-		if (!value) {
-			if (whereQuery.value) {
-				whereQuery.value = undefined
-			}
-		} else {
-			const generatedSearchInput = generateSearchInput(value)
-			if (
-				generatedSearchInput &&
-				whereQuery.value !== Inison.stringify(generatedSearchInput)
-			) {
-				whereQuery.value = Inison.stringify(generatedSearchInput)
-			}
-		}
-	},
-	{ deep: true },
-)
-
-watch(whereQuery, (v) => {
-	const { search, page, ...Query }: any = route.query
-
-	return v
-		? router.push({
+		router.push({
 			query: {
 				...(Query ?? {}),
 				search: v,
 			},
 		})
-		: router.push({
-			query: Query ?? {},
-		})
-})
 
-// UI states for favorite filters
-const newFilterName = ref("")
+	},
+)
 
 const tablesConfig = computed({
 	get: () => user.value?.config?.tables ?? {},
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v }
-		$fetch(
-			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
-			{
-				method: "PUT",
-				body: user.value,
-				params: {
-					return: false,
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
-			},
-		).catch((err) => window.$message.error(err.message))
-	},
-})
-
-// Favorite filters management
-const favoriteFilters = computed({
-	get: () => {
-		const filters = user.value?.config?.filters ?? {}
-		return filters[table.value?.slug] ?? []
-	},
-	set: (v) => {
-		const allFilters = { ...(user.value?.config?.filters ?? {}) }
-		allFilters[table.value?.slug] = v
-		user.value.config = { ...(user.value.config ?? {}), filters: allFilters }
 		$fetch(
 			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
 			{
@@ -558,53 +192,6 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 		)
 }
 provide("deleteItem", deleteItem)
-
-provide("whereQuery", whereQuery)
-provide("whereQueryFetch", whereQueryFetch)
-provide("localSearchArray", localSearchArray)
-provide("executeSearch", executeSearch)
-provide("isSearchDisabled", isSearchDisabled)
-provide("generateSearchInput", generateSearchInput)
-
-// Favorite filters functions
-async function saveFavoriteFilter(filterName: string) {
-	if (!filterName.trim()) {
-		window.$message.error(t("filterNameCannotBeEmpty"))
-		return
-	}
-
-	// Check if filter name already exists
-	if (favoriteFilters.value.some((f: any) => f.name === filterName)) {
-		window.$message.error(t("filterNameAlreadyExists"))
-		return
-	}
-
-	const newFilter = {
-		id: Date.now().toString(),
-		name: filterName,
-		searchArray: deepClone(searchArray.value),
-		createdAt: new Date().toISOString(),
-	}
-
-	const updatedFilters = [...favoriteFilters.value, newFilter]
-	favoriteFilters.value = updatedFilters
-	window.$message.success(t("filterSavedSuccessfully"))
-}
-
-function loadFavoriteFilter(filter: any) {
-	searchArray.value = deepClone(filter.searchArray) ?? {
-		and: [[null, "=", null]],
-	}
-	window.$message.success(`${t("filterLoaded")}: ${filter.name}`)
-}
-
-function deleteFavoriteFilter(filterId: string) {
-	const updatedFilters = favoriteFilters.value.filter(
-		(f: any) => f.id !== filterId,
-	)
-	favoriteFilters.value = updatedFilters
-	window.$message.success(t("filterDeletedSuccessfully"))
-}
 
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
@@ -738,22 +325,8 @@ defineTranslation({
 		small: "صغير",
 		medium: "متوسط",
 		large: "كبير",
-		favoriteFilters: "المرشحات المفضلة",
-		saveCurrentFilter: "حفظ المرشح الحالي",
-		filterName: "اسم المرشح",
-		filterNameCannotBeEmpty: "اسم المرشح لا يمكن أن يكون فارغاً",
-		filterNameAlreadyExists: "اسم المرشح موجود بالفعل",
-		filterSavedSuccessfully: "تم حفظ المرشح بنجاح",
-		filterLoaded: "تم تحميل المرشح",
-		filterDeletedSuccessfully: "تم حذف المرشح بنجاح",
-		save: "حفظ",
-		cancel: "إلغاء",
-		delete: "حذف",
-		noFavoriteFilters: "لا توجد مرشحات مفضلة محفوظة",
 	},
 })
-
-const { isMobile } = useDevice()
 
 const notificationRef = ref<NotificationReactive>()
 const currentJob = computed(() => table.value?.currentJob)
@@ -822,26 +395,6 @@ async function jobNotification() {
 }
 watch(currentJob, jobNotification)
 onMounted(jobNotification)
-
-function generateSearchArray(searchQuery: any): searchType {
-	const RETURN: searchType = {}
-	for (const [condition, items] of Object.entries(searchQuery)) {
-		if (!RETURN[condition as "and" | "or"])
-			RETURN[condition as "and" | "or"] = []
-		for (const [key, value] of Object.entries(items)) {
-			if (["and", "or"].includes(key))
-				RETURN[condition as "and" | "or"]?.push({
-					[key]: generateSearchArray(value),
-				})
-			else
-				RETURN[condition as "and" | "or"]?.push([
-					key,
-					...decodeStoredCriterion(value),
-				])
-		}
-	}
-	return RETURN
-}
 
 const tableViewRef = ref()
 

@@ -4,10 +4,10 @@
 			<NDrawerContent :native-scrollbar="false" v-if="CurrentAsset">
 				<NFlex vertical>
 					<NImage
-						v-if="CurrentAsset?.type.startsWith('image/') || (CurrentAsset?.type === 'application/pdf' && CurrentAsset.publicURL.startsWith('https://cdn.inicontent.com/'))"
+						v-if="imageExtensions.includes(CurrentAsset.extension) || (CurrentAsset.extension === 'pdf' && CurrentAsset.publicURL.startsWith('https://cdn.inicontent.com/'))"
 						class="asset"
-						:src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
-						:preview-src="`${CurrentAsset.publicURL}${CurrentAsset.type === 'application/pdf' ? '?raw' : ''}`"
+						:src="`${CurrentAsset.publicURL}${CurrentAsset.extension === 'pdf' ? '?raw' : ''}`"
+						:preview-src="`${CurrentAsset.publicURL}${CurrentAsset.extension === 'pdf' ? '?raw' : ''}`"
 						:img-props="{ class: 'image' }"
 						:renderToolbar="(props) => renderToolbar(props, CurrentAsset)" />
 					<NIcon v-else class="asset">
@@ -17,7 +17,8 @@
 					</NIcon>
 					<div v-if="CurrentAsset.name">
 						<NText strong>{{ t("name") }}: </NText>
-						<NText>{{ CurrentAsset.name }}</NText>
+						<NText>{{ CurrentAsset.name }}{{ CurrentAsset.extension ? `.${CurrentAsset.extension}` : '' }}
+						</NText>
 					</div>
 					<div>
 						<NText strong>{{ t("size") }}: </NText>
@@ -43,13 +44,13 @@
 		<NModal :show="currentPreviewAsset !== undefined" @mask-click="onClosePreview" @close="onClosePreview"
 			@esc="onClosePreview" :width="800">
 			<NSpin :show="previewLoading" size="large" style="width: 80%;">
-				<video v-if="currentPreviewAsset?.type.startsWith('video/')" controls autoplay
-					style="width:100%;height:auto" :style="{ visibility: previewLoading ? 'hidden' : 'visible' }"
-					@loadeddata="previewLoading = false" @canplay="previewLoading = false"
-					@error="previewLoading = false">
+				<video v-if="currentPreviewAsset && videoExtensions.includes(currentPreviewAsset.extension)" controls
+					autoplay style="width:100%;height:auto"
+					:style="{ visibility: previewLoading ? 'hidden' : 'visible' }" @loadeddata="previewLoading = false"
+					@canplay="previewLoading = false" @error="previewLoading = false">
 					<source :src="currentPreviewAsset?.publicURL" :type="currentPreviewAsset?.type" />
 				</video>
-				<object v-else-if="currentPreviewAsset?.type === 'application/pdf' && pdfObjectUrl" :data="pdfObjectUrl"
+				<object v-else-if="currentPreviewAsset?.extension === 'pdf' && pdfObjectUrl" :data="pdfObjectUrl"
 					type="application/pdf" style="width:100%;height:80vh;"
 					:style="{ visibility: previewLoading ? 'hidden' : 'visible' }"
 					@load="previewLoading = false"></object>
@@ -73,31 +74,40 @@
 								<NFlex class="assetActions">
 									<slot :asset></slot>
 								</NFlex>
-								<NImage v-if="asset.type.startsWith('image/')" class="asset"
-									:src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`"
-									:intersection-observer-options="{
-										root: `#${targetID ?? 'container'}`
-									}" lazy :preview-src="`${asset.publicURL}${asset.type === 'application/pdf' ? '?raw' : ''}`" />
-								<NImage
-									v-else-if="(asset.type === 'application/pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
-									class="asset" :src="`${asset.publicURL}?raw`" :intersection-observer-options="{
-										root: `#${targetID ?? 'container'}`
-									}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
-								<NImage v-else-if="asset.type.startsWith('video/') && videoThumbs[assetKey(asset)]"
-									class="asset" :src="videoThumbs[assetKey(asset)]" :intersection-observer-options="{
-										root: `#${targetID ?? 'container'}`
-									}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
-								<NSpin v-else
-									:show="asset.type.startsWith('video/') && generatingVideo[assetKey(asset)]"
-									size="small">
-									<NIcon class="asset" @click="handleOnClickAsset($event, asset)"
-										@mouseenter="asset.type.startsWith('video/') && !videoThumbs[assetKey(asset)] && generateVideoThumb(asset)"
-										v-intersect="() => { if (asset.type.startsWith('video/') && !videoThumbs[assetKey(asset)]) generateVideoThumb(asset) }">
+								<div class="previewOverlay">
+									<div v-if="['pdf', ...imageExtensions, ...videoExtensions].includes(asset.extension)"
+										class="fileType">
+										<LazyAssetIcon :type="asset.type" />
+									</div>
+									<NImage v-if="imageExtensions.includes(asset.extension)" class="asset"
+										:src="asset.publicURL" :intersection-observer-options="{
+											root: `#${targetID ?? 'container'}`
+										}" lazy />
+									<NImage
+										v-else-if="(asset.extension === 'pdf' && asset.publicURL.startsWith('https://cdn.inicontent.com/'))"
+										class="asset" :src="`${asset.publicURL}?raw`" :intersection-observer-options="{
+											root: `#${targetID ?? 'container'}`
+										}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
+									<NImage
+										v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey(asset)]"
+										class="asset" :src="videoThumbs[assetKey(asset)]"
+										:intersection-observer-options="{
+											root: `#${targetID ?? 'container'}`
+										}" lazy preview-disabled @click="handleOnClickAsset($event, asset)" />
+									<NSpin v-else-if="videoExtensions.includes(asset.extension)"
+										:show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey(asset)]"
+										size="small">
+										<NIcon class="asset" @click="handleOnClickAsset($event, asset)"
+											v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey(asset)] && generateVideoThumb(asset)">
+											<LazyAssetIcon :type="asset.type" class="icon" />
+										</NIcon>
+									</NSpin>
+									<NIcon v-else class="asset" @click="handleOnClickAsset($event, asset)">
 										<LazyAssetIcon :type="asset.type" class="icon" />
 									</NIcon>
-								</NSpin>
-								<NPerformantEllipsis expand-trigger="click" :tooltip="false" line-clamp="1">
-									{{ asset.name }}
+								</div>
+								<NPerformantEllipsis expand-trigger="click" line-clamp="1">
+									{{ asset.name }}{{ asset.extension ? `.${asset.extension}` : '' }}
 								</NPerformantEllipsis>
 							</NFlex>
 						</div>
@@ -116,6 +126,7 @@
 import type { ImageRenderToolbarProps } from "naive-ui"
 import type { VNodeChild, Directive } from "vue"
 import { Icon, NIcon } from "#components"
+import { imageExtensions, videoExtensions } from "~/composables";
 
 const path = defineModel<string>("path", {
 	default: "",
@@ -140,7 +151,11 @@ defineTranslation({
 	},
 })
 
-const modelValue = defineModel<Asset[] | null>()
+const modelValue = defineModel<Asset[]>()
+watch(modelValue, (value) => {
+	console.log(value);
+
+})
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
@@ -178,7 +193,7 @@ const dropdownOptions = computed(() => [
 	{
 		label: t("info"),
 		key: "info",
-		show: CurrentAsset.value?.type.startsWith("image/") || CurrentAsset.value?.type.startsWith("video/") || CurrentAsset.value?.type === "application/pdf",
+		show: !!CurrentAsset.value?.type && (imageExtensions.includes(CurrentAsset.value.extension) || videoExtensions.includes(CurrentAsset.value.extension) || CurrentAsset.value.extension === "pdf"),
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:info-square-rounded" })),
 	}, {
 		label: t("delete"),
@@ -255,11 +270,11 @@ async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
 		path.value += `/${asset.name}`
 		return
 	}
-	if (asset.type.startsWith("video/") || asset.type === "application/pdf") {
+	if (videoExtensions.includes(asset.extension) || asset.extension === "pdf") {
 		e.preventDefault()
 		currentPreviewAsset.value = asset
 		previewLoading.value = true
-		if (asset.type === 'application/pdf')
+		if (asset.extension === 'pdf')
 			await loadPdfObjectUrl(asset.publicURL)
 		return;
 	}
@@ -277,7 +292,7 @@ function assetKey(asset: Asset): string {
 }
 
 async function generateVideoThumb(asset: Asset, timeSec = 0.5) {
-	if (!asset.type.startsWith('video/')) return
+	if (!videoExtensions.includes(asset.extension)) return
 	const key = assetKey(asset)
 	if (videoThumbs[key] !== undefined) return videoThumbs[key]
 	try {

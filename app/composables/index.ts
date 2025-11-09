@@ -1,6 +1,7 @@
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import { default as t } from "./Translation/translate"
 import { default as defineTranslation } from "./Translation/define"
+import { isArrayOfObjects } from "inibase/utils"
 
 export { default as translationLanguages } from "./Translation/languages"
 export { default as defineTranslation } from "./Translation/define"
@@ -300,3 +301,86 @@ export function getCollapseItemTitle(
 
 	return `${t(field.key)} ${index + 1}`
 }
+
+export function getPath(
+	schema: Schema,
+	id: string | number | undefined,
+	supportWildcard = false,
+	listNumbers?: number | number[],
+	currentPath?: string,
+): string {
+	if (!id) return ""
+
+	for (const item of schema) {
+		const newPath = currentPath ? `${currentPath}.${item.key}` : item.key
+
+		if (item.id === id) return newPath
+
+		if (
+			item.type === "array" &&
+			item.children &&
+			isArrayOfObjects(item.children)
+		) {
+			let nestedPath = ""
+			if (listNumbers) {
+				if (!Array.isArray(listNumbers)) listNumbers = [listNumbers]
+				const firstItem = listNumbers.shift()
+				nestedPath = getPath(
+					item.children,
+					id,
+					supportWildcard,
+					listNumbers,
+					newPath + (supportWildcard ? ".*" : ".") + firstItem,
+				)
+			} else
+				nestedPath = getPath(
+					item.children,
+					id,
+					supportWildcard,
+					undefined,
+					newPath + (supportWildcard ? ".*" : "."),
+				)
+			if (nestedPath) return nestedPath
+		} else if (item.children && isArrayOfObjects(item.children)) {
+			const nestedPath = getPath(
+				item.children,
+				id,
+				supportWildcard,
+				undefined,
+				newPath,
+			)
+			if (nestedPath) return nestedPath
+		}
+	}
+
+	return ""
+}
+
+export const imageExtensions = [
+	"png",
+	"jpg",
+	"jpeg",
+	"webp",
+	"avif",
+	"svg",
+];
+
+export const videoExtensions = [
+	"mp4",
+	"webm",
+	"ogg",
+	"mov",
+	"avi",
+	"mkv",
+];
+
+// ToDo: in app preview support for other document types like docx, xlsx, pptx
+export const documentExtensions = [
+	"pdf",
+	"doc",
+	"docx",
+	"xls",
+	"xlsx",
+	"ppt",
+	"pptx",
+];

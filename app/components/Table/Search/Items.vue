@@ -5,7 +5,7 @@
 				<NCascader size="small" :consistent-menu-width="false" filterable :value="item[0]"
 					@update:value="(v) => item[0] = v"
 					:options="generateSearchInOptions(
-						table.schema, formatedItems?.toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
+						schema, formatedItems?.toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
 					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
 				<template v-if="item[3]">
 					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
@@ -17,7 +17,7 @@
 							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null)"
 							filterable remote clearable :on-search="(pattern) => handleRelativeSearch(index, pattern)"
 							@update:value="(v) => updateRelativeValue(item, v as string | null)"
-							@keydown.enter.prevent="callback()" />
+							@keydown.enter.prevent="() => callback && callback()" />
 					</template>
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
 						:field="getFieldFromItem(item)" />
@@ -31,7 +31,7 @@
 					</template>
 				</NButton>
 			</NInputGroup>
-			<LazyTableSearch v-else v-model="(modelValue[index] as searchType)" :callback />
+			<LazyTableSearch v-else v-model="(modelValue[index] as searchType)" v-model:schema="schema" :callback />
 		</template>
 	</NFlex>
 </template>
@@ -74,7 +74,11 @@ defineTranslation({
 	},
 })
 
-const { callback } = defineProps<{ callback: CallableFunction }>()
+const { callback } = defineProps<{
+	callback?: CallableFunction
+}>()
+
+const schema = defineModel<Table['schema']>("schema")
 
 const modelValue = defineModel<searchTypeValue>({
 	default: [[null, "=", null]],
@@ -110,11 +114,10 @@ const relativeBaseAutocompleteOptions = relativeBaseSuggestionValues.map(
 const formatedItems = computed(() =>
 	modelValue.value?.map((item) => {
 		if (Array.isArray(item) && item[0])
-			item[3] = getFieldFromSchema(item[0], table.value.schema as any)
+			item[3] = getFieldFromSchema(item[0], schema.value as any)
 		return item
 	}),
 )
-const table = useState<Table>("table")
 
 function getFieldFromItem(item: searchTypeValueItem) {
 	return {
@@ -131,7 +134,7 @@ function getFieldFromItem(item: searchTypeValueItem) {
 		inputProps: {
 			size: "small",
 			onKeydown: ({ key }: KeyboardEvent) => {
-				if (key === "Enter") callback()
+				if (key === "Enter" && callback) callback()
 			},
 		},
 	}

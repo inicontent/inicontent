@@ -13,66 +13,69 @@
 			</NBreadcrumb>
 		</template>
 		<template #header-extra>
-			<NButtonGroup round>
-				<NPopover>
-					<template #trigger>
-						<NButton round size="small">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:folder-plus" />
-								</NIcon>
-							</template>
-						</NButton>
-					</template>
-					<NInputGroup>
-						<NInput v-model:value="folder"
-							@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
-							:placeholder="t('folderName')" size="small">
-							<template #suffix>
-								<NIcon>
-									<Icon name="tabler:letter-case" />
-								</NIcon>
-							</template>
-						</NInput>
-						<NButton @click="createFolder" size="small" type="primary">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:arrow-right" />
-								</NIcon>
-							</template>
-						</NButton>
-					</NInputGroup>
-				</NPopover>
-				<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-					:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
-					@update:file-list="onUpdateFileList" @finish="onFinishUpload" :onBeforeUpload="handleBeforeUpload"
-					@remove="onRemoveUpload" with-credentials>
-					<NPopover trigger="manual" placement="bottom-end"
-						:show="UploadProgress > 0 && UploadProgress !== 1001">
+			<NFlex>
+				<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema size="small" />
+				<NButtonGroup round>
+					<NPopover>
 						<template #trigger>
-							<NUploadTrigger :abstract="false">
-								<NButton round size="small"
-									:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'">
-									<template #icon>
-										<NIcon v-if="!UploadProgress">
-											<Icon name="tabler:upload" />
-										</NIcon>
-										<NIcon v-else-if="UploadProgress === 10000">
-											<Icon name="tabler:check" />
-										</NIcon>
-										<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
-											:size="16" />
-										<NProgress v-else type="circle" :show-indicator="false"
-											:status="UploadProgress === 100 ? 'success' : 'warning'"
-											:percentage="UploadProgress" :stroke-width="20" />
-									</template>
-								</NButton>
-							</NUploadTrigger>
+							<NButton round size="small">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:folder-plus" />
+									</NIcon>
+								</template>
+							</NButton>
 						</template>
-						<NUploadFileList></NUploadFileList>
+						<NInputGroup>
+							<NInput v-model:value="folder"
+								@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
+								:placeholder="t('folderName')" size="small">
+								<template #suffix>
+									<NIcon>
+										<Icon name="tabler:letter-case" />
+									</NIcon>
+								</template>
+							</NInput>
+							<NButton @click="createFolder" size="small" type="primary">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:arrow-right" />
+									</NIcon>
+								</template>
+							</NButton>
+						</NInputGroup>
 					</NPopover>
-				</NUpload>
-			</NButtonGroup>
+					<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
+						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+						@update:file-list="onUpdateFileList" @finish="onFinishUpload"
+						:onBeforeUpload="handleBeforeUpload" @remove="onRemoveUpload" with-credentials>
+						<NPopover trigger="manual" placement="bottom-end"
+							:show="UploadProgress > 0 && UploadProgress !== 1001">
+							<template #trigger>
+								<NUploadTrigger :abstract="false">
+									<NButton round size="small"
+										:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'">
+										<template #icon>
+											<NIcon v-if="!UploadProgress">
+												<Icon name="tabler:upload" />
+											</NIcon>
+											<NIcon v-else-if="UploadProgress === 10000">
+												<Icon name="tabler:check" />
+											</NIcon>
+											<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+												:size="16" />
+											<NProgress v-else type="circle" :show-indicator="false"
+												:status="UploadProgress === 100 ? 'success' : 'warning'"
+												:percentage="UploadProgress" :stroke-width="20" />
+										</template>
+									</NButton>
+								</NUploadTrigger>
+							</template>
+							<NUploadFileList></NUploadFileList>
+						</NPopover>
+					</NUpload>
+				</NButtonGroup>
+			</NFlex>
 		</template>
 		<NFlex vertical align="center">
 			<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
@@ -94,13 +97,22 @@
 import Inison from "inison"
 import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
+import { generateSearchArray } from "~/composables/search"
 
 defineTranslation({
 	ar: {
 		folderCreatedSuccessfully: "تم إنشاء المجلد بنجاح",
 		folderNameRequired: "إسم المجلد مطلوب",
 		folderName: "إسم المجلد",
-	},
+		search: "بحث",
+		reset: "إفراغ",
+		image: "صورة",
+		video: "فيديو",
+		audio: "صوتي",
+		document: "مستند",
+		archive: "أرشيف",
+		extension: "الصيغة",
+	}
 })
 
 const { where, suffix } = defineProps<{
@@ -111,6 +123,7 @@ const { where, suffix } = defineProps<{
 const appConfig = useAppConfig()
 
 const route = useRoute()
+const router = useRouter()
 const isAssetRoute = !!(route.params.path || route.params.path === "")
 
 const table = useState<Table>("table")
@@ -143,7 +156,6 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result
 
-const router = useRouter()
 const page = ref(route.query.page ? Number(route.query.page) : 1)
 const pageSize = ref(route.query.perPage ? Number(route.query.perPage) : 22)
 const pageCount = ref(0)
@@ -183,41 +195,102 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const isRTL = computed(() => Language.value === "ar")
 
 const assets = ref<Asset[]>()
-const { refresh } = await useLazyAsyncData(
-	`assets${currentPath.value}`,
-	() =>
-		$fetch<apiResponse<Asset[]>>(
-			`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
-			{
-				onRequest: () => {
-					Loading.value.AssetData = true
-				},
-				query: {
-					options: Inison.stringify({
-						page: page.value,
-						perPage: pageSize.value,
-					}),
-					where: where ? Inison.stringify(where) : undefined,
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
+
+const searchString = ref<string | undefined>(
+	route.query.search as string | undefined ?? "",
+)
+
+const searchArray = ref<searchType>(
+	route.query.search
+		? generateSearchArray(Inison.unstringify(route.query.search as string))
+		: { and: [[null, "=", null]] },
+)
+
+watch(
+	searchString,
+	(v) => {
+		const { search, page, ...Query }: any = route.query
+
+		router.push({
+			query: {
+				...Query,
+				search: v,
 			},
-		),
+		})
+	},
+)
+
+const schema = [
 	{
-		transform: ({ result, options: { totalPages, total } }) => {
-			assets.value = result
+		key: "name",
+		type: "string",
+	},
+	{
+		key: "extension",
+		type: "array",
+		children: "string",
+		subType: "select",
+		options: [
+			{
+				label: t("image"),
+				value: ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "tiff", "heic", "avif"],
+				icon: "tabler:photo",
+			},
+			{
+				label: t("video"),
+				value: ["mp4", "mov", "wmv", "avi", "mkv", "flv", "webm", "rmvb"],
+				icon: "tabler:video",
+			},
+			{
+				label: t("audio"),
+				value: ["mp3", "wav", "aac", "flac", "ogg", "m4a"],
+				icon: "tabler:audio",
+			},
+			{
+				label: t("document"),
+				value: ["docx", "pdf", "txt", "pptx", "xlsx"],
+				icon: "tabler:file-text",
+			},
+			{
+				label: t("archive"),
+				value: ["zip", "rar", "tar", "gz"],
+				icon: "tabler:archive",
+			}
+		],
+	},
+]
+
+const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
+	`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
+	{
+		onRequest: () => {
+			Loading.value.AssetData = true
+		},
+		onResponse: ({ response: { _data } }) => {
+			if (!_data?.result) return
+
+			assets.value = _data.result
 
 			Loading.value.AssetData = false
 
-			if (total === 0) showSizePicker.value = false
-			if (totalPages && total) {
-				pageCount.value = totalPages
-				itemCount.value = total
+			if (_data.options.total === 0) showSizePicker.value = false
+			if (_data.options.totalPages && _data.options.total) {
+				pageCount.value = _data.options.totalPages
+				itemCount.value = _data.options.total
 			}
-			return result
+			return _data.result
 		},
-	},
+		query: {
+			options: Inison.stringify({
+				page: page.value,
+				perPage: pageSize.value,
+			}),
+			where: searchString,
+			locale: Language.value,
+			[`${database.value.slug}_sid`]: sessionID.value,
+		},
+		credentials: "include",
+	}
 )
 
 const UploadProgress = ref<number>(0)

@@ -529,6 +529,20 @@ body {
 	top: 64px;
 }
 
+.fileType {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: rgb(var(--primaryColor));
+  color: #000;
+  border-radius: 0 16px;
+  padding: 2px 5px 0;
+}
+.previewOverlay {
+  position: relative;
+  height: 100px;
+}
+
 @media (max-width: 768px) {
 	#tableCard > .n-card-header {
 		flex-direction: column;

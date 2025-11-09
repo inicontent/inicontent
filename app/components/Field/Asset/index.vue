@@ -45,6 +45,7 @@ import { isArrayOfObjects, isObject } from "inibase/utils"
 import type { FormItemRule, UploadFileInfo } from "naive-ui"
 import { Icon, NImage, NTooltip } from "#components"
 import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
+import { imageExtensions } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -295,23 +296,25 @@ const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
 		fileList.value = [...(fileList.value || []), uploadFile]
 		await nextTick()
 		await setModelValue(fileList.value)
-		// onFinish({ file: uploadFile, event: { target: { response: JSON.stringify({ result }) } } } as any)
 		return false
 	} catch (e) {
-		return true
+		window.$message.error(t("uploadFailed"))
+		console.error(e)
+		return false
 	}
 }
 
-function renderIcon(file: UploadFileInfo) {
+function renderIcon(file: UploadFileInfo & { extension?: string }) {
+	file.extension = file.name?.split(".").pop() || ""
 	if (
 		file.url &&
 		file.type &&
-		(file.type.startsWith("image/") || file.type === "application/pdf")
+		(imageExtensions.includes(file.extension) || file.extension === "pdf")
 	)
 		return h(NImage, {
-			src: file.type === "application/pdf" ? `${file.url}?raw` : file.url,
+			src: file.extension === "pdf" ? `${file.url}?raw` : file.url,
 			previewSrc:
-				file.type === "application/pdf" ? `${file.url}?raw` : file.url,
+				file.extension === "pdf" ? `${file.url}?raw` : file.url,
 			width: 100,
 			height: 100,
 			style: "height: 100%; width: 100%",
@@ -358,7 +361,7 @@ function renderIcon(file: UploadFileInfo) {
 			},
 		})
 	return h(Icon, {
-		name: file.type?.startsWith("image/") ? "tabler:photo" : "tabler:file",
+		name: file.extension && imageExtensions.includes(file.extension) ? "tabler:photo" : "tabler:file",
 	})
 }
 

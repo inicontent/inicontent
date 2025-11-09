@@ -96,7 +96,7 @@ type columnType = {
 
 // const dataModel = defineModel<apiResponse<Item[]>>("data")
 const data = ref<columnType[]>()
-const searchArray = defineModel<searchType>("searchArray")
+const searchString = defineModel<string>("searchString")
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
 
@@ -110,16 +110,6 @@ const field = table.value?.schema?.find(({ id }) => id === table.value?.groupBy)
 const UNSET_KEY = "__unset__" // internal sentinel
 
 const visibleColumns = ref()
-
-// Inject search-related state from parent
-const whereQuery = inject<Ref<string | undefined>>("whereQuery")
-const whereQueryFetch = inject<ComputedRef<string | undefined>>(
-	"whereQueryFetch",
-)
-
-const effectiveWhereQuery = computed(
-	() => whereQueryFetch?.value ?? whereQuery?.value,
-)
 
 if (field?.options) {
 	if (isArrayOfArrays(field.options))
@@ -175,13 +165,12 @@ const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 })
 
-// Watch searchArray changes and refetch data for Kanban view
+// Watch searchString changes and refetch data for Kanban view
 watch(
-	searchArray,
+	searchString,
 	(value) => {
 		if (data.value) executeFetch()
-	},
-	{ deep: true },
+	}
 )
 
 async function executeFetch() {
@@ -194,8 +183,8 @@ async function executeFetch() {
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
-					where: effectiveWhereQuery.value
-						? `${columnWhere.slice(0, -1)},${effectiveWhereQuery.value.slice(1)}`
+					where: searchString.value
+						? `${columnWhere.slice(0, -1)},${searchString.value.slice(1)}`
 						: columnWhere,
 					[`${database.value.slug}_sid`]: sessionID.value,
 				},
