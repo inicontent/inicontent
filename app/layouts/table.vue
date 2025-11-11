@@ -29,31 +29,6 @@ import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-defineTranslation({
-	ar: {
-		clickToCopy: "نسخ",
-		copiedSuccessfully: "تم النسخ بنجاح",
-		viewTheItem: "مُعاينة العنصر",
-		createdAt: "تاريخ الإنشاء",
-		updatedAt: "تاريخ التعديل",
-		view: "عرض",
-		update: "تحديث",
-		create: "إنشاء",
-		delete: "حذف",
-		actions: "الأوامر",
-		flows: "تدفقات",
-		newItem: "عنصر جديد",
-		new: "جديد",
-		id: "معرف",
-		publish: "نشر",
-		pasteItem: "لصق العنصر",
-		copyItem: "نسخ العنصر",
-		createFromClipboard: "إنشاء من الحافظة",
-		clipboardItemIsNotCorrect: "العنصر في الحافظة غير صحيح",
-		clipboardEmpty: "الحافظة فارغة",
-	},
-})
-
 onBeforeUpdate(() => {
 	clearNuxtState("isMenuOpen")
 })

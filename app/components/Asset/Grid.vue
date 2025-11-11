@@ -139,18 +139,6 @@ const { isAssetRoute, table } = defineProps<{
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-defineTranslation({
-	ar: {
-		info: "معلومات",
-		name: "الإسم",
-		size: "الحجم",
-		type: "النوع",
-		link: "الرابط",
-		rename: "تغيير الإسم",
-		replace: "إستبدال",
-	},
-})
-
 const modelValue = defineModel<Asset[]>()
 watch(modelValue, (value) => {
 	console.log(value);
@@ -362,8 +350,9 @@ function onClosePreview() {
 
 async function loadPdfObjectUrl(url: string) {
 	try {
-		const response = await fetch(url, { credentials: 'include' })
-		const blob = await response.blob()
+		const res = await fetch(url)
+		if (!res.ok) throw new Error('Network response was not ok')
+		const blob = await res.blob()
 		if (blob.type !== 'application/pdf') throw new Error('Not a PDF')
 		if (pdfObjectUrl.value) URL.revokeObjectURL(pdfObjectUrl.value)
 		pdfObjectUrl.value = URL.createObjectURL(blob)

@@ -30,19 +30,6 @@ import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-defineTranslation({
-    ar: {
-        overview: "نظرة عامة",
-        availableMethods: "الطرق المتاحة",
-        methods: {
-            post: "POST",
-            get: "GET",
-            put: "PUT",
-            delete: "DELETE",
-        },
-    },
-})
-
 onBeforeUpdate(() => {
     clearNuxtState("isMenuOpen")
 })

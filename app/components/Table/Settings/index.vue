@@ -132,34 +132,6 @@ onMounted(() => {
 	}
 })
 
-defineTranslation({
-	ar: {
-		generalSettings: "إعدادات عامة",
-		schemaSettings: "إعدادات الأعمدة",
-		save: "حِفظ",
-		required: "إلزامي",
-		changeOrder: "تغيير الترتيب",
-		label: "الإسم الظاهري",
-		deleteTable: "حذف الجدول",
-		defaultSearchableColumns: "الأعمدة الإفتراضية للبحث",
-		compression: "ضغط البيانات",
-		disableIdEncryption: "إلغاء تشفير المعرف, وإعتماد الأرقام",
-		decodeID: "إلغاء تشفير المعرف",
-		prepend: "إضافة مقدمة",
-		recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
-		cache: "التخزين المؤقت",
-		log: "سجل التتبع",
-		enableActivityLog: "تفعيل سجل عمليات الجدول",
-		defaultTableColumns: "الأعمدة الإفتراضية للجدول",
-		displayAs: "إظهار كـ",
-		table: "جدول",
-		kanban: "كانبان",
-		cards: "بطاقات",
-		list: "قائمة",
-		groupBy: "تقسيم حسب",
-	},
-})
-
 const expandedNames = ref<string[]>()
 function pushToSchema(type: string) {
 	tableCopy.value.schema?.splice(-2, 0, {

@@ -43,18 +43,6 @@ definePageMeta({
     middleware: ["database", "global"],
 })
 
-defineTranslation({
-    ar: {
-        publicApiTitle: "نقاط النهاية العامة",
-        publicApiDescription: "يمكن للزوار الوصول إلى نقاط النهاية العامة التالية لقراءة البيانات المتاحة.",
-        publicApiHint: "للحصول على توثيق كامل وصلاحيات إضافية يرجى تسجيل الدخول.",
-        loginLink: "تسجيل الدخول",
-        readAccess: "القراءة (GET)",
-        listEndpoint: "قائمة العناصر",
-        singleEndpoint: "عنصر محدد",
-    },
-})
-
 const appConfig = useAppConfig()
 const database = useState<Database>("database")
 const route = useRoute()

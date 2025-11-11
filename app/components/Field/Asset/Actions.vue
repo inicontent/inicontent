@@ -54,17 +54,9 @@
 <script lang="ts" setup>
 import type { NInput } from "naive-ui"
 
-defineTranslation({
-	ar: {
-		import: "إستيراد",
-		gallery: "قائمة الملفات",
-		assetLink: "رابط الملف",
-	},
-})
-
 const { field, callback } = defineProps<{
-	field: Field
-	callback: CallableFunction
+    field: Field
+    callback: CallableFunction
 }>()
 
 const showAssetsModal = defineModel<boolean>("showAssetsModal")
@@ -78,30 +70,30 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
+    sameSite: true,
 })
 
 async function importAsset() {
-	Loading.value.import = true
-	const data = await $fetch<apiResponse<Asset | Asset[]>>(
-		`${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "text/plain; charset=utf-8",
-			},
-			body: assetURLs.value,
-			params: {
-				locale: Language.value,
-			},
-			credentials: "include",
-		},
-	)
-	if (data.result) {
-		assetURLs.value = undefined
-		callback(data.result)
-		importInputRef.value?.clear()
-	} else window.$message.error(data.message)
-	Loading.value.import = false
+    Loading.value.import = true
+    const data = await $fetch<apiResponse<Asset | Asset[]>>(
+        `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain; charset=utf-8",
+            },
+            body: assetURLs.value,
+            params: {
+                locale: Language.value,
+            },
+            credentials: "include",
+        },
+    )
+    if (data.result) {
+        assetURLs.value = undefined
+        callback(data.result)
+        importInputRef.value?.clear()
+    } else window.$message.error(data.message)
+    Loading.value.import = false
 }
 </script>

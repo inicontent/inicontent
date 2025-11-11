@@ -81,16 +81,6 @@ onMounted(() => {
 	}
 })
 
-defineTranslation({
-	ar: {
-		save: "حِفظ",
-		generalSettings: "إعدادات عامة",
-		translationSettings: "إعدادات الترجمة",
-		emailSettings: "إعدادات البريد",
-		deleteDatabase: "حذف قاعدة البيانات",
-		soon: "قريباً",
-	},
-})
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const route = useRoute()

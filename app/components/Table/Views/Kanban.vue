@@ -75,12 +75,6 @@ import Inison from "inison"
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import Draggable from "vuedraggable"
 
-defineTranslation({
-	ar: {
-		unspecified: "غير محددة",
-	},
-})
-
 const props = defineProps<{
 	slots: any
 }>()

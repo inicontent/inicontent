@@ -212,48 +212,6 @@ import type { DataTableColumns, SelectOption } from "naive-ui"
 import Draggable from "vuedraggable"
 import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components"
 
-defineTranslation({
-	ar: {
-		fieldName: "إسم الحقل",
-		fieldDescription: "وصف الحقل",
-		allowedFiles: "الملفات المسموح بها",
-		options: "الخيارات",
-		valuesType: "نوع القيم",
-		// showAsTable: "إظهار كجدول",
-		tableName: "إسم الجدول",
-		// labelImage: "الصورة", // TO-DO: support image in table field
-		expandByDefault: "توسيع بشكل افتراضي",
-		dragToMove: "اسحب للتحريك",
-		fileType: {
-			image: "صورة",
-			video: "فيديو",
-			audio: "صوت",
-			document: "نص",
-			archive: "أرشيف",
-		},
-		allowCustomValues: "السماح بإدخال قيم جديدة",
-		username: "إسم المستخدم",
-		email: "البريد الإلكتروني",
-		password: "كلمة المرور",
-		role: "الصلاحية",
-		createdBy: "أُنشأ من قبل",
-		unique: "فريد",
-		uniqueGroup: "مجموعة فريدة",
-		regex: "التعبير النمطي",
-		uploadParams: "إعدادات الرفع",
-		minimumItems: "الحد الأدنى للعناصر",
-		maximumItems: "الحد الأقصى للعناصر",
-		ie: "على سبيل المثال",
-		useInison: "إستعمل Inison",
-		extendWhere: "توسيع البحث",
-		labelsColoring: "تفعيل الألوان",
-		optionLabel: "إسم الخيار",
-		optionColor: "لون الخيار",
-		add: "إضافة",
-		width: "العرض",
-	},
-})
-
 const widthOptions = [
 	{
 		label: "1/1",

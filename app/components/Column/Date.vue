@@ -14,14 +14,8 @@
 <script lang="ts" setup>
 const isRelative = useState("isRelative", () => false)
 const isRelativeDateNotifShown = useState(
-	"isRelativeDateNotifShown",
-	() => false,
+    "isRelativeDateNotifShown",
+    () => false,
 )
 const { value } = defineProps<{ value?: number }>()
-
-defineTranslation({
-	ar: {
-		clickToToggleDate: "انقر بزر الماوس الأيمن لتغيير طريقة عرض التاريخ",
-	},
-})
 </script>

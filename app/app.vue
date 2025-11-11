@@ -7,6 +7,18 @@
 
 <script lang="ts" setup>
 import { useOsTheme } from "naive-ui"
+import { loadCoreTranslations } from "./composables"
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true })
+
+// Load core translations with the initial language
+loadCoreTranslations(Language.value)
+
+// Watch for language changes and load translations dynamically
+watch(Language, async (newLang, oldLang) => {
+	if (newLang)
+		await loadCoreTranslations(newLang, oldLang)
+})
 
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
 const osThemeRef = useOsTheme()
@@ -16,8 +28,6 @@ if (!Theme.value) {
 } else {
 	isManual.value = true
 }
-
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 watch(Theme, () => {
 	setThemeConfig()

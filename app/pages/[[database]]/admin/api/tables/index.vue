@@ -45,18 +45,6 @@ definePageMeta({
     middleware: ["database", "user", "dashboard", "global"],
 })
 
-defineTranslation({
-    ar: {
-        apiDocumentation: "توثيق الواجهة البرمجية",
-        availableMethods: "الطرق المتاحة",
-        openDocumentation: "فتح التوثيق",
-        post: "POST",
-        get: "GET",
-        put: "PUT",
-        delete: "DELETE",
-    },
-})
-
 const route = useRoute()
 const database = useState<Database>("database")
 

@@ -71,15 +71,6 @@ import { Icon, NuxtLink } from "#components"
 
 const modelValue = defineModel<Database>({ required: true })
 
-defineTranslation({
-	ar: {
-		newTable: "جدول جديد",
-		newItem: "عنصر جديد",
-		tableFlows: "تدفقات الجدول",
-		tableSlug: "إسم الجدول",
-	},
-})
-
 const showPopover = ref(false)
 
 const appConfig = useAppConfig()

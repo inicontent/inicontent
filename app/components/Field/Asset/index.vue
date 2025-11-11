@@ -10,9 +10,8 @@
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
-			response-type="json" :fileList @update:file-list="setModelValue" :onBeforeUpload="handleBeforeUpload"
-			:onFinish="onFinish" :list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon
-			:shouldUseThumbnailUrl="() => false" with-credentials>
+			:fileList @update:file-list="setModelValue" :custom-request
+			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false">
 			<NUploadDragger v-if="!field.isTable">
 				<NIcon size="48" depth="3">
 					<Icon name="tabler:upload" />
@@ -42,9 +41,8 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
-import type { FormItemRule, UploadFileInfo } from "naive-ui"
+import type { FormItemRule, UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
 import { Icon, NImage, NTooltip } from "#components"
-import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 import { imageExtensions } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>()
@@ -236,80 +234,63 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 		} else modelValue.value = undefined
 	} else modelValue.value = undefined
 }
+
 const fileIdObject = ref<Record<string, string>>({})
-function onFinish({
+
+function customRequest({
 	file,
-	event,
-}: {
-	file: UploadFileInfo & { _id?: string }
-	event?: ProgressEvent
-}) {
-	const result = (
-		(event?.target as XMLHttpRequest).response as apiResponse<Asset>
-	).result
-	file.url = result.publicURL
-	file.type = result.type
-	file.name = (result.name || result.id) as string
-	fileIdObject.value[file.id] = result.id as string
-	return file
+	headers,
+	action,
+	onFinish,
+	onError,
+	onProgress
+}: UploadCustomRequestOptions) {
+	$fetch<apiResponse<Asset>>(action as string, {
+		method: 'POST',
+		credentials: 'include',
+		headers: headers as Record<string, string>,
+		body: { name: file.name, size: file.file?.size, type: file.type, extension: file?.name.split('.').pop() },
+	})
+		.then(({ result }) => {
+			onProgress({ percent: 50 })
+
+			// const formData = new FormData();
+			// formData.append("file", file.file);
+			$fetch(result.uploadURL as string, {
+				method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
+				headers: { "Content-Type": file.type as string },
+				body: file.file,
+			}).then(() => {
+				onProgress({ percent: 100 })
+
+				file.url = result.publicURL
+				file.status = "finished"
+				fileIdObject.value[file.id] = result.id as string
+				fileList.value = [...(fileList.value || []), file]
+				if (!database.value.size) database.value.size = 0
+				database.value.size += result.size ?? 0
+
+				setModelValue(fileList.value)
+
+
+				onFinish()
+			})
+		})
+		.catch((error) => {
+			console.error(error)
+			onError()
+		})
 }
+
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
-const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
-	if (!appConfig.fileBase || !fileObject.file) return true
-	const assetsUrl = `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets${field.suffix ? renderLabel({ ...table.value, label: field.suffix }, currentItem.value) : ""}${field.suffix?.includes('?') ? '&' : '?'}${database.value.slug}_sid=${sessionID.value}`
-	try {
-		const fd = new FormData()
-		fd.append("file", fileObject.file)
-		const fbResponse = await fetch(appConfig.fileBase, {
-			method: "POST",
-			body: fd,
-			credentials: "include",
-		})
-		const fbJson = await fbResponse.json()
-		if (fbJson?.error) return true
-
-		const assetsResponse = await fetch(assetsUrl, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(fbJson),
-			credentials: "include",
-		})
-		const assetsJson = await assetsResponse.json()
-		const result = assetsJson?.result ? assetsJson.result : fbJson
-
-		const id = `${String(Date.now())}-${fileObject.name || Math.random().toString(36).slice(2)}`
-		const uploadFile: any = {
-			id,
-			name: result.name || fileObject.name,
-			status: "finished",
-			url: result.publicURL || result.url,
-			type:
-				result.type ||
-				fileObject.type ||
-				(field.accept?.includes("image") ? "image/jpeg" : undefined),
-			file: fileObject.file,
-		}
-
-		fileIdObject.value[id] =
-			result && (result.id || result._id) ? result.id || result._id : id
-		fileList.value = [...(fileList.value || []), uploadFile]
-		await nextTick()
-		await setModelValue(fileList.value)
-		return false
-	} catch (e) {
-		window.$message.error(t("uploadFailed"))
-		console.error(e)
-		return false
-	}
-}
 
 function renderIcon(file: UploadFileInfo & { extension?: string }) {
 	file.extension = file.name?.split(".").pop() || ""
 	if (
 		file.url &&
 		file.type &&
-		(imageExtensions.includes(file.extension) || file.extension === "pdf")
+		(imageExtensions.includes(file.extension) || (file.extension === "pdf" && file.url.startsWith('https://cdn.inicontent.com/')))
 	)
 		return h(NImage, {
 			src: file.extension === "pdf" ? `${file.url}?raw` : file.url,

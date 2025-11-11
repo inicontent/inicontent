@@ -289,22 +289,6 @@ onMounted(() => {
 	}
 })
 
-defineTranslation({
-	ar: {
-		accessDenied: "لا توجد صلاحيات كافية",
-		delete: "حذف",
-		throwError: "خطأ",
-		set: "تعيين",
-		unset: "إفراغ",
-		if: "إذا",
-		or: "أو",
-		newCard: "بطاقة جديدة",
-		onRequest: "عند الطلب",
-		onResponse: "عند العرض",
-		condition: "شرط",
-	},
-})
-
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const appConfig = useAppConfig()

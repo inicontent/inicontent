@@ -104,56 +104,6 @@ import { isValidID } from "inibase/utils"
 import { Icon, NIcon, NTag, NText } from "#components"
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
-defineTranslation({
-	ar: {
-		settings: "الإعدادات",
-		toggleTheme: "تغيير الوضع",
-		edit: "تعديل",
-		adminPanel: "لوحة التحكم",
-		allRightsReserved: "جميع الحقوق محفوظة",
-		logout: "تسجيل الخروج",
-		profile: "تعديل الحساب",
-		sessions: "سِجل الدخول",
-		blocks: "أجزاء الصفحات",
-		pages: "الصفحات",
-		users: "المستخدمين",
-		admin: "مدير",
-		user: "مستخدم",
-		guest: "زائر",
-		translations: "الترجمة",
-		assets: "الملفات",
-		tables: "الجداول",
-		totalDatabaseSize: "حجم قاعدة البيانات",
-		isRequired: "إجباري",
-		isInvalidFormat: "صيغة غير صحيحة",
-		isNotValid: "غير صالح",
-		username: "إسم المستخدم",
-		email: "البريد الإلكتروني",
-		password: "كلمة المرور",
-		role: "الصلاحية",
-		showAll: "أظهر الكل",
-		createdBy: "أُنشأ من قبل",
-		theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
-		inputsAreInvalid: "المُدخلات غير صحيحة",
-		slug: "الإسم",
-		roles: "الأدوار",
-		icon: "الأيقونة",
-		primaryLanguage: "اللغة الأساسية",
-		secondaryLanguages: "اللغات الثانوية",
-		tableSettings: "إعدادات الجدول",
-		primaryColor: "اللون الأساسي",
-		primaryDarkColor: "اللون الأساسي في الوضع الليلي",
-		deletedSuccessfully: "تم الحذف بنجاح",
-		auth: "تسجيل الدخول",
-		units: {
-			kB: "ك.ب",
-			MB: "م.ب",
-			GB: "ج.ب",
-			TB: "ت.ب",
-		},
-		uploadFailed: "فشل الرفع",
-	},
-})
 
 // onBeforeUpdate(() => {
 //     clearNuxtState("translations");

@@ -48,15 +48,6 @@
 <script lang="ts" setup>
 import { Icon, NIcon } from "#components"
 
-defineTranslation({
-	ar: {
-		convert_to_and_group: "تحويل إلى مجموعة و",
-		convert_to_or_group: "تحويل إلى مجموعة أو",
-		andGroup: "مجموعة و",
-		orGroup: "مجموعة أو",
-	},
-})
-
 const { callback } = defineProps<{ callback?: CallableFunction }>()
 
 const table = useState<Table>("table")

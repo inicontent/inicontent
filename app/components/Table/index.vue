@@ -307,27 +307,6 @@ if (isSlotSet("default") && !table.value.displayAs)
 		},
 	)
 
-defineTranslation({
-	ar: {
-		search: "بحث",
-		reset: "إفراغ",
-		tools: "الأدوات",
-		clearTable: "إفراغ الجدول",
-		export: "تصدير",
-		import: "إستيراد",
-		exportCurrentData: "تصدير البيانات الحالية",
-		exportAllData: "تصدير كل البيانات",
-		columns: "الأعمدة",
-		an_export_job_is_running_in_background: "هناك عملية تصدير جارية",
-		an_export_job_is_done: "عملية التصدير إنتهت",
-		table: "جدول",
-		kanban: "كانبان",
-		small: "صغير",
-		medium: "متوسط",
-		large: "كبير",
-	},
-})
-
 const notificationRef = ref<NotificationReactive>()
 const currentJob = computed(() => table.value?.currentJob)
 async function jobNotification() {

@@ -30,13 +30,6 @@ const emit = defineEmits<{
 	loggedIn: []
 }>()
 
-defineTranslation({
-	ar: {
-		signin: "تسجيل الدخول",
-		signup: "إنشاء حساب",
-		authentication: "صفحة الدخول",
-	},
-})
 const appConfig = useAppConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 

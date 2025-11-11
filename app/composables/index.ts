@@ -1,12 +1,12 @@
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import { default as t } from "./Translation/translate"
-import { default as defineTranslation } from "./Translation/define"
 import { isArrayOfObjects } from "inibase/utils"
 
 export { default as translationLanguages } from "./Translation/languages"
 export { default as defineTranslation } from "./Translation/define"
 export { default as fetchTranslation } from "./Translation/fetch"
 export { default as t } from "./Translation/translate"
+export { default as loadCoreTranslations } from "./Translation/loadCoreTranslations"
 
 // Add a small deepClone helper
 export function deepClone<T>(v: T): T | undefined {
@@ -192,22 +192,6 @@ export async function copyToClipboard(textToCopy: string | number) {
 }
 
 export function comparisonOperatorOptions() {
-	defineTranslation({
-		ar: {
-			ComparisonOperator: {
-				equalTo: "يساوي",
-				notEqualTo: "لا يساوي",
-				greaterThan: "أكبر من",
-				greaterOrEqualTo: "أكبر من او يساوي",
-				lessThan: "أصغر من",
-				lessOrEqualTo: "أصغر من او يساوي",
-				contains: "يحتوي",
-				doesNotContain: "لا يحتوي",
-				isOneOf: "يضم",
-				isNotOneOf: "لا يضم",
-			},
-		},
-	})
 	return [
 		{
 			label: t("ComparisonOperator.equalTo"),

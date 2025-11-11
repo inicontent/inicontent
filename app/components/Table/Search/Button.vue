@@ -244,19 +244,4 @@ function deleteFavoriteFilter(filterId: string) {
     favoriteFilters.value = updatedFilters
     window.$message.success(t("filterDeletedSuccessfully"))
 }
-
-defineTranslation({
-    ar: {
-        search: "بحث",
-        reset: "إفراغ",
-        favoriteFilters: "المرشحات المفضلة",
-        filterName: "اسم المرشح",
-        filterNameCannotBeEmpty: "اسم المرشح لا يمكن أن يكون فارغاً",
-        filterNameAlreadyExists: "اسم المرشح موجود بالفعل",
-        filterSavedSuccessfully: "تم حفظ المرشح بنجاح",
-        filterLoaded: "تم تحميل المرشح",
-        filterDeletedSuccessfully: "تم حذف المرشح بنجاح",
-        noFavoriteFilters: "لا توجد مرشحات مفضلة محفوظة",
-    }
-})
 </script>

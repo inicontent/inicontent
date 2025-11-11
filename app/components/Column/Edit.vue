@@ -29,12 +29,6 @@ const modelValue = computed({
 
 const isEditable = !isArrayOfObjects(field.children) && field.type !== "html"
 
-defineTranslation({
-	ar: {
-		rightClickToEdit: "اضغط بزر الماوس الأيمن للتعديل",
-	},
-})
-
 const tooltipShow = ref(false)
 
 const inputValue = ref(modelValue.value)

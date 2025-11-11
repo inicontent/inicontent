@@ -21,18 +21,6 @@ const { error } = defineProps({
 const code = ref<errorCodes>()
 const message = ref()
 
-defineTranslation({
-	ar: {
-		notFound: "غير موجودة",
-		accessDenied: "ليست لديك الصلاحية",
-		internalServerError: "حدث خطأ في النظام الداخلي",
-		database: "قاعدة البيانات",
-		table: "الجدول",
-		item: "العنصر",
-		page: "الصفحة",
-	},
-})
-
 if (error) {
 	code.value = String(error.statusCode) as errorCodes
 	switch (error.statusCode) {

@@ -44,36 +44,6 @@ import {
 } from "inibase/utils"
 import { Icon } from "#components"
 
-defineTranslation({
-	en: {
-		relativeGroup: "Relative",
-		relativePlaceholder: "e.g. 3 days ago",
-	},
-	ar: {
-		relativeGroup: "نسبي",
-		relativePlaceholder: "مثال: قبل 3 أيام",
-		day: "يوم",
-		days: "أيام",
-		week: "أسبوع",
-		weeks: "أسابيع",
-		month: "شهر",
-		months: "شهور",
-		year: "سنة",
-		years: "سنوات",
-		ago: "مضت",
-		in: "خلال",
-		now: "الآن",
-		yesterday: "أمس",
-		tomorrow: "غدًا",
-		"last week": "الأسبوع الماضي",
-		"last month": "الشهر الماضي",
-		"last year": "السنة الماضية",
-		"next week": "الأسبوع القادم",
-		"next month": "الشهر القادم",
-		"next year": "السنة القادمة",
-	},
-})
-
 const { callback } = defineProps<{
 	callback?: CallableFunction
 }>()

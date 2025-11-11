@@ -89,27 +89,6 @@ interface Log extends Item {
 	item: Item | Item[]
 }
 
-defineTranslation({
-	ar: {
-		latestActivities: "أخر العمليات",
-		set: "تحديد",
-		unset: "إفراغ",
-		remove: "إزالة عنصر",
-		add: "إضافة عنصر",
-		updated: "قام بتعديل",
-		deleted: "قام بحذف",
-		removed: "محذوف",
-		created: "قام بإنشاء",
-		anItem: "عنصر",
-		asFollow: "كالأتي",
-		in: "في",
-		to: "إلى",
-		from: "من",
-		as: "كـ",
-		item: "عنصر",
-	},
-})
-
 const { id, open } = defineProps<{
 	id?: string | number
 	open?: boolean

@@ -75,32 +75,6 @@ definePageMeta({
     middleware: ["database", "user", "dashboard", "table", "global"],
 })
 
-defineTranslation({
-    ar: {
-        apiDocumentation: "توثيق الواجهة البرمجية",
-        overview: "نظرة عامة",
-        overviewDescription: "توفر هذه الصفحة نظرة عامة على نقاط النهاية الخاصة بالجدول {table} بناءً على صلاحياتك الحالية.",
-        availableMethods: "الطرق المتاحة",
-        sessionCookieNote: "قم بتمرير ملف تعريف الارتباط {cookie} للحفاظ على جلسة صالحة عند تنفيذ الطلبات المحمية.",
-        listEndpoint: "قائمة العناصر",
-        singleEndpoint: "عنصر محدد",
-        postSummary: "استخدم هذا الطلب لإضافة عنصر جديد إلى الجدول.",
-        getSummary: "استخدم هذا الطلب لجلب العناصر أو عنصر محدد.",
-        putSummary: "استخدم هذا الطلب لتحديث عنصر موجود.",
-        deleteSummary: "استخدم هذا الطلب لحذف عنصر موجود بشكل نهائي.",
-        exampleCurl: "مثال cURL",
-        availableFields: "الحقول المتاحة",
-        fieldKey: "المسار",
-        fieldLabel: "الاسم",
-        fieldType: "النوع",
-        fieldRequired: "إجباري",
-        fieldDescription: "الوصف",
-        yes: "نعم",
-        no: "لا",
-        unspecified: "غير محدد",
-    },
-})
-
 type MethodKey = "post" | "get" | "put" | "delete"
 
 type DocField = {

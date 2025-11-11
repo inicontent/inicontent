@@ -15,46 +15,6 @@ type fieldListOptionType = {
 }
 
 export default function fieldsList(): fieldListOptionType[] {
-	defineTranslation({
-		ar: {
-			fields: {
-				string: "نص",
-				shortText: "نص قصير",
-				longText: "نص طويل",
-				html: "محرر نصوص",
-				number: "رقم",
-				password: "كلمة مرور",
-				link: "رابط",
-				email: "بريد",
-				color: "لون",
-				asset: "ملحق",
-				assets: "ملحقات",
-				tags: "وسوم",
-				date: "تاريخ",
-				toggle: "سحب",
-				select: "قائمة",
-				checkbox: "خانة اختيار",
-				radio: "زر اختيار",
-				array: "مصفوفة",
-				object: "كائن",
-				objects: "مجموعة كوائن",
-				table: "جدول",
-				tableItems: "عناصر من جدول",
-				role: "دور",
-				mention: "نصوص جاهزة",
-				id: "معرف",
-				multiple: "متعدد",
-				range: "مجال",
-				slider: "شريط",
-				ip: "عنوان IP",
-			},
-		},
-		en: {
-			fields: {
-				html: "Rich Editor",
-			},
-		},
-	})
 	return [
 		{
 			label: t("fields.string"),

@@ -47,8 +47,7 @@
 					</NPopover>
 					<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
 						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
-						@update:file-list="onUpdateFileList" @finish="onFinishUpload"
-						:onBeforeUpload="handleBeforeUpload" @remove="onRemoveUpload" with-credentials>
+						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 						<NPopover trigger="manual" placement="bottom-end"
 							:show="UploadProgress > 0 && UploadProgress !== 1001">
 							<template #trigger>
@@ -95,25 +94,9 @@
 
 <script lang="ts" setup>
 import Inison from "inison"
-import type { UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
+import type { UploadCustomRequestOptions, UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
 import { generateSearchArray } from "~/composables/search"
-
-defineTranslation({
-	ar: {
-		folderCreatedSuccessfully: "تم إنشاء المجلد بنجاح",
-		folderNameRequired: "إسم المجلد مطلوب",
-		folderName: "إسم المجلد",
-		search: "بحث",
-		reset: "إفراغ",
-		image: "صورة",
-		video: "فيديو",
-		audio: "صوتي",
-		document: "مستند",
-		archive: "أرشيف",
-		extension: "الصيغة",
-	}
-})
 
 const { where, suffix } = defineProps<{
 	targetID?: string
@@ -313,64 +296,84 @@ async function onUpdateFileList(fileList: Required<UploadFileInfo>[]) {
 		}
 	}
 }
-function onFinishUpload({
+
+function customRequest({
 	file,
-	event,
-}: {
-	file: UploadSettledFileInfo
-	event?: ProgressEvent
-}): UploadFileInfo | undefined | void {
-	if ((event?.target as any)?.response) {
-		const response: apiResponse<Asset> = JSON.parse(
-			(event?.target as any).response,
-		)
-		file.url = response.result.publicURL
-		file.name = response.result.id as string
-		if (assets.value) assets.value?.unshift(response.result)
-		else assets.value = [response.result]
-		if (!database.value.size) database.value.size = 0
-		database.value.size += response.result.size ?? 0
-		return file
-	}
-	return file
-}
-const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
-	if (!appConfig.fileBase || !fileObject.file) return true
-	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}?${database.value.slug}_sid=${sessionID.value}`
-	try {
-		if (UploadProgress.value === 0) UploadProgress.value = 1001
-		const fd = new FormData()
-		fd.append("file", fileObject.file)
-		const fbResponse = await fetch(appConfig.fileBase, {
-			method: "POST",
-			body: fd,
-			credentials: "include",
+	headers,
+	action,
+	onFinish,
+	onError,
+	onProgress
+}: UploadCustomRequestOptions) {
+	$fetch<apiResponse<Asset>>(action as string, {
+		method: 'POST',
+		credentials: 'include',
+		headers: headers as Record<string, string>,
+		body: { name: file.name, size: file.file?.size, type: file.type, extension: file?.name.split('.').pop() },
+	})
+		.then(({ result }) => {
+			onProgress({ percent: 50 })
+
+			// const formData = new FormData();
+			// formData.append("file", file.file);
+			$fetch(result.uploadURL as string, {
+				method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
+				headers: { "Content-Type": file.type as string },
+				body: file.file,
+			}).then(() => {
+				onProgress({ percent: 100 })
+
+				file.url = result.publicURL
+				if (assets.value) assets.value?.unshift(result)
+				else assets.value = [result]
+				if (!database.value.size) database.value.size = 0
+				database.value.size += result.size ?? 0
+
+				onFinish()
+			})
 		})
-		const fbJson = await fbResponse.json()
-		if (fbJson?.error) return true
-
-		const assetsResponse = await fetch(assetsUrl, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(fbJson),
-			credentials: "include",
+		.catch((error) => {
+			console.error(error)
+			onError()
 		})
-		const assetsJson = await assetsResponse.json()
-		const result = assetsJson?.result ? assetsJson.result : fbJson
-
-		if (assets.value) assets.value?.unshift(result)
-		else assets.value = [result]
-
-		if (!database.value.size) database.value.size = 0
-		database.value.size += result.size ?? 0
-
-		UploadProgress.value = 0
-
-		return false
-	} catch (e) {
-		return true
-	}
 }
+// const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
+// 	if (!appConfig.fileBase || !fileObject.file) return true
+// 	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}?${database.value.slug}_sid=${sessionID.value}`
+// 	try {
+// 		if (UploadProgress.value === 0) UploadProgress.value = 1001
+// 		const fd = new FormData()
+// 		fd.append("file", fileObject.file)
+// 		const fbResponse = await fetch(appConfig.fileBase, {
+// 			method: "POST",
+// 			body: fd,
+// 			credentials: "include",
+// 		})
+// 		const fbJson = await fbResponse.json()
+// 		if (fbJson?.error) return true
+
+// 		const assetsResponse = await fetch(assetsUrl, {
+// 			method: "POST",
+// 			headers: { "Content-Type": "application/json" },
+// 			body: JSON.stringify(fbJson),
+// 			credentials: "include",
+// 		})
+// 		const assetsJson = await assetsResponse.json()
+// 		const result = assetsJson?.result ? assetsJson.result : fbJson
+
+// 		if (assets.value) assets.value?.unshift(result)
+// 		else assets.value = [result]
+
+// 		if (!database.value.size) database.value.size = 0
+// 		database.value.size += result.size ?? 0
+
+// 		UploadProgress.value = 0
+
+// 		return false
+// 	} catch (e) {
+// 		return true
+// 	}
+// }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
 		`${appConfig.apiBase}${database.value.slug
