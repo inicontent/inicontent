@@ -95,7 +95,7 @@
 <script lang="ts" setup>
 import Inison from "inison"
 import type { UploadCustomRequestOptions, UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
-import type { OnBeforeUpload } from "naive-ui/es/upload/src/interface"
+import { getFileNameAndExtension } from "~/composables";
 import { generateSearchArray } from "~/composables/search"
 
 const { where, suffix } = defineProps<{
@@ -305,11 +305,12 @@ function customRequest({
 	onError,
 	onProgress
 }: UploadCustomRequestOptions) {
+	const { name, extension } = getFileNameAndExtension(file.name)
 	$fetch<apiResponse<Asset>>(action as string, {
 		method: 'POST',
 		credentials: 'include',
 		headers: headers as Record<string, string>,
-		body: { name: file.name, size: file.file?.size, type: file.type, extension: file?.name.split('.').pop() },
+		body: { name, size: file.file?.size, type: file.type, extension },
 	})
 		.then(({ result }) => {
 			onProgress({ percent: 50 })
@@ -337,43 +338,7 @@ function customRequest({
 			onError()
 		})
 }
-// const handleBeforeUpload: OnBeforeUpload = async ({ file: fileObject }) => {
-// 	if (!appConfig.fileBase || !fileObject.file) return true
-// 	const assetsUrl = `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}?${database.value.slug}_sid=${sessionID.value}`
-// 	try {
-// 		if (UploadProgress.value === 0) UploadProgress.value = 1001
-// 		const fd = new FormData()
-// 		fd.append("file", fileObject.file)
-// 		const fbResponse = await fetch(appConfig.fileBase, {
-// 			method: "POST",
-// 			body: fd,
-// 			credentials: "include",
-// 		})
-// 		const fbJson = await fbResponse.json()
-// 		if (fbJson?.error) return true
 
-// 		const assetsResponse = await fetch(assetsUrl, {
-// 			method: "POST",
-// 			headers: { "Content-Type": "application/json" },
-// 			body: JSON.stringify(fbJson),
-// 			credentials: "include",
-// 		})
-// 		const assetsJson = await assetsResponse.json()
-// 		const result = assetsJson?.result ? assetsJson.result : fbJson
-
-// 		if (assets.value) assets.value?.unshift(result)
-// 		else assets.value = [result]
-
-// 		if (!database.value.size) database.value.size = 0
-// 		database.value.size += result.size ?? 0
-
-// 		UploadProgress.value = 0
-
-// 		return false
-// 	} catch (e) {
-// 		return true
-// 	}
-// }
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	const data = await $fetch<apiResponse<Asset>>(
 		`${appConfig.apiBase}${database.value.slug

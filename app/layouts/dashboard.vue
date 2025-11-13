@@ -96,6 +96,24 @@
 		<NModal v-model:show="showAuthModal" :mask-closable="false" :close-on-esc="false">
 			<Auth modal @logged-in="onLoggedIn" />
 		</NModal>
+
+
+		<NModal :show="currentPreviewAsset !== undefined" @mask-click="onClosePreview" @close="onClosePreview"
+			@esc="onClosePreview" :width="800">
+			<NSpin :show="Loading.previewModal" size="large" style="width: 80%;">
+				<video v-if="currentPreviewAsset && videoExtensions.includes(currentPreviewAsset.extension)" controls
+					autoplay style="width:100%;height:auto"
+					:style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
+					@loadeddata="Loading.previewModal = false" @canplay="Loading.previewModal = false"
+					@error="Loading.previewModal = false">
+					<source :src="currentPreviewAsset?.publicURL" :type="currentPreviewAsset?.type" />
+				</video>
+				<object v-else-if="currentPreviewAsset?.extension === 'pdf' && pdfObjectUrl" :data="pdfObjectUrl"
+					type="application/pdf" style="width:100%;height:80vh;"
+					:style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
+					@load="Loading.previewModal = false"></object>
+			</NSpin>
+		</NModal>
 	</NuxtLayout>
 </template>
 
@@ -115,6 +133,7 @@ const route = useRoute()
 const user = useState<User | undefined>("user")
 const database = useState<Database>("database")
 const fromPath = useCookie("from", { sameSite: true })
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",
@@ -301,4 +320,32 @@ onMounted(() => {
 		onUnmounted(() => clearInterval(interval))
 	}
 })
+
+
+const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset")
+const pdfObjectUrl = useState<string | undefined>("pdfObjectUrl")
+
+function onClosePreview() {
+	currentPreviewAsset.value = undefined
+	Loading.value.previewModal = false
+	if (pdfObjectUrl.value) {
+		URL.revokeObjectURL(pdfObjectUrl.value)
+		pdfObjectUrl.value = undefined
+	}
+}
+
+async function loadPdfObjectUrl(url: string) {
+	try {
+		const res = await fetch(url)
+		if (!res.ok) throw new Error('Network response was not ok')
+		const blob = await res.blob()
+		if (blob.type !== 'application/pdf') throw new Error('Not a PDF')
+		if (pdfObjectUrl.value) URL.revokeObjectURL(pdfObjectUrl.value)
+		pdfObjectUrl.value = URL.createObjectURL(blob)
+	} catch (e) {
+		// Fallback: keep spinner off and avoid blocking UI
+		pdfObjectUrl.value = undefined
+		Loading.value.previewModal = false
+	}
+}
 </script>

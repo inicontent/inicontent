@@ -477,7 +477,7 @@ body {
 
 .asset,
 .asset img,
-.asset .icon {
+.asset.n-icon {
 	width: 100%;
 	height: 100px;
 	border-radius: 15px;
@@ -485,8 +485,14 @@ body {
 
 .assetDrawer .asset,
 .assetDrawer .asset img,
-.assetDrawer .asset .icon {
+.assetDrawer .n-icon {
 	height: 200px;
+}
+
+
+.asset.n-icon span {
+  width: 100%;
+  height: 100%;
 }
 
 .dark .asset {

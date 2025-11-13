@@ -121,7 +121,6 @@ export default {
         table: "Table",
         totalDatabaseSize: "Taille totale de la base de données",
         showAll: "Tout afficher",
-        createdBy: "Créé par",
         roles: "Rôles",
         primaryLanguage: "Langue principale",
         secondaryLanguages: "Langues secondaires",
@@ -129,6 +128,12 @@ export default {
         primaryColor: "Couleur principale",
         primaryDarkColor: "Couleur principale sombre",
         auth: "Authentification",
+        createdAt: "Créé le",
+        updatedAt: "Modifié le",
+        createdBy: "Créé par",
+        id: "ID",
+        copiedSuccessfully: "Copié avec succès",
+
 
         // Auth
         signin: "Connexion",
@@ -151,6 +156,7 @@ export default {
         newItem: "Nouvel élément",
         tableFlows: "Flux de table",
         tableSlug: "Identifiant de table",
+        clickToToggleDate: "Cliquez pour changer la date",
 
         // Table settings
         generalSettings: "Paramètres généraux",

@@ -42,8 +42,8 @@
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
 import type { FormItemRule, UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
-import { Icon, NImage, NTooltip } from "#components"
-import { imageExtensions } from "~/composables";
+import { Icon, LazyAssetThumb, NImage, NTooltip } from "#components"
+import { getFileNameAndExtension, imageExtensions } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -245,11 +245,12 @@ function customRequest({
 	onError,
 	onProgress
 }: UploadCustomRequestOptions) {
+	const { name, extension } = getFileNameAndExtension(file.name)
 	$fetch<apiResponse<Asset>>(action as string, {
 		method: 'POST',
 		credentials: 'include',
 		headers: headers as Record<string, string>,
-		body: { name: file.name, size: file.file?.size, type: file.type, extension: file?.name.split('.').pop() },
+		body: { name, size: file.file?.size, type: file.type, extension },
 	})
 		.then(({ result }) => {
 			onProgress({ percent: 50 })
@@ -272,7 +273,6 @@ function customRequest({
 
 				setModelValue(fileList.value)
 
-
 				onFinish()
 			})
 		})
@@ -285,64 +285,15 @@ function customRequest({
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
 
-function renderIcon(file: UploadFileInfo & { extension?: string }) {
-	file.extension = file.name?.split(".").pop() || ""
-	if (
-		file.url &&
-		file.type &&
-		(imageExtensions.includes(file.extension) || (file.extension === "pdf" && file.url.startsWith('https://cdn.inicontent.com/')))
-	)
-		return h(NImage, {
-			src: file.extension === "pdf" ? `${file.url}?raw` : file.url,
-			previewSrc:
-				file.extension === "pdf" ? `${file.url}?raw` : file.url,
-			width: 100,
-			height: 100,
-			style: "height: 100%; width: 100%",
-			objectFit: "cover",
-			renderToolbar: ({
-				nodes: {
-					rotateCounterclockwise,
-					rotateClockwise,
-					resizeToOriginalSize,
-					zoomOut,
-					zoomIn,
-					download,
-					close,
-				},
-			}) => {
-				if (download.props && file.url)
-					download.props.onClick = (event: MouseEvent) => {
-						event?.preventDefault()
-						window.open(file.url as string, "_blank")
-						close?.props?.onClick?.()
-					}
-				return [
-					h(
-						NTooltip,
-						{},
-						{
-							default: () => file.name,
-							trigger: () =>
-								h(
-									"i",
-									{ class: "n-base-icon" },
-									h(Icon, { name: "tabler:info-circle-filled" }),
-								),
-						},
-					),
-					rotateCounterclockwise,
-					rotateClockwise,
-					zoomIn,
-					zoomOut,
-					resizeToOriginalSize,
-					download,
-					close,
-				]
-			},
-		})
-	return h(Icon, {
-		name: file.extension && imageExtensions.includes(file.extension) ? "tabler:photo" : "tabler:file",
+function renderIcon(file: UploadFileInfo & { extension?: string; publicURL?: string }) {
+	const { extension } = getFileNameAndExtension(file.name)
+	file.extension = extension
+	file.publicURL = file.url as string
+	return h(LazyAssetThumb, {
+		asset: file as unknown as Asset, style: {
+			height: '25px',
+			width: '25px'
+		}
 	})
 }
 

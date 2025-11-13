@@ -126,7 +126,6 @@ export default {
         table: "جدول",
         totalDatabaseSize: "حجم قاعدة البيانات",
         showAll: "أظهر الكل",
-        createdBy: "أُنشأ من قبل",
         roles: "الأدوار",
         primaryLanguage: "اللغة الأساسية",
         secondaryLanguages: "اللغات الثانوية",
@@ -134,6 +133,11 @@ export default {
         primaryColor: "اللون الأساسي",
         primaryDarkColor: "اللون الأساسي في الوضع الليلي",
         auth: "تسجيل الدخول",
+        createdAt: "تاريخ الإنشاء",
+        updatedAt: "تاريخ التحديث",
+        createdBy: "أُنشأ من قبل",
+        id: "المعرف",
+        copiedSuccessfully: "تم النسخ بنجاح",
 
         // Auth
         signin: "تسجيل الدخول",
@@ -156,6 +160,7 @@ export default {
         newItem: "عنصر جديد",
         tableFlows: "تدفقات الجدول",
         tableSlug: "إسم الجدول",
+        clickToToggleDate: "إضغط لتغيير التاريخ",
 
         // Table settings
         generalSettings: "إعدادات عامة",

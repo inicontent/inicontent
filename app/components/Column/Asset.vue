@@ -6,12 +6,8 @@
 					:disabled="!file.name">
 					<template #trigger>
 						<div style="position: relative;">
-							<Icon v-if="file.extension === 'pdf'" name="tabler:file-filled"
-								style="position: absolute;color: rgb(var(--primaryColor));top: 2px;" />
-							<NImage lazy :src="file.extension === 'pdf' ? `${file.publicURL}?fit=100` : file.publicURL"
-								:preview-src="file.extension === 'pdf' ? `${file.publicURL}?raw` : file.publicURL"
-								:width="32" :height="32" object-fit="cover" style="height: 100%;"
-								:renderToolbar="(props) => renderToolbar(props, file)" />
+							<AssetThumb :asset="file" container-selector="#DataTable"
+								style="width: 40px;height: 40px;overflow: hidden;" />
 						</div>
 					</template>
 					{{ file.name }}{{ file.extension ? `.${file.extension}` : '' }}
@@ -37,52 +33,5 @@ import { imageExtensions } from "~/composables";
 
 const { value } = defineProps<{ value: Asset | Asset[] }>()
 
-const renderToolbar: (
-	props: ImageRenderToolbarProps,
-	file?: Asset,
-) => VNodeChild = (
-	{
-		nodes: {
-			rotateCounterclockwise,
-			rotateClockwise,
-			resizeToOriginalSize,
-			zoomOut,
-			zoomIn,
-			download,
-			close,
-		},
-	},
-	file?: Asset,
-) => {
-		if (download.props && file?.publicURL)
-			download.props.onClick = (event: MouseEvent) => {
-				event?.preventDefault()
-				window.open(file.publicURL as string, "_blank")
-				close?.props?.onClick?.()
-			}
-		return [
-			file?.name
-				? h(
-					NTooltip,
-					{},
-					{
-						default: () => file.name,
-						trigger: () =>
-							h(
-								"i",
-								{ class: "n-base-icon" },
-								h(Icon, { name: "tabler:info-circle-filled" }),
-							),
-					},
-				)
-				: null,
-			rotateCounterclockwise,
-			rotateClockwise,
-			zoomIn,
-			zoomOut,
-			resizeToOriginalSize,
-			download,
-			close,
-		]
-	}
+
 </script>

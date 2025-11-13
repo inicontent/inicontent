@@ -368,3 +368,24 @@ export const documentExtensions = [
 	"ppt",
 	"pptx",
 ];
+
+/**
+ * Extracts the file name and extension from a file path or file name string.
+ * Works in browsers (no Node.js dependencies).
+ */
+export function getFileNameAndExtension(path: string): { name: string; extension: string } {
+	// Extract just the file name (handles both "/" and "\" separators)
+	const fullName = path.split(/[/\\]/).pop() || path;
+
+	// Handle files without any dots
+	if (!fullName.includes('.')) {
+		return { name: fullName, extension: '' };
+	}
+
+	// Find the last dot to split name and extension
+	const lastDotIndex = fullName.lastIndexOf('.');
+	const name = fullName.substring(0, lastDotIndex);
+	const extension = fullName.substring(lastDotIndex + 1); // excludes the "."
+
+	return { name, extension };
+}
