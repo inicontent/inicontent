@@ -5,7 +5,7 @@
 				drawer.width = width
 			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
 			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
-			<NDrawerContent closable>
+			<NDrawerContent closable :native-scrollbar="false">
 				<template #header>
 					<span v-if="drawer.id">
 						{{ t('edit') }}
@@ -60,7 +60,8 @@
 				</slot>
 			</NDrawerContent>
 		</NDrawer>
-	</template></template>
+	</template>
+</template>
 
 <script setup lang="ts">
 const Language = useCookie<LanguagesType>("language", { sameSite: true })

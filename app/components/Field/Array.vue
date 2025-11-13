@@ -11,7 +11,8 @@
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
 	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-		:default-expanded-names="field.expand ? field.id : undefined" v-model:expanded-names="parentExpanded" accordion>
+		:default-expanded-names="field.expand ? String(field.id) : undefined" v-model:expanded-names="parentExpanded"
+		accordion>
 		<template #arrow>
 			<NIcon>
 				<Icon name="tabler:chevron-left" v-if="!!modelValue?.length" />
@@ -223,12 +224,12 @@ function setColumns() {
 					h(NPerformantEllipsis, () => t(child.key)),
 					child.required
 						? h(
-								NText,
-								{
-									type: "error",
-								},
-								() => " *",
-							)
+							NText,
+							{
+								type: "error",
+							},
+							() => " *",
+						)
 						: undefined,
 				]),
 			key: child.id,
@@ -255,7 +256,7 @@ function setColumns() {
 					},
 					"onUpdate:modelValue": (newValue) => {
 						// @ts-ignore
-						;(modelValue.value as Item[])[index][child.key] = newValue
+						; (modelValue.value as Item[])[index][child.key] = newValue
 					},
 					// @ts-ignore
 					modelValue: (modelValue.value as Item[])[index][child.key],
@@ -264,40 +265,40 @@ function setColumns() {
 		field.disableActions === true
 			? {}
 			: {
-					title: t("actions"),
-					fixed: "right",
-					align: "center",
-					width: 100,
-					key: "actions",
-					render(_row: any, index: number) {
-						return h(
-							NTooltip,
-							{ delay: 500 },
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											disabled:
-												typeof field.inputProps === "function"
-													? field.inputProps(index)?.disabled
-													: field.inputProps?.disabled,
-											strong: true,
-											secondary: true,
-											circle: true,
-											type: "error",
-											onClick: () => handleDeleteItem(index),
-										},
-										{
-											icon: () =>
-												h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-										},
-									),
-								default: () => t("delete"),
-							},
-						)
-					},
+				title: t("actions"),
+				fixed: "right",
+				align: "center",
+				width: 100,
+				key: "actions",
+				render(_row: any, index: number) {
+					return h(
+						NTooltip,
+						{ delay: 500 },
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										disabled:
+											typeof field.inputProps === "function"
+												? field.inputProps(index)?.disabled
+												: field.inputProps?.disabled,
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+										onClick: () => handleDeleteItem(index),
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							default: () => t("delete"),
+						},
+					)
 				},
+			},
 	] as DataTableColumns<any>
 
 	tableWidth.value = columns.value.reduce(

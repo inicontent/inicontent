@@ -170,6 +170,7 @@ export default {
         prepend: "Préfixer",
         recentItemsAppearAtTheTop: "Les éléments récents apparaissent en haut",
         cache: "Cache",
+        clearCache: "Effacer le cache",
         log: "Journal",
         enableActivityLog: "Activer le journal d'activité",
         defaultTableColumns: "Colonnes de table par défaut",
@@ -206,6 +207,8 @@ export default {
         extendWhere: "Étendre la recherche",
         labelsColoring: "Coloration des étiquettes",
         optionLabel: "Nom de l'option",
+        optimizeAssets: "Optimiser les fichiers",
+        optimizeAssetsDescription: "Compresser et optimiser automatiquement les fichiers téléchargés pour de meilleures performances",
 
         // Activity log
         latestActivities: "Activités récentes",

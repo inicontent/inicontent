@@ -77,7 +77,7 @@ declare global {
 		| "week"
 		expand?: boolean
 		suffix?: string
-		query?: any
+		optimize?: boolean
 		where?: string | Record<string, any>
 		description?: string
 		render?: any

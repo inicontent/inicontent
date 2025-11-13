@@ -174,6 +174,7 @@ export default {
         prepend: "إضافة مقدمة",
         recentItemsAppearAtTheTop: "العناصر الحديثة تظهر في الأعلى",
         cache: "التخزين المؤقت",
+        clearCache: "حذف الكاش",
         log: "سجل التتبع",
         enableActivityLog: "تفعيل سجل عمليات الجدول",
         defaultTableColumns: "الأعمدة الإفتراضية للجدول",
@@ -210,6 +211,8 @@ export default {
         extendWhere: "توسيع البحث",
         labelsColoring: "تفعيل الألوان",
         optionLabel: "إسم الخيار",
+        optimizeAssets: "تحسين الملفات",
+        optimizeAssetsDescription: "ضغط وتحسين الملفات المرفوعة تلقائياً لأداء أفضل",
 
         // Activity log
         latestActivities: "أخر العمليات",

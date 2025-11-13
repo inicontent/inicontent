@@ -97,6 +97,7 @@ import Inison from "inison"
 import type { UploadCustomRequestOptions, UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
 import { getFileNameAndExtension } from "~/composables";
 import { generateSearchArray } from "~/composables/search"
+import { useOptimizeFile } from "~/composables/optimizeFile";
 
 const { where, suffix } = defineProps<{
 	targetID?: string
@@ -297,7 +298,9 @@ async function onUpdateFileList(fileList: Required<UploadFileInfo>[]) {
 	}
 }
 
-function customRequest({
+const { optimizeFile } = useOptimizeFile()
+
+async function customRequest({
 	file,
 	headers,
 	action,
@@ -305,38 +308,55 @@ function customRequest({
 	onError,
 	onProgress
 }: UploadCustomRequestOptions) {
-	const { name, extension } = getFileNameAndExtension(file.name)
-	$fetch<apiResponse<Asset>>(action as string, {
-		method: 'POST',
-		credentials: 'include',
-		headers: headers as Record<string, string>,
-		body: { name, size: file.file?.size, type: file.type, extension },
-	})
-		.then(({ result }) => {
-			onProgress({ percent: 50 })
+	try {
+		let fileToUpload = file.file
 
-			// const formData = new FormData();
-			// formData.append("file", file.file);
-			$fetch(result.uploadURL as string, {
-				method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
-				headers: { "Content-Type": file.type as string },
-				body: file.file,
-			}).then(() => {
-				onProgress({ percent: 100 })
+		// Optimize file if enabled
+		if (fileToUpload) {
+			const optimizationResult = await optimizeFile(
+				new File([fileToUpload], file.name, { type: file.type as string }),
+			)
 
-				file.url = result.publicURL
-				if (assets.value) assets.value?.unshift(result)
-				else assets.value = [result]
-				if (!database.value.size) database.value.size = 0
-				database.value.size += result.size ?? 0
+			if (optimizationResult.optimized)
+				fileToUpload = optimizationResult.file
+		}
 
-				onFinish()
+		const { name, extension } = getFileNameAndExtension(file.name)
+		$fetch<apiResponse<Asset>>(action as string, {
+			method: 'POST',
+			credentials: 'include',
+			headers: headers as Record<string, string>,
+			body: { name, size: fileToUpload?.size, type: file.type, extension },
+		})
+			.then(({ result }) => {
+				onProgress({ percent: 50 })
+
+				// const formData = new FormData();
+				// formData.append("file", file.file);
+				$fetch(result.uploadURL as string, {
+					method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
+					headers: { "Content-Type": file.type as string },
+					body: fileToUpload,
+				}).then(() => {
+					onProgress({ percent: 100 })
+
+					file.url = result.publicURL
+					if (assets.value) assets.value?.unshift(result)
+					else assets.value = [result]
+					if (!database.value.size) database.value.size = 0
+					database.value.size += result.size ?? 0
+
+					onFinish()
+				})
 			})
-		})
-		.catch((error) => {
-			console.error(error)
-			onError()
-		})
+			.catch((error) => {
+				console.error(error)
+				onError()
+			})
+	} catch (error) {
+		console.error('Error in customRequest:', error)
+		onError()
+	}
 }
 
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {

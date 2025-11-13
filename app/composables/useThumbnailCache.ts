@@ -91,9 +91,9 @@ export async function clearExpiredThumbnails(): Promise<void> {
 }
 
 /**
- * Clear all thumbnails from cache
+ * Clear all the cache
  */
-export async function clearAllThumbnails(): Promise<void> {
+export async function clearAllCache(): Promise<void> {
     try {
         const database = await initDB()
         await database.clear(STORE_NAME)

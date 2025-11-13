@@ -42,8 +42,9 @@
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
 import type { FormItemRule, UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
-import { Icon, LazyAssetThumb, NImage, NTooltip } from "#components"
-import { getFileNameAndExtension, imageExtensions } from "~/composables";
+import { Icon, LazyAssetThumb } from "#components"
+import { getFileNameAndExtension } from "~/composables";
+import { useOptimizeFile } from "~/composables/optimizeFile";
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -237,7 +238,12 @@ async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
 
 const fileIdObject = ref<Record<string, string>>({})
 
-function customRequest({
+const { optimizeFile } = useOptimizeFile()
+
+// Determine if optimization is enabled (undefined or true = enabled)
+const shouldOptimize = computed(() => field.optimize !== false)
+
+async function customRequest({
 	file,
 	headers,
 	action,
@@ -245,41 +251,58 @@ function customRequest({
 	onError,
 	onProgress
 }: UploadCustomRequestOptions) {
-	const { name, extension } = getFileNameAndExtension(file.name)
-	$fetch<apiResponse<Asset>>(action as string, {
-		method: 'POST',
-		credentials: 'include',
-		headers: headers as Record<string, string>,
-		body: { name, size: file.file?.size, type: file.type, extension },
-	})
-		.then(({ result }) => {
-			onProgress({ percent: 50 })
+	try {
+		let fileToUpload = file.file
 
-			// const formData = new FormData();
-			// formData.append("file", file.file);
-			$fetch(result.uploadURL as string, {
-				method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
-				headers: { "Content-Type": file.type as string },
-				body: file.file,
-			}).then(() => {
-				onProgress({ percent: 100 })
+		// Optimize file if enabled
+		if (shouldOptimize.value && fileToUpload) {
+			const optimizationResult = await optimizeFile(
+				new File([fileToUpload], file.name, { type: file.type as string }),
+			)
 
-				file.url = result.publicURL
-				file.status = "finished"
-				fileIdObject.value[file.id] = result.id as string
-				fileList.value = [...(fileList.value || []), file]
-				if (!database.value.size) database.value.size = 0
-				database.value.size += result.size ?? 0
+			if (optimizationResult.optimized)
+				fileToUpload = optimizationResult.file
+		}
 
-				setModelValue(fileList.value)
+		const { name, extension } = getFileNameAndExtension(file.name)
+		$fetch<apiResponse<Asset>>(action as string, {
+			method: 'POST',
+			credentials: 'include',
+			headers: headers as Record<string, string>,
+			body: { name, size: fileToUpload?.size, type: file.type, extension },
+		})
+			.then(({ result }) => {
+				onProgress({ percent: 50 })
 
-				onFinish()
+				// const formData = new FormData();
+				// formData.append("file", file.file);
+				$fetch(result.uploadURL as string, {
+					method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
+					headers: { "Content-Type": file.type as string },
+					body: fileToUpload,
+				}).then(() => {
+					onProgress({ percent: 100 })
+
+					file.url = result.publicURL
+					file.status = "finished"
+					fileIdObject.value[file.id] = result.id as string
+					fileList.value = [...(fileList.value || []), file]
+					if (!database.value.size) database.value.size = 0
+					database.value.size += result.size ?? 0
+
+					setModelValue(fileList.value)
+
+					onFinish()
+				})
 			})
-		})
-		.catch((error) => {
-			console.error(error)
-			onError()
-		})
+			.catch((error) => {
+				console.error(error)
+				onError()
+			})
+	} catch (error) {
+		console.error('Error in customRequest:', error)
+		onError()
+	}
 }
 
 const table = useState<Table>("table")

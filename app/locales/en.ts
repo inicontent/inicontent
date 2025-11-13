@@ -15,5 +15,8 @@ export default {
             one: "{{count}} item",
             other: "{{count}} items",
         },
+
+        // Schema fields - assets
+        optimizeAssetsDescription: "Automatically compress and optimize uploaded files for better performance",
     },
 } as const

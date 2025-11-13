@@ -100,7 +100,13 @@
 						<NFormItem :label="t('urlSuffix')">
 							<NInput v-model:value="element.suffix" />
 							<template #feedback>
-								{{ t('ie') }}: <strong>/@2?q=</strong>6&<strong>f=</strong>webp&<strong>fit=</strong>100
+								{{ t('ie') }}: <strong>/@2/customFolder</strong>
+							</template>
+						</NFormItem>
+						<NFormItem :label="t('optimizeAssets')">
+							<NSwitch v-model:value="element.optimize" :default-value="true" />
+							<template #feedback>
+								{{ t('optimizeAssetsDescription') }}
 							</template>
 						</NFormItem>
 					</template>

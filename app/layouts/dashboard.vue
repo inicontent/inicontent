@@ -193,6 +193,8 @@ function breadCrumbItemLabel(index: number) {
 		? itemLabel.value
 		: t(childRoute === "admin" ? "adminPanel" : childRoute)
 }
+
+const cacheStats = ref<{ total?: number; expired?: number; size: number }>({ size: 0 })
 const userDropdownOptions = computed(() => [
 	{
 		label: t("settings"),
@@ -233,6 +235,14 @@ const userDropdownOptions = computed(() => [
 		show: !user.value?.id,
 		disabled: (route.name as string | undefined)?.endsWith("-auth"),
 	},
+	{
+		label: `${t("clearCache")} (${humanFileSize(
+			cacheStats.value.size,
+		)})`,
+		key: "clearCache",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:wash-machine" })),
+		show: !!user.value?.id && cacheStats.value.size > 0,
+	},
 ])
 
 const sessionID = useCookie<string | null>("sessionID", {
@@ -271,6 +281,10 @@ async function onSelectUserDropdown(v: string) {
 			await navigateTo(
 				`${route.params.database ? `/${route.params.database}` : ""}/auth`,
 			)
+			break
+		case "clearCache":
+			await clearAllCache()
+			cacheStats.value = await getCacheStats()
 			break
 	}
 }
@@ -313,12 +327,13 @@ function onLoggedIn() {
 	// User and sessionID are already updated in Auth component
 }
 
-onMounted(() => {
+onMounted(async () => {
 	checkAuth()
 	if (!String(route.name).endsWith("auth")) {
 		const interval = setInterval(checkAuth, 60000) // Check every 1 minute
 		onUnmounted(() => clearInterval(interval))
 	}
+	cacheStats.value = await getCacheStats()
 })
 
 

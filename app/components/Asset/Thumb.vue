@@ -1,6 +1,6 @@
 <template>
     <!-- Image -->
-    <NImage v-if="imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
+    <NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
         :intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)" />
 
     <!-- PDF with thumbnail -->
@@ -179,11 +179,18 @@ async function generatePdfThumb() {
         }
 
         const page = await pdf.getPage(1)
-        const viewport = page.getViewport({ scale: 1.5 })
+        // Create a smaller square thumbnail (200x200px)
+        const thumbnailSize = 200
+        const viewport = page.getViewport({ scale: 1 })
+
+        // Calculate scale to cover the square (like CSS cover) - use MAX instead of MIN
+        const scale = Math.max(thumbnailSize / viewport.width, thumbnailSize / viewport.height)
+        const scaledViewport = page.getViewport({ scale })
 
         const canvas = document.createElement("canvas")
-        canvas.width = viewport.width
-        canvas.height = viewport.height
+        // Make the canvas square
+        canvas.width = thumbnailSize
+        canvas.height = thumbnailSize
 
         const ctx = canvas.getContext("2d")
         if (!ctx) {
@@ -191,9 +198,14 @@ async function generatePdfThumb() {
             return
         }
 
+        // Center the scaled PDF content in the square canvas (crop excess)
+        const offsetX = (thumbnailSize - scaledViewport.width) / 2
+        const offsetY = (thumbnailSize - scaledViewport.height) / 2
+        ctx.translate(offsetX, offsetY)
+
         await page.render({
             canvasContext: ctx,
-            viewport: viewport,
+            viewport: scaledViewport,
             canvas: canvas,
         }).promise
 
