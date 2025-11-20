@@ -1,34 +1,37 @@
 <template>
     <!-- Image -->
     <NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
-        :intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)" />
+        :intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)"
+        @click="handleImageClick" />
 
     <!-- PDF with thumbnail -->
     <NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset" :src="pdfThumbs[assetKey]"
-        :intersectionObserverOptions lazy preview-disabled @click="showPreview" />
+        :intersectionObserverOptions lazy preview-disabled @click="handlePreviewClick" />
 
     <!-- PDF generating thumbnail -->
     <NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
-        <NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()">
+        <NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()"
+            @click="handleModifierOnlyClick">
             <LazyAssetIcon :type="asset.type" class="icon" />
         </NIcon>
     </NSpin>
 
     <!-- Video with thumbnail -->
     <NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
-        :src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="showPreview" />
+        :src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handlePreviewClick" />
 
     <!-- Video generating thumbnail -->
     <NSpin v-else-if="videoExtensions.includes(asset.extension)"
         :show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
         <NIcon class="asset"
-            v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()">
+            v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
+            @click="handleModifierOnlyClick">
             <LazyAssetIcon :type="asset.type" class="icon" />
         </NIcon>
     </NSpin>
 
     <!-- Other file types as icon -->
-    <NIcon v-else class="asset">
+    <NIcon v-else class="asset" @click="handleModifierOnlyClick">
         <LazyAssetIcon :type="asset.type" class="icon" />
     </NIcon>
 </template>
@@ -305,6 +308,132 @@ const renderToolbar: (
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset")
 const pdfObjectUrl = useState<string | undefined>("pdfObjectUrl")
+const requiresPreviewDownloadShortcut = computed(() =>
+    asset.extension === "pdf" || videoExtensions.includes(asset.extension),
+)
+const isPreviewingCurrentAsset = computed(() => {
+    const previewAsset = currentPreviewAsset.value
+    if (!previewAsset) return false
+    return assetKeyValue(previewAsset) === assetKey.value
+})
+const shouldListenForDownloadShortcut = computed(
+    () => requiresPreviewDownloadShortcut.value && isPreviewingCurrentAsset.value,
+)
+let removePreviewShortcut: (() => void) | undefined
+
+function openAssetInNewTab(file: Asset = asset) {
+    if (!file.publicURL) return
+    window.open(file.publicURL as string, "_blank", "noopener")
+}
+
+function handleModifierOpen(event: MouseEvent) {
+    if (!(event.ctrlKey || event.metaKey)) return false
+    event.preventDefault()
+    event.stopPropagation()
+    openAssetInNewTab()
+    return true
+}
+
+function handleImageClick(event: MouseEvent) {
+    handleModifierOpen(event)
+}
+
+function handlePreviewClick(event: MouseEvent) {
+    if (!handleModifierOpen(event)) showPreview()
+}
+
+function handleModifierOnlyClick(event: MouseEvent) {
+    handleModifierOpen(event)
+}
+
+async function triggerAssetDownload(file: Asset = asset) {
+    if (!file.publicURL || typeof window === "undefined") return
+    const link = document.createElement("a")
+    const defaultName = (() => {
+        if (file.name) return file.name
+        try {
+            const url = new URL(file.publicURL)
+            const last = url.pathname.split("/").pop()
+            return last || "asset"
+        } catch {
+            return "asset"
+        }
+    })()
+    link.download = defaultName
+    document.body.appendChild(link)
+
+    const downloadByOpening = () => {
+        const newTab = window.open(file.publicURL as string, "_blank", "noopener")
+        if (newTab) {
+            // Give the browser a moment to trigger the download before closing the tab
+            window.setTimeout(() => {
+                try {
+                    newTab.close()
+                } catch {
+                    /* Ignore cross-origin close errors */
+                }
+            }, 2000)
+        }
+    }
+
+    try {
+        if (file.extension === "pdf") {
+            let downloadUrl = pdfObjectUrl.value
+            let revokeAfterUse = false
+            if (!downloadUrl) {
+                const response = await fetch(file.publicURL)
+                if (!response.ok) throw new Error("Failed to fetch PDF asset")
+                const blob = await response.blob()
+                downloadUrl = URL.createObjectURL(blob)
+                revokeAfterUse = true
+            }
+            if (!downloadUrl) throw new Error("No PDF download URL available")
+            link.href = downloadUrl
+            link.click()
+            if (revokeAfterUse) URL.revokeObjectURL(downloadUrl)
+        } else {
+            link.href = file.publicURL as string
+            link.rel = "noopener"
+            link.click()
+        }
+    } catch (error) {
+        console.warn("Falling back to opening asset in new tab", error)
+        downloadByOpening()
+    } finally {
+        document.body.removeChild(link)
+    }
+}
+
+function registerPreviewShortcut() {
+    if (!import.meta.client || removePreviewShortcut) return
+    const handler = (event: KeyboardEvent) => {
+        if (!(event.metaKey || event.ctrlKey)) return
+        if (event.key?.toLowerCase() !== "s") return
+        event.preventDefault()
+        void triggerAssetDownload(currentPreviewAsset.value ?? asset)
+    }
+    window.addEventListener("keydown", handler)
+    removePreviewShortcut = () => window.removeEventListener("keydown", handler)
+}
+
+function cleanupPreviewShortcut() {
+    if (!removePreviewShortcut) return
+    removePreviewShortcut()
+    removePreviewShortcut = undefined
+}
+
+watch(shouldListenForDownloadShortcut, (shouldListen) => {
+    if (!import.meta.client) return
+    if (shouldListen) {
+        registerPreviewShortcut()
+    } else {
+        cleanupPreviewShortcut()
+    }
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+    cleanupPreviewShortcut()
+})
 
 async function loadPdfObjectUrl(url: string) {
     try {

@@ -3,7 +3,6 @@ export default {
         // Actions
         edit: "Editar",
         create: "Crear",
-        delete: "Eliminar",
         cancel: "Cancelar",
         save: "Guardar",
         submit: "Enviar",
@@ -31,6 +30,7 @@ export default {
         view: "Ver",
         rightClickToEdit: "Clic derecho para editar",
         copyItem: "Copiar elemento",
+        publish: "Publicar",
 
         // Status messages
         success: "Éxito",
@@ -69,6 +69,7 @@ export default {
         // Validation messages
         isRequired: "Requerido",
         required: "Obligatorio",
+        optional: "Opcional",
         isInvalidFormat: "Formato inválido",
         isNotValid: "No válido",
         inputsAreInvalid: "Las entradas son inválidas",
@@ -87,6 +88,59 @@ export default {
         filterDeletedSuccessfully: "Filtro eliminado exitosamente",
         filterLoaded: "Filtro cargado",
 
+        // Methods
+        get: "Mostrar",
+        post: "Crear",
+        put: "Actualizar",
+        delete: "Eliminar",
+
+        // API
+        apiDocumentation: "Documentación de API",
+        apiDocs: {
+            availableMethods: "Métodos disponibles",
+            sessionNoticeTitle: "Autenticación de sesión",
+            sessionNoticeDescription:
+                "Envía el ID de sesión con el parámetro {param} como query o cookie.",
+            sessionAsQuery: "Como parámetro de consulta:",
+            sessionAsCookie: "O envíalo como cookie en cada petición.",
+            sessionAuthLinkPrefix: "¿Necesitas un ID de sesión? Lee",
+            viewAuthDocs: "la documentación de auth",
+            schemaTitle: "Campos del esquema",
+            assetsUploadTitle: "Carga de archivos",
+            assetsUploadIntro:
+                "Haz un POST a /assets o /assets/<carpeta> con uno o varios objetos que describen los archivos.",
+            assetsUploadStep1:
+                "Cada objeto debe incluir name, size, type y extension. Puedes mandar un arreglo para múltiples archivos.",
+            assetsUploadStep2:
+                "La respuesta agrega id, createdAt, publicURL y uploadURL.",
+            assetsUploadStep3:
+                "Envía el binario al uploadURL devuelto mediante POST.",
+            assetsUploadCustomEndpoint:
+                "Si usas un endpoint propio, incluye publicURL en la petición inicial y el API no devolverá uploadURL.",
+            noSchemaFields: "No hay campos definidos para esta tabla.",
+            tableNotFoundTitle: "Tabla no encontrada",
+            tableNotFoundDescription: "Verifica el slug o selecciona otra tabla.",
+            backToTables: "Volver a las tablas API",
+            auth: {
+                title: "Endpoints de autenticación",
+                description:
+                    "Usa estos endpoints para crear sesiones y alimentar el parámetro {param}.",
+                signinDescription:
+                    "Autentica a un usuario. POST crea la sesión, PUT la actualiza.",
+                usernameField: "username — identificador único",
+                passwordField: "password — contraseña en texto plano (se cifra en el servidor)",
+                signupDescription:
+                    "Crea un nuevo usuario siguiendo el esquema de la tabla users.",
+                currentDescription:
+                    "Devuelve el usuario asociado al token {param}.",
+                signoutDescription:
+                    "Cierra la sesión activa y limpia la cookie.",
+                signupSchemaTitle: "Esquema de usuarios",
+                cookieHint:
+                    "Un inicio de sesión exitoso guarda el ID en la cookie {param}. También puedes enviarlo manualmente.",
+            },
+        },
+
         // Units
         units: {
             kB: "kB",
@@ -99,6 +153,18 @@ export default {
         items: {
             one: "{{count}} elemento",
             other: "{{count}} elementos",
+        },
+
+        compression: {
+            label: "Compresión de datos",
+            videoLarge:
+                "Video grande detectado ({size}). Lo optimizaremos localmente antes de subirlo.",
+            videoHuge:
+                "Video enorme detectado ({size}). La compresión ocurre localmente y puede tardar un poco.",
+            pdfLarge:
+                "PDF grande detectado ({size}). Lo reconstruiremos en tu navegador antes de subirlo.",
+            pdfHuge:
+                "PDF enorme detectado ({size}). Renderizar las páginas localmente puede tomar algo de tiempo.",
         },
 
         // Dashboard
@@ -133,7 +199,7 @@ export default {
         createdBy: "Creado por",
         id: "ID",
         copiedSuccessfully: "Copiado exitosamente",
-
+        skipCompression: "Omitir compresión",
 
         // Auth
         signin: "Iniciar sesión",
@@ -164,7 +230,6 @@ export default {
         changeOrder: "Cambiar orden",
         deleteTable: "Eliminar tabla",
         defaultSearchableColumns: "Columnas de búsqueda predeterminadas",
-        compression: "Compresión de datos",
         disableIdEncryption: "Desactivar cifrado de ID",
         decodeID: "Decodificar ID",
         prepend: "Prefijo",

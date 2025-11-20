@@ -3,7 +3,6 @@ export default {
         // Actions
         edit: "تعديل",
         create: "إنشاء",
-        delete: "حذف",
         cancel: "إلغاء",
         save: "حفظ",
         submit: "إرسال",
@@ -31,6 +30,7 @@ export default {
         view: "عرض",
         rightClickToEdit: "إضغط يمين للتعديل",
         copyItem: "نسخ العنصر",
+        publish: "نشر",
 
 
         // Status messages
@@ -70,6 +70,7 @@ export default {
         // Validation messages
         isRequired: "إجباري",
         required: "إلزامي",
+        optional: "اختياري",
         isInvalidFormat: "صيغة غير صحيحة",
         isNotValid: "غير صالح",
         inputsAreInvalid: "المُدخلات غير صحيحة",
@@ -88,6 +89,59 @@ export default {
         filterDeletedSuccessfully: "تم حذف المرشح بنجاح",
         filterLoaded: "تم تحميل المرشح",
 
+        // Methods
+        get: "عرض",
+        post: "إنشاء",
+        put: "تعديل",
+        delete: "حذف",
+
+        // API
+        apiDocumentation: "دليل الواجهة البرمجية",
+        apiDocs: {
+            availableMethods: "العمليات المتاحة",
+            sessionNoticeTitle: "اعتماد الجلسة",
+            sessionNoticeDescription:
+                "يمكنك تمرير معرف الجلسة عبر الوسيط {param} سواءً كمعلَمة استعلام أو كملف تعريف ارتباط.",
+            sessionAsQuery: "كمعلَمة في رابط الطلب:",
+            sessionAsCookie: "أو كملف تعريف ارتباط يُرسل مع كل طلب.",
+            sessionAuthLinkPrefix: "للحصول على معرف جلسة، اطّلع على",
+            viewAuthDocs: "إرشادات المصادقة",
+            schemaTitle: "حقول المخطط",
+            assetsUploadTitle: "إرشادات رفع الملفات",
+            assetsUploadIntro:
+                "أرسل طلب POST إلى ‎/assets أو ‎/assets/<folder> متضمناً كائناً أو مصفوفة كائنات تصف الملفات المطلوب رفعها.",
+            assetsUploadStep1:
+                "يجب أن يحتوي كل كائن على الحقول name و size و type و extension، ويمكن إرسال مصفوفة عند رفع عدة ملفات.",
+            assetsUploadStep2:
+                "يعيد الرد نفس الحقول بالإضافة إلى id و createdAt و publicURL و uploadURL.",
+            assetsUploadStep3:
+                "بعد ذلك أرسل الملف الثنائي إلى عنوان uploadURL عبر طلب POST.",
+            assetsUploadCustomEndpoint:
+                "إذا استخدمت نقطة رفع مخصّصة فأرفق publicURL في أول طلب إلى ‎/assets، ولن يتم إرجاع حقل uploadURL.",
+            noSchemaFields: "لا توجد حقول معرفة لهذا الجدول.",
+            tableNotFoundTitle: "لم يتم العثور على الجدول",
+            tableNotFoundDescription: "تحقق من المعرّف أو اختر جدولاً آخر من القائمة.",
+            backToTables: "العودة إلى قوائم الواجهة البرمجية",
+            auth: {
+                title: "نهايات المصادقة",
+                description:
+                    "استخدم هذه النهايات لإنشاء الجلسات وتمرير الوسيط {param}.",
+                signinDescription:
+                    "يصدق مستخدماً موجوداً؛ تنشئ POST جلسة جديدة بينما تحدّث PUT الجلسة الحالية.",
+                usernameField: "username — اسم المستخدم الفريد",
+                passwordField: "password — كلمة المرور (يتم تشفيرها على الخادم)",
+                signupDescription:
+                    "ينشئ مستخدماً جديداً وفق مخطط جدول users الموضح أدناه.",
+                currentDescription:
+                    "يعيد بيانات المستخدم المرتبطة بالرمز {param}.",
+                signoutDescription:
+                    "ينهي الجلسة النشطة ويمسح ملف تعريف الارتباط المتعلق بها.",
+                signupSchemaTitle: "مخطط جدول المستخدمين",
+                cookieHint:
+                    "بعد تسجيل الدخول يُخزَّن معرف الجلسة في ملف تعريف الارتباط {param}، ويمكنك أيضاً تمريره يدوياً عند الحاجة.",
+            },
+        },
+
         // Units
         units: {
             kB: "ك.ب",
@@ -104,6 +158,18 @@ export default {
             few: "{{count}} عناصر",
             many: "{{count}} عنصر",
             other: "{{count}} عنصر",
+        },
+
+        compression: {
+            label: "ضغط البيانات",
+            videoLarge:
+                "تم اكتشاف فيديو كبير ({size}). سنقوم بتحسينه محلياً قبل الرفع.",
+            videoHuge:
+                "تم اكتشاف فيديو ضخم ({size}). تتم عملية الضغط محلياً وقد تستغرق بعض الوقت.",
+            pdfLarge:
+                "تم اكتشاف ملف PDF كبير ({size}). سنعيد بناءه في متصفحك قبل الرفع.",
+            pdfHuge:
+                "تم اكتشاف ملف PDF ضخم ({size}). قد يستغرق عرض الصفحات محلياً بعض الوقت.",
         },
 
         // Dashboard
@@ -138,6 +204,7 @@ export default {
         createdBy: "أُنشأ من قبل",
         id: "المعرف",
         copiedSuccessfully: "تم النسخ بنجاح",
+        skipCompression: "تخطي الضغط",
 
         // Auth
         signin: "تسجيل الدخول",
@@ -168,7 +235,6 @@ export default {
         changeOrder: "تغيير الترتيب",
         deleteTable: "حذف الجدول",
         defaultSearchableColumns: "الأعمدة الإفتراضية للبحث",
-        compression: "ضغط البيانات",
         disableIdEncryption: "إلغاء تشفير المعرف, وإعتماد الأرقام",
         decodeID: "إلغاء تشفير المعرف",
         prepend: "إضافة مقدمة",

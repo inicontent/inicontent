@@ -6,7 +6,7 @@
 				<NBreadcrumbItem @click="currentPath = ''">
 					{{ t("assets") }}
 				</NBreadcrumbItem>
-				<NBreadcrumbItem v-for="(singlePath, index) in currentPath.split('/').slice(1)"
+				<NBreadcrumbItem v-for="(singlePath, index) in currentPath?.split('/').slice(1)"
 					@click="currentPath = `${currentPath.split('/').slice(0, index + 2).join('/')}`">
 					{{ singlePath }}
 				</NBreadcrumbItem>
@@ -55,7 +55,17 @@
 									<NButton round size="small"
 										:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'">
 										<template #icon>
-											<NIcon v-if="!UploadProgress">
+											<NProgress v-if="compressionIndicator" type="circle" status="warning"
+												:percentage="compressionIndicator" :stroke-width="10">
+												<NTooltip placement="bottom">
+													<template #trigger>
+														<Icon @click.stop="skipCompression" :size="10"
+															name="tabler:player-track-next-filled" />
+													</template>
+													{{ t("skipCompression") }}
+												</NTooltip>
+											</NProgress>
+											<NIcon v-else-if="!UploadProgress">
 												<Icon name="tabler:upload" />
 											</NIcon>
 											<NIcon v-else-if="UploadProgress === 10000">
@@ -98,6 +108,8 @@ import type { UploadCustomRequestOptions, UploadFileInfo, UploadSettledFileInfo 
 import { getFileNameAndExtension } from "~/composables";
 import { generateSearchArray } from "~/composables/search"
 import { useOptimizeFile } from "~/composables/optimizeFile";
+import { usePdfCompressor } from "~/composables/usePdfCompressor"
+import { useVideoCompressor } from "~/composables/useVideoCompressor"
 
 const { where, suffix } = defineProps<{
 	targetID?: string
@@ -105,6 +117,83 @@ const { where, suffix } = defineProps<{
 	suffix?: string
 }>()
 const appConfig = useAppConfig()
+
+const LARGE_VIDEO_BYTES = 512 * 1024 * 1024
+const HUGE_VIDEO_BYTES = 2 * 1024 * 1024 * 1024
+const LARGE_PDF_BYTES = 50 * 1024 * 1024
+const HUGE_PDF_BYTES = 200 * 1024 * 1024
+
+const {
+	compressVideo,
+	loading: videoLoading,
+	progress: videoProgress,
+	abort: abortVideo,
+	resetSkip: resetVideoSkip,
+} = useVideoCompressor()
+const {
+	compressPdf,
+	loading: pdfLoading,
+	progress: pdfProgress,
+	abort: abortPdf,
+	resetSkip: resetPdfSkip,
+} = usePdfCompressor()
+
+
+const compressionIndicator = ref<number | null>(null)
+const skipCompressionRequested = ref(false)
+const processingFileId = ref<string | null>(null) // Track which file is being processed
+
+const skipCompression = () => {
+	if (compressionIndicator.value === null) return
+	skipCompressionRequested.value = true
+	abortVideo()
+	abortPdf()
+}
+
+const getIndicatorPercent = (progress: number) => {
+	const raw = Math.round(progress * 100)
+	if (!Number.isFinite(raw)) return 1
+	return Math.min(99, Math.max(1, raw))
+}
+
+watchEffect(() => {
+	if (videoLoading.value) {
+		compressionIndicator.value = getIndicatorPercent(videoProgress.value)
+	} else if (pdfLoading.value) {
+		compressionIndicator.value = getIndicatorPercent(pdfProgress.value)
+	} else {
+		compressionIndicator.value = null
+	}
+})
+
+const formatBytes = (size: number) => {
+	if (!size) return "0 B"
+	const units = ["B", "KB", "MB", "GB", "TB"] as const
+	const exponent = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1)
+	return `${(size / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
+}
+
+const notifyVideoSize = (size: number) => {
+	if (!import.meta.client) return
+	const messageApi = window?.$message
+	if (!messageApi) return
+	const formattedSize = formatBytes(size)
+	if (size >= HUGE_VIDEO_BYTES)
+		messageApi.warning(t("compression.videoHuge", { size: formattedSize }))
+	else if (size >= LARGE_VIDEO_BYTES)
+		messageApi.info(t("compression.videoLarge", { size: formattedSize }))
+}
+
+const notifyPdfSize = (size: number) => {
+	if (!import.meta.client) return
+	const messageApi = window?.$message
+	if (!messageApi) return
+	const formattedSize = formatBytes(size)
+	if (size >= HUGE_PDF_BYTES)
+		messageApi.warning(t("compression.pdfHuge", { size: formattedSize }))
+	else if (size >= LARGE_PDF_BYTES)
+		messageApi.info(t("compression.pdfLarge", { size: formattedSize }))
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -306,60 +395,122 @@ async function customRequest({
 	action,
 	onFinish,
 	onError,
-	onProgress
+	onProgress,
 }: UploadCustomRequestOptions) {
+	// Track this file as being processed
+	processingFileId.value = file.id
+
 	try {
-		let fileToUpload = file.file
+		const originalFile = file.file
+		if (!originalFile) throw new Error("Missing file payload")
 
-		// Optimize file if enabled
-		if (fileToUpload) {
+		let fileToUpload: File = originalFile
+		let compressionSkipped = false
+		const isVideo = originalFile.type?.startsWith("video/") ?? false
+		const isPdf =
+			originalFile.type === "application/pdf" ||
+			originalFile.name.toLowerCase().endsWith(".pdf")
+
+		if (isVideo) {
+			notifyVideoSize(originalFile.size)
+			try {
+				fileToUpload = await compressVideo(originalFile)
+			} catch (compressionError) {
+				// If compression was aborted/terminated, use original file
+				if (String(compressionError).includes("terminated")) {
+					fileToUpload = originalFile
+					compressionIndicator.value = null
+				} else throw compressionError
+			}
+		} else if (isPdf) {
+			notifyPdfSize(originalFile.size)
+			try {
+				fileToUpload = await compressPdf(fileToUpload)
+			} catch (pdfError) {
+				// If compression was aborted, use original file
+				if (String(pdfError).toLowerCase().includes("abort")) {
+					fileToUpload = originalFile
+					compressionIndicator.value = null
+				} else throw pdfError
+			}
+		} else if (originalFile.type?.startsWith("image/")) {
 			const optimizationResult = await optimizeFile(
-				new File([fileToUpload], file.name, { type: file.type as string }),
-			)
-
-			if (optimizationResult.optimized)
-				fileToUpload = optimizationResult.file
+				originalFile)
+			if (optimizationResult.optimized) fileToUpload = optimizationResult.file
 		}
 
-		const { name, extension } = getFileNameAndExtension(file.name)
-		$fetch<apiResponse<Asset>>(action as string, {
-			method: 'POST',
-			credentials: 'include',
+		// IMPORTANT: Completely replace the file object to prevent uploading both files
+		// Create a new File instance to ensure no reference to original
+		if (fileToUpload !== originalFile) {
+			fileToUpload = new File([fileToUpload], fileToUpload.name, {
+				type: fileToUpload.type,
+				lastModified: fileToUpload.lastModified
+			})
+		}
+
+		// Update the file reference in the upload info
+		file.file = fileToUpload
+		file.name = fileToUpload.name
+		const mimeType = fileToUpload.type || file.type
+		const { name, extension } = getFileNameAndExtension(fileToUpload.name || file.name)
+
+		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
+			method: "POST",
+			credentials: "include",
 			headers: headers as Record<string, string>,
-			body: { name, size: fileToUpload?.size, type: file.type, extension },
+			body: { name, size: fileToUpload.size, type: mimeType, extension },
 		})
-			.then(({ result }) => {
-				onProgress({ percent: 50 })
 
-				// const formData = new FormData();
-				// formData.append("file", file.file);
-				$fetch(result.uploadURL as string, {
-					method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
-					headers: { "Content-Type": file.type as string },
-					body: fileToUpload,
-				}).then(() => {
-					onProgress({ percent: 100 })
+		onProgress?.({ percent: 80 })
 
-					file.url = result.publicURL
-					if (assets.value) assets.value?.unshift(result)
-					else assets.value = [result]
-					if (!database.value.size) database.value.size = 0
-					database.value.size += result.size ?? 0
+		await $fetch(result.uploadURL as string, {
+			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
+			headers: { "Content-Type": mimeType as string },
+			body: fileToUpload,
+		})
 
-					onFinish()
-				})
-			})
-			.catch((error) => {
-				console.error(error)
-				onError()
-			})
+		onProgress?.({ percent: 100 })
+		compressionIndicator.value = null
+
+		file.url = result.publicURL
+		if (assets.value) assets.value.unshift(result)
+		else assets.value = [result]
+		if (!database.value.size) database.value.size = 0
+		database.value.size += result.size ?? 0
+
+		onFinish()
 	} catch (error) {
-		console.error('Error in customRequest:', error)
+		// Handle terminated/aborted compression
+		if (String(error).includes("terminated") || String(error).includes("abort")) {
+			console.log("Compression skipped for:", file.name)
+			// Current file was being compressed when skip was clicked
+			// Mark as error status instead of removed to prevent re-upload triggers
+			file.status = "error"
+			compressionIndicator.value = null
+			onFinish() // Call onFinish to let the upload component know we're done
+			return
+		}
+		compressionIndicator.value = null
+		console.error("Error in customRequest:", error)
 		onError()
+	} finally {
+		// Clean up
+		if (processingFileId.value === file.id) {
+			processingFileId.value = null
+		}
+		// Reset skip flag only after current file is done
+		if (skipCompressionRequested.value) {
+			skipCompressionRequested.value = false
+		}
 	}
 }
 
 async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
+	if (file.status !== "finished") {
+		abortVideo()
+		abortPdf()
+		return false;
+	}
 	const data = await $fetch<apiResponse<Asset>>(
 		`${appConfig.apiBase}${database.value.slug
 		}/assets${currentPath.value}/${file.name}`,
@@ -405,3 +556,35 @@ watch(currentPath, () => {
 	refresh()
 })
 </script>
+
+<style scoped>
+.compression-progress {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.compression-progress__skip {
+	position: absolute;
+	border: none;
+	background: rgba(0, 0, 0, 0.55);
+	color: #fff;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.compression-progress__skip:hover {
+	background: rgba(0, 0, 0, 0.75);
+}
+
+.compression-progress__skip:focus-visible {
+	outline: 2px solid var(--primary-color, #18a058);
+	outline-offset: 2px;
+}
+</style>

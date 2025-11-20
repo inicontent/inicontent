@@ -3,7 +3,6 @@ export default {
         // Actions
         edit: "Modifier",
         create: "Créer",
-        delete: "Supprimer",
         cancel: "Annuler",
         save: "Enregistrer",
         submit: "Soumettre",
@@ -31,6 +30,7 @@ export default {
         view: "Vue",
         rightClickToEdit: "Clic droit pour modifier",
         copyItem: "Copier l'élément",
+        publish: "Publier",
 
         // Status messages
         success: "Succès",
@@ -69,6 +69,7 @@ export default {
         // Validation messages
         isRequired: "Requis",
         required: "Obligatoire",
+        optional: "Facultatif",
         isInvalidFormat: "Format invalide",
         isNotValid: "Non valide",
         inputsAreInvalid: "Les entrées sont invalides",
@@ -87,6 +88,59 @@ export default {
         filterDeletedSuccessfully: "Filtre supprimé avec succès",
         filterLoaded: "Filtre chargé",
 
+        // Methods
+        get: "Afficher",
+        post: "Créer",
+        put: "Mettre à jour",
+        delete: "Supprimer",
+
+        // API
+        apiDocumentation: "Documentation de l'API",
+        apiDocs: {
+            availableMethods: "Méthodes disponibles",
+            sessionNoticeTitle: "Authentification par session",
+            sessionNoticeDescription:
+                "Fournissez l'identifiant de session via le paramètre {param} dans la requête ou en cookie.",
+            sessionAsQuery: "Envoyez-le comme paramètre de requête :",
+            sessionAsCookie: "Ou envoyez-le comme cookie sur chaque requête.",
+            sessionAuthLinkPrefix: "Besoin d'un ID de session ? Consultez",
+            viewAuthDocs: "la documentation d'authentification",
+            schemaTitle: "Champs du schéma",
+            assetsUploadTitle: "Téléverser des fichiers",
+            assetsUploadIntro:
+                "Envoyez une requête POST vers /assets ou /assets/<dossier> avec un ou plusieurs objets décrivant les fichiers.",
+            assetsUploadStep1:
+                "Chaque objet doit contenir name, size, type et extension. Vous pouvez envoyer un tableau pour plusieurs fichiers.",
+            assetsUploadStep2:
+                "La réponse ajoute id, createdAt, publicURL et uploadURL pour chaque élément.",
+            assetsUploadStep3:
+                "Téléversez ensuite le fichier binaire vers l'uploadURL retournée.",
+            assetsUploadCustomEndpoint:
+                "Si vous utilisez un endpoint de téléversement personnalisé, fournissez publicURL dans la première requête /assets et aucun uploadURL ne sera renvoyé.",
+            noSchemaFields: "Aucun champ de schéma trouvé pour cette table.",
+            tableNotFoundTitle: "Table introuvable",
+            tableNotFoundDescription: "Vérifiez le slug ou choisissez une autre table.",
+            backToTables: "Retour aux tables API",
+            auth: {
+                title: "Endpoints d'authentification",
+                description:
+                    "Utilisez ces endpoints pour créer des sessions et alimenter le paramètre {param}.",
+                signinDescription:
+                    "Authentifie un utilisateur existant. POST crée une session, PUT la rafraîchit.",
+                usernameField: "username — identifiant unique de l'utilisateur",
+                passwordField: "password — mot de passe en clair (haché côté serveur)",
+                signupDescription:
+                    "Crée un nouvel utilisateur. Le payload suit le schéma de la table users ci-dessous.",
+                currentDescription:
+                    "Retourne l'objet utilisateur lié au cookie {param}.",
+                signoutDescription:
+                    "Met fin à la session active et supprime le cookie correspondant.",
+                signupSchemaTitle: "Schéma des utilisateurs",
+                cookieHint:
+                    "Une connexion réussie stocke l'ID de session dans le cookie {param}. Vous pouvez aussi l'envoyer manuellement.",
+            },
+        },
+
         // Units
         units: {
             kB: "ko",
@@ -99,6 +153,18 @@ export default {
         items: {
             one: "{{count}} élément",
             other: "{{count}} éléments",
+        },
+
+        compression: {
+            label: "Compression des données",
+            videoLarge:
+                "Vidéo volumineuse détectée ({size}). Nous l'optimiserons localement avant l'envoi.",
+            videoHuge:
+                "Vidéo très volumineuse détectée ({size}). La compression a lieu en local et peut prendre un moment.",
+            pdfLarge:
+                "PDF volumineux détecté ({size}). Nous le reconstruirons dans votre navigateur avant l'upload.",
+            pdfHuge:
+                "PDF très volumineux détecté ({size}). Le rendu local des pages peut prendre un certain temps.",
         },
 
         // Dashboard
@@ -133,7 +199,7 @@ export default {
         createdBy: "Créé par",
         id: "ID",
         copiedSuccessfully: "Copié avec succès",
-
+        skipCompression: "Ignorer la compression",
 
         // Auth
         signin: "Connexion",
@@ -164,7 +230,6 @@ export default {
         changeOrder: "Changer l'ordre",
         deleteTable: "Supprimer la table",
         defaultSearchableColumns: "Colonnes de recherche par défaut",
-        compression: "Compression des données",
         disableIdEncryption: "Désactiver le chiffrement de l'ID",
         decodeID: "Décoder l'ID",
         prepend: "Préfixer",

@@ -6,13 +6,23 @@
 					:callback="importAssetCallback" />
 			</NFlex>
 		</template>
-
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
 			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
-			:fileList @update:file-list="setModelValue" :custom-request
+			:fileList @update:file-list="setModelValue" :custom-request @remove="handleRemoveUpload"
 			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false">
-			<NUploadDragger v-if="!field.isTable">
+			<NUploadDragger v-if="compressionIndicator">
+				<NProgress type="circle" status="warning" :percentage="compressionIndicator" :stroke-width="10"
+					style="width:54px" indicator-placement="inside">
+					<NTooltip placement="bottom">
+						<template #trigger>
+							<Icon @click.stop="skipCompression" name="tabler:player-track-next-filled" />
+						</template>
+						{{ t("skipCompression") }}
+					</NTooltip>
+				</NProgress>
+			</NUploadDragger>
+			<NUploadDragger v-else-if="!field.isTable">
 				<NIcon size="48" depth="3">
 					<Icon name="tabler:upload" />
 				</NIcon>
@@ -22,7 +32,6 @@
 					:callback="importAssetCallback" />
 			</NFlex>
 		</NUpload>
-
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
 			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
 				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
@@ -41,10 +50,16 @@
 
 <script lang="ts" setup>
 import { isArrayOfObjects, isObject } from "inibase/utils"
-import type { FormItemRule, UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
+import type {
+	FormItemRule,
+	UploadCustomRequestOptions,
+	UploadFileInfo,
+} from "naive-ui"
 import { Icon, LazyAssetThumb } from "#components"
-import { getFileNameAndExtension } from "~/composables";
-import { useOptimizeFile } from "~/composables/optimizeFile";
+import { getFileNameAndExtension } from "~/composables"
+import { useOptimizeFile } from "~/composables/optimizeFile"
+import { usePdfCompressor } from "~/composables/usePdfCompressor"
+import { useVideoCompressor } from "~/composables/useVideoCompressor"
 
 const { field } = defineProps<{ field: Field }>()
 
@@ -53,6 +68,113 @@ const modelValue = defineModel<string | Asset | (string | Asset)[]>()
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const appConfig = useAppConfig()
+const LARGE_VIDEO_BYTES = 512 * 1024 * 1024
+const HUGE_VIDEO_BYTES = 2 * 1024 * 1024 * 1024
+const LARGE_PDF_BYTES = 50 * 1024 * 1024
+const HUGE_PDF_BYTES = 200 * 1024 * 1024
+
+const {
+	compressVideo,
+	loading: videoLoading,
+	progress: videoProgress,
+	abort: abortVideo,
+	resetSkip: resetVideoSkip,
+} = useVideoCompressor()
+const {
+	compressPdf,
+	loading: pdfLoading,
+	progress: pdfProgress,
+	abort: abortPdf,
+	resetSkip: resetPdfSkip,
+} = usePdfCompressor()
+
+const compressionIndicator = ref<number | null>(null)
+const skipCompressionRequested = ref(false)
+const processingFileId = ref<string | null>(null) // Track which file is being processed
+
+const skipCompression = () => {
+	if (compressionIndicator.value === null) return
+	skipCompressionRequested.value = true
+	abortVideo()
+	abortPdf()
+}
+
+async function handleRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
+	if (file.status !== "finished") {
+		// If this is the file currently being processed, abort and reset
+		if (processingFileId.value === file.id) {
+			skipCompressionRequested.value = true
+			abortVideo()
+			abortPdf()
+			processingFileId.value = null
+		}
+
+		fileList.value = (fileList.value || []).filter(
+			(item) => item.id !== file.id,
+		)
+		await nextTick()
+		setModelValue(fileList.value)
+		return false;
+	}
+	return true
+}
+
+const getIndicatorPercent = (progress: number) => {
+	const raw = Math.round(progress * 100)
+	if (!Number.isFinite(raw)) return 1
+	return Math.min(99, Math.max(1, raw))
+}
+
+watchEffect(() => {
+	if (videoLoading.value) {
+		compressionIndicator.value = getIndicatorPercent(videoProgress.value)
+	} else if (pdfLoading.value) {
+		compressionIndicator.value = getIndicatorPercent(pdfProgress.value)
+	} else {
+		compressionIndicator.value = null
+	}
+})
+
+const formatBytes = (size: number) => {
+	if (!size) return "0 B"
+	const units = ["B", "KB", "MB", "GB", "TB"] as const
+	const exponent = Math.min(
+		Math.floor(Math.log(size) / Math.log(1024)),
+		units.length - 1,
+	)
+	return `${(size / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
+}
+
+const notifyVideoSize = (size: number) => {
+	if (!import.meta.client) return
+	const messageApi = window?.$message
+	if (!messageApi) return
+	const formattedSize = formatBytes(size)
+	if (size >= HUGE_VIDEO_BYTES)
+		messageApi.warning(
+			t("compression.videoHuge", { size: formattedSize }),
+		)
+	else if (size >= LARGE_VIDEO_BYTES)
+		messageApi.info(
+			t("compression.videoLarge", { size: formattedSize }),
+		)
+}
+
+const notifyPdfSize = (size: number) => {
+	if (!import.meta.client) return
+	const messageApi = window?.$message
+	if (!messageApi) return
+	const formattedSize = formatBytes(size)
+	if (size >= HUGE_PDF_BYTES)
+		messageApi.warning(
+			t("compression.pdfHuge", { size: formattedSize }),
+		)
+	else if (size >= LARGE_PDF_BYTES)
+		messageApi.info(
+			t("compression.pdfLarge", { size: formattedSize }),
+		)
+}
+
 const rule: FormItemRule = {
 	type: field.isArray ? "array" : "object",
 	required: field.required,
@@ -199,7 +321,7 @@ function getFileList() {
 }
 
 const fileList = ref<undefined | UploadFileInfo[]>(getFileList())
-async function setModelValue(value?: (UploadFileInfo & { _id?: string })[]) {
+async function setModelValue(value?: UploadFileInfo[]) {
 	fileList.value = value
 
 	if (value) {
@@ -249,74 +371,149 @@ async function customRequest({
 	action,
 	onFinish,
 	onError,
-	onProgress
+	onProgress,
 }: UploadCustomRequestOptions) {
+	// Track this file as being processed
+	processingFileId.value = file.id
+
 	try {
-		let fileToUpload = file.file
+		const originalFile = file.file
+		if (!originalFile) throw new Error("Missing file payload")
 
-		// Optimize file if enabled
-		if (shouldOptimize.value && fileToUpload) {
+		let fileToUpload: File = originalFile
+		let compressionSkipped = false
+		const isVideo = originalFile.type?.startsWith("video/") ?? false
+		const isPdf =
+			originalFile.type === "application/pdf" ||
+			originalFile.name.toLowerCase().endsWith(".pdf")
+
+		if (isVideo) {
+			notifyVideoSize(originalFile.size)
+			try {
+				fileToUpload = await compressVideo(
+					new File([originalFile], originalFile.name, {
+						type: originalFile.type,
+					}),
+				)
+			} catch (videoError) {
+				// If compression was aborted/terminated, use original file
+				if (String(videoError).includes("terminated")) {
+					fileToUpload = originalFile
+					compressionSkipped = true
+					compressionIndicator.value = null
+				} else throw videoError
+			}
+		} else if (isPdf) {
+			notifyPdfSize(originalFile.size)
+			try {
+				fileToUpload = await compressPdf(fileToUpload)
+			} catch (pdfError) {
+				// If compression was aborted, use original file
+				if (String(pdfError).toLowerCase().includes("abort")) {
+					fileToUpload = originalFile
+					compressionSkipped = true
+					compressionIndicator.value = null
+				} else throw pdfError
+			}
+		} else if (
+			shouldOptimize.value &&
+			originalFile.type?.startsWith("image/")
+		) {
 			const optimizationResult = await optimizeFile(
-				new File([fileToUpload], file.name, { type: file.type as string }),
+				new File([originalFile], originalFile.name, {
+					type: originalFile.type,
+				}),
 			)
-
-			if (optimizationResult.optimized)
-				fileToUpload = optimizationResult.file
+			if (optimizationResult.optimized) fileToUpload = optimizationResult.file
 		}
 
-		const { name, extension } = getFileNameAndExtension(file.name)
-		$fetch<apiResponse<Asset>>(action as string, {
-			method: 'POST',
-			credentials: 'include',
+		// IMPORTANT: Completely replace the file object to prevent uploading both files
+		// Create a new File instance to ensure no reference to original
+		if (fileToUpload !== originalFile) {
+			fileToUpload = new File([fileToUpload], fileToUpload.name, {
+				type: fileToUpload.type,
+				lastModified: fileToUpload.lastModified
+			})
+		}
+
+		// Update the file reference in the upload info
+		file.file = fileToUpload
+		file.name = fileToUpload.name
+		const mimeType = fileToUpload.type || file.type
+		const { name, extension } = getFileNameAndExtension(
+			fileToUpload.name || file.name,
+		)
+
+		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
+			method: "POST",
+			credentials: "include",
 			headers: headers as Record<string, string>,
-			body: { name, size: fileToUpload?.size, type: file.type, extension },
+			body: { name, size: fileToUpload.size, type: mimeType, extension },
 		})
-			.then(({ result }) => {
-				onProgress({ percent: 50 })
 
-				// const formData = new FormData();
-				// formData.append("file", file.file);
-				$fetch(result.uploadURL as string, {
-					method: result.uploadURL.includes('s3') ? 'PUT' : 'POST',
-					headers: { "Content-Type": file.type as string },
-					body: fileToUpload,
-				}).then(() => {
-					onProgress({ percent: 100 })
+		onProgress?.({ percent: 80 })
 
-					file.url = result.publicURL
-					file.status = "finished"
-					fileIdObject.value[file.id] = result.id as string
-					fileList.value = [...(fileList.value || []), file]
-					if (!database.value.size) database.value.size = 0
-					database.value.size += result.size ?? 0
+		await $fetch(result.uploadURL as string, {
+			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
+			headers: { "Content-Type": mimeType as string },
+			body: fileToUpload,
+		})
 
-					setModelValue(fileList.value)
+		onProgress?.({ percent: 100 })
+		compressionIndicator.value = null
 
-					onFinish()
-				})
-			})
-			.catch((error) => {
-				console.error(error)
-				onError()
-			})
+		file.url = result.publicURL
+		file.status = "finished"
+		fileIdObject.value[file.id] = result.id as string
+		// fileList.value = [...(fileList.value || []), file] // Do not manually append to fileList, NUpload handles it
+		if (!database.value.size) database.value.size = 0
+		database.value.size += result.size ?? 0
+
+		setModelValue(fileList.value)
+
+		onFinish()
 	} catch (error) {
-		console.error('Error in customRequest:', error)
+		// Handle terminated/aborted compression
+		if (String(error).includes("terminated") || String(error).includes("abort")) {
+			// Current file was being compressed when skip was clicked
+			// DON'T modify fileList as this might trigger re-uploads of finished files
+			// Just mark as error and finish silently
+			file.status = "error"
+			compressionIndicator.value = null
+			console.log("Compression skipped for:", file.name)
+			onFinish() // Finish without calling onError to prevent error message
+			return
+		}
+		compressionIndicator.value = null
+		console.error("Error in customRequest:", error)
 		onError()
+	} finally {
+		// Clean up
+		if (processingFileId.value === file.id) {
+			processingFileId.value = null
+		}
+		// Reset skip flag only after current file is done
+		if (skipCompressionRequested.value) {
+			skipCompressionRequested.value = false
+		}
 	}
 }
 
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
 
-function renderIcon(file: UploadFileInfo & { extension?: string; publicURL?: string }) {
+function renderIcon(
+	file: UploadFileInfo & { extension?: string; publicURL?: string },
+) {
 	const { extension } = getFileNameAndExtension(file.name)
 	file.extension = extension
 	file.publicURL = file.url as string
 	return h(LazyAssetThumb, {
-		asset: file as unknown as Asset, style: {
-			height: '25px',
-			width: '25px'
-		}
+		asset: file as unknown as Asset,
+		style: {
+			height: "25px",
+			width: "25px",
+		},
 	})
 }
 
