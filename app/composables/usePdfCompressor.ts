@@ -96,7 +96,6 @@ export const usePdfCompressor = () => {
 			const pdfDoc = await pdfjs.getDocument({ data: pdfData }).promise
 			const totalPages = pdfDoc.numPages
 			const doc = new jsPDF({
-				unit: "pt", // Use points to match PDF coordinates
 				compress: true,
 			})
 
@@ -116,13 +115,22 @@ export const usePdfCompressor = () => {
 				if (!context) throw new Error("Could not get canvas context.")
 
 				await page.render({ canvasContext: context, viewport, canvas }).promise
-				const imgData = canvas.toDataURL("image/jpeg", 0.8) // 0.8 offers better quality
+				const imgData = canvas.toDataURL("image/jpeg", 0.8) // .8 offers better quality
 
 				doc.addPage([originalViewport.width, originalViewport.height])
 				if (i === 1) doc.deletePage(1) // Remove the default blank page
 
-				doc.addImage(imgData, "JPEG", 0, 0, originalViewport.width, originalViewport.height, undefined, "FAST")
-				progress.value = (i / totalPages)
+				doc.addImage(
+					imgData,
+					"JPEG",
+					0,
+					0,
+					originalViewport.width,
+					originalViewport.height,
+					undefined,
+					"FAST",
+				)
+				progress.value = i / totalPages
 			}
 
 			const compressedBlob = doc.output("blob")

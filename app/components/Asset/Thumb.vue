@@ -126,7 +126,7 @@ async function generateVideoThumb(timeSec = 0.5) {
                         return
                     }
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-                    const url = canvas.toDataURL("image/jpeg", 0.8)
+                    const url = canvas.toDataURL("image/jpeg", .7)
                     cleanup()
                     resolve(url)
                 } catch {
@@ -210,7 +210,7 @@ async function generatePdfThumb() {
             canvas: canvas,
         }).promise
 
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.7)
+        const dataUrl = canvas.toDataURL("image/jpeg", .7)
         pdfThumbs[key] = dataUrl
 
         // Cache the generated thumbnail
@@ -335,6 +335,10 @@ function handleImageClick(event: MouseEvent) {
 }
 
 function handlePreviewClick(event: MouseEvent) {
+    if (asset.extension === "pdf") {
+        openAssetInNewTab()
+        return;
+    }
     if (!handleModifierOpen(event)) showPreview()
 }
 
@@ -416,9 +420,9 @@ onBeforeUnmount(() => {
 })
 
 async function showPreview() {
-    if (imageExtensions.includes(asset.extension) || videoExtensions.includes(asset.extension) || asset.extension === "pdf") {
+    if (imageExtensions.includes(asset.extension) || videoExtensions.includes(asset.extension)) {
         currentPreviewAsset.value = asset
-        Loading.value.previewModal = asset.extension !== 'pdf'
+        Loading.value.previewModal = true
     }
 }
 </script>
