@@ -57,7 +57,7 @@
 										<template #icon>
 											<NProgress v-if="compressionIndicator" type="circle" status="warning"
 												:percentage="compressionIndicator" :stroke-width="10">
-												<NTooltip placement="bottom">
+												<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
 													<template #trigger>
 														<Icon @click.stop="skipCompression" :size="10"
 															name="tabler:player-track-next-filled" />
@@ -104,7 +104,7 @@
 
 <script lang="ts" setup>
 import Inison from "inison"
-import type { UploadCustomRequestOptions, UploadFileInfo, UploadSettledFileInfo } from "naive-ui"
+import type { UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
 import { getFileNameAndExtension } from "~/composables";
 import { generateSearchArray } from "~/composables/search"
 import { useOptimizeFile } from "~/composables/optimizeFile";
@@ -166,18 +166,11 @@ watchEffect(() => {
 	}
 })
 
-const formatBytes = (size: number) => {
-	if (!size) return "0 B"
-	const units = ["B", "KB", "MB", "GB", "TB"] as const
-	const exponent = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1)
-	return `${(size / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
-}
-
 const notifyVideoSize = (size: number) => {
 	if (!import.meta.client) return
 	const messageApi = window?.$message
 	if (!messageApi) return
-	const formattedSize = formatBytes(size)
+	const formattedSize = humanFileSize(size)
 	if (size >= HUGE_VIDEO_BYTES)
 		messageApi.warning(t("compression.videoHuge", { size: formattedSize }))
 	else if (size >= LARGE_VIDEO_BYTES)
@@ -188,7 +181,7 @@ const notifyPdfSize = (size: number) => {
 	if (!import.meta.client) return
 	const messageApi = window?.$message
 	if (!messageApi) return
-	const formattedSize = formatBytes(size)
+	const formattedSize = humanFileSize(size)
 	if (size >= HUGE_PDF_BYTES)
 		messageApi.warning(t("compression.pdfHuge", { size: formattedSize }))
 	else if (size >= LARGE_PDF_BYTES)
@@ -388,6 +381,7 @@ async function onUpdateFileList(fileList: Required<UploadFileInfo>[]) {
 }
 
 const { optimizeFile } = useOptimizeFile()
+const showSkipCompressionTooltip = ref(false)
 
 async function customRequest({
 	file,
@@ -410,6 +404,11 @@ async function customRequest({
 		const isPdf =
 			originalFile.type === "application/pdf" ||
 			originalFile.name.toLowerCase().endsWith(".pdf")
+
+		if (isVideo || isPdf) {
+			showSkipCompressionTooltip.value = true
+			setTimeout(() => { showSkipCompressionTooltip.value = false }, 800)
+		}
 
 		if (isVideo) {
 			notifyVideoSize(originalFile.size)

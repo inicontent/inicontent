@@ -95,14 +95,18 @@ export const usePdfCompressor = () => {
 			const pdfData = await file.arrayBuffer()
 			const pdfDoc = await pdfjs.getDocument({ data: pdfData }).promise
 			const totalPages = pdfDoc.numPages
-			const doc = new jsPDF()
+			const doc = new jsPDF({
+				unit: "pt", // Use points to match PDF coordinates
+				compress: true,
+			})
 
 			for (let i = 1; i <= totalPages; i++) {
 				if (signal.aborted) throw new Error("PDF compression aborted")
 
 				const page = await pdfDoc.getPage(i)
-				// Using a fixed scale of 1.5 which is roughly 144 DPI. Good for web.
-				const viewport = page.getViewport({ scale: 1.5 })
+				const originalViewport = page.getViewport({ scale: 1 })
+				// Using scale 2 (144 DPI) for better quality while maintaining reasonable size
+				const viewport = page.getViewport({ scale: 2 })
 
 				const canvas = document.createElement("canvas")
 				const context = canvas.getContext("2d")
@@ -112,13 +116,12 @@ export const usePdfCompressor = () => {
 				if (!context) throw new Error("Could not get canvas context.")
 
 				await page.render({ canvasContext: context, viewport, canvas }).promise
-				const imgData = canvas.toDataURL("image/jpeg", 0.75) // 0.75 is a good balance of quality and size
+				const imgData = canvas.toDataURL("image/jpeg", 0.8) // 0.8 offers better quality
 
-				if (i > 1) doc.addPage([viewport.width, viewport.height])
-				else doc.deletePage(1) // Remove the default blank page
+				doc.addPage([originalViewport.width, originalViewport.height])
+				if (i === 1) doc.deletePage(1) // Remove the default blank page
 
-				doc.addPage([viewport.width, viewport.height])
-				doc.addImage(imgData, "JPEG", 0, 0, viewport.width, viewport.height)
+				doc.addImage(imgData, "JPEG", 0, 0, originalViewport.width, originalViewport.height, undefined, "FAST")
 				progress.value = (i / totalPages)
 			}
 

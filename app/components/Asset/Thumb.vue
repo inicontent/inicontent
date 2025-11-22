@@ -143,9 +143,8 @@ async function generateVideoThumb(timeSec = 0.5) {
         videoThumbs[key] = dataUrl
 
         // Cache the generated thumbnail
-        if (dataUrl) {
+        if (dataUrl)
             await cacheThumbnail(`video-${key}`, dataUrl)
-        }
     } catch {
         videoThumbs[key] = undefined
     }
@@ -172,8 +171,7 @@ async function generatePdfThumb() {
         // Dynamically import pdfjs-dist to avoid bundling issues
         const pdfjsLib = await import("pdfjs-dist")
         // Set worker source from CDN to avoid loading local worker file
-        // pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
         const pdf = await pdfjsLib.getDocument(asset.publicURL).promise
         if (!pdf || pdf.numPages === 0) {
@@ -212,13 +210,12 @@ async function generatePdfThumb() {
             canvas: canvas,
         }).promise
 
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8)
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.7)
         pdfThumbs[key] = dataUrl
 
         // Cache the generated thumbnail
-        if (dataUrl) {
+        if (dataUrl)
             await cacheThumbnail(`pdf-${key}`, dataUrl)
-        }
     } catch (error) {
         console.warn(
             `Failed to generate PDF thumbnail for ${asset.publicURL}:`,
@@ -307,7 +304,6 @@ const renderToolbar: (
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset")
-const pdfObjectUrl = useState<string | undefined>("pdfObjectUrl")
 const requiresPreviewDownloadShortcut = computed(() =>
     asset.extension === "pdf" || videoExtensions.includes(asset.extension),
 )
@@ -377,25 +373,9 @@ async function triggerAssetDownload(file: Asset = asset) {
     }
 
     try {
-        if (file.extension === "pdf") {
-            let downloadUrl = pdfObjectUrl.value
-            let revokeAfterUse = false
-            if (!downloadUrl) {
-                const response = await fetch(file.publicURL)
-                if (!response.ok) throw new Error("Failed to fetch PDF asset")
-                const blob = await response.blob()
-                downloadUrl = URL.createObjectURL(blob)
-                revokeAfterUse = true
-            }
-            if (!downloadUrl) throw new Error("No PDF download URL available")
-            link.href = downloadUrl
-            link.click()
-            if (revokeAfterUse) URL.revokeObjectURL(downloadUrl)
-        } else {
-            link.href = file.publicURL as string
-            link.rel = "noopener"
-            link.click()
-        }
+        link.href = file.publicURL as string
+        link.rel = "noopener"
+        link.click()
     } catch (error) {
         console.warn("Falling back to opening asset in new tab", error)
         downloadByOpening()
@@ -435,26 +415,10 @@ onBeforeUnmount(() => {
     cleanupPreviewShortcut()
 })
 
-async function loadPdfObjectUrl(url: string) {
-    try {
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('Network response was not ok')
-        const blob = await res.blob()
-        if (blob.type !== 'application/pdf') throw new Error('Not a PDF')
-        if (pdfObjectUrl.value) URL.revokeObjectURL(pdfObjectUrl.value)
-        pdfObjectUrl.value = URL.createObjectURL(blob)
-    } catch (e) {
-        // Fallback: keep spinner off and avoid blocking UI
-        Loading.value.previewModal = false
-    }
-}
-
 async function showPreview() {
     if (imageExtensions.includes(asset.extension) || videoExtensions.includes(asset.extension) || asset.extension === "pdf") {
         currentPreviewAsset.value = asset
-        Loading.value.previewModal = true
-        if (asset.extension === 'pdf')
-            await loadPdfObjectUrl(asset.publicURL)
+        Loading.value.previewModal = asset.extension !== 'pdf'
     }
 }
 </script>

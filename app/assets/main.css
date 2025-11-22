@@ -485,15 +485,23 @@ body {
 }
 
 .n-upload-file-info__thumbnail .asset,
-.n-upload-file-info__thumbnail .asset img,
-.n-upload-file-info__thumbnail .asset.n-icon {
+.n-upload-file-info__thumbnail .asset img {
 	width: 32px;
 	height: 32px;
 }
 
+.n-upload-file-info__thumbnail .asset.n-icon {
+	width: 26px;
+	height: 26px;
+}
+
 .n-upload-file-info__thumbnail .asset.n-icon span {
-	width: 25px;
-	height: 32px;
+	width: 18px;
+	height: 23px;
+}
+
+.n-upload-file-info__thumbnail .n-spin-body * {
+	width: 23px !important;
 }
 
 .assetContainer .asset,

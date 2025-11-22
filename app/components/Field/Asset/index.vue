@@ -14,7 +14,7 @@
 			<NUploadDragger v-if="compressionIndicator">
 				<NProgress type="circle" status="warning" :percentage="compressionIndicator" :stroke-width="10"
 					style="width:54px" indicator-placement="inside">
-					<NTooltip placement="bottom">
+					<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
 						<template #trigger>
 							<Icon @click.stop="skipCompression" name="tabler:player-track-next-filled" />
 						</template>
@@ -57,6 +57,7 @@ import type {
 } from "naive-ui"
 import { Icon, LazyAssetThumb } from "#components"
 import { getFileNameAndExtension } from "~/composables"
+import renderLabel from "~/composables/renderLabel"
 import { useOptimizeFile } from "~/composables/optimizeFile"
 import { usePdfCompressor } from "~/composables/usePdfCompressor"
 import { useVideoCompressor } from "~/composables/useVideoCompressor"
@@ -116,6 +117,35 @@ async function handleRemoveUpload({ file }: { file: Required<UploadFileInfo> }) 
 		setModelValue(fileList.value)
 		return false;
 	}
+
+	const assetId = fileIdObject.value[file.id] || file.id
+	if (assetId) {
+		try {
+			const path = field.suffix ? renderLabel({ ...table.value, label: field.suffix }, currentItem.value) : ''
+			await $fetch(
+				`${appConfig.apiBase}${database.value.slug}/assets${path}/${assetId}`,
+				{
+					method: "DELETE",
+					params: {
+						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
+					credentials: "include",
+				}
+			)
+
+			const asset = Array.isArray(modelValue.value)
+				? (modelValue.value as Asset[]).find(a => a.id === assetId)
+				: (modelValue.value as Asset | undefined)
+
+			if (asset && asset.id === assetId && database.value.size) {
+				database.value.size -= asset.size ?? 0
+			}
+		} catch (e) {
+			console.error("Failed to delete asset", e)
+		}
+	}
+
 	return true
 }
 
@@ -135,21 +165,11 @@ watchEffect(() => {
 	}
 })
 
-const formatBytes = (size: number) => {
-	if (!size) return "0 B"
-	const units = ["B", "KB", "MB", "GB", "TB"] as const
-	const exponent = Math.min(
-		Math.floor(Math.log(size) / Math.log(1024)),
-		units.length - 1,
-	)
-	return `${(size / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
-}
-
 const notifyVideoSize = (size: number) => {
 	if (!import.meta.client) return
 	const messageApi = window?.$message
 	if (!messageApi) return
-	const formattedSize = formatBytes(size)
+	const formattedSize = humanFileSize(size)
 	if (size >= HUGE_VIDEO_BYTES)
 		messageApi.warning(
 			t("compression.videoHuge", { size: formattedSize }),
@@ -164,7 +184,7 @@ const notifyPdfSize = (size: number) => {
 	if (!import.meta.client) return
 	const messageApi = window?.$message
 	if (!messageApi) return
-	const formattedSize = formatBytes(size)
+	const formattedSize = humanFileSize(size)
 	if (size >= HUGE_PDF_BYTES)
 		messageApi.warning(
 			t("compression.pdfHuge", { size: formattedSize }),
@@ -364,6 +384,7 @@ const { optimizeFile } = useOptimizeFile()
 
 // Determine if optimization is enabled (undefined or true = enabled)
 const shouldOptimize = computed(() => field.optimize !== false)
+const showSkipCompressionTooltip = ref(false)
 
 async function customRequest({
 	file,
@@ -386,6 +407,11 @@ async function customRequest({
 		const isPdf =
 			originalFile.type === "application/pdf" ||
 			originalFile.name.toLowerCase().endsWith(".pdf")
+
+		if (isVideo || isPdf) {
+			showSkipCompressionTooltip.value = true
+			setTimeout(() => { showSkipCompressionTooltip.value = false }, 800)
+		}
 
 		if (isVideo) {
 			notifyVideoSize(originalFile.size)
