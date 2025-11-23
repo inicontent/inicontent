@@ -398,91 +398,93 @@ async function customRequest({
 	processingFileId.value = file.id
 
 	try {
-		const originalFile = file.file
-		if (!originalFile) throw new Error("Missing file payload")
+		if (shouldOptimize.value) {
+			const originalFile = file.file
+			if (!originalFile) throw new Error("Missing file payload")
 
-		let fileToUpload: File = originalFile
-		let compressionSkipped = false
-		const isVideo = originalFile.type?.startsWith("video/") ?? false
-		const isPdf =
-			originalFile.type === "application/pdf" ||
-			originalFile.name.toLowerCase().endsWith(".pdf")
+			let fileToUpload: File = originalFile
+			let compressionSkipped = false
+			const isVideo = originalFile.type?.startsWith("video/") ?? false
+			const isPdf =
+				originalFile.type === "application/pdf" ||
+				originalFile.name.toLowerCase().endsWith(".pdf")
 
-		if (isVideo || isPdf) {
-			showSkipCompressionTooltip.value = true
-			setTimeout(() => { showSkipCompressionTooltip.value = false }, 800)
-		}
+			if (isVideo || isPdf) {
+				showSkipCompressionTooltip.value = true
+				setTimeout(() => { showSkipCompressionTooltip.value = false }, 800)
+			}
 
-		if (isVideo) {
-			notifyVideoSize(originalFile.size)
-			try {
-				fileToUpload = await compressVideo(
+			if (isVideo) {
+				notifyVideoSize(originalFile.size)
+				try {
+					fileToUpload = await compressVideo(
+						new File([originalFile], originalFile.name, {
+							type: originalFile.type,
+						}),
+					)
+				} catch (videoError) {
+					// If compression was aborted/terminated, use original file
+					if (String(videoError).includes("terminated")) {
+						fileToUpload = originalFile
+						compressionSkipped = true
+						compressionIndicator.value = null
+					} else throw videoError
+				}
+			} else if (isPdf) {
+				notifyPdfSize(originalFile.size)
+				try {
+					fileToUpload = await compressPdf(fileToUpload)
+				} catch (pdfError) {
+					// If compression was aborted, use original file
+					if (String(pdfError).toLowerCase().includes("abort")) {
+						fileToUpload = originalFile
+						compressionSkipped = true
+						compressionIndicator.value = null
+					} else throw pdfError
+				}
+			} else if (
+				originalFile.type?.startsWith("image/")
+			) {
+				const optimizationResult = await optimizeFile(
 					new File([originalFile], originalFile.name, {
 						type: originalFile.type,
 					}),
 				)
-			} catch (videoError) {
-				// If compression was aborted/terminated, use original file
-				if (String(videoError).includes("terminated")) {
-					fileToUpload = originalFile
-					compressionSkipped = true
-					compressionIndicator.value = null
-				} else throw videoError
+				if (optimizationResult.optimized) fileToUpload = optimizationResult.file
 			}
-		} else if (isPdf) {
-			notifyPdfSize(originalFile.size)
-			try {
-				fileToUpload = await compressPdf(fileToUpload)
-			} catch (pdfError) {
-				// If compression was aborted, use original file
-				if (String(pdfError).toLowerCase().includes("abort")) {
-					fileToUpload = originalFile
-					compressionSkipped = true
-					compressionIndicator.value = null
-				} else throw pdfError
+
+			// IMPORTANT: Completely replace the file object to prevent uploading both files
+			// Create a new File instance to ensure no reference to original
+			if (fileToUpload !== originalFile) {
+				fileToUpload = new File([fileToUpload], fileToUpload.name, {
+					type: fileToUpload.type,
+					lastModified: fileToUpload.lastModified
+				})
 			}
-		} else if (
-			shouldOptimize.value &&
-			originalFile.type?.startsWith("image/")
-		) {
-			const optimizationResult = await optimizeFile(
-				new File([originalFile], originalFile.name, {
-					type: originalFile.type,
-				}),
-			)
-			if (optimizationResult.optimized) fileToUpload = optimizationResult.file
+			// Update the file reference in the upload info
+			file.file = fileToUpload
+			file.name = fileToUpload.name
+			file.type = fileToUpload.type
+			file.size = fileToUpload.size
 		}
 
-		// IMPORTANT: Completely replace the file object to prevent uploading both files
-		// Create a new File instance to ensure no reference to original
-		if (fileToUpload !== originalFile) {
-			fileToUpload = new File([fileToUpload], fileToUpload.name, {
-				type: fileToUpload.type,
-				lastModified: fileToUpload.lastModified
-			})
-		}
-
-		// Update the file reference in the upload info
-		file.file = fileToUpload
-		file.name = fileToUpload.name
-		const mimeType = fileToUpload.type || file.type
 		const { name, extension } = getFileNameAndExtension(
-			fileToUpload.name || file.name,
+			file.name,
 		)
 
 		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
 			method: "POST",
 			credentials: "include",
 			headers: headers as Record<string, string>,
-			body: { name, size: fileToUpload.size, type: mimeType, extension },
+			body: { name, size: file.size, type: file.type, extension },
 		})
 
 		onProgress?.({ percent: 80 })
 
 		await $fetch(result.uploadURL as string, {
 			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
-			headers: { "Content-Type": mimeType as string },
-			body: fileToUpload,
+			headers: { "Content-Type": file.type as string },
+			body: file,
 		})
 
 		onProgress?.({ percent: 100 })
