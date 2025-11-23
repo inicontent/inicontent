@@ -484,7 +484,7 @@ async function customRequest({
 		await $fetch(result.uploadURL as string, {
 			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
 			headers: { "Content-Type": file.type as string },
-			body: file,
+			body: file.file,
 		})
 
 		onProgress?.({ percent: 100 })

@@ -69,22 +69,6 @@ export default defineNuxtConfig({
 	devtools: {
 		enabled: false,
 	},
-	nitro: {
-		devProxy: {
-			"/_ipx": {
-				target: "http://localhost:3434/_ipx",
-				changeOrigin: true,
-			},
-		},
-		routeRules: {
-			"/**": {
-				headers: {
-					"Cross-Origin-Opener-Policy": "same-origin",
-					"Cross-Origin-Embedder-Policy": "require-corp",
-				},
-			},
-		},
-	},
 	vite: {
 		server: {
 			hmr: { clientPort: 3434 },
