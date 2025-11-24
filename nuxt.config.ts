@@ -9,6 +9,9 @@ export default defineNuxtConfig({
 		"@nuxt/icon",
 		"nuxt-tiptap-editor",
 	],
+	experimental: {
+		payloadExtraction: true,
+	},
 	icon: {
 		provider: "server",
 	},
@@ -54,13 +57,6 @@ export default defineNuxtConfig({
 					purpose: "maskable",
 				},
 			],
-		},
-		workbox: {
-			navigateFallback: "/",
-		},
-		devOptions: {
-			enabled: true,
-			type: "module",
 		},
 	},
 	devServer: {

@@ -59,6 +59,7 @@ import { Icon, LazyAssetThumb } from "#components"
 import { getFileNameAndExtension } from "~/composables"
 import renderLabel from "~/composables/renderLabel"
 import { useOptimizeFile } from "~/composables/optimizeFile"
+import { useAssetUploader } from "~/composables/useAssetUploader"
 import { usePdfCompressor } from "~/composables/usePdfCompressor"
 import { useVideoCompressor } from "~/composables/useVideoCompressor"
 
@@ -381,6 +382,7 @@ async function setModelValue(value?: UploadFileInfo[]) {
 const fileIdObject = ref<Record<string, string>>({})
 
 const { optimizeFile } = useOptimizeFile()
+const { uploadAssetWithProgress } = useAssetUploader()
 
 // Determine if optimization is enabled (undefined or true = enabled)
 const shouldOptimize = computed(() => field.optimize !== false)
@@ -465,29 +467,28 @@ async function customRequest({
 			file.file = fileToUpload
 			file.name = fileToUpload.name
 			file.type = fileToUpload.type
-			file.size = fileToUpload.size
 		}
 
 		const { name, extension } = getFileNameAndExtension(
 			file.name,
 		)
 
+		onProgress?.({ percent: 10 })
+
 		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
 			method: "POST",
 			credentials: "include",
 			headers: headers as Record<string, string>,
-			body: { name, size: file.size, type: file.type, extension },
+			body: { name, size: file.file?.size, type: file.type, extension },
 		})
 
-		onProgress?.({ percent: 80 })
-
-		await $fetch(result.uploadURL as string, {
+		await uploadAssetWithProgress({
+			url: result.uploadURL as string,
 			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
 			headers: { "Content-Type": file.type as string },
-			body: file.file,
+			file: file.file,
+			onProgress,
 		})
-
-		onProgress?.({ percent: 100 })
 		compressionIndicator.value = null
 
 		file.url = result.publicURL
@@ -558,4 +559,5 @@ const getChecked = (asset: Asset) =>
 const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 })
+
 </script>

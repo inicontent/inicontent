@@ -13,6 +13,7 @@
                 :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
                 @load="Loading.previewModal = false"></object>
         </NSpin>
+        <NEmpty v-else />
     </NModal>
 </template>
 

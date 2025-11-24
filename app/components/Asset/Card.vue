@@ -108,6 +108,7 @@ import type { UploadCustomRequestOptions, UploadFileInfo } from "naive-ui"
 import { getFileNameAndExtension } from "~/composables";
 import { generateSearchArray } from "~/composables/search"
 import { useOptimizeFile } from "~/composables/optimizeFile";
+import { useAssetUploader } from "~/composables/useAssetUploader";
 import { usePdfCompressor } from "~/composables/usePdfCompressor"
 import { useVideoCompressor } from "~/composables/useVideoCompressor"
 
@@ -333,11 +334,11 @@ const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 			Loading.value.AssetData = true
 		},
 		onResponse: ({ response: { _data } }) => {
+			Loading.value.AssetData = false
+
 			if (!_data?.result) return
 
 			assets.value = _data.result
-
-			Loading.value.AssetData = false
 
 			if (_data.options.total === 0) showSizePicker.value = false
 			if (_data.options.totalPages && _data.options.total) {
@@ -381,6 +382,7 @@ async function onUpdateFileList(fileList: Required<UploadFileInfo>[]) {
 }
 
 const { optimizeFile } = useOptimizeFile()
+const { uploadAssetWithProgress } = useAssetUploader()
 const showSkipCompressionTooltip = ref(false)
 
 async function customRequest({
@@ -453,6 +455,8 @@ async function customRequest({
 		const mimeType = fileToUpload.type || file.type
 		const { name, extension } = getFileNameAndExtension(fileToUpload.name || file.name)
 
+		onProgress?.({ percent: 10 })
+
 		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
 			method: "POST",
 			credentials: "include",
@@ -460,15 +464,13 @@ async function customRequest({
 			body: { name, size: fileToUpload.size, type: mimeType, extension },
 		})
 
-		onProgress?.({ percent: 80 })
-
-		await $fetch(result.uploadURL as string, {
+		await uploadAssetWithProgress({
+			url: result.uploadURL as string,
 			method: result.uploadURL.includes("s3") ? "PUT" : "POST",
 			headers: { "Content-Type": mimeType as string },
-			body: fileToUpload,
+			file: fileToUpload,
+			onProgress,
 		})
-
-		onProgress?.({ percent: 100 })
 		compressionIndicator.value = null
 
 		file.url = result.publicURL
@@ -555,35 +557,3 @@ watch(currentPath, () => {
 	refresh()
 })
 </script>
-
-<style scoped>
-.compression-progress {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.compression-progress__skip {
-	position: absolute;
-	border: none;
-	background: rgba(0, 0, 0, 0.55);
-	color: #fff;
-	width: 26px;
-	height: 26px;
-	border-radius: 50%;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-}
-
-.compression-progress__skip:hover {
-	background: rgba(0, 0, 0, 0.75);
-}
-
-.compression-progress__skip:focus-visible {
-	outline: 2px solid var(--primary-color, #18a058);
-	outline-offset: 2px;
-}
-</style>

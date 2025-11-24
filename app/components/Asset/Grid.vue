@@ -34,7 +34,7 @@
 		</NDrawer>
 		<NImageGroup>
 			<NGrid :x-gap="12" :y-gap="12" cols="100:2 200:3 300:4 400:5 500:6 700:8 900:10">
-				<template v-if="modelValue === undefined || Loading.AssetData" #default>
+				<template v-if="Loading.AssetData" #default>
 					<NGridItem v-for="(_) in [...Array(22).keys()]">
 						<NSkeleton class="asset"></NSkeleton>
 					</NGridItem>
