@@ -3,7 +3,7 @@
 			:width="drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'"
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :class="`${drawer.table.replaceAll(' ','_')}-drawer`"
 			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
 			<NDrawerContent closable :native-scrollbar="false">
 				<template #header>
@@ -64,86 +64,87 @@
 </template>
 
 <script setup lang="ts">
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const database = useState<Database>("database")
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const database = useState<Database>("database");
 
 defineSlots<{
 	default({
 		onAfterCreate,
 		onAfterUpdate,
 	}: {
-		onAfterCreate: () => any
-		onAfterUpdate: () => any
+		onAfterCreate: () => any;
+		onAfterUpdate: () => any;
 	}): {
-		onAfterCreate: () => any
-		onAfterUpdate: () => any
-	}
-}>()
+		onAfterCreate: () => any;
+		onAfterUpdate: () => any;
+	};
+}>();
 
-const Drawers = useState<DrawerRef>("drawers", () => [])
+const Drawers = useState<DrawerRef>("drawers", () => []);
 const defaultWidth = useCookie<number | string>("width", {
 	sameSite: true,
-})
-const formRefs = ref<FormRef[]>([])
+});
+const formRefs = ref<FormRef[]>([]);
 
-const screenHalf = window.screen.width / 2
+const screenHalf = window.screen.width / 2;
 
 function onUpdateShow(index: number, show: boolean) {
-	if (!Drawers.value[index]) return
-	Drawers.value[index].show = show
-	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 100)
+	if (!Drawers.value[index]) return;
+	Drawers.value[index].show = show;
+	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 100);
 }
 
 async function onAfterUpdateCreate(index: number) {
-	onUpdateShow(index, false)
-	const drawer = Drawers.value[index]
-	if (!drawer) return
-	await refreshNuxtData(`${database.value.slug}/${drawer.table}`)
+	onUpdateShow(index, false);
+	const drawer = Drawers.value[index];
+	if (!drawer) return;
+	await refreshNuxtData(`${database.value.slug}/${drawer.table}`);
 }
 
 const toggleDrawerWidth = (index: number) => {
-	const drawer = Drawers.value[index]
-	if (!drawer) return
-	if (typeof drawer.width === "string") drawer.width = 251
-	else drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%"
+	const drawer = Drawers.value[index];
+	if (!drawer) return;
+	if (typeof drawer.width === "string") drawer.width = 251;
+	else
+		drawer.width = !drawer.width || drawer.width >= screenHalf ? 251 : "100%";
 	nextTick(() => {
-		if (drawer.width) defaultWidth.value = drawer.width
-	})
-}
+		if (drawer.width) defaultWidth.value = drawer.width;
+	});
+};
 function onEsc() {
-	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show)
+	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show);
 	if (openDrawerIndex !== -1) {
-		const previewModal = document.querySelector(".n-image-preview-container")
-		if (!previewModal) onUpdateShow(openDrawerIndex, false)
+		const previewModal = document.querySelector(".n-image-preview-container");
+		if (!previewModal) onUpdateShow(openDrawerIndex, false);
 	}
 }
-const itemsLabels = ref<string[]>([])
+const itemsLabels = ref<string[]>([]);
 watchEffect(() => {
 	for (let index = 0; index < Drawers.value.length; index++) {
-		const drawer = Drawers.value[index]
-		if (!drawer) continue
+		const drawer = Drawers.value[index];
+		if (!drawer) continue;
 		const table = drawer.table
 			? database.value.tables?.find(({ slug }) => slug === drawer.table)
-			: undefined
+			: undefined;
 
 		if (table) {
-			itemsLabels.value[index] = renderLabel(table, drawer.data)
-			continue
+			itemsLabels.value[index] = renderLabel(table, drawer.data);
+			continue;
 		}
-		itemsLabels.value[index] = "--"
+		itemsLabels.value[index] = "--";
 	}
-})
+});
 
 onBeforeRouteLeave(() => {
-	Drawers.value = []
-})
+	Drawers.value = [];
+});
 
 onBeforeRouteUpdate((_to, _from, next) => {
-	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show)
+	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show);
 	if (openDrawerIndex !== -1) {
-		onUpdateShow(openDrawerIndex, false)
-		next(false) // Prevent navigation until all drawers are closed
-	} else next() // Allow navigation without altering the query in the URL
-})
+		onUpdateShow(openDrawerIndex, false);
+		next(false); // Prevent navigation until all drawers are closed
+	} else next(); // Allow navigation without altering the query in the URL
+});
 </script>

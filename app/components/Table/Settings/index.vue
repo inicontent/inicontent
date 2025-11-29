@@ -50,7 +50,7 @@
 										v-model:value="tableCopy.defaultTableColumns"
 										:options="searchInSelectOptions" />
 								</NFormItem>
-								<NFormItem path="localLabel" :label="t('label')">
+								<NFormItem path="localLabel" :label="t('tableItemLabel')">
 									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
 										:render-tag="renderSingleLabel">
 										<template #input="{ submit, deactivate }">
@@ -134,18 +134,24 @@ onMounted(() => {
 
 const expandedNames = ref<string[]>()
 function pushToSchema(type: string) {
-	tableCopy.value.schema?.splice(-2, 0, {
+	const newField = {
 		id: `temp-${randomID()}`,
 		key: "",
 		required: false,
 		...(handleSelectedSchemaType(type) as any),
-	})
-	const newElementId = tableCopy.value.schema?.at(-3)?.id as string | undefined
-	if (newElementId) expandedNames.value = [newElementId]
-	// setTimeout(
-	// 	() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
-	// 	300,
-	// )
+	}
+	if (tableCopy.value.schema?.[0]?.key === 'id')
+		tableCopy.value.schema?.splice(-2, 0, newField)
+	else {
+		if (!tableCopy.value.schema)
+			tableCopy.value.schema = []
+		tableCopy.value.schema.push(newField)
+	}
+	expandedNames.value = [newField.id]
+	setTimeout(
+		() => document.getElementById(`element-${newField.id}`)?.scrollIntoView(),
+		300,
+	)
 }
 
 const appConfig = useAppConfig()
@@ -426,6 +432,7 @@ const generalSettingsSchema = reactive<Schema>([
 	},
 	{
 		key: "compression",
+		label: t('compression.label'),
 		type: "boolean",
 		inputProps: ["users", "pages", "blocks"].includes(table.value?.slug)
 			? {

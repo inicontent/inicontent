@@ -8,7 +8,7 @@
 		</template>
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}${field.suffix?.includes('?') ? '&' : '?'}${database.slug}_sid=${sessionID}`"
+			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			:fileList @update:file-list="setModelValue" :custom-request @remove="handleRemoveUpload"
 			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false">
 			<NUploadDragger v-if="compressionIndicator">
@@ -475,12 +475,22 @@ async function customRequest({
 
 		onProgress?.({ percent: 10 })
 
-		const { result } = await $fetch<apiResponse<Asset>>(action as string, {
+		const { result } = await $fetch<apiResponse<Asset>>(`${action}?${database.value.slug}_sid=${sessionID.value}`, {
 			method: "POST",
 			credentials: "include",
 			headers: headers as Record<string, string>,
 			body: { name, size: file.file?.size, type: file.type, extension },
 		})
+
+		if (!result.publicURL) {
+			if (result.id)
+				await $fetch<apiResponse<Asset>>(`${action}/${result.id}?${database.value.slug}_sid=${sessionID.value}`, {
+					method: "DELETE",
+					credentials: "include",
+					headers: headers as Record<string, string>
+				})
+			throw new Error("Failed to get upload URL")
+		}
 
 		await uploadAssetWithProgress({
 			url: result.uploadURL as string,

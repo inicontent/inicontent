@@ -1,5 +1,5 @@
 <template>
-	<NFormItem :label="t(field.key)" :rule :path="String(field.id)" :style="{ flex: fieldFlex }"
+	<NFormItem :label="field.label ?? t(field.key)" :rule :path="String(field.id)" :style="{ flex: fieldFlex }"
 		v-bind="field.labelProps">
 		<slot></slot>
 		<template #label>
@@ -8,7 +8,7 @@
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="800" :options="dropdownOptions"
 					@select="handleSelect">
-					{{ t(field.key) }}
+					{{ field.label ?? t(field.key) }}
 				</NDropdown>
 				<NTooltip>
 					<template #trigger>
@@ -26,7 +26,7 @@
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="1500" :options="dropdownOptions" size="small"
 					@select="handleSelect">
-					{{ t(field.key) }}
+					{{ field.label ?? t(field.key) }}
 				</NDropdown>
 			</template>
 			<slot name="label"></slot>

@@ -11,7 +11,7 @@
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
 	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-		:default-expanded-names="field.expand ? String(field.id) : undefined" v-model:expanded-names="parentExpanded"
+		:default-expanded-names="field.expand ? field.id : undefined" v-model:expanded-names="parentExpanded"
 		accordion>
 		<template #arrow>
 			<NIcon>
@@ -97,7 +97,10 @@
 							</NIcon>
 						</template>
 					</NButton>
-					<component v-if="field.extraButtons" :is="field.extraButtons"></component>
+					<template v-if="field.extraButtons">
+						<component v-if="Array.isArray(field.extraButtons)" v-for="(component, index) in field.extraButtons" :is="component" :key="index"></component>
+						<component v-else :is="field.extraButtons"></component>
+					</template>
 				</NButtonGroup>
 			</NFlex>
 		</template>
@@ -106,9 +109,9 @@
 </template>
 
 <script setup lang="ts">
-import { isArrayOfObjects, isStringified } from "inibase/utils"
-import Inison from "inison"
-import type { DataTableColumns, DropdownOption } from "naive-ui"
+import { isArrayOfObjects, isStringified } from "inibase/utils";
+import Inison from "inison";
+import type { DataTableColumns, DropdownOption } from "naive-ui";
 import {
 	Icon,
 	LazyField,
@@ -118,78 +121,78 @@ import {
 	NPerformantEllipsis,
 	NText,
 	NTooltip,
-} from "#components"
+} from "#components";
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<(string | number | Item)[]>()
-const parentExpanded = ref()
+const modelValue = defineModel<(string | number | Item)[]>();
+const parentExpanded = ref();
 
-const expandedNames = ref()
+const expandedNames = ref();
 watch(expandedNames, (v) => {
-	if (v) parentExpanded.value = field.id
-})
+	if (v) parentExpanded.value = field.id;
+});
 function handleAddNewItem() {
-	let newElementIndex: number
+	let newElementIndex: number;
 	if (!modelValue.value) {
-		newElementIndex = 0
+		newElementIndex = 0;
 		modelValue.value = [
 			field.onCreate
 				? field.onCreate instanceof Function
 					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
-		]
+		];
 	} else {
-		newElementIndex = toRaw(modelValue.value).length
+		newElementIndex = toRaw(modelValue.value).length;
 		modelValue.value.push(
 			field.onCreate
 				? field.onCreate instanceof Function
 					? field.onCreate(newElementIndex) || {}
 					: field.onCreate
 				: {},
-		)
+		);
 	}
-	expandedNames.value = `${field.id}.${newElementIndex}`
+	expandedNames.value = `${field.id}.${newElementIndex}`;
 }
 
 function handleDeleteItem(index: number) {
-	if (field.onDelete) field.onDelete(index)
-	modelValue.value?.splice(index, 1)
+	if (field.onDelete) field.onDelete(index);
+	modelValue.value?.splice(index, 1);
 }
 
 async function handleSelect(value: string) {
 	switch (value) {
 		case "copy": {
-			if (!modelValue.value) return
-			await copyToClipboard(Inison.stringify(modelValue.value))
-			window.$message.success(t("copiedSuccessfully"))
-			break
+			if (!modelValue.value) return;
+			await copyToClipboard(Inison.stringify(modelValue.value));
+			window.$message.success(t("copiedSuccessfully"));
+			break;
 		}
 		case "paste": {
 			try {
-				const itemFromClipboard = await navigator.clipboard.readText()
+				const itemFromClipboard = await navigator.clipboard.readText();
 
 				if (!itemFromClipboard) {
-					window.$message.error(t("clipboardEmpty"))
-					return
+					window.$message.error(t("clipboardEmpty"));
+					return;
 				}
 				if (!isStringified(itemFromClipboard)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"))
-					return
+					window.$message.error(t("clipboardItemIsNotCorrect"));
+					return;
 				}
 
-				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard)
+				const unstringifiedItem = Inison.unstringify<Item[]>(itemFromClipboard);
 				if (!unstringifiedItem && !Array.isArray(unstringifiedItem)) {
-					window.$message.error(t("clipboardItemIsNotCorrect"))
-					return
+					window.$message.error(t("clipboardItemIsNotCorrect"));
+					return;
 				}
 
-				modelValue.value = unstringifiedItem
+				modelValue.value = unstringifiedItem;
 			} catch {
-				window.$message.error(t("clipboardItemIsNotCorrect"))
+				window.$message.error(t("clipboardItemIsNotCorrect"));
 			}
 		}
 	}
@@ -209,10 +212,10 @@ const dropdownOptions = computed<DropdownOption[]>(() => [
 		key: "paste",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:clipboard" })),
 	},
-])
+]);
 
-const columns = ref<DataTableColumns<any>>()
-const tableWidth = ref<number>(0)
+const columns = ref<DataTableColumns<any>>();
+const tableWidth = ref<number>(0);
 
 function setColumns() {
 	columns.value = [
@@ -224,12 +227,12 @@ function setColumns() {
 					h(NPerformantEllipsis, () => t(child.key)),
 					child.required
 						? h(
-							NText,
-							{
-								type: "error",
-							},
-							() => " *",
-						)
+								NText,
+								{
+									type: "error",
+								},
+								() => " *",
+							)
 						: undefined,
 				]),
 			key: child.id,
@@ -256,7 +259,7 @@ function setColumns() {
 					},
 					"onUpdate:modelValue": (newValue) => {
 						// @ts-ignore
-						; (modelValue.value as Item[])[index][child.key] = newValue
+						(modelValue.value as Item[])[index][child.key] = newValue;
 					},
 					// @ts-ignore
 					modelValue: (modelValue.value as Item[])[index][child.key],
@@ -265,51 +268,51 @@ function setColumns() {
 		field.disableActions === true
 			? {}
 			: {
-				title: t("actions"),
-				fixed: "right",
-				align: "center",
-				width: 100,
-				key: "actions",
-				render(_row: any, index: number) {
-					return h(
-						NTooltip,
-						{ delay: 500 },
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										disabled:
-											typeof field.inputProps === "function"
-												? field.inputProps(index)?.disabled
-												: field.inputProps?.disabled,
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-										onClick: () => handleDeleteItem(index),
-									},
-									{
-										icon: () =>
-											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-									},
-								),
-							default: () => t("delete"),
-						},
-					)
+					title: t("actions"),
+					fixed: "right",
+					align: "center",
+					width: 100,
+					key: "actions",
+					render(_row: any, index: number) {
+						return h(
+							NTooltip,
+							{ delay: 500 },
+							{
+								trigger: () =>
+									h(
+										NButton,
+										{
+											disabled:
+												typeof field.inputProps === "function"
+													? field.inputProps(index)?.disabled
+													: field.inputProps?.disabled,
+											strong: true,
+											secondary: true,
+											circle: true,
+											type: "error",
+											onClick: () => handleDeleteItem(index),
+										},
+										{
+											icon: () =>
+												h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+										},
+									),
+								default: () => t("delete"),
+							},
+						);
+					},
 				},
-			},
-	] as DataTableColumns<any>
+	] as DataTableColumns<any>;
 
 	tableWidth.value = columns.value.reduce(
 		(accumulator: number, { width }) =>
 			accumulator + ((width as number | undefined) ?? 0),
 		40,
-	)
+	);
 }
 
-watch(Language, setColumns)
+watch(Language, setColumns);
 onMounted(() => {
-	if (isArrayOfObjects(field.children)) setColumns()
-})
+	if (isArrayOfObjects(field.children)) setColumns();
+});
 </script>

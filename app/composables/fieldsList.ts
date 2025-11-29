@@ -1,18 +1,18 @@
-import type { VNodeChild } from "vue"
-import { Icon, NIcon } from "#components"
+import type { VNodeChild } from "vue";
+import { Icon, NIcon } from "#components";
 
 function renderIcon(iconName: string) {
-	return () => h(NIcon, () => h(Icon, { name: `tabler:${iconName}` }))
+	return () => h(NIcon, () => h(Icon, { name: `tabler:${iconName}` }));
 }
 
 type fieldListOptionType = {
-	type?: string
-	key: CMS_FieldType | DB_FieldType
-	label: string
-	icon: () => VNodeChild
-	disabled?: boolean
-	children?: fieldListOptionType[]
-}
+	type?: string;
+	key: CMS_FieldType | DB_FieldType;
+	label: string;
+	icon: () => VNodeChild;
+	disabled?: boolean;
+	children?: fieldListOptionType[];
+};
 
 export default function fieldsList(): fieldListOptionType[] {
 	return [
@@ -182,17 +182,17 @@ export default function fieldsList(): fieldListOptionType[] {
 			key: "table",
 			icon: renderIcon("table"),
 		},
-	]
+	];
 }
 
 const defaultField: fieldListOptionType = {
 	key: "custom",
-	label: "custom",
+	label: t("fields.custom"),
 	icon: renderIcon("question-mark"),
-}
+};
 
 export function flatFieldsList() {
-	return fieldsList().flatMap((field) => field.children || field)
+	return fieldsList().flatMap((field) => field.children || field);
 }
 
 export function getField(field: Field) {
@@ -201,7 +201,7 @@ export function getField(field: Field) {
 			flatFieldsList().find(
 				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
 			) ?? defaultField
-		)
+		);
 	if (field.type === "array") {
 		if (
 			!Array.isArray(field.children) &&
@@ -211,10 +211,10 @@ export function getField(field: Field) {
 				flatFieldsList().find(
 					({ key }) => key === [field.type, field.children].join("-"),
 				) ?? defaultField
-			)
+			);
 	}
-	let fieldType = field.subType ?? field.type
-	if (Array.isArray(fieldType)) fieldType = "multiple"
-	if (!fieldType) return defaultField
-	return flatFieldsList().find(({ key }) => key === fieldType) ?? defaultField
+	let fieldType = field.subType ?? field.type;
+	if (Array.isArray(fieldType)) fieldType = "multiple";
+	if (!fieldType) return defaultField;
+	return flatFieldsList().find(({ key }) => key === fieldType) ?? defaultField;
 }

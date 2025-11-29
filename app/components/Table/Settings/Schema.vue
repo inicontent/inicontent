@@ -41,21 +41,6 @@
 							<NButtonGroup v-if="!isDisabled(element.key)">
 								<NTooltip :delay="1500">
 									<template #trigger>
-										<NPopselect v-model:value="element.width" :options="widthOptions">
-											<NButton round strong secondary size="small" type="info">
-												<template v-if="!$device.isMobile" #icon>
-													<NIcon>
-														<Icon name="tabler:arrow-autofit-width" />
-													</NIcon>
-												</template>
-												1/{{ element.width ?? 1 }}
-											</NButton>
-										</NPopselect>
-									</template>
-									{{ t('width') }}
-								</NTooltip>
-								<NTooltip :delay="1500">
-									<template #trigger>
 										<NButton round secondary size="small"
 											:type="element.required ? 'error' : 'tertiary'"
 											@click="element.required = !element.required">
@@ -67,6 +52,21 @@
 										</NButton>
 									</template>
 									{{ t('required') }}
+								</NTooltip>
+								<NTooltip :delay="1500">
+									<template #trigger>
+										<NPopselect v-model:value="element.width" :options="widthOptions" size="small">
+											<NButton round strong secondary size="small" type="info">
+												<template v-if="!$device.isMobile" #icon>
+													<NIcon>
+														<Icon name="tabler:arrow-autofit-width" />
+													</NIcon>
+												</template>
+												1/{{ element.width ?? 1 }}
+											</NButton>
+										</NPopselect>
+									</template>
+									{{ t('width') }}
 								</NTooltip>
 								<NButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
 									<template #icon>
@@ -103,10 +103,18 @@
 								{{ t('ie') }}: <strong>/@2/customFolder</strong>
 							</template>
 						</NFormItem>
-						<NFormItem :label="t('optimizeAssets')">
-							<NSwitch v-model:value="element.optimize" :default-value="true" />
-							<template #feedback>
-								{{ t('optimizeAssetsDescription') }}
+						<NFormItem :label="t('optimizeAssets')" label-placement="left">
+							<NSwitch v-model:value="element.optimize" :default-value="true" style="margin-top: 4px;" />
+							<template #label>
+								{{ t('optimizeAssets') }}
+								<NTooltip>
+									<template #trigger>
+										<NIcon style="margin-left: 5px; vertical-align: middle;">
+											<Icon name="tabler:info-circle" />
+										</NIcon>
+									</template>
+									{{ t('optimizeAssetsDescription') }}
+								</NTooltip>
 							</template>
 						</NFormItem>
 					</template>
@@ -213,10 +221,10 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
-import type { DataTableColumns, SelectOption } from "naive-ui"
-import Draggable from "vuedraggable"
-import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components"
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
+import type { DataTableColumns, SelectOption } from "naive-ui";
+import Draggable from "vuedraggable";
+import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components";
 
 const widthOptions = [
 	{
@@ -239,76 +247,77 @@ const widthOptions = [
 		label: "1/5",
 		value: 5,
 	},
-]
+];
 
 function onMoveCallback(evt: {
-	draggedContext: { index: number; futureIndex: number }
+	draggedContext: { index: number; futureIndex: number };
 }) {
 	const disabledIndexes = schema.value
 		.map(({ id }, index) => ([0, -1, -2].includes(id as number) ? index : -3))
-		.filter((index) => index !== -3)
+		.filter((index) => index !== -3);
 	return (
 		!disabledIndexes.includes(evt.draggedContext.index) &&
 		!disabledIndexes.includes(evt.draggedContext.futureIndex)
-	)
+	);
 }
 
 function isDisabled(key?: string) {
-	if (!key) return false
-	return disabledKeysSet.value.has(key)
+	if (!key) return false;
+	return disabledKeysSet.value.has(key);
 }
 
 // Cache for disabled keys based on current table slug
 const disabledKeysSet = computed<Set<string>>(() => {
-	const base: string[] = ["id", "createdAt", "updatedAt"]
+	const base: string[] = ["id", "createdAt", "updatedAt"];
 	switch (table.value.slug) {
 		case "users":
-			base.push("username", "email", "password", "role", "createdBy")
-			break
+			base.push("username", "email", "password", "role", "createdBy", "config");
+			break;
 		case "pages":
-			base.push("slug", "content", "seo")
-			break
+			base.push("slug", "content", "seo");
+			break;
 		case "blocks":
-			base.push("name", "config", "hideOn")
-			break
+			base.push("name", "config", "hideOn");
+			break;
 		default:
-			break
+			break;
 	}
-	return new Set(base)
-})
-const expandedNames = defineModel<(string | number)[]>("expandedNames")
-const expandedChildNames = ref<(string | number)[]>()
+	return new Set(base);
+});
+const expandedNames = defineModel<(string | number)[]>("expandedNames");
+const expandedChildNames = ref<(string | number)[]>();
 async function pushToChildrenSchema(type: string, index: number) {
-	if (!schema.value[index]) return
-	if (!schema.value[index].children) schema.value[index].children = [] as Schema
-		; (schema.value[index].children as Schema).push({
-			id: `temp-${randomID()}`,
-			key: null,
-			required: false,
-			...handleSelectedSchemaType(type),
-		} as any)
+	if (!schema.value[index]) return;
+	if (!schema.value[index].children)
+		schema.value[index].children = [] as Schema;
+	(schema.value[index].children as Schema).push({
+		id: `temp-${randomID()}`,
+		key: null,
+		required: false,
+		...handleSelectedSchemaType(type),
+	} as any);
 
-	if (!schema.value[index].id) return
+	if (!schema.value[index].id) return;
 
-	expandedNames.value = [schema.value[index].id]
+	expandedNames.value = [schema.value[index].id];
 	const newElementId = (
 		(schema.value[index].children as Schema).at(-1) as Field
-	).id
+	).id;
 
-	if (!newElementId) return
+	if (!newElementId) return;
 
-	expandedChildNames.value = [newElementId]
+	expandedChildNames.value = [newElementId];
 
 	setTimeout(
 		() => document.getElementById(`element-${newElementId}`)?.scrollIntoView(),
 		300,
-	)
+	);
 }
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
-})
-const database = useState<Database>("database")
-const table = useState<Table>("table")
+});
+const database = useState<Database>("database");
+const table = useState<Table>("table");
 
 function changeFieldType(
 	{ id, key, required, children, width }: any,
@@ -317,7 +326,7 @@ function changeFieldType(
 	switch (newType) {
 		case "object":
 		case "array":
-			return { id, key, type: newType, required, children }
+			return { id, key, type: newType, required, children };
 		default:
 			return {
 				id,
@@ -325,12 +334,12 @@ function changeFieldType(
 				...(handleSelectedSchemaType(newType) as any),
 				width,
 				required,
-			}
+			};
 	}
 }
 
 function renderIcon(iconName: string) {
-	return () => h(NIcon, () => h(Icon, { name: iconName }))
+	return () => h(NIcon, () => h(Icon, { name: iconName }));
 }
 
 const fileTypeSelectOptions = [
@@ -359,14 +368,14 @@ const fileTypeSelectOptions = [
 		value: "archive",
 		icon: renderIcon("tabler:file-zip"),
 	},
-]
+];
 function selectRenderLabelWithIcon(
 	option: SelectOption & { icon: CallableFunction },
 ) {
 	return h(NFlex, { align: "center" }, () => [
 		option.icon(),
 		option.label as string,
-	])
+	]);
 }
 
 const valuesTypeSelectOptions = flatFieldsList()
@@ -377,39 +386,39 @@ const valuesTypeSelectOptions = flatFieldsList()
 		label: field.label,
 		value: field.key,
 		icon: field.icon,
-	}))
+	}));
 
 // Cache field type options to avoid recomputing heavy dropdown option lists on each re-render
-const fieldTypeOptions = computed(() => fieldsList())
+const fieldTypeOptions = computed(() => fieldsList());
 
 const tableSelectOptions = computed(() =>
 	database.value.tables?.map(({ slug }) => ({
 		label: t(slug),
 		value: slug,
 	})),
-)
+);
 
 const uniqueGroupOptions = computed(() => {
 	// Extract all unique group names from the schema
 	const groups = schema.value
 		.map((field) => (typeof field.unique === "string" ? field.unique : null))
-		.filter((group) => group !== null)
+		.filter((group) => group !== null);
 	return [...new Set(groups)].map((group) => ({
 		label: group,
 		value: group,
-	}))
-})
+	}));
+});
 
 function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 	if (!schemaItem.options || schemaItem.options.length === 0)
-		schemaItem.options = [""]
+		schemaItem.options = [""];
 	if (value) {
 		// Convert array of strings to array of arrays of two strings
 		if (
 			Array.isArray(schemaItem.options) &&
 			schemaItem.options.every((option) => typeof option === "string")
 		) {
-			schemaItem.options = schemaItem.options.map((option) => [option, ""])
+			schemaItem.options = schemaItem.options.map((option) => [option, ""]);
 		}
 	} else {
 		// Convert array of arrays of two strings back to array of strings
@@ -421,7 +430,7 @@ function toggleLabelsColoring(schemaItem: Field, value: boolean) {
 		) {
 			schemaItem.options = schemaItem.options
 				.map((option) => option[0])
-				.filter((option) => option !== "")
+				.filter((option) => option !== "");
 		}
 	}
 }
@@ -435,10 +444,10 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 				return h(NInput, {
 					value: row[0].toString(),
 					onUpdateValue(v) {
-						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[0] = v
+						if (!schemaItem.options?.[index]) return;
+						(schemaItem.options[index] as [string | number, string])[0] = v;
 					},
-				})
+				});
 			},
 		},
 		{
@@ -450,10 +459,10 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 					showAlpha: false,
 					value: row[1].toString(),
 					onUpdateValue(v) {
-						if (!schemaItem.options?.[index]) return
-							; (schemaItem.options[index] as [string | number, string])[1] = v
+						if (!schemaItem.options?.[index]) return;
+						(schemaItem.options[index] as [string | number, string])[1] = v;
 					},
-				})
+				});
 			},
 		},
 		{
@@ -470,77 +479,76 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 						secondary: true,
 						onClick() {
 							if (!schemaItem.options || schemaItem.options.length === 1) {
-								schemaItem.options = [["", ""]]
-								return
+								schemaItem.options = [["", ""]];
+								return;
 							}
-							; (schemaItem.options as [string | number, string][]).splice(
+							(schemaItem.options as [string | number, string][]).splice(
 								index,
 								1,
-							)
+							);
 						},
 					},
 					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })) },
-				)
+				);
 			},
 		},
-	]
+	];
 }
 
 // Normalize select options: support comma-separated values entered at once
 function normalizeOptionsInput(values: string[]): string[] {
-	const out: string[] = []
+	const out: string[] = [];
 	for (const raw of values) {
 		// Split on comma, trim whitespace around items
 		const parts = String(raw)
-			.split(',')
-			.map(s => s.trim())
-			.filter(s => s.length > 0)
-		out.push(...parts)
+			.split(",")
+			.map((s) => s.trim())
+			.filter((s) => s.length > 0);
+		out.push(...parts);
 	}
 	// Deduplicate while preserving order
-	const seen = new Set<string>()
-	return out.filter(v => {
-		if (seen.has(v)) return false
-		seen.add(v)
-		return true
-	})
+	const seen = new Set<string>();
+	return out.filter((v) => {
+		if (seen.has(v)) return false;
+		seen.add(v);
+		return true;
+	});
 }
 
 function handleOptionsUpdate(element: Field, value: string[]) {
-	const normalized = normalizeOptionsInput(value)
-	element.options = normalized
+	const normalized = normalizeOptionsInput(value);
+	element.options = normalized;
 }
 
-
 // Debounced key input handling to avoid committing reactive changes on every keystroke
-const keyBuffer = ref<Record<string, string>>({})
-const keyCommitTimers = new Map<string, ReturnType<typeof setTimeout>>()
+const keyBuffer = ref<Record<string, string>>({});
+const keyCommitTimers = new Map<string, ReturnType<typeof setTimeout>>();
 function getDisplayKey(element: Field) {
-	const id = String(element.id ?? "")
-	const buffered = keyBuffer.value[id]
-	return buffered !== undefined ? buffered : (element.key ?? "")
+	const id = String(element.id ?? "");
+	const buffered = keyBuffer.value[id];
+	return buffered !== undefined ? buffered : (element.key ?? "");
 }
 
 // Memoize getField(element) by a stable signature of the element's type/subType
-const getFieldCache = new Map<string, ReturnType<typeof getField>>()
+const getFieldCache = new Map<string, ReturnType<typeof getField>>();
 function getFieldCached(element: Field) {
-	const key = `${Array.isArray(element.type) ? element.type.join(',') : element.type}-${element.subType ?? ''}`
-	const cached = getFieldCache.get(key)
-	if (cached) return cached
-	const v = getField(element)
-	getFieldCache.set(key, v)
-	return v
+	const key = `${Array.isArray(element.type) ? element.type.join(",") : element.type}-${element.subType ?? ""}`;
+	const cached = getFieldCache.get(key);
+	if (cached) return cached;
+	const v = getField(element);
+	getFieldCache.set(key, v);
+	return v;
 }
 function onKeyInput(element: Field, v: string) {
-	const id = String(element.id ?? "")
-	keyBuffer.value[id] = v
-	const existing = keyCommitTimers.get(id)
-	if (existing) clearTimeout(existing)
+	const id = String(element.id ?? "");
+	keyBuffer.value[id] = v;
+	const existing = keyCommitTimers.get(id);
+	if (existing) clearTimeout(existing);
 	const timeout = setTimeout(() => {
-		element.key = v
-		keyCommitTimers.delete(id)
-	}, 200)
-	keyCommitTimers.set(id, timeout)
+		element.key = v;
+		keyCommitTimers.delete(id);
+	}, 200);
+	keyCommitTimers.set(id, timeout);
 }
 </script>
 

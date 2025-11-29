@@ -23,7 +23,7 @@
 		"@iconify-json/tabler": "^1.2.18",
 		"@nuxt/fonts": "^0.11.4",
 		"@nuxt/icon": "^2.0.0",
-		"@nuxt/kit": "^4.1.2",
+		"@nuxt/kit": "^4.2.1",
 		"@nuxtjs/device": "3.2.4",
 		"@tiptap/extension-color": "^2.12.0",
 		"@tiptap/extension-highlight": "^2.12.0",
@@ -40,11 +40,14 @@
 		"inison": "^2.0.1",
 		"jspdf": "^2.5.2",
 		"naive-ui": "^2.43.1",
-		"nuxt": "^4.1.2",
+		"nuxt": "^4.2.1",
 		"nuxt-tiptap-editor": "2.3.1",
 		"pdfjs-dist": "^5.4.394",
 		"vue": "^3.5.21",
 		"vue-router": "^4.5.1",
 		"vuedraggable": "4.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.8"
 	}
 }
