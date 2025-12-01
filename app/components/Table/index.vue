@@ -14,7 +14,7 @@
 							<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 								<NTooltip :delay="1500">
 									<template #trigger>
-										<NButton round>
+										<NButton round size="small">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:tools" />
@@ -37,7 +37,7 @@
 													openDrawer(table.slug)
 												else
 													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
-											}">
+											}"  size="small">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:plus" />
@@ -48,7 +48,7 @@
 									{{ t("newItem") }}
 								</NTooltip>
 							</NDropdown>
-							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" />
+							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" size="small" />
 							<slot name="navbarExtraButtons"></slot>
 						</NButtonGroup>
 						<slot name="navbarExtraActions"></slot>
@@ -71,13 +71,13 @@
 </template>
 
 <script setup lang="ts">
-import { isStringified } from "inibase/utils"
-import Inison from "inison"
+import { isStringified } from "inibase/utils";
+import Inison from "inison";
 import type {
 	DataTableColumns,
 	DropdownOption,
 	NotificationReactive,
-} from "naive-ui"
+} from "naive-ui";
 import {
 	Icon,
 	NuxtLink,
@@ -89,48 +89,44 @@ import {
 	NTime,
 	NTooltip,
 	NFlex,
-} from "#components"
-import { generateSearchArray } from "~/composables/search"
+} from "#components";
+import { generateSearchArray } from "~/composables/search";
 
-const user = useState<User>("user")
-const route = useRoute()
-const router = useRouter()
-const { isMobile } = useDevice()
+const user = useState<User>("user");
+const route = useRoute();
+const router = useRouter();
+const { isMobile } = useDevice();
 
 const searchString = ref<string>(
-	route.query.search as string | undefined ?? "",
-)
+	(route.query.search as string | undefined) ?? "",
+);
 const searchArray = ref<searchType>(
 	route.query.search
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
 		: { and: [[null, "=", null]] },
-)
+);
 
-const columns = ref<DataTableColumns>()
-const data = ref<apiResponse<Item[]>>()
+const columns = ref<DataTableColumns>();
+const data = ref<apiResponse<Item[]>>();
 
-const database = useState<Database>("database")
-const table = useState<Table>("table")
+const database = useState<Database>("database");
+const table = useState<Table>("table");
 
-watch(
-	searchString,
-	(v) => {
-		const { search, page, ...Query }: any = route.query
+watch(searchString, (v) => {
+	const { search, page, ...Query }: any = route.query;
 
-		router.push({
-			query: {
-				...(Query ?? {}),
-				search: v,
-			},
-		})
-
-	},
-)
+	router.push({
+		query: {
+			...(Query ?? {}),
+			search: v,
+		},
+	});
+});
 
 const tablesConfig = computed({
 	get: () => user.value?.config?.tables ?? {},
 	set: (v) => {
-		user.value.config = { ...(user.value.config ?? {}), tables: v }
+		user.value.config = { ...(user.value.config ?? {}), tables: v };
 		$fetch(
 			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
 			{
@@ -143,23 +139,23 @@ const tablesConfig = computed({
 				},
 				credentials: "include",
 			},
-		).catch((err) => window.$message.error(err.message))
+		).catch((err) => window.$message.error(err.message));
 	},
-})
+});
 
 if (tablesConfig.value[table.value.slug]?.view)
-	table.value.displayAs = tablesConfig.value[table.value.slug]?.view
+	table.value.displayAs = tablesConfig.value[table.value.slug]?.view;
 
-const appConfig = useAppConfig()
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const appConfig = useAppConfig();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
-})
+});
 
 async function deleteItem(id?: string | number | (string | number)[]) {
-	if (!data.value) return
-	Loading.value.data = true
+	if (!data.value) return;
+	Loading.value.data = true;
 	const deleteResponse = await $fetch<apiResponse>(
 		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
 		{
@@ -171,9 +167,9 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 			},
 			credentials: "include",
 		},
-	)
-	if (deleteResponse.result) window.$message.success(deleteResponse.message)
-	else window.$message.error(deleteResponse.message)
+	);
+	if (deleteResponse.result) window.$message.success(deleteResponse.message);
+	else window.$message.error(deleteResponse.message);
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
 			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
@@ -181,17 +177,17 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 				credentials: "include",
 				query: { [`${database.value.slug}_sid`]: sessionID.value },
 			},
-		)
+		);
 	else
 		await refreshNuxtData(
 			`${database.value.slug}/${table.value?.slug as string}`,
-		)
+		);
 	if (table.value.config?.log)
 		await refreshNuxtData(
 			`${database.value.slug}/${table.value?.slug as string}/logs`,
-		)
+		);
 }
-provide("deleteItem", deleteItem)
+provide("deleteItem", deleteItem);
 
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
@@ -199,104 +195,104 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						class: "viewItemButton",
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-							),
-					},
-				)
+						NButton,
+						{
+							class: "viewItemButton",
+							secondary: true,
+							circle: true,
+							type: "primary",
+						},
+						{
+							icon: () =>
+								h(
+									NuxtLink,
+									{
+										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+									},
+									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+								),
+						},
+					)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						class: "editItemButton",
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault()
-							if (!isMobile)
-								openDrawer(table.value?.slug as string, row.id, toRaw(row))
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-								)
+						NButton,
+						{
+							class: "editItemButton",
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault();
+								if (!isMobile)
+									openDrawer(table.value?.slug as string, row.id, toRaw(row));
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+									);
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-				)
+						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+					)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => deleteItem(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									class: "deleteItemButton",
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () =>
-										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => deleteItem(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										class: "deleteItemButton",
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
-	)
+	);
 }
-provide("renderItemButtons", renderItemButtons)
+provide("renderItemButtons", renderItemButtons);
 
 defineExpose<TableRef>({
 	search: searchArray as searchType,
 	columns: columns as any,
 	delete: deleteItem,
 	data: data as any,
-})
+});
 
 const slots = defineSlots<{
-	default(props: { data?: apiResponse<Item[]> }): any
+	default(props: { data?: apiResponse<Item[]> }): any;
 	form(props: {
-		onAfterCreate: () => Promise<void>
-		onAfterUpdate: () => Promise<void>
-	}): any
-	navbarActions(): any
-	navbarExtraButtons(): any
-	navbarExtraActions(): any
-	itemActions(props: Item): any
-	itemExtraActions(props: Item): any
-	itemExtraButtons(props: Item): any
-	item(props: Item): any
-}>()
+		onAfterCreate: () => Promise<void>;
+		onAfterUpdate: () => Promise<void>;
+	}): any;
+	navbarActions(): any;
+	navbarExtraButtons(): any;
+	navbarExtraActions(): any;
+	itemActions(props: Item): any;
+	itemExtraActions(props: Item): any;
+	itemExtraButtons(props: Item): any;
+	item(props: Item): any;
+}>();
 
-const isSlotSet = (slotName: keyof typeof slots) => !!slots[slotName]
+const isSlotSet = (slotName: keyof typeof slots) => !!slots[slotName];
 
-provide("isSlotSet", isSlotSet)
+provide("isSlotSet", isSlotSet);
 
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
@@ -305,22 +301,22 @@ if (isSlotSet("default") && !table.value.displayAs)
 			credentials: "include",
 			query: { [`${database.value.slug}_sid`]: sessionID.value },
 		},
-	)
+	);
 
-const notificationRef = ref<NotificationReactive>()
-const currentJob = computed(() => table.value?.currentJob)
+const notificationRef = ref<NotificationReactive>();
+const currentJob = computed(() => table.value?.currentJob);
 async function jobNotification() {
 	if (currentJob.value) {
 		if (!notificationRef.value)
 			notificationRef.value = window.$notification.info({
 				title: t(`an_${currentJob.value}_job_is_running_in_background`),
 				onClose() {
-					notificationRef.value?.destroy()
-					notificationRef.value = undefined
-					table.value.currentJob = undefined
+					notificationRef.value?.destroy();
+					notificationRef.value = undefined;
+					table.value.currentJob = undefined;
 				},
 				meta: () => h(NTime),
-			})
+			});
 
 		const jobTimer = setInterval(async () => {
 			if (notificationRef.value) {
@@ -332,11 +328,11 @@ async function jobNotification() {
 							query: { [`${database.value.slug}_sid`]: sessionID.value },
 						},
 					)
-				).result
+				).result;
 
 				if (currentJobProgress === 100) {
-					clearInterval(jobTimer)
-					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`)
+					clearInterval(jobTimer);
+					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`);
 					if (currentJob.value === "export")
 						notificationRef.value.action = () =>
 							h(
@@ -347,19 +343,20 @@ async function jobNotification() {
 									onClick: () => {
 										window.open(
 											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
-										)
-										notificationRef.value?.destroy()
-										notificationRef.value = undefined
-										table.value.currentJob = undefined
+										);
+										notificationRef.value?.destroy();
+										notificationRef.value = undefined;
+										table.value.currentJob = undefined;
 									},
 								},
 								{
 									default: () => t("download"),
 								},
-							)
+							);
 					setTimeout(() => {
-						if (notificationRef.value) notificationRef.value.content = undefined
-					}, 500)
+						if (notificationRef.value)
+							notificationRef.value.content = undefined;
+					}, 500);
 				} else
 					notificationRef.value.content = () =>
 						h(NProgress, {
@@ -367,15 +364,15 @@ async function jobNotification() {
 							percentage: currentJobProgress,
 							indicatorPlacement: "inside",
 							processing: true,
-						})
+						});
 			}
-		}, 1000)
+		}, 1000);
 	}
 }
-watch(currentJob, jobNotification)
-onMounted(jobNotification)
+watch(currentJob, jobNotification);
+onMounted(jobNotification);
 
-const tableViewRef = ref()
+const tableViewRef = ref();
 
 const toolsDropdownOptions = computed(() => [
 	{
@@ -453,7 +450,7 @@ const toolsDropdownOptions = computed(() => [
 			},
 		],
 	},
-])
+]);
 
 async function toolsDropdownOnSelect(
 	value:
@@ -475,28 +472,28 @@ async function toolsDropdownOnSelect(
 					credentials: "include",
 					query: { [`${database.value.slug}_sid`]: sessionID.value },
 				},
-			)
-			table.value.currentJob = "export"
-			break
+			);
+			table.value.currentJob = "export";
+			break;
 		}
 		case "exportCurrentData": {
 			tableViewRef.value.dataTableRef?.downloadCsv({
 				fileName: `${table.value.slug}-${new Date().toISOString().split("T")[0]}`,
 				keepOriginalData: false,
-			})
-			break
+			});
+			break;
 		}
 		case "tableSizeS":
 		case "tableSizeM":
 		case "tableSizeL":
 		case "viewTable":
 		case "viewKanban": {
-			const clonedTablesConfig = structuredClone(toRaw(tablesConfig.value))
-			const displayAs = value === "viewKanban" ? "kanban" : undefined
+			const clonedTablesConfig = structuredClone(toRaw(tablesConfig.value));
+			const displayAs = value === "viewKanban" ? "kanban" : undefined;
 			if (!clonedTablesConfig[table.value.slug])
-				clonedTablesConfig[table.value.slug] = {}
+				clonedTablesConfig[table.value.slug] = {};
 			// @ts-ignore
-			clonedTablesConfig[table.value.slug].view = displayAs
+			clonedTablesConfig[table.value.slug].view = displayAs;
 
 			if (value.startsWith("tableSize"))
 				// @ts-ignore
@@ -504,11 +501,11 @@ async function toolsDropdownOnSelect(
 					? "small"
 					: value.endsWith("L")
 						? "large"
-						: undefined
-			else data.value = undefined
-			table.value.displayAs = displayAs
-			tablesConfig.value = clonedTablesConfig
-			break
+						: undefined;
+			else data.value = undefined;
+			table.value.displayAs = displayAs;
+			tablesConfig.value = clonedTablesConfig;
+			break;
 		}
 	}
 }
@@ -519,38 +516,38 @@ const createDropdownOptions: DropdownOption[] = [
 		key: "paste",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
-]
+];
 async function createDropdownOnSelect(value: string) {
 	try {
-		const itemFromClipboard = await navigator.clipboard.readText()
+		const itemFromClipboard = await navigator.clipboard.readText();
 
 		if (!itemFromClipboard) {
-			window.$message.error(t("clipboardEmpty"))
-			return
+			window.$message.error(t("clipboardEmpty"));
+			return;
 		}
 		if (!isStringified(itemFromClipboard)) {
-			window.$message.error(t("clipboardItemIsNotCorrect"))
-			return
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
 		}
 
-		const unstringifiedItem = Inison.unstringify<Item>(itemFromClipboard)
+		const unstringifiedItem = Inison.unstringify<Item>(itemFromClipboard);
 		if (!unstringifiedItem) {
-			window.$message.error(t("clipboardItemIsNotCorrect"))
-			return
+			window.$message.error(t("clipboardItemIsNotCorrect"));
+			return;
 		}
 
 		switch (value) {
 			case "paste": {
 				if (!isMobile)
-					openDrawer(table.value.slug, undefined, unstringifiedItem)
+					openDrawer(table.value.slug, undefined, unstringifiedItem);
 				else
 					await navigateTo(
 						`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/new?data=${itemFromClipboard}`,
-					)
+					);
 			}
 		}
 	} catch {
-		window.$message.error(t("clipboardItemIsNotCorrect"))
+		window.$message.error(t("clipboardItemIsNotCorrect"));
 	}
 }
 
@@ -559,5 +556,5 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-})
+});
 </script>
