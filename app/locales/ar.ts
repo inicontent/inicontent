@@ -279,6 +279,7 @@ export default {
 		extendWhere: "توسيع البحث",
 		labelsColoring: "تفعيل الألوان",
 		optionLabel: "إسم الخيار",
+		optionColor: "لون الخيار",
 		optimizeAssets: "تحسين الملفات",
 		optimizeAssetsDescription: "ضغط وتحسين الملفات المرفوعة تلقائياً لأداء أفضل",
 

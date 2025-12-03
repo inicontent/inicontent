@@ -277,6 +277,7 @@ export default {
 		extendWhere: "Étendre la recherche",
 		labelsColoring: "Coloration des étiquettes",
 		optionLabel: "Nom de l'option",
+		optionColor: "Couleur de l'option",
 		optimizeAssets: "Optimiser les fichiers",
 		optimizeAssetsDescription:
 			"Compresser et optimiser automatiquement les fichiers téléchargés pour de meilleures performances",

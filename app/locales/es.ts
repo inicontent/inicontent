@@ -275,6 +275,7 @@ export default {
 		extendWhere: "Extender búsqueda",
 		labelsColoring: "Coloración de etiquetas",
 		optionLabel: "Nombre de la opción",
+		optionColor: "Color de la opción",
 		optimizeAssets: "Optimizar archivos",
 		optimizeAssetsDescription:
 			"Comprimir y optimizar automáticamente los archivos cargados para mejor rendimiento",
