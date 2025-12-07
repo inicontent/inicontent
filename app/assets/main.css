@@ -490,6 +490,12 @@ body {
 	border-radius: 15px;
 }
 
+.list .asset,
+.list .asset img {
+	width: 40px;
+	height: 40px;
+}
+
 .n-upload-file-info__thumbnail .asset,
 .n-upload-file-info__thumbnail .asset img {
 	width: 32px;
