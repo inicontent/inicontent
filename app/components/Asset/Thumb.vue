@@ -2,36 +2,36 @@
     <!-- Image -->
     <NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
         :intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)"
-        @click="handleImageClick" :width="size" :height="size" />
+        @click="handleAssetClick" :width="size" :height="size" />
 
     <!-- PDF with thumbnail -->
     <NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset" :src="pdfThumbs[assetKey]"
-        :intersectionObserverOptions lazy preview-disabled @click="handlePreviewClick" :width="size" :height="size" />
+        :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
 
     <!-- PDF generating thumbnail -->
     <NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
         <NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()"
-            @click="handleModifierOnlyClick" :style="size ? `width: ${size}px; height: ${size}px;overflow: hidden;` : ''">
+            @click="handleAssetClick" :width="size" :height="size">
             <LazyAssetIcon :type="asset.type" class="icon" />
         </NIcon>
     </NSpin>
 
     <!-- Video with thumbnail -->
     <NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
-        :src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handlePreviewClick" :style="size ? `width: ${size}px; height: ${size}px;overflow: hidden;` : ''" />
+        :src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
 
     <!-- Video generating thumbnail -->
     <NSpin v-else-if="videoExtensions.includes(asset.extension)"
         :show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
         <NIcon class="asset"
             v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
-            @click="handleModifierOnlyClick" :style="size ? `width: ${size}px; height: ${size}px;overflow: hidden;` : ''">
+                @click="handleAssetClick" :size>
             <LazyAssetIcon :type="asset.type" class="icon" />
         </NIcon>
     </NSpin>
 
     <!-- Other file types as icon -->
-    <NIcon v-else class="asset" @click="handleModifierOnlyClick" :style="size ? `width: ${size}px; height: ${size}px;overflow: hidden;` : ''">
+    <NIcon v-else class="asset" @click="handleAssetClick" :size="size">
         <LazyAssetIcon :type="asset.type" class="icon" />
     </NIcon>
 </template>
@@ -171,28 +171,53 @@ async function generatePdfThumb() {
 			return cached;
 		}
 
+		// Check file size before attempting to load
+		// Limit to 50MB to prevent memory issues with large PDFs
+		const maxFileSizeBytes = 50 * 1024 * 1024;
+		if (asset.size && asset.size > maxFileSizeBytes) {
+			console.warn(
+				`PDF file too large (${Math.round(asset.size / 1024 / 1024)}MB). Skipping thumbnail generation.`,
+			);
+			pdfThumbs[key] = undefined;
+			return;
+		}
+
 		// Dynamically import pdfjs-dist to avoid bundling issues
 		const pdfjsLib = await import("pdfjs-dist");
 		// Set worker source from CDN to avoid loading local worker file
 		pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-		const pdf = await pdfjsLib.getDocument(asset.publicURL).promise;
-		if (!pdf || pdf.numPages === 0) {
+		// Create a timeout promise to abort if loading takes too long
+		const timeoutPromise: Promise<never> = new Promise((_resolve, reject) => {
+			setTimeout(() => reject(new Error("PDF loading timeout")), 30000); // 30 second timeout
+		});
+
+		const pdf = await Promise.race([
+			pdfjsLib.getDocument(asset.publicURL as string)
+				.promise as Promise<unknown>,
+			timeoutPromise,
+		]);
+
+		if (!pdf || !(pdf as any).numPages || (pdf as any).numPages === 0) {
 			pdfThumbs[key] = undefined;
 			return;
 		}
 
-		const page = await pdf.getPage(1);
+		const page = await Promise.race([
+			(pdf as any).getPage(1) as Promise<unknown>,
+			timeoutPromise,
+		]);
+
 		// Create a smaller square thumbnail (200x200px)
 		const thumbnailSize = 200;
-		const viewport = page.getViewport({ scale: 1 });
+		const viewport = (page as any).getViewport({ scale: 1 });
 
 		// Calculate scale to cover the square (like CSS cover) - use MAX instead of MIN
 		const scale = Math.max(
 			thumbnailSize / viewport.width,
 			thumbnailSize / viewport.height,
 		);
-		const scaledViewport = page.getViewport({ scale });
+		const scaledViewport = (page as any).getViewport({ scale });
 
 		const canvas = document.createElement("canvas");
 		// Make the canvas square
@@ -210,11 +235,14 @@ async function generatePdfThumb() {
 		const offsetY = (thumbnailSize - scaledViewport.height) / 2;
 		ctx.translate(offsetX, offsetY);
 
-		await page.render({
-			canvasContext: ctx,
-			viewport: scaledViewport,
-			canvas: canvas,
-		}).promise;
+		await Promise.race([
+			(page as any).render({
+				canvasContext: ctx,
+				viewport: scaledViewport,
+				canvas: canvas,
+			}).promise as Promise<unknown>,
+			timeoutPromise,
+		]);
 
 		const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
 		pdfThumbs[key] = dataUrl;
@@ -322,33 +350,20 @@ const shouldListenForDownloadShortcut = computed(
 );
 let removePreviewShortcut: (() => void) | undefined;
 
-function openAssetInNewTab(file: Asset = asset) {
-	if (!file.publicURL) return;
-	window.open(file.publicURL as string, "_blank", "noopener");
-}
+function handleAssetClick(event: MouseEvent) {
+	if (
+		asset.extension === "pdf" ||
+		(!videoExtensions.includes(asset.extension) &&
+			!imageExtensions.includes(asset.extension))
+	)
+		return window.open(asset.publicURL as string, "_blank");
 
-function handleModifierOpen(event: MouseEvent) {
-	if (!(event.ctrlKey || event.metaKey)) return false;
-	event.preventDefault();
-	event.stopPropagation();
-	openAssetInNewTab();
-	return true;
-}
-
-function handleImageClick(event: MouseEvent) {
-	handleModifierOpen(event);
-}
-
-function handlePreviewClick(event: MouseEvent) {
-	if (asset.extension === "pdf") {
-		openAssetInNewTab();
-		return;
+	if (event.ctrlKey || event.metaKey) {
+		event.preventDefault();
+		event.stopPropagation();
+		return window.open(asset.publicURL as string, "_blank");
 	}
-	if (!handleModifierOpen(event)) showPreview();
-}
-
-function handleModifierOnlyClick(event: MouseEvent) {
-	handleModifierOpen(event);
+	return false;
 }
 
 async function triggerAssetDownload(file: Asset = asset) {

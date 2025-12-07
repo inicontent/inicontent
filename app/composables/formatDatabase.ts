@@ -7,8 +7,8 @@ export default function () {
 
 	const findTable = (slug: string) => tables.find((t) => t.slug === slug)
 
-	const processField = (field: any): string | string[] | undefined => {
-		const fieldTable = findTable(field.table)
+	const processField = (field: Field): string | string[] | undefined => {
+		const fieldTable = findTable(field.table as string)
 		if (!fieldTable?.schema) return
 		if (
 			!(
@@ -36,10 +36,11 @@ export default function () {
 			const tokens = fieldTable.label
 				.split(/(@\w+)/g)
 				.filter((token) => token.startsWith("@"))
+
 			for (const token of tokens) {
-				const labelId = token.slice(1)
+				const labelId = Number(token.slice(1))
 				const labelField = fieldTableFlatSchema.find(
-					(f: any) => f.id === labelId,
+					(f: Field) => f.id === labelId,
 				)
 				if (!labelField) continue
 
@@ -79,7 +80,7 @@ export default function () {
 			const flatSchema = flattenSchema(table.schema as any)
 			const columns = flatSchema
 				.filter(
-					(field: any) => Boolean(field.table) && field.table !== "assets",
+					(field: Field) => Boolean(field.table) && field.table !== "assets",
 				)
 				.flatMap(processField)
 				.filter((col): col is string => col !== undefined)

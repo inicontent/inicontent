@@ -58,9 +58,12 @@
 									<LazyAssetThumb :asset="asset" :container-selector="`#${targetID ?? 'container'}`"
 										@click="handleOnClickAsset($event, asset)" />
 								</div>
-								<NPerformantEllipsis expand-trigger="click" line-clamp="1">
-									{{ asset.name }}{{ asset.extension ? `.${asset.extension}` : '' }}
-								</NPerformantEllipsis>
+								<span>
+									<NPerformantEllipsis style="max-width:calc(100% - 29px)">
+										{{ asset.name }}
+									</NPerformantEllipsis>
+									{{ asset.extension ? `.${asset.extension}` : '' }}
+								</span>
 							</NFlex>
 						</div>
 					</NGridItem>
