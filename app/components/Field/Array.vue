@@ -11,7 +11,7 @@
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
 	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
-		:default-expanded-names="field.expand ? field.id : undefined" v-model:expanded-names="parentExpanded"
+		:default-expanded-names="field.expand ? String(field.id) : undefined" v-model:expanded-names="parentExpanded"
 		accordion>
 		<template #arrow>
 			<NIcon>
@@ -61,7 +61,9 @@
 										</NIcon>
 									</template>
 								</NButton>
-								<component v-if="field.itemExtraButtons" :is="field.itemExtraButtons(index)">
+								<component v-if="field.itemExtraButtons && !Array.isArray(field.itemExtraButtons)" :is="field.itemExtraButtons(index)">
+								</component>
+								<component v-else-if="field.itemExtraButtons && Array.isArray(field.itemExtraButtons)" v-for="component in field.itemExtraButtons(index)" :is="component">
 								</component>
 							</NButtonGroup>
 						</NFlex>
@@ -111,7 +113,11 @@
 <script setup lang="ts">
 import { isArrayOfObjects, isStringified } from "inibase/utils";
 import Inison from "inison";
-import type { DataTableColumns, DropdownOption } from "naive-ui";
+import {
+	NButtonGroup,
+	type DataTableColumns,
+	type DropdownOption,
+} from "naive-ui";
 import {
 	Icon,
 	LazyField,
@@ -265,7 +271,7 @@ function setColumns() {
 					modelValue: (modelValue.value as Item[])[index][child.key],
 				}),
 		})),
-		field.disableActions === true
+		field.disableItemActions === true
 			? {}
 			: {
 					title: t("actions"),
@@ -273,34 +279,33 @@ function setColumns() {
 					align: "center",
 					width: 100,
 					key: "actions",
-					render(_row: any, index: number) {
-						return h(
-							NTooltip,
-							{ delay: 500 },
-							{
-								trigger: () =>
-									h(
-										NButton,
-										{
-											disabled:
-												typeof field.inputProps === "function"
-													? field.inputProps(index)?.disabled
-													: field.inputProps?.disabled,
-											strong: true,
-											secondary: true,
-											circle: true,
-											type: "error",
-											onClick: () => handleDeleteItem(index),
-										},
-										{
-											icon: () =>
-												h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-										},
-									),
-								default: () => t("delete"),
-							},
-						);
-					},
+					render: (_row: any, index: number) =>
+						h(NButtonGroup, () =>
+							[
+								field.itemExtraButtons ? field.itemExtraButtons(index) : null,
+								h(
+									NButton,
+									{
+										disabled:
+											typeof field.inputProps === "function"
+												? field.inputProps(index)?.disabled
+												: field.inputProps?.disabled,
+
+										secondary: true,
+										circle: true,
+										size: "small",
+										type: "error",
+										onClick: () => handleDeleteItem(index),
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							]
+								.filter((i) => i !== null)
+								.flat(Infinity),
+						),
 				},
 	] as DataTableColumns<any>;
 

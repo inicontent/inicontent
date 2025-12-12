@@ -1,5 +1,5 @@
 <template>
-	<NCollapse :default-expanded-names="field.expand ? field.id : undefined" display-directive="show"
+	<NCollapse :default-expanded-names="field.expand ? String(field.id) : undefined" display-directive="show"
 		arrow-placement="right" :trigger-areas="['main', 'arrow']" accordion>
 		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="field.id">
 			<template #header>

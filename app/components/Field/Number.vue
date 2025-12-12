@@ -13,18 +13,15 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormItemRule } from "naive-ui"
-
-const { field } = defineProps<{ field: Field }>()
-
-const modelValue = defineModel<number>()
-
+import type { FormItemRule } from "naive-ui";
+const { field } = defineProps<{ field: Field }>();
+const modelValue = defineModel<number>();
 const rule: FormItemRule = {
 	trigger: ["blur", "input"],
 	required: field.required,
 	validator: async () => {
-		await nextTick()
-		return fieldValidator(field, modelValue.value)
+		await nextTick();
+		return fieldValidator(field, modelValue.value);
 	},
-}
+};
 </script>

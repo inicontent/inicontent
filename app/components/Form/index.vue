@@ -69,7 +69,12 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	for (let index = 0; index < updated.length; index++) {
 		const item = updated[index];
 		if (!item) continue;
-		const existingItem = existing.find((_item) => _item.id === item.id);
+
+		const existingItem = existing.find(
+			(_item, index) =>
+				!customItemsIndex.includes(index) && _item.id === item.id,
+		);
+		if (!existingItem) continue;
 
 		if (
 			item.children &&
