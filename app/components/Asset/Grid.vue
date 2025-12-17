@@ -196,17 +196,17 @@ function dropdownOnClickOutside(e: MouseEvent) {
 const route = useRoute();
 
 async function handleOnClickAsset(e: MouseEvent, asset: Asset) {
-	if (e.ctrlKey || e.metaKey) {
-		e.preventDefault();
-		window.open(asset.publicURL);
-		return;
-	}
 	if (asset.type === "dir") {
 		if (isAssetRoute)
 			return navigateTo(
 				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${path.value}/${asset.name}`,
 			);
 		path.value += `/${asset.name}`;
+		return;
+	}
+	if (e.ctrlKey || e.metaKey) {
+		e.preventDefault();
+		window.open(asset.publicURL);
 		return;
 	}
 	if (

@@ -94,36 +94,111 @@ async function generateVideoThumb(timeSec = 0.5) {
 			video.crossOrigin = "anonymous";
 			video.preload = "metadata";
 			video.muted = true;
-			video.src = asset.publicURL;
+			// iOS specific: required for inline playback
+			video.playsInline = true;
+			// iOS specific: disable picture-in-picture
+			video.setAttribute("playsinline", "");
+			video.setAttribute("webkit-playsinline", "");
 
 			const cleanup = () => {
-				video.removeEventListener("loadeddata", onLoaded);
+				video.removeEventListener("loadedmetadata", onLoadedMetadata);
+				video.removeEventListener("loadeddata", onLoadedData);
 				video.removeEventListener("seeked", onSeeked);
 				video.removeEventListener("error", onError);
+				video.removeEventListener("canplay", onCanPlay);
+				video.pause();
+				video.src = "";
+				video.load();
 			};
-			const onError = () => {
+
+			const onError = (error: Event) => {
+				console.warn("Video thumbnail generation error:", error);
 				cleanup();
 				resolve(undefined);
 			};
-			const onLoaded = () => {
+
+			let metadataLoaded = false;
+			let dataLoaded = false;
+
+			const onLoadedMetadata = () => {
+				metadataLoaded = true;
+				trySeek();
+			};
+
+			const onLoadedData = () => {
+				dataLoaded = true;
+				trySeek();
+			};
+
+			const onCanPlay = () => {
+				if (!metadataLoaded || !dataLoaded) {
+					trySeek();
+				}
+			};
+
+			const trySeek = () => {
+				// Wait for both metadata and data to be loaded (or canplay event)
+				if (!video.duration || video.duration === Infinity) {
+					// Duration not available yet, wait
+					return;
+				}
+
 				try {
 					const target = Number.isFinite(video.duration)
 						? Math.min(timeSec, Math.max(0, video.duration - 0.1))
 						: 0;
-					if (target > 0) {
-						video.currentTime = target;
+
+					// iOS: Try to play briefly to trigger frame loading
+					const playPromise = video.play();
+					if (playPromise !== undefined) {
+						playPromise
+							.then(() => {
+								// Pause immediately after play succeeds
+								video.pause();
+								// Now seek to target time
+								if (target > 0 && video.currentTime !== target) {
+									video.currentTime = target;
+								} else {
+									// Already at position 0 or target, capture now
+									captureFrame();
+								}
+							})
+							.catch(() => {
+								// Play failed (might be restricted), try direct seek
+								if (target > 0) {
+									video.currentTime = target;
+								} else {
+									captureFrame();
+								}
+							});
 					} else {
-						onSeeked();
+						// Old browsers without promise
+						video.pause();
+						if (target > 0) {
+							video.currentTime = target;
+						} else {
+							captureFrame();
+						}
 					}
-				} catch {
-					onError();
+				} catch (error) {
+					console.warn("Error during video seek:", error);
+					// Try to capture current frame anyway
+					captureFrame();
 				}
 			};
-			const onSeeked = () => {
+
+			const captureFrame = () => {
 				try {
 					const canvas = document.createElement("canvas");
 					canvas.width = video.videoWidth || 320;
 					canvas.height = video.videoHeight || 180;
+
+					// Handle case where dimensions are still not available
+					if (canvas.width === 0 || canvas.height === 0) {
+						canvas.width = 320;
+						canvas.height = 180;
+					}
+
 					const ctx = canvas.getContext("2d");
 					if (!ctx) {
 						cleanup();
@@ -134,25 +209,50 @@ async function generateVideoThumb(timeSec = 0.5) {
 					const url = canvas.toDataURL("image/jpeg", 0.7);
 					cleanup();
 					resolve(url);
-				} catch {
+				} catch (error) {
+					console.warn("Error capturing video frame:", error);
 					cleanup();
 					resolve(undefined);
 				}
 			};
 
-			video.addEventListener("loadeddata", onLoaded, { once: true });
+			const onSeeked = () => {
+				captureFrame();
+			};
+
+			video.addEventListener("loadedmetadata", onLoadedMetadata, {
+				once: false,
+			});
+			video.addEventListener("loadeddata", onLoadedData, { once: false });
+			video.addEventListener("canplay", onCanPlay, { once: false });
 			video.addEventListener("seeked", onSeeked, { once: true });
 			video.addEventListener("error", onError, { once: true });
+
+			// iOS: Must set src before load()
+			video.src = asset.publicURL;
+			// iOS: Explicitly call load() to start loading metadata
+			video.load();
+
+			// Fallback timeout in case events don't fire
+			setTimeout(() => {
+				if (videoThumbs[key] === undefined) {
+					console.warn("Video thumbnail generation timeout");
+					cleanup();
+					resolve(undefined);
+				}
+			}, 15000); // 15 second timeout
 		});
 
 		videoThumbs[key] = dataUrl;
 
 		// Cache the generated thumbnail
 		if (dataUrl) await cacheThumbnail(`video-${key}`, dataUrl);
-	} catch {
+	} catch (error) {
+		console.warn("Error in generateVideoThumb:", error);
 		videoThumbs[key] = undefined;
+	} finally {
+		generatingVideo[key] = false;
 	}
-	generatingVideo[key] = false;
 	return videoThumbs[key];
 }
 
@@ -351,6 +451,7 @@ const shouldListenForDownloadShortcut = computed(
 let removePreviewShortcut: (() => void) | undefined;
 
 function handleAssetClick(event: MouseEvent) {
+	if (asset.type === "dir") return false;
 	if (
 		asset.extension === "pdf" ||
 		(!videoExtensions.includes(asset.extension) &&
