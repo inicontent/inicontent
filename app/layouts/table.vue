@@ -24,35 +24,35 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuOption } from "naive-ui"
-import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components"
+import type { MenuOption } from "naive-ui";
+import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components";
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 onBeforeUpdate(() => {
-	clearNuxtState("isMenuOpen")
-})
+	clearNuxtState("isMenuOpen");
+});
 
-const appConfig = useAppConfig()
-const route = useRoute()
-const user = useState<User>("user")
-const table = useState<Table>("table")
-const isMenuOpen = useState("isMenuOpen", () => false)
-const database = useState<Database>("database")
+const appConfig = useAppConfig();
+const route = useRoute();
+const user = useState<User>("user");
+const table = useState<Table>("table");
+const isMenuOpen = useState("isMenuOpen", () => false);
+const database = useState<Database>("database");
 const defaultValue = computed(() => {
 	const lastPathInRoute = decodeURIComponent(
 		route.path.split("/").filter(Boolean).at(-1) ?? "",
-	)
+	);
 	if (table.value?.slug) {
 		if (lastPathInRoute && lastPathInRoute !== table.value.slug)
-			return `${table.value.slug}-${lastPathInRoute}`
-		return table.value.slug
+			return `${table.value.slug}-${lastPathInRoute}`;
+		return table.value.slug;
 	}
-	return decodeURI(lastPathInRoute?.toString() ?? "")
-})
+	return decodeURI(lastPathInRoute?.toString() ?? "");
+});
 
 function renderSingleItem(table: Table): MenuOption {
-	const tableUrl = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`
+	const tableUrl = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.slug}`;
 	const itemChildren = [
 		{
 			label: () =>
@@ -110,7 +110,7 @@ function renderSingleItem(table: Table): MenuOption {
 				user.value?.role === appConfig.idOne &&
 				!["sessions", "translations"].includes(table.slug),
 		},
-	]
+	];
 	return {
 		label: () =>
 			h(
@@ -130,16 +130,31 @@ function renderSingleItem(table: Table): MenuOption {
 				children: itemChildren.length ? itemChildren : undefined,
 			},
 		],
-	}
+	};
 }
 
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-			...(database.value.tables
-				.filter(
+				...(database.value.tables
+					.filter(
+						({ slug, allowedMethods, show }) =>
+							![
+								"users",
+								"sessions",
+								"assets",
+								"translations",
+								"pages",
+								"blocks",
+							].includes(slug) &&
+							!!allowedMethods &&
+							allowedMethods.trim() !== "" &&
+							show !== false,
+					)
+					.map(renderSingleItem) ?? []),
+				database.value.tables.filter(
 					({ slug, allowedMethods, show }) =>
-						![
+						[
 							"users",
 							"sessions",
 							"assets",
@@ -147,39 +162,27 @@ const menuOptions = computed(() =>
 							"pages",
 							"blocks",
 						].includes(slug) &&
-						allowedMethods?.includes("r") &&
+						!!allowedMethods &&
+						allowedMethods.trim() !== "" &&
 						show !== false,
-				)
-				.map(renderSingleItem) ?? []),
-			database.value.tables.filter(
-				({ slug, allowedMethods, show }) =>
-					[
-						"users",
-						"sessions",
-						"assets",
-						"translations",
-						"pages",
-						"blocks",
-					].includes(slug) &&
-					allowedMethods?.includes("r") &&
-					show !== false,
-			).length
-				? {
-					key: "divider-1",
-					type: "divider",
-				}
-				: undefined,
-			...(database.value.tables
-				?.filter(
-					({ slug, allowedMethods, show }) =>
-						["users", "sessions", "assets", "pages", "blocks"].includes(
-							slug,
-						) &&
-						allowedMethods?.includes("r") &&
-						show !== false,
-				)
-				.map(renderSingleItem) ?? []),
-		].filter((item) => item) as MenuOption[])
+				).length
+					? {
+							key: "divider-1",
+							type: "divider",
+						}
+					: undefined,
+				...(database.value.tables
+					?.filter(
+						({ slug, allowedMethods, show }) =>
+							["users", "sessions", "assets", "pages", "blocks"].includes(
+								slug,
+							) &&
+							!!allowedMethods &&
+							allowedMethods.trim() !== "" &&
+							show !== false,
+					)
+					.map(renderSingleItem) ?? []),
+			].filter((item) => item) as MenuOption[])
 		: [],
-)
+);
 </script>
