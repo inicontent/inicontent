@@ -452,18 +452,21 @@ let removePreviewShortcut: (() => void) | undefined;
 
 function handleAssetClick(event: MouseEvent) {
 	if (asset.type === "dir") return false;
-	if (
-		asset.extension === "pdf" ||
-		(!videoExtensions.includes(asset.extension) &&
-			!imageExtensions.includes(asset.extension))
-	)
-		return window.open(asset.publicURL as string, "_blank");
 
 	if (event.ctrlKey || event.metaKey) {
 		event.preventDefault();
 		event.stopPropagation();
 		return window.open(asset.publicURL as string, "_blank");
 	}
+
+	if (asset.extension === "pdf")
+		return window.open(asset.publicURL as string, "_blank");
+
+	if (videoExtensions.includes(asset.extension)) {
+		currentPreviewAsset.value = asset;
+		Loading.value.previewModal = true;
+	}
+
 	return false;
 }
 
@@ -543,14 +546,4 @@ watch(
 onBeforeUnmount(() => {
 	cleanupPreviewShortcut();
 });
-
-async function showPreview() {
-	if (
-		imageExtensions.includes(asset.extension) ||
-		videoExtensions.includes(asset.extension)
-	) {
-		currentPreviewAsset.value = asset;
-		Loading.value.previewModal = true;
-	}
-}
 </script>
