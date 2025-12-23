@@ -3,7 +3,7 @@
         @esc="onClosePreview" :width="800">
         <NSpin v-if="currentPreviewAsset" :show="Loading.previewModal" size="large" style="width: 80%;">
             <video v-if="videoExtensions.includes(currentPreviewAsset.extension)" controls autoplay
-                style="width:100%;height:auto" :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
+                style="width:100%;height:auto;max-height:100vh;" :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
                 @loadeddata="Loading.previewModal = false" @canplay="Loading.previewModal = false"
                 @error="Loading.previewModal = false">
                 <source :src="currentPreviewAsset?.publicURL" :type="currentPreviewAsset?.type" />
@@ -18,12 +18,12 @@
 </template>
 
 <script setup lang="ts">
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset")
+const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset");
 
 function onClosePreview() {
-    currentPreviewAsset.value = undefined
-    Loading.value.previewModal = false
+	currentPreviewAsset.value = undefined;
+	Loading.value.previewModal = false;
 }
 </script>
