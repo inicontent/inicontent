@@ -344,7 +344,7 @@ const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 		onResponse: ({ response: { _data } }) => {
 			Loading.value.AssetData = false;
 
-			if (!_data?.result) return;
+			_data = _data as apiResponse<Asset[]>;
 
 			assets.value = _data.result;
 
