@@ -16,7 +16,7 @@
 			<NFlex>
 				<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema size="small" />
 				<NButtonGroup round>
-					<NPopover>
+					<NPopover placement="top-start">
 						<template #trigger>
 							<NButton round size="small">
 								<template #icon>
@@ -48,7 +48,7 @@
 					<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
 						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
-						<NPopover trigger="manual" placement="bottom-end"
+						<NPopover trigger="manual" placement="top-end"
 							:show="UploadProgress > 0 && UploadProgress !== 1001">
 							<template #trigger>
 								<NUploadTrigger :abstract="false">
