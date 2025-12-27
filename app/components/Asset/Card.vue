@@ -284,7 +284,7 @@ watch(searchString, (v) => {
 	});
 });
 
-const schema = [
+const schema: Schema = [
 	{
 		key: "name",
 		type: "string",
@@ -336,7 +336,7 @@ const schema = [
 ];
 
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
-	`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
+	() => `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
 	{
 		onRequest: () => {
 			Loading.value.AssetData = true;

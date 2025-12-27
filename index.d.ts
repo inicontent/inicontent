@@ -6,7 +6,7 @@ import type {
 	FieldType as dbFieldType,
 	pageInfo,
 } from "inibase"
-import type { DataTableColumns, SelectOption } from "naive-ui"
+import type { DataTableColumns, SelectOption, SelectBaseOption } from "naive-ui"
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider"
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider"
 import type languages from "~/composables/Translation/languages"
@@ -52,7 +52,7 @@ declare global {
 		isArray?: boolean
 		searchIn?: string[]
 		image?: string
-		options?: ((string | number) | SelectOption | [string | number, string])[]
+		options?: ((string | number) | SelectOption | Record<string, string | number | (string | number)[]> | [string | number, string])[]
 		labelProps?: any
 		inputProps?: any
 		onCreate?: any
