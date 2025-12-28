@@ -81,9 +81,7 @@
 import { Icon, NIcon } from "#components";
 import { imageExtensions, videoExtensions } from "~/composables";
 
-const path = defineModel<string>("path", {
-	default: "",
-});
+const path = defineModel<string>("path");
 const { isAssetRoute, table } = defineProps<{
 	targetID?: string;
 	isAssetRoute?: boolean;
@@ -105,7 +103,7 @@ const sessionID = useCookie<string | null>("sessionID", {
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.id}`,
+			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
 			{
 				method: "DELETE",
 				params: {

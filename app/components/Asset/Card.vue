@@ -223,10 +223,6 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result;
 
-const page = ref(route.query.page ? Number(route.query.page) : 1);
-const pageSize = ref(route.query.perPage ? Number(route.query.perPage) : 22);
-const pageCount = ref(0);
-const itemCount = ref(0);
 const showSizePicker = ref(false);
 async function onUpdatePage(currentPage: number) {
 	page.value = currentPage;
@@ -335,6 +331,50 @@ const schema: Schema = [
 	},
 ];
 
+const pagination = reactive({
+	page: route.query.page ? Number(route.query.page) : 1,
+	pageCount: 1,
+	pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
+	itemCount: 0,
+	async onUpdatePage(currentPage: number) {
+		pagination.page = currentPage;
+		let { page, ...Query }: any = route.query;
+		Query = {
+			...Query,
+			page: currentPage !== 1 ? currentPage : undefined,
+		};
+		router.push({ query: Query });
+	},
+	async onUpdatePageSize(pageSize: number) {
+		const OLD_pageSize = toRaw(pagination.pageSize);
+		pagination.pageSize = pageSize;
+		let { perPage, page, ...Query }: any = route.query;
+		if (pageSize !== 15) {
+			pagination.page = Math.round(
+				OLD_pageSize < pageSize
+					? page / (pageSize / OLD_pageSize)
+					: page * (pageSize / OLD_pageSize),
+			);
+			if (Number.isNaN(pagination.page)) pagination.page = 1;
+			Query = {
+				...Query,
+				perPage: pageSize,
+				page: pagination.page === 1 ? undefined : pagination.page,
+			};
+			router.push({
+				query: Query,
+			});
+		}
+	},
+});
+
+const queryOptions = computed(() =>
+	Inison.stringify({
+		page: pagination.page,
+		perPage: pagination.pageSize,
+	}),
+);
+
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 	() => `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
 	{
@@ -348,18 +388,18 @@ const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 
 			assets.value = _data.result;
 
-			if (_data.options.total === 0) showSizePicker.value = false;
-			if (_data.options.totalPages && _data.options.total) {
-				pageCount.value = _data.options.totalPages;
-				itemCount.value = _data.options.total;
-			}
+			showSizePicker.value =
+				_data.options &&
+				(!_data.options.perPage ||
+					(_data.options.total as number) > _data.options.perPage);
+
+			pagination.pageCount = _data.options.totalPages ?? 0;
+			pagination.itemCount = _data.options.total ?? 0;
+
 			return _data.result;
 		},
 		query: {
-			options: Inison.stringify({
-				page: page.value,
-				perPage: pageSize.value,
-			}),
+			options: queryOptions,
 			where: searchString,
 			locale: Language.value,
 			[`${database.value.slug}_sid`]: sessionID.value,
@@ -567,6 +607,17 @@ const folder = ref();
 async function createFolder() {
 	if (folder.value) {
 		currentPath.value += `/${folder.value}`;
+		await $fetch<apiResponse>(
+			`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
+			{
+				method: "POST",
+				credentials: "include",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		);
 		window.$message.success(t("folderCreatedSuccessfully"));
 		await nextTick();
 		if (isAssetRoute)
@@ -578,8 +629,7 @@ async function createFolder() {
 }
 
 watch(currentPath, () => {
-	page.value = 1;
-	itemCount.value = 0;
-	refresh();
+	pagination.onUpdatePage(1);
+	pagination.itemCount = 0;
 });
 </script>
