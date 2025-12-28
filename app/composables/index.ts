@@ -347,6 +347,7 @@ export const imageExtensions = [
 	"webp",
 	"avif",
 	"svg",
+	"heic"
 ];
 
 export const videoExtensions = [
