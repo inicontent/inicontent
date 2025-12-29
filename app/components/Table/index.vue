@@ -512,7 +512,7 @@ async function toolsDropdownOnSelect(
 
 const createDropdownOptions: DropdownOption[] = [
 	{
-		label: t("createFromClipboard"),
+		label: () => t("createFromClipboard"),
 		key: "paste",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
