@@ -211,7 +211,7 @@ async function updateTable() {
 			>(
 				`${appConfig.apiBase}inicontent/databases/${
 					database.value.slug
-				}/${route.params.table}`,
+				}/${route.params.table ?? table.value.slug}`,
 				{
 					method: "PUT",
 					body: bodyContent,
@@ -223,7 +223,7 @@ async function updateTable() {
 				},
 			);
 			const tableIndex = database.value.tables?.findIndex(
-				({ slug }) => slug === route.params.table,
+				({ slug }) => slug === (route.params.table ?? table.value.slug),
 			);
 			if (
 				tableIndex !== undefined &&
@@ -236,7 +236,7 @@ async function updateTable() {
 				table.value = data.result;
 				tableCopy.value = data.result;
 
-				if (route.params.table !== data.result.slug)
+				if ((route.params.table ?? table.value.slug) !== data.result.slug)
 					router.replace({
 						params: { table: data.result.slug },
 					});
@@ -257,7 +257,7 @@ async function deleteTable() {
 	const data = await $fetch<apiResponse>(
 		`${appConfig.apiBase}inicontent/databases/${
 			database.value.slug
-		}/${route.params.table}`,
+		}/${route.params.table ?? table.value.slug}`,
 		{
 			method: "DELETE",
 			params: {
@@ -269,7 +269,7 @@ async function deleteTable() {
 	);
 	if (data?.result) {
 		const tableIndex = database.value.tables?.findIndex(
-			({ slug }) => slug === route.params.table,
+			({ slug }) => slug === (route.params.table ?? table.value.slug),
 		);
 		if (tableIndex !== undefined && tableIndex !== -1)
 			database.value.tables = database.value.tables?.toSpliced(tableIndex, 1);
