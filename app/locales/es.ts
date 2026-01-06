@@ -279,6 +279,7 @@ export default {
 		optimizeAssets: "Optimizar archivos",
 		optimizeAssetsDescription:
 			"Comprimir y optimizar automáticamente los archivos cargados para mejor rendimiento",
+		fieldTypeNotExisting: "El tipo de campo no existe",
 
 		// Activity log
 		latestActivities: "Actividades recientes",

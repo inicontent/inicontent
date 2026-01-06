@@ -282,6 +282,7 @@ export default {
 		optionColor: "لون الخيار",
 		optimizeAssets: "تحسين الملفات",
 		optimizeAssetsDescription: "ضغط وتحسين الملفات المرفوعة تلقائياً لأداء أفضل",
+		fieldTypeNotExisting: "نوع الحقل غير موجود",
 
 		// Activity log
 		latestActivities: "أخر العمليات",
