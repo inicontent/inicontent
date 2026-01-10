@@ -31,9 +31,14 @@ import { debounce } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<Item | Item[]>();
-const options = ref<tableOption[]>();
+const options = useState<tableOption[] | undefined>(
+	`options_${field.id || field.key}`,
+);
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
+onUnmounted(() => {
+	options.value = undefined;
+});
 watch(
 	modelValue,
 	(value) => {
