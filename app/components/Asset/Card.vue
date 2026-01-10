@@ -49,7 +49,7 @@
 						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 						<NPopover trigger="manual" placement="top-end"
-							:show="UploadProgress > 0 && UploadProgress !== 1001">
+							:show="UploadProgress > 0 && UploadProgress !== 1001" scrollable>
 							<template #trigger>
 								<NUploadTrigger :abstract="false">
 									<NButton round size="small"
@@ -93,10 +93,10 @@
 					<slot v-bind="slotProps"></slot>
 				</template>
 			</AssetGrid>
-			<NPagination v-if="itemCount && pageCount > 1" :simple="!!$device.isMobile"
+			<NPagination v-if="pagination.itemCount && pagination.pageCount > 1" :simple="!!$device.isMobile"
 				:page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
-				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="page" :page-size="pageSize"
-				:item-count="itemCount" />
+				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page" :page-size="pagination.pageSize"
+				:item-count="pagination.itemCount" />
 		</NFlex>
 	</NCard>
 </template>
@@ -223,37 +223,6 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result;
 
-const showSizePicker = ref(false);
-async function onUpdatePage(currentPage: number) {
-	page.value = currentPage;
-	let Query = route.query;
-	if (currentPage !== 1) Query = { ...Query, page: currentPage as any };
-	if (route.params.path || route.params.path === "")
-		router.push({ query: (({ page, ...rest }) => rest)(Query) });
-	return refresh();
-}
-async function onUpdatePageSize(currentPageSize: number) {
-	const OLD_pageSize = toRaw(pageSize.value);
-	pageSize.value = currentPageSize;
-	let Query: { page?: number; perPage?: number } = route.query;
-	if (pageSize.value !== 15) {
-		const newPage = Math.round(
-			OLD_pageSize < pageSize.value
-				? (Query.page ?? 1) / (pageSize.value / OLD_pageSize)
-				: (Query.page ?? 1) * (pageSize.value / OLD_pageSize),
-		);
-		page.value = Number.isNaN(newPage) ? 1 : newPage;
-		Query = {
-			...Query,
-			perPage: pageSize.value,
-			page: page.value,
-		};
-	}
-	if (route.params.path || route.params.path === "")
-		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
-	return refresh();
-}
-
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const isRTL = computed(() => Language.value === "ar");
 
@@ -367,6 +336,37 @@ const pagination = reactive({
 		}
 	},
 });
+
+const showSizePicker = ref(false);
+async function onUpdatePage(currentPage: number) {
+	pagination.page = currentPage;
+	let Query = route.query;
+	if (currentPage !== 1) Query = { ...Query, page: currentPage as any };
+	if (route.params.path || route.params.path === "")
+		router.push({ query: (({ page, ...rest }) => rest)(Query) });
+	return refresh();
+}
+async function onUpdatePageSize(currentPageSize: number) {
+	const OLD_pageSize = toRaw(pagination.pageSize);
+	pagination.pageSize = currentPageSize;
+	let Query: { page?: number; perPage?: number } = route.query;
+	if (pagination.pageSize !== 15) {
+		const newPage = Math.round(
+			OLD_pageSize < pagination.pageSize
+				? (Query.page ?? 1) / (pagination.pageSize / OLD_pageSize)
+				: (Query.page ?? 1) * (pagination.pageSize / OLD_pageSize),
+		);
+		pagination.page = Number.isNaN(newPage) ? 1 : newPage;
+		Query = {
+			...Query,
+			perPage: pagination.pageSize,
+			page: pagination.page,
+		};
+	}
+	if (route.params.path || route.params.path === "")
+		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
+	return refresh();
+}
 
 const queryOptions = computed(() =>
 	Inison.stringify({
