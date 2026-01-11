@@ -22,7 +22,6 @@ const props = defineProps<{
 }>();
 
 const schema = defineModel<Schema>("schema", { default: () => reactive([]) });
-
 defineSlots<{
 	default(data?: Item, schema?: Schema): any;
 }>();
@@ -86,8 +85,12 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 				existingItem.children as Schema,
 				item.children as Schema,
 			);
-
-		mergedSchema.push({ ...item, ...existingItem, children: item.children });
+		mergedSchema.push({
+			...existingItem,
+			...item,
+			children: item.children,
+			render: item.render ?? existingItem.render,
+		});
 	}
 
 	for (let index = 0; index < customItemsIndex.length; index++) {
@@ -112,9 +115,9 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const POSTSchemasResp = useState<
+const PostSchemaResp = useState<
 	Record<string, apiResponse<{ schema: Schema; data: Item }>>
->("POSTSchemas", () => ({}));
+>("PostSchema", () => ({}));
 const filterDefaultColumns = (field: Field) =>
 	!["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
 		field.key,
@@ -124,6 +127,15 @@ const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 });
 
+function hasRenderField(items: Schema): boolean {
+	return items.some((item) => {
+		if (item.render !== undefined) return true;
+		if (item.children && isArrayOfObjects(item.children)) {
+			return hasRenderField(item.children as Schema);
+		}
+		return false;
+	});
+}
 const oldModelValue = ref();
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
@@ -134,7 +146,7 @@ async function fetchSchemaAndData() {
 
 	try {
 		const currentPOSTSchemaResp =
-			POSTSchemasResp.value[
+			PostSchemaResp.value[
 				props.table ?? table.value?.slug ?? route.params.table
 			];
 
@@ -193,15 +205,20 @@ async function fetchSchemaAndData() {
 						response.result.schema,
 					);
 			} else if (
-				countItems(currentSchema) !== countItems(response.result.schema)
+				countItems(currentSchema) !== countItems(response.result.schema) ||
+				hasRenderField(currentSchema)
 			)
 				response.result.schema = mergeItems(
 					currentSchema,
 					response.result.schema,
 				);
 
-			if (setSchema)
-				POSTSchemasResp.value[
+			if (hasRenderField(response.result.schema))
+				delete PostSchemaResp.value[
+					props.table ?? table.value?.slug ?? route.params.table
+				];
+			else if (setSchema)
+				PostSchemaResp.value[
 					props.table ?? table.value?.slug ?? route.params.table
 				] = response;
 
