@@ -90,6 +90,12 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 			...item,
 			children: item.children,
 			render: item.render ?? existingItem.render,
+			extraButtons: existingItem.extraButtons,
+			extraActions: item.extraActions ?? existingItem.extraActions,
+			itemExtraButtons: item.itemExtraButtons ?? existingItem.itemExtraButtons,
+			itemExtraActions: item.itemExtraActions ?? existingItem.itemExtraActions,
+			onDelete: item.onDelete ?? existingItem.onDelete,
+			onCreate: item.onCreate ?? existingItem.onCreate,
 		});
 	}
 
@@ -127,12 +133,22 @@ const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 });
 
-function hasRenderField(items: Schema): boolean {
+function hasFunctionsProperties(items: Schema): boolean {
 	return items.some((item) => {
-		if (item.render !== undefined) return true;
-		if (item.children && isArrayOfObjects(item.children)) {
-			return hasRenderField(item.children as Schema);
-		}
+		if (
+			item.render !== undefined ||
+			item.itemExtraActions !== undefined ||
+			item.itemExtraButtons !== undefined ||
+			item.extraActions !== undefined ||
+			item.extraButtons !== undefined ||
+			item.onDelete !== undefined ||
+			item.onCreate !== undefined
+		)
+			return true;
+
+		if (item.children && isArrayOfObjects(item.children))
+			return hasFunctionsProperties(item.children as Schema);
+
 		return false;
 	});
 }
@@ -179,7 +195,7 @@ async function fetchSchemaAndData() {
 			if (Object.keys(bodyContent).length === 0) setSchema = true;
 		}
 
-		const currentSchema = toRaw(schema.value).filter(filterDefaultColumns);
+		const currentSchema = schema.value.filter(filterDefaultColumns);
 
 		// Update the schema
 		if (response.result?.schema) {
@@ -206,14 +222,14 @@ async function fetchSchemaAndData() {
 					);
 			} else if (
 				countItems(currentSchema) !== countItems(response.result.schema) ||
-				hasRenderField(currentSchema)
+				hasFunctionsProperties(currentSchema)
 			)
 				response.result.schema = mergeItems(
 					currentSchema,
 					response.result.schema,
 				);
 
-			if (hasRenderField(response.result.schema))
+			if (hasFunctionsProperties(response.result.schema))
 				delete PostSchemaResp.value[
 					props.table ?? table.value?.slug ?? route.params.table
 				];

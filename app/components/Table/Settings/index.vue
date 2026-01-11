@@ -170,18 +170,34 @@ const tableCopy = ref<
 	schema: table.value.schema || [],
 });
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-function removeTempIds(schema: Schema): Schema {
-	return schema.map((field) => {
-		if (field.id && String(field.id).startsWith("temp-")) delete field.id;
+function sanitizeSchema(schema: Schema): Schema {
+	return schema
+		.filter((field) => field.type !== "custom") // Remove custom fields
+		.map((field) => {
+			// Remove temp IDs
+			if (field.id && String(field.id).startsWith("temp-")) delete field.id;
 
-		if (isArrayOfObjects(field.children)) {
-			return {
-				...field,
-				children: removeTempIds(field.children),
-			};
-		}
-		return field;
-	});
+			// Remove function/VNode properties
+			const {
+				render,
+				itemExtraActions,
+				itemExtraButtons,
+				extraActions,
+				extraButtons,
+				onDelete,
+				onCreate,
+				...cleanField
+			} = field;
+
+			// Recursively clean children
+			if (isArrayOfObjects(cleanField.children)) {
+				return {
+					...cleanField,
+					children: sanitizeSchema(cleanField.children),
+				};
+			}
+			return cleanField;
+		});
 }
 
 const sessionID = useCookie<string | null>("sessionID", {
@@ -204,7 +220,7 @@ async function updateTable() {
 					.join(" ");
 
 			if (bodyContent.schema)
-				bodyContent.schema = removeTempIds(bodyContent.schema);
+				bodyContent.schema = sanitizeSchema(bodyContent.schema);
 
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>

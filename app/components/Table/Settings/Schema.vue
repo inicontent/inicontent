@@ -499,9 +499,9 @@ function labelsColoringColumns(schemaItem: Field): DataTableColumns<any> {
 function normalizeOptionsInput(values: string[]): string[] {
 	const out: string[] = [];
 	for (const raw of values) {
-		// Split on comma, trim whitespace around items
+		// Split on comma (English, Arabic), semicolon, pipe, trim whitespace around items
 		const parts = String(raw)
-			.split(",")
+			.split(/[,،;|]/)
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0);
 		out.push(...parts);
