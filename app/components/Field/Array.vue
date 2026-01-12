@@ -126,7 +126,6 @@ import {
 	NIcon,
 	NPerformantEllipsis,
 	NText,
-	NTooltip,
 } from "#components";
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });

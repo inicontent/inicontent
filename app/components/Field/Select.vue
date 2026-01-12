@@ -31,7 +31,6 @@ const rule: FormItemRule = {
 		return fieldValidator(field, modelValue.value);
 	},
 };
-
 const options = computed(() =>
 	field.options
 		? isArrayOfArrays(field.options)

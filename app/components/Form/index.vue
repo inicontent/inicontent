@@ -85,17 +85,23 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 				existingItem.children as Schema,
 				item.children as Schema,
 			);
+
+		const prioritizedFields = {
+			options: existingItem.options ?? item.options,
+			type: existingItem.type ?? item.type,
+			render: existingItem.render ?? item.render,
+			extraButtons: existingItem.extraButtons ?? item.extraButtons,
+			extraActions: existingItem.extraActions ?? item.extraActions,
+			itemExtraButtons: existingItem.itemExtraButtons ?? item.itemExtraButtons,
+			itemExtraActions: existingItem.itemExtraActions ?? item.itemExtraActions,
+			onDelete: existingItem.onDelete ?? item.onDelete,
+			onCreate: existingItem.onCreate ?? item.onCreate,
+		};
+
 		mergedSchema.push({
 			...existingItem,
 			...item,
-			children: item.children,
-			render: item.render ?? existingItem.render,
-			extraButtons: existingItem.extraButtons,
-			extraActions: item.extraActions ?? existingItem.extraActions,
-			itemExtraButtons: item.itemExtraButtons ?? existingItem.itemExtraButtons,
-			itemExtraActions: item.itemExtraActions ?? existingItem.itemExtraActions,
-			onDelete: item.onDelete ?? existingItem.onDelete,
-			onCreate: item.onCreate ?? existingItem.onCreate,
+			...prioritizedFields,
 		});
 	}
 
@@ -171,12 +177,12 @@ async function fetchSchemaAndData() {
 			(Object.keys(bodyContent).length === 0 ||
 				JSON.stringify(bodyContent) ===
 					JSON.stringify(currentPOSTSchemaResp?.result.data))
-		) {
+		)
 			response = currentPOSTSchemaResp as apiResponse<{
 				schema: Schema;
 				data: Item;
 			}>;
-		} else {
+		else {
 			Loading.value.SCHEMA = true;
 
 			response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
