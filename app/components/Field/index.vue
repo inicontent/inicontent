@@ -8,7 +8,7 @@
         }))
     }" />
     <LazyFieldIcon v-else-if="detectedFieldType === 'icon'" v-model="modelValue" :field />
-    <LazyFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field />
+    <LazyFieldTextarea v-else-if="['textarea', 'json'].includes(detectedFieldType)" v-model="modelValue" :field />
     <LazyFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field />
     <LazyFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field />
     <LazyFieldAsset v-else-if="field.table === 'assets'" v-model="modelValue" :field />
@@ -32,7 +32,8 @@
     <LazyFieldMention v-else-if="detectedFieldType === 'mention'" v-model="modelValue" :field />
     <LazyFieldObject v-else-if="detectedFieldType === 'object'" v-model="modelValue" :field />
     <LazyFieldArray v-else-if="detectedFieldType === 'array'" v-model="modelValue" :field />
-    <component v-else-if="detectedFieldType === 'custom' && field.render" :is="isVNode(field.render) ? field.render : field.render(modelValue)"></component>
+    <component v-else-if="detectedFieldType === 'custom' && field.render"
+        :is="isVNode(field.render) ? field.render : field.render(modelValue)"></component>
     <NEmpty v-else :description="`${t('fieldTypeNotExisting')}: '${String(detectedFieldType)}'`" />
 </template>
 
@@ -40,23 +41,23 @@
 import { isVNode } from "vue";
 const field = defineModel<Field>("field", { required: true });
 const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
-	const fieldType = (field.value.subType ?? field.value.type) as
-		| DB_FieldType
-		| CMS_FieldType;
-	if (Array.isArray(fieldType)) return getField(field.value).key;
-	return fieldType;
+    const fieldType = (field.value.subType ?? field.value.type) as
+        | DB_FieldType
+        | CMS_FieldType;
+    if (Array.isArray(fieldType)) return getField(field.value).key;
+    return fieldType;
 });
 
 const modelValue = defineModel<any>({ default: () => ref().value });
 const database = useState<Database>("database");
 
 watchEffect(() => {
-	if (field.value.defaultValue && !modelValue.value)
-		modelValue.value = field.value.defaultValue;
-	if (
-		(Array.isArray(field.value.type) && field.value.type.includes("array")) ||
-		(typeof field.value.type === "string" && field.value.type === "array")
-	)
-		field.value.isArray = true;
+    if (field.value.defaultValue && !modelValue.value)
+        modelValue.value = field.value.defaultValue;
+    if (
+        (Array.isArray(field.value.type) && field.value.type.includes("array")) ||
+        (typeof field.value.type === "string" && field.value.type === "array")
+    )
+        field.value.isArray = true;
 });
 </script>

@@ -202,6 +202,7 @@ export default {
 		id: "ID",
 		copiedSuccessfully: "Copié avec succès",
 		skipCompression: "Ignorer la compression",
+		print: "Imprimer",
 
 		// Auth
 		signin: "Connexion",

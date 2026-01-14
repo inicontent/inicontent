@@ -19,14 +19,14 @@
             <LazyColumnColor v-else-if="detectedFieldType === 'color'" :value />
             <LazyColumnUrl v-else-if="detectedFieldType === 'url'" :value />
             <LazyColumnEmail v-else-if="detectedFieldType === 'email'" :value />
-            <LazyDataHtml v-else-if="detectedFieldType === 'html' || detectedFieldType === 'textarea'" :value />
+            <LazyDataHtml v-else-if="['html', 'textarea', 'json'].includes(detectedFieldType)" :value />
             <LazyColumnPassword v-else-if="detectedFieldType === 'password'" :value />
             <LazyColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
             <LazyColumnDate v-else-if="detectedFieldType === 'date'" :value />
             <LazyDataObject v-else-if="detectedFieldType === 'object'" :value :field />
             <LazyDataArray v-else-if="detectedFieldType === 'array'" :value :field />
             <LazyColumnText
-                v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple'].includes(detectedFieldType)"
+                v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple', 'json'].includes(detectedFieldType)"
                 :value />
         </template>
     </NListItem>

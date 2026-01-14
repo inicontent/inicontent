@@ -204,6 +204,7 @@ export default {
 		id: "المعرف",
 		copiedSuccessfully: "تم النسخ بنجاح",
 		skipCompression: "تخطي الضغط",
+		print: "طباعة",
 
 		// Auth
 		signin: "تسجيل الدخول",
