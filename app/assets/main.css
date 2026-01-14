@@ -596,6 +596,10 @@ body {
 	height: 100px;
 }
 
+.n-image-preview-container {
+	z-index: 9999999999 !important;
+}
+
 @media (max-width: 768px) {
 	#tableCard > .n-card-header {
 		flex-direction: column;

@@ -1,39 +1,41 @@
 <template>
-    <!-- Image -->
-    <NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
-        :intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)"
-        @click="handleAssetClick" :width="size" :height="size" />
+	<!-- Image -->
+	<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
+		:intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)"
+		@click="handleAssetClick" :style="size ? `width: ${size}px; height: ${size}px;` : undefined"
+		:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
-    <!-- PDF with thumbnail -->
-    <NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset" :src="pdfThumbs[assetKey]"
-        :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
+	<!-- PDF with thumbnail -->
+	<NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset" :src="pdfThumbs[assetKey]"
+		:intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
 
-    <!-- PDF generating thumbnail -->
-    <NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
-        <NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()"
-            @click="handleAssetClick" :width="size" :height="size">
-            <LazyAssetIcon :type="asset.type" class="icon" />
-        </NIcon>
-    </NSpin>
+	<!-- PDF generating thumbnail -->
+	<NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
+		<NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()" @click="handleAssetClick"
+			:width="size" :height="size">
+			<LazyAssetIcon :type="asset.type" class="icon" />
+		</NIcon>
+	</NSpin>
 
-    <!-- Video with thumbnail -->
-    <NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
-        :src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
+	<!-- Video with thumbnail -->
+	<NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
+		:src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick"
+		:width="size" :height="size" />
 
-    <!-- Video generating thumbnail -->
-    <NSpin v-else-if="videoExtensions.includes(asset.extension)"
-        :show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
-        <NIcon class="asset"
-            v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
-                @click="handleAssetClick" :size>
-            <LazyAssetIcon :type="asset.type" class="icon" />
-        </NIcon>
-    </NSpin>
+	<!-- Video generating thumbnail -->
+	<NSpin v-else-if="videoExtensions.includes(asset.extension)"
+		:show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
+		<NIcon class="asset"
+			v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
+			@click="handleAssetClick" :size>
+			<LazyAssetIcon :type="asset.type" class="icon" />
+		</NIcon>
+	</NSpin>
 
-    <!-- Other file types as icon -->
-    <NIcon v-else class="asset" @click="handleAssetClick" :size="size">
-        <LazyAssetIcon :type="asset.type" class="icon" />
-    </NIcon>
+	<!-- Other file types as icon -->
+	<NIcon v-else class="asset" @click="handleAssetClick" :size="size">
+		<LazyAssetIcon :type="asset.type" class="icon" />
+	</NIcon>
 </template>
 
 <script lang="ts" setup>
@@ -56,8 +58,8 @@ const { asset, containerSelector, size } = defineProps<Props>();
 
 const intersectionObserverOptions = containerSelector
 	? {
-			root: containerSelector,
-		}
+		root: containerSelector,
+	}
 	: undefined;
 // Video and PDF thumbnail generation state
 const videoThumbs = reactive<Record<string, string | undefined>>({});
@@ -403,15 +405,15 @@ const renderToolbar: (
 	},
 	file?: Asset,
 ) => {
-	if (download.props && file?.publicURL)
-		download.props.onClick = (event: MouseEvent) => {
-			event?.preventDefault();
-			window.open(file.publicURL as string, "_blank");
-			close?.props?.onClick?.();
-		};
-	return [
-		file?.name
-			? h(
+		if (download.props && file?.publicURL)
+			download.props.onClick = (event: MouseEvent) => {
+				event?.preventDefault();
+				window.open(file.publicURL as string, "_blank");
+				close?.props?.onClick?.();
+			};
+		return [
+			file?.name
+				? h(
 					NTooltip,
 					{},
 					{
@@ -424,16 +426,16 @@ const renderToolbar: (
 							),
 					},
 				)
-			: null,
-		rotateCounterclockwise,
-		rotateClockwise,
-		zoomIn,
-		zoomOut,
-		resizeToOriginalSize,
-		download,
-		close,
-	];
-};
+				: null,
+			rotateCounterclockwise,
+			rotateClockwise,
+			zoomIn,
+			zoomOut,
+			resizeToOriginalSize,
+			download,
+			close,
+		];
+	};
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset");

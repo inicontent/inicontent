@@ -1,20 +1,23 @@
 <template>
-    <NTooltip :delay="1500">
-        <template #trigger>
-            <NButton round :size="props.size" @click="isSearchPopoverVisible = !isSearchPopoverVisible" :tertiary="isSearchPopoverVisible" :type="isSearchPopoverVisible ? 'primary' : undefined">
-                <template #icon>
-                    <NIcon>
-                        <Icon v-if="isSearchPopoverVisible" name="tabler:x" />
-                        <Icon v-else name="tabler:search" />
-                    </NIcon>
-                </template>
-            </NButton>
-        </template>
-        {{ t("search") }}
-    </NTooltip>
     <NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '100vw' : '500px'}`" placement="bottom-end"
         scrollable v-model:show="isSearchPopoverVisible" :x="isMobile ? 0 : undefined" :y="isMobile ? 180 : undefined"
-        :show-arrow="!isMobile">
+        :show-arrow="!isMobile" trigger="manual">
+        <template #trigger>
+            <NTooltip :delay="1500">
+                <template #trigger>
+                    <NButton round :size="props.size" @click="isSearchPopoverVisible = !isSearchPopoverVisible"
+                        :tertiary="isSearchPopoverVisible" :type="isSearchPopoverVisible ? 'primary' : undefined">
+                        <template #icon>
+                            <NIcon>
+                                <Icon v-if="isSearchPopoverVisible" name="tabler:x" />
+                                <Icon v-else name="tabler:search" />
+                            </NIcon>
+                        </template>
+                    </NButton>
+                </template>
+                {{ t("search") }}
+            </NTooltip>
+        </template>
         <template #footer>
             <NFlex justify="space-between">
                 <NTooltip :delay="500" placement="bottom">
