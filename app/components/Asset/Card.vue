@@ -49,7 +49,7 @@
 						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 						<NPopover trigger="manual" placement="top-end"
-							:show="UploadProgress > 0 && UploadProgress !== 1001" scrollable>
+							:show="UploadProgress > 0 && UploadProgress !== 1001" scrollable style="max-height: 160px">
 							<template #trigger>
 								<NUploadTrigger :abstract="false">
 									<NButton round size="small"
@@ -95,8 +95,8 @@
 			</AssetGrid>
 			<NPagination v-if="pagination.itemCount && pagination.pageCount > 1" :simple="!!$device.isMobile"
 				:page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
-				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page" :page-size="pagination.pageSize"
-				:item-count="pagination.itemCount" />
+				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page"
+				:page-size="pagination.pageSize" :item-count="pagination.itemCount" />
 		</NFlex>
 	</NCard>
 </template>
@@ -197,10 +197,9 @@ const currentItem = useState<Item>("currentItem");
 const assetsTable = ref<Table>(table.value);
 
 const currentPath = ref<string>(
-	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${
-		route.params.path
-			? `/${([] as string[]).concat(route.params.path).join("/")}`
-			: ""
+	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${route.params.path
+		? `/${([] as string[]).concat(route.params.path).join("/")}`
+		: ""
 	}`,
 );
 
@@ -579,18 +578,17 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 		return false;
 	}
 	const data = await $fetch<apiResponse<Asset>>(
-			`${appConfig.apiBase}${
-				database.value.slug
-			}/assets${currentPath.value}/${file.name}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
+		`${appConfig.apiBase}${database.value.slug
+		}/assets${currentPath.value}/${file.name}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name);
 	if (data.result) {
 		if (assets.value)
