@@ -91,6 +91,7 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 			...ThemeConfig.value,
 			fontFamily: "Cairo",
 			fontFamilyMono: "Cairo",
+			borderRadius: "15px"
 		},
 	},
 	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
