@@ -340,7 +340,19 @@ export function getPath(
 	return "";
 }
 
-export const imageExtensions = ["png", "jpg", "jpeg", "webp", "avif", "svg"];
+export const imageExtensions = [
+	"png",
+	"jpg",
+	"jpeg",
+	"gif",
+	"webp",
+	"svg",
+	"bmp",
+	"tiff",
+	// "heic",
+	"avif",
+	"svg",
+];
 
 export const videoExtensions = ["mp4", "webm", "ogg", "mov", "avi", "mkv"];
 

@@ -1,5 +1,6 @@
 <template>
-	<NTooltip :show="tooltipShow && !isEdit && isEditable" @update:show="(show) => tooltipShow = show" :delay="1500">
+	<NTooltip :show="tooltipShow && !isEdit && isEditable" @update:show="(show) => tooltipShow = show" :delay="1500"
+		placement="bottom">
 		<template #trigger>
 			<NSpin :show="!!loading" size="small" style="min-height: 22px" :onContextmenu
 				:class="{ 'editable': !isEdit && isEditable }">

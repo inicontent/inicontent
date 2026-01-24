@@ -600,6 +600,11 @@ body {
 	z-index: 9999999999 !important;
 }
 
+.n-base-selection .n-base-selection-tags .n-tag {
+	--n-close-border-radius: 15px !important;
+	--n-border-radius: 15px !important;
+}
+
 @media (max-width: 768px) {
 	#tableCard > .n-card-header {
 		flex-direction: column;

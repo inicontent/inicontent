@@ -128,9 +128,9 @@ async function handleRemoveUpload({
 		try {
 			const path = field.suffix
 				? renderLabel(
-						{ ...table.value, label: field.suffix },
-						currentItem.value,
-					)
+					{ ...table.value, label: field.suffix },
+					currentItem.value,
+				)
 				: "";
 			await $fetch(
 				`${appConfig.apiBase}${database.value.slug}/assets${path}/${assetId}`,
@@ -307,8 +307,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-						(value) => value.id === asset.id,
-					)
+					(value) => value.id === asset.id,
+				)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
@@ -326,19 +326,19 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-					id: asset,
-					name: asset.split("/").pop(),
-					status: "finished",
-					url: asset,
-					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-				}
+				id: asset,
+				name: asset.split("/").pop(),
+				status: "finished",
+				url: asset,
+				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+			}
 			: {
-					id: asset.id,
-					name: asset.name || asset.id,
-					status: "finished",
-					url: (asset as Asset).publicURL,
-					type: asset.type,
-				},
+				id: asset.id,
+				name: asset.name || asset.id,
+				status: "finished",
+				url: (asset as Asset).publicURL,
+				type: asset.type,
+			},
 	) as UploadFileInfo[];
 }
 
@@ -358,17 +358,17 @@ async function setModelValue(value?: UploadFileInfo[]) {
 						!asset.file
 							? field.isArray
 								? (modelValue.value as Asset[]).find(
-										(item) => item.id === asset.id,
-									)
+									(item) => item.id === asset.id,
+								)
 								: modelValue.value
 							: {
-									id: fileIdObject.value[asset.id],
-									name: asset.name,
-									type: asset.type,
-									publicURL: asset.url,
-									size: asset.file?.size ?? 0,
-									createdAt: asset.file?.lastModified ?? 0,
-								},
+								id: fileIdObject.value[asset.id],
+								name: asset.name,
+								type: asset.type,
+								publicURL: asset.url,
+								size: asset.file?.size ?? 0,
+								createdAt: asset.file?.lastModified ?? 0,
+							},
 					) as Asset[];
 				if (finalFileList.length) {
 					modelValue.value = field.isArray ? finalFileList : finalFileList[0];
@@ -435,7 +435,7 @@ async function customRequest({
 						compressionIndicator.value = null;
 					} else throw videoError;
 				}
-			} else if (isPdf) {
+			} else if (isPdf && false) {
 				notifyPdfSize(originalFile.size);
 				try {
 					fileToUpload = await compressPdf(fileToUpload);
