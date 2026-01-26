@@ -59,7 +59,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	const customItemsIndex = existing
 		.map((item, index) =>
 			item.id === undefined ||
-			(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
+				(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
 				? index
 				: -1,
 		)
@@ -169,14 +169,14 @@ async function fetchSchemaAndData() {
 	try {
 		const currentPOSTSchemaResp =
 			PostSchemaResp.value[
-				props.table ?? table.value?.slug ?? route.params.table
+			props.table ?? table.value?.slug ?? route.params.table
 			];
 
 		if (
 			currentPOSTSchemaResp &&
 			(Object.keys(bodyContent).length === 0 ||
 				JSON.stringify(bodyContent) ===
-					JSON.stringify(currentPOSTSchemaResp?.result.data))
+				JSON.stringify(currentPOSTSchemaResp?.result.data))
 		)
 			response = currentPOSTSchemaResp as apiResponse<{
 				schema: Schema;
@@ -296,6 +296,8 @@ onMounted(async () => {
 const formValidationRef = ref<FormInst>();
 
 async function UPDATE() {
+	if (Loading.value.UPDATE) return;
+
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
 			const bodyContent = toRaw(modelValue.value);
@@ -305,8 +307,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${
-					props.table ?? table.value?.slug ?? route.params.table
+				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -333,14 +334,15 @@ async function UPDATE() {
 }
 
 async function DELETE() {
+	if (Loading.value.DELETE) return;
+
 	const bodyContent = toRaw(modelValue.value);
 
 	if (props.onBeforeDelete) props.onBeforeDelete(bodyContent);
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${
-			props.table ?? table.value?.slug ?? route.params.table
+		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
@@ -371,6 +373,8 @@ async function DELETE() {
 
 // Submit form data
 async function CREATE() {
+	if (Loading.value.CREATE) return;
+
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
 			const bodyContent = toRaw(modelValue.value);
