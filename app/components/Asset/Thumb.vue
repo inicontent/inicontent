@@ -1,41 +1,72 @@
 <template>
-	<!-- Image -->
-	<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset" :src="asset.publicURL"
-		:intersectionObserverOptions lazy :renderToolbar="(props) => renderToolbar(props, asset)"
-		@click="handleAssetClick" :style="size ? `width: ${size}px; height: ${size}px;` : undefined"
-		:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
+	<NTooltip :disabled="!asset.name">
+		<template #trigger>
+			<NTooltip :disabled="!asset.name || !asset.createdAt" :delay="3500">
+				<template #trigger>
+					<!-- Image -->
+					<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset"
+						:src="asset.publicURL" :intersectionObserverOptions lazy
+						:renderToolbar="(props) => renderToolbar(props, asset)" @click="handleAssetClick"
+						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
+						:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
-	<!-- PDF with thumbnail -->
-	<NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset" :src="pdfThumbs[assetKey]"
-		:intersectionObserverOptions lazy preview-disabled @click="handleAssetClick" :width="size" :height="size" />
+					<!-- PDF with thumbnail -->
+					<NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset"
+						:src="pdfThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
+						@click="handleAssetClick" :width="size" :height="size" />
 
-	<!-- PDF generating thumbnail -->
-	<NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
-		<NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()" @click="handleAssetClick"
-			:width="size" :height="size">
-			<LazyAssetIcon :type="asset.type" class="icon" />
-		</NIcon>
-	</NSpin>
+					<!-- PDF generating thumbnail -->
+					<NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
+						<NIcon class="asset" v-intersect="() => !pdfThumbs[assetKey] && generatePdfThumb()"
+							@click="handleAssetClick" :width="size" :height="size">
+							<LazyAssetIcon :type="asset.type" class="icon" />
+						</NIcon>
+					</NSpin>
 
-	<!-- Video with thumbnail -->
-	<NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
-		:src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled @click="handleAssetClick"
-		:width="size" :height="size" />
+					<!-- Video with thumbnail -->
+					<NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
+						:src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
+						@click="handleAssetClick" :width="size" :height="size" />
 
-	<!-- Video generating thumbnail -->
-	<NSpin v-else-if="videoExtensions.includes(asset.extension)"
-		:show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
-		<NIcon class="asset"
-			v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
-			@click="handleAssetClick" :size>
-			<LazyAssetIcon :type="asset.type" class="icon" />
-		</NIcon>
-	</NSpin>
+					<!-- Video generating thumbnail -->
+					<NSpin v-else-if="videoExtensions.includes(asset.extension)"
+						:show="videoExtensions.includes(asset.extension) && generatingVideo[assetKey]" size="small">
+						<NIcon class="asset"
+							v-intersect="() => videoExtensions.includes(asset.extension) && !videoThumbs[assetKey] && generateVideoThumb()"
+							@click="handleAssetClick" :size>
+							<LazyAssetIcon :type="asset.type" class="icon" />
+						</NIcon>
+					</NSpin>
 
-	<!-- Other file types as icon -->
-	<NIcon v-else class="asset" @click="handleAssetClick" :size="size">
-		<LazyAssetIcon :type="asset.type" class="icon" />
-	</NIcon>
+					<!-- Other file types as icon -->
+					<NIcon v-else class="asset" @click="handleAssetClick" :size="size">
+						<LazyAssetIcon :type="asset.type" class="icon" />
+					</NIcon>
+				</template>
+				<div :style="{ direction: Language === 'ar' ? 'rtl' : 'ltr' }">
+					<div>
+						<NText strong>{{ t('name') }} :</NText>
+						<NText>{{ asset.name }}{{ asset.extension ? `.${asset.extension}` :
+							''
+						}}</NText>
+					</div>
+					<div>
+						<NText strong>{{ t("size") }}: </NText>
+						<NText>{{ humanFileSize(asset.size) }}</NText>
+					</div>
+					<div>
+						<NText strong>{{ t("type") }}: </NText>
+						<NText>{{ asset.type }}</NText>
+					</div>
+					<div>
+						<NText strong>{{ t('createdAt') }} :</NText>
+						<NText>{{ asset.createdAt ? formatDate(asset.createdAt) : '' }}</NText>
+					</div>
+				</div>
+			</NTooltip>
+		</template>
+		{{ asset.name }}{{ asset.extension ? `.${asset.extension}` : '' }}
+	</NTooltip>
 </template>
 
 <script lang="ts" setup>
@@ -55,6 +86,19 @@ interface Props {
 }
 
 const { asset, containerSelector, size } = defineProps<Props>();
+
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+
+const formatDate = (date: string | Date | number) => {
+	const d = new Date(date);
+	return d.toLocaleString(Language.value, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+};
 
 const intersectionObserverOptions = containerSelector
 	? {
