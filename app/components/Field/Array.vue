@@ -18,7 +18,7 @@
 				<Icon name="tabler:chevron-left" v-if="!!modelValue?.length" />
 			</NIcon>
 		</template>
-		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="field.id"
+		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="String(field.id)"
 			:disabled="!modelValue?.length">
 			<template #header>
 				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
@@ -61,9 +61,11 @@
 										</NIcon>
 									</template>
 								</NButton>
-								<component v-if="field.itemExtraButtons && !Array.isArray(field.itemExtraButtons)" :is="field.itemExtraButtons(index)">
+								<component v-if="field.itemExtraButtons && !Array.isArray(field.itemExtraButtons)"
+									:is="field.itemExtraButtons(index)">
 								</component>
-								<component v-else-if="field.itemExtraButtons && Array.isArray(field.itemExtraButtons)" v-for="component in field.itemExtraButtons(index)" :is="component">
+								<component v-else-if="field.itemExtraButtons && Array.isArray(field.itemExtraButtons)"
+									v-for="component in field.itemExtraButtons(index)" :is="component">
 								</component>
 							</NButtonGroup>
 						</NFlex>
@@ -100,7 +102,8 @@
 						</template>
 					</NButton>
 					<template v-if="field.extraButtons">
-						<component v-if="Array.isArray(field.extraButtons)" v-for="(component, index) in field.extraButtons" :is="component" :key="index"></component>
+						<component v-if="Array.isArray(field.extraButtons)"
+							v-for="(component, index) in field.extraButtons" :is="component" :key="index"></component>
 						<component v-else :is="field.extraButtons"></component>
 					</template>
 				</NButtonGroup>
@@ -133,11 +136,11 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<(string | number | Item)[]>();
-const parentExpanded = ref();
+const parentExpanded = ref<string[]>();
 
-const expandedNames = ref();
+const expandedNames = ref<string[]>();
 watch(expandedNames, (v) => {
-	if (v) parentExpanded.value = field.id;
+	if (v) parentExpanded.value = [String(field.id)];
 });
 function handleAddNewItem() {
 	let newElementIndex: number;
@@ -232,12 +235,12 @@ function setColumns() {
 					h(NPerformantEllipsis, () => t(child.key)),
 					child.required
 						? h(
-								NText,
-								{
-									type: "error",
-								},
-								() => " *",
-							)
+							NText,
+							{
+								type: "error",
+							},
+							() => " *",
+						)
 						: undefined,
 				]),
 			key: child.id,
@@ -273,39 +276,39 @@ function setColumns() {
 		field.disableItemActions === true
 			? {}
 			: {
-					title: t("actions"),
-					fixed: "right",
-					align: "center",
-					width: 100,
-					key: "actions",
-					render: (_row: any, index: number) =>
-						h(NButtonGroup, () =>
-							[
-								field.itemExtraButtons ? field.itemExtraButtons(index) : null,
-								h(
-									NButton,
-									{
-										disabled:
-											typeof field.inputProps === "function"
-												? field.inputProps(index)?.disabled
-												: field.inputProps?.disabled,
+				title: t("actions"),
+				fixed: "right",
+				align: "center",
+				width: 100,
+				key: "actions",
+				render: (_row: any, index: number) =>
+					h(NButtonGroup, () =>
+						[
+							field.itemExtraButtons ? field.itemExtraButtons(index) : null,
+							h(
+								NButton,
+								{
+									disabled:
+										typeof field.inputProps === "function"
+											? field.inputProps(index)?.disabled
+											: field.inputProps?.disabled,
 
-										secondary: true,
-										circle: true,
-										size: "small",
-										type: "error",
-										onClick: () => handleDeleteItem(index),
-									},
-									{
-										icon: () =>
-											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-									},
-								),
-							]
-								.filter((i) => i !== null)
-								.flat(Infinity),
-						),
-				},
+									secondary: true,
+									circle: true,
+									size: "small",
+									type: "error",
+									onClick: () => handleDeleteItem(index),
+								},
+								{
+									icon: () =>
+										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								},
+							),
+						]
+							.filter((i) => i !== null)
+							.flat(Infinity),
+					),
+			},
 	] as DataTableColumns<any>;
 
 	tableWidth.value = columns.value.reduce(

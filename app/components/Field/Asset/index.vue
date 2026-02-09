@@ -551,17 +551,12 @@ const table = useState<Table>("table");
 const currentItem = useState<Item>("currentItem");
 
 function renderIcon(
-	file: UploadFileInfo & { extension?: string; publicURL?: string },
+	file: UploadFileInfo
 ) {
-	const { extension } = getFileNameAndExtension(file.name);
-	file.extension = extension;
-	file.publicURL = file.url as string;
+	const asset = Array.isArray(modelValue.value) ? (modelValue.value as Asset[]).find((item) => item.id === file.id) : modelValue.value as Asset
+	if (!asset) return;
 	return h(LazyAssetThumb, {
-		asset: file as unknown as Asset,
-		style: {
-			height: "25px",
-			width: "25px",
-		},
+		asset
 	});
 }
 
