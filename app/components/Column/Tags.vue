@@ -9,5 +9,5 @@
 <script lang="ts" setup>
 import { isArrayOfArrays } from "inibase/utils"
 
-defineProps<{ field: Field; value: string | string[] }>()
+defineProps<{ field: Field; value: string | number | (string | number)[] }>()
 </script>
