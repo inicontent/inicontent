@@ -102,36 +102,36 @@
 <script setup lang="ts">
 import Inison from "inison";
 import {
-	Icon,
-	NButton,
-	NButtonGroup,
-	NIcon,
-	NPopover,
-	NTooltip,
-	NFlex,
-	LazyTableSearch,
-	NEmpty,
-	NInput,
-	NInputGroup,
+    Icon,
+    NButton,
+    NButtonGroup,
+    NIcon,
+    NPopover,
+    NTooltip,
+    NFlex,
+    LazyTableSearch,
+    NEmpty,
+    NInput,
+    NInputGroup,
 } from "#components";
 import { deepClone } from "~/composables";
 import { generateSearchString } from "~/composables/search";
 
 const props = withDefaults(
-	defineProps<{
-		size?: "small" | "medium" | "large";
-		disabled?: boolean;
-	}>(),
-	{
-		disabled: false,
-	},
+    defineProps<{
+        size?: "small" | "medium" | "large";
+        disabled?: boolean;
+    }>(),
+    {
+        disabled: false,
+    },
 );
 
 const schema = defineModel<Schema>("schema");
 
 const searchString = defineModel<string | undefined>("string");
 const searchArray = defineModel<searchType>("array", {
-	default: () => reactive({ and: [[null, "=", null]] }),
+    default: () => reactive({ and: [[null, "=", null]] }),
 });
 
 const appConfig = useAppConfig();
@@ -146,113 +146,111 @@ const isSearchPopoverVisible = ref(false);
 const newFilterName = ref("");
 
 // Local working copy of search array
-const localSearchArray = ref<searchType>({ and: [[null, "=", null]] });
+const localSearchArray = ref<searchType>(deepClone(searchArray.value) ?? { and: [[null, "=", null]] });
 
-// Watch for external changes to searchArray
+// Sync local copy when external searchArray changes (without triggering search)
 watch(
-	() => searchArray.value,
-	(newVal) => {
-		localSearchArray.value = newVal;
-		emitSearchQuery(newVal);
-	},
-	{ deep: true, immediate: true },
+    () => searchArray.value,
+    (newVal) => {
+        localSearchArray.value = deepClone(newVal) as searchType;
+    },
 );
 
 // Convert searchArray back to string for emit
 function emitSearchQuery(locSearchArray: searchType) {
-	const searchInput = generateSearchString(locSearchArray, "display");
-	searchArray.value = locSearchArray;
-	searchString.value = searchInput ? Inison.stringify(searchInput) : undefined;
+    const searchInput = generateSearchString(locSearchArray, "display");
+    searchArray.value = locSearchArray;
+    searchString.value = searchInput ? Inison.stringify(searchInput) : undefined;
 }
 
 // Handle search button click
 function handleSearch() {
-	emitSearchQuery(localSearchArray.value);
+    emitSearchQuery(localSearchArray.value);
 }
 
 // Handle reset button click
 function handleReset() {
-	const resetArray = { and: [[null, "=", null]] } as searchType;
-	localSearchArray.value = resetArray;
-	emitSearchQuery(resetArray);
+    const resetArray = { and: [[null, "=", null]] } as searchType;
+    localSearchArray.value = resetArray;
+    emitSearchQuery(resetArray);
 }
 
 // Get favorite filters for current table
 const favoriteFilters = computed({
-	get: () => {
-		const filters = user.value?.config?.filters ?? {};
-		return (filters as Record<string, any>)[table.value?.slug ?? ""] ?? [];
-	},
-	set: (v) => {
-		updateFavoriteFilters(v);
-	},
+    get: () => {
+        const filters = user.value?.config?.filters ?? {};
+        return (filters as Record<string, any>)[table.value?.slug ?? ""] ?? [];
+    },
+    set: (v) => {
+        updateFavoriteFilters(v);
+    },
 });
 
 // Update favorite filters in user config
 async function updateFavoriteFilters(filters: any[]) {
-	if (!user.value || !table.value || !database.value) return;
+    if (!user.value || !table.value || !database.value) return;
 
-	try {
-		const allFilters = { ...(user.value?.config?.filters ?? {}) };
-		allFilters[table.value.slug] = filters;
-		const updatedUser = {
-			...user.value,
-			config: { ...(user.value.config ?? {}), filters: allFilters },
-		};
+    try {
+        const allFilters = { ...(user.value?.config?.filters ?? {}) };
+        allFilters[table.value.slug] = filters;
+        const updatedUser = {
+            ...user.value,
+            config: { ...(user.value.config ?? {}), filters: allFilters },
+        };
 
-		await $fetch(
-			`${appConfig.apiBase}${database.value.slug}/users/${user.value.id}`,
-			{
-				method: "PUT",
-				body: updatedUser,
-				params: { [`${database.value.slug}_sid`]: sessionID.value },
-				credentials: "include",
-			},
-		);
-	} catch (err: any) {
-		window.$message.error(err.message);
-	}
+        await $fetch(
+            `${appConfig.apiBase}${database.value.slug}/users/${user.value.id}`,
+            {
+                method: "PUT",
+                body: updatedUser,
+                params: { [`${database.value.slug}_sid`]: sessionID.value },
+                credentials: "include",
+            },
+        );
+    } catch (err: any) {
+        window.$message.error(err.message);
+    }
 }
 
 // ==================== FAVORITE FILTERS LOGIC ====================
 
 async function saveFavoriteFilter(filterName: string) {
-	if (!filterName.trim()) {
-		window.$message.error(t("filterNameCannotBeEmpty"));
-		return;
-	}
+    if (!filterName.trim()) {
+        window.$message.error(t("filterNameCannotBeEmpty"));
+        return;
+    }
 
-	if (favoriteFilters.value.some((f: any) => f.name === filterName)) {
-		window.$message.error(t("filterNameAlreadyExists"));
-		return;
-	}
+    if (favoriteFilters.value.some((f: any) => f.name === filterName)) {
+        window.$message.error(t("filterNameAlreadyExists"));
+        return;
+    }
 
-	const newFilter = {
-		id: Date.now().toString(),
-		name: filterName,
-		searchArray: deepClone(localSearchArray.value),
-		createdAt: new Date().toISOString(),
-	};
+    const newFilter = {
+        id: Date.now().toString(),
+        name: filterName,
+        searchArray: deepClone(localSearchArray.value),
+        createdAt: new Date().toISOString(),
+    };
 
-	const updatedFilters = [...favoriteFilters.value, newFilter];
-	favoriteFilters.value = updatedFilters;
-	window.$message.success(t("filterSavedSuccessfully"));
+    const updatedFilters = [...favoriteFilters.value, newFilter];
+    favoriteFilters.value = updatedFilters;
+    window.$message.success(t("filterSavedSuccessfully"));
 }
 
 function loadFavoriteFilter(filter: any) {
-	const loadedArray = (deepClone(filter.searchArray) as searchType) ?? {
-		and: [[null, "=", null]],
-	};
-	localSearchArray.value = loadedArray;
-	emitSearchQuery(loadedArray);
-	window.$message.success(`${t("filterLoaded")}: ${filter.name}`);
+    const loadedArray = (deepClone(filter.searchArray) as searchType) ?? {
+        and: [[null, "=", null]],
+    };
+    localSearchArray.value = loadedArray;
+    emitSearchQuery(loadedArray);
+    window.$message.success(`${t("filterLoaded")}: ${filter.name}`);
 }
 
 function deleteFavoriteFilter(filterId: string) {
-	const updatedFilters = favoriteFilters.value.filter(
-		(f: any) => f.id !== filterId,
-	);
-	favoriteFilters.value = updatedFilters;
-	window.$message.success(t("filterDeletedSuccessfully"));
+    const updatedFilters = favoriteFilters.value.filter(
+        (f: any) => f.id !== filterId,
+    );
+    favoriteFilters.value = updatedFilters;
+    window.$message.success(t("filterDeletedSuccessfully"));
 }
 </script>

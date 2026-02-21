@@ -1,7 +1,7 @@
 <template>
 	<NFlex item-style="width: 100%">
 		<template v-for="(item, index) in formatedItems">
-			<NInputGroup v-if="Array.isArray(item)">
+			<NInputGroup v-if="Array.isArray(item)" class="searchGroupInput">
 				<NCascader size="small" :consistent-menu-width="false" filterable :value="item[0]"
 					@update:value="(v) => item[0] = v"
 					:options="generateSearchInOptions(
@@ -98,7 +98,7 @@ function getFieldFromItem(item: searchTypeValueItem) {
 		required: false,
 		labelProps: {
 			showLabel: false,
-			style: "width:33.33%",
+			style: { width: "33.33%" },
 			showFeedback: false,
 		},
 		inputProps: {
@@ -239,3 +239,9 @@ function updateFieldValue(item: searchTypeValueItem, value: any) {
 	} else item[2] = undefined
 }
 </script>
+
+<style scoped>
+.searchGroupInput * {
+	border-radius: 0 !important;
+}
+</style>

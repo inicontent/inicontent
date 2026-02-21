@@ -9,6 +9,7 @@ export default {
 		update: "Actualizar",
 		search: "Buscar",
 		filter: "Filtrar",
+		billing: "Facturación",
 		reset: "Restablecer",
 		close: "Cerrar",
 		confirm: "Confirmar",
@@ -78,7 +79,6 @@ export default {
 		// Confirmation messages
 		theFollowingActionIsIrreversible: "Esta acción es irreversible",
 		areYouSure: "¿Estás seguro?",
-		deletedSuccessfully: "Eliminado exitosamente",
 		savedSuccessfully: "Guardado exitosamente",
 		updatedSuccessfully: "Actualizado exitosamente",
 		createdSuccessfully: "Creado exitosamente",
@@ -371,5 +371,107 @@ export default {
 		onRequest: "En solicitud",
 		onResponse: "En respuesta",
 		condition: "Condición",
+
+		billingUi: {
+			title: "Facturación y suscripción",
+			subtitle: "Administra tu plan, facturas y ajustes de pago.",
+			tabs: {
+				subscription: "Suscripción",
+				invoices: "Facturas",
+				settings: "Ajustes",
+			},
+			noSubscriptionTitle: "No hay una suscripción activa",
+			noSubscriptionBody:
+				"Elige un plan para habilitar la facturación y desbloquear funciones de almacenamiento.",
+			choosePlanTitle: "Elige tu plan",
+			currentPlanTitle: "Plan actual",
+			planType: "Tipo de plan",
+			planTypes: {
+				base: "Base",
+				enterprise: "Empresarial",
+			},
+			status: "Estado",
+			statusLabels: {
+				active: "Activo",
+				canceled: "Cancelado",
+				past_due: "Atrasado",
+				paid: "Pagado",
+				open: "Abierto",
+				void: "Anulado",
+				uncollectible: "Incobrable",
+				unknown: "Desconocido",
+			},
+			currentPeriod: "Periodo actual",
+			databaseStorage: "Almacenamiento de base de datos",
+			assetStorage: "Almacenamiento de archivos",
+			changePlan: "Cambiar plan",
+			hidePlanPicker: "Ocultar selector de plan",
+			cancelSubscription: "Cancelar suscripción",
+			upgradePlanTitle: "Actualizar o cambiar plan",
+			storageUsageTitle: "Uso de almacenamiento",
+			storageLimitExceededTitle: "Límite de almacenamiento excedido",
+			storageLimitExceededBody:
+				"Estás excediendo tu cuota de almacenamiento. Considera actualizar tu plan o eliminar datos no usados.",
+			invoicesEmpty: "Aún no hay facturas.",
+			paymentSettingsTitle: "Ajustes de pago",
+			paymentMethodTitle: "Método de pago",
+			paymentMethodSubtitle: "Administra tu método de pago en PayPal",
+			managePayment: "Administrar pago",
+			billingEmailTitle: "Correo de facturación",
+			updateEmail: "Actualizar correo",
+			autoRenewalTitle: "Renovación automática",
+			autoRenewalMessage:
+				"{{status}} - Tu suscripción se {{action}} al final del periodo de facturación.",
+			autoRenew: {
+				enabled: "Activada",
+				disabled: "Desactivada",
+				renew: "renovará automáticamente",
+				notRenew: "no renovará",
+				enable: "Activar renovación automática",
+				disable: "Desactivar renovación automática",
+			},
+			cancelModalTitle: "Cancelar suscripción",
+			cancelModalBody:
+				"¿Seguro que quieres cancelar tu suscripción? Perderás el acceso a las funciones de pago al final del periodo actual.",
+			cancelModalKeep: "Mantener suscripción",
+			cancelModalConfirm: "Sí, cancelar",
+			invoiceId: "ID de factura",
+			period: "Periodo",
+			amount: "Importe",
+			invoice: "Factura",
+			downloadPdf: "Descargar PDF",
+		},
+
+		pricingUi: {
+			title: "Elige tu plan",
+			subtitle: "Precios simples y transparentes sin cargos ocultos.",
+			databaseStorageLabel: "Almacenamiento de base de datos (GB)",
+			assetStorageLabel: "Almacenamiento de archivos (GB)",
+			basePlan: "Plan base",
+			additionalStorage: "Almacenamiento adicional",
+			totalMonthly: "Total mensual",
+			subscribeNow: "Suscribirse ahora",
+			upgradePlan: "Actualizar plan",
+			requestQuote: "Solicitar cotización",
+			currentUsage: "Uso de almacenamiento actual",
+			usageWarning:
+				"Estás excediendo tu cuota de almacenamiento. Considera actualizar tu plan.",
+			faqTitle: "Preguntas frecuentes",
+			faq: {
+				changePlanTitle:
+					"¿Puedo cambiar mi plan de almacenamiento en cualquier momento?",
+				changePlanBody:
+					"Sí. Puedes actualizar o bajar tu plan de almacenamiento en cualquier momento. Los cambios se aplican en el siguiente ciclo de facturación.",
+				exceedQuotaTitle: "¿Qué pasa si excedo mi cuota de almacenamiento?",
+				exceedQuotaBody:
+					"Te avisaremos cuando te acerques al límite. Si lo excedes, te cobraremos el almacenamiento adicional según nuestras tarifas.",
+				contractTitle: "¿Hay un contrato a largo plazo?",
+				contractBody:
+					"No. Todos los planes son mensuales sin compromiso a largo plazo. Puedes cancelar en cualquier momento.",
+				annualDiscountTitle: "¿Ofrecen descuentos anuales?",
+				annualDiscountBody:
+					"Contacta a nuestro equipo de ventas para precios empresariales personalizados y descuentos por volumen.",
+			},
+		},
 	},
 } as const;

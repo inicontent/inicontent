@@ -9,6 +9,7 @@ export default {
 		update: "Mettre à jour",
 		search: "Rechercher",
 		filter: "Filtrer",
+		billing: "Facturation",
 		reset: "Réinitialiser",
 		close: "Fermer",
 		confirm: "Confirmer",
@@ -85,8 +86,8 @@ export default {
 		uploadFailed: "Échec du téléchargement",
 		folderCreatedSuccessfully: "Dossier créé avec succès",
 		folderNameRequired: "Le nom du dossier est requis",
-		filterSavedSuccessfully: "Filtre enregistré avec succès",
-		filterDeletedSuccessfully: "Filtre supprimé avec succès",
+		contractBody:
+			"Non. Tous les plans sont mensuels sans engagement à long terme. Vous pouvez résilier à tout moment.",
 		filterLoaded: "Filtre chargé",
 
 		// Methods
@@ -153,8 +154,8 @@ export default {
 
 		// Plural examples
 		items: {
-			one: "{{count}} élément",
-			other: "{{count}} éléments",
+			contractBody:
+				"Non. Tous les plans sont mensuels sans engagement à long terme. Vous pouvez résilier à tout moment.",
 		},
 
 		compression: {
@@ -373,5 +374,106 @@ export default {
 		onRequest: "Sur demande",
 		onResponse: "Sur réponse",
 		condition: "Condition",
+
+		billingUi: {
+			title: "Facturation et abonnement",
+			subtitle: "Gérez votre plan, vos factures et vos paramètres de paiement.",
+			tabs: {
+				subscription: "Abonnement",
+				invoices: "Factures",
+				settings: "Paramètres",
+			},
+			noSubscriptionTitle: "Aucun abonnement actif",
+			noSubscriptionBody:
+				"Choisissez un plan pour activer la facturation et débloquer les fonctions de stockage.",
+			choosePlanTitle: "Choisissez votre plan",
+			currentPlanTitle: "Plan actuel",
+			planType: "Type de plan",
+			planTypes: {
+				base: "Base",
+				enterprise: "Entreprise",
+			},
+			status: "Statut",
+			statusLabels: {
+				active: "Actif",
+				canceled: "Annulé",
+				past_due: "En retard",
+				paid: "Payé",
+				open: "Ouvert",
+				void: "Annulé",
+				uncollectible: "Irrécouvrable",
+				unknown: "Inconnu",
+			},
+			currentPeriod: "Période actuelle",
+			databaseStorage: "Stockage de la base de données",
+			assetStorage: "Stockage des fichiers",
+			changePlan: "Changer de plan",
+			hidePlanPicker: "Masquer le sélecteur",
+			cancelSubscription: "Annuler l'abonnement",
+			upgradePlanTitle: "Mettre à niveau ou changer de plan",
+			storageUsageTitle: "Utilisation du stockage",
+			storageLimitExceededTitle: "Limite de stockage dépassée",
+			storageLimitExceededBody:
+				"Vous dépassez votre quota de stockage. Pensez à mettre à niveau votre plan ou à supprimer les données inutilisées.",
+			invoicesEmpty: "Aucune facture pour le moment.",
+			paymentSettingsTitle: "Paramètres de paiement",
+			paymentMethodTitle: "Moyen de paiement",
+			paymentMethodSubtitle: "Gérez votre moyen de paiement sur PayPal",
+			managePayment: "Gérer le paiement",
+			billingEmailTitle: "Email de facturation",
+			updateEmail: "Mettre à jour l'email",
+			autoRenewalTitle: "Renouvellement automatique",
+			autoRenewalMessage:
+				"{{status}} - Votre abonnement {{action}} à la fin de la période de facturation.",
+			autoRenew: {
+				enabled: "Activé",
+				disabled: "Désactivé",
+				renew: "se renouvellera automatiquement",
+				notRenew: "ne se renouvellera pas",
+				enable: "Activer le renouvellement automatique",
+				disable: "Désactiver le renouvellement automatique",
+			},
+			cancelModalTitle: "Annuler l'abonnement",
+			cancelModalBody:
+				"Êtes-vous sûr de vouloir annuler votre abonnement ? Vous perdrez l'accès aux fonctionnalités payantes à la fin de la période en cours.",
+			cancelModalKeep: "Conserver l'abonnement",
+			cancelModalConfirm: "Oui, annuler",
+			invoiceId: "ID de facture",
+			period: "Période",
+			amount: "Montant",
+			invoice: "Facture",
+			downloadPdf: "Télécharger le PDF",
+		},
+
+		pricingUi: {
+			title: "Choisissez votre plan",
+			subtitle: "Des prix simples et transparents, sans frais cachés.",
+			databaseStorageLabel: "Stockage de la base de données (GB)",
+			assetStorageLabel: "Stockage des fichiers (GB)",
+			basePlan: "Plan de base",
+			additionalStorage: "Stockage supplémentaire",
+			totalMonthly: "Total mensuel",
+			subscribeNow: "S'abonner",
+			upgradePlan: "Mettre à niveau",
+			requestQuote: "Demander un devis",
+			currentUsage: "Utilisation actuelle du stockage",
+			usageWarning:
+				"Vous dépassez votre quota de stockage. Pensez à mettre à niveau votre plan.",
+			faqTitle: "Questions fréquentes",
+			faq: {
+				changePlanTitle: "Puis-je changer mon plan de stockage à tout moment ?",
+				changePlanBody:
+					"Oui. Vous pouvez augmenter ou réduire votre plan de stockage à tout moment. Les changements prennent effet au prochain cycle de facturation.",
+				exceedQuotaTitle: "Que se passe-t-il si je dépasse mon quota ?",
+				exceedQuotaBody:
+					"Nous vous avertirons lorsque vous approcherez de la limite. Si vous la dépassez, nous facturerons le stockage supplémentaire selon nos tarifs.",
+				contractTitle: "Y a-t-il un contrat à long terme ?",
+				contractBody:
+					"Non. Tous les plans sont mensuels sans engagement à long terme. Vous შეგიძლიათ résilier à tout moment.",
+				annualDiscountTitle: "Proposez-vous des réductions annuelles ?",
+				annualDiscountBody:
+					"Contactez notre équipe commerciale pour des tarifs entreprise personnalisés et des remises volume.",
+			},
+		},
 	},
 } as const;

@@ -1,17 +1,10 @@
 const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
-})
+});
 
 export default defineNuxtRouteMiddleware(async (to) => {
-	const database = useState<Database>("database")
-	const appConfig = useAppConfig()
-
-	if (!appConfig.database && !to.params.database)
-		throw createError({
-			statusCode: 500,
-			statusMessage:
-				"You must define a database in app.config.ts or provide it as a route parameter.",
-		})
+	const database = useState<Database>("database");
+	const appConfig = useAppConfig();
 
 	if (!database.value)
 		database.value = (
@@ -32,22 +25,22 @@ export default defineNuxtRouteMiddleware(async (to) => {
 					},
 				},
 			)
-		).result
+		).result;
 
 	if (!database.value)
 		throw createError({
 			statusCode: 404,
 			statusMessage: "database",
-		})
+		});
 
-	formatDatabase()
+	formatDatabase();
 
 	useState<ThemeConfig>("ThemeConfig", () => ({
 		primaryColor: "#FF9800",
 		primaryColorHover: "#F7A42A",
 		primaryColorPressed: "#E19421",
 		primaryColorSuppl: "#CB7900",
-	}))
+	}));
 
-	setThemeConfig()
-})
+	setThemeConfig();
+});
