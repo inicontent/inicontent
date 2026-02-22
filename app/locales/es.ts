@@ -41,6 +41,12 @@ export default {
 		info: "Info",
 		loading: "Cargando",
 
+		// Field types that differ from default
+		fields: {
+			html: "Editor Enriquecido",
+			json: "JSON",
+		},
+
 		// Common nouns
 		name: "Nombre",
 		slug: "Identificador",
@@ -239,6 +245,10 @@ export default {
 		clearCache: "Limpiar caché",
 		log: "Registro",
 		enableActivityLog: "Activar registro de actividad",
+		realtime: "Sincronización en tiempo real",
+		enableRealtimeSync: "Habilitar sincronización en tiempo real de datos",
+		realtimeEnabled: "Sincronización en tiempo real habilitada",
+		connectingToRealtime: "Conectando a sincronización en tiempo real...",
 		defaultTableColumns: "Columnas de tabla predeterminadas",
 		displayAs: "Mostrar como",
 		tableItemLabel: "Etiqueta de elemento de tabla",
@@ -281,6 +291,8 @@ export default {
 		optimizeAssetsDescription:
 			"Comprimir y optimizar automáticamente los archivos cargados para mejor rendimiento",
 		fieldTypeNotExisting: "El tipo de campo no existe",
+		format: "Formatear",
+		invalidJSON: "JSON inválido",
 
 		// Activity log
 		latestActivities: "Actividades recientes",
@@ -359,6 +371,7 @@ export default {
 			range: "Rango",
 			slider: "Deslizador",
 			ip: "Dirección IP",
+			json: "JSON",
 			custom: "Personalizado",
 		},
 
@@ -473,5 +486,9 @@ export default {
 					"Contacta a nuestro equipo de ventas para precios empresariales personalizados y descuentos por volumen.",
 			},
 		},
+
+		// JSON Field
+		format: "Formatear",
+		invalidJSON: "JSON inválido",
 	},
 } as const;

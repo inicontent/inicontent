@@ -5,6 +5,7 @@ export default {
 		// Field types that differ from default
 		fields: {
 			html: "Rich Editor",
+			json: "JSON",
 		},
 
 		apiDocs: {
@@ -197,5 +198,9 @@ export default {
 					"Contact our sales team for custom enterprise pricing and volume discounts.",
 			},
 		},
+
+		// JSON Field
+		format: "Format",
+		invalidJSON: "Invalid JSON",
 	},
 } as const;

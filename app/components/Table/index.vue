@@ -11,6 +11,19 @@
 				<NFlex align="center" id="navbarActions" style="flex-direction: row-reverse;">
 					<slot name="navbarActions">
 						<NButtonGroup id="navbarExtraButtons">
+							<NTooltip v-if="table.config?.realtime" :delay="1500">
+								<template #trigger>
+									<NButton round size="small" type="success" secondary :loading="isConnecting">
+										<template #icon>
+											<NIcon>
+												<Icon :name="isConnected ? 'tabler:wifi' : 'tabler:wifi-off'" />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ isConnected ? t("realtimeEnabled") : t("connectingToRealtime") }}
+							</NTooltip>
+
 							<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 								<NTooltip :delay="1500">
 									<template #trigger>
@@ -37,7 +50,7 @@
 													openDrawer(table.slug)
 												else
 													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
-											}"  size="small">
+											}" size="small">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:plus" />
@@ -48,7 +61,8 @@
 									{{ t("newItem") }}
 								</NTooltip>
 							</NDropdown>
-							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" size="small" />
+							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray"
+								size="small" />
 							<slot name="navbarExtraButtons"></slot>
 						</NButtonGroup>
 						<slot name="navbarExtraActions"></slot>
@@ -91,6 +105,7 @@ import {
 	NFlex,
 } from "#components";
 import { generateSearchArray } from "~/composables/search";
+import { useRealtimeSync } from "~/composables/useRealtimeSync";
 
 const user = useState<User>("user");
 const route = useRoute();
@@ -111,6 +126,9 @@ const data = ref<apiResponse<Item[]>>();
 
 const database = useState<Database>("database");
 const table = useState<Table>("table");
+
+// Initialize realtime sync
+const { isConnected, isConnecting } = useRealtimeSync(table, data, database);
 
 watch(searchString, (v) => {
 	const { search, page, ...Query }: any = route.query;
@@ -195,73 +213,73 @@ function renderItemButtons(row: Item) {
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-						NButton,
-						{
-							class: "viewItemButton",
-							secondary: true,
-							circle: true,
-							type: "primary",
-						},
-						{
-							icon: () =>
-								h(
-									NuxtLink,
-									{
-										to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									},
-									() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-								),
-						},
-					)
+					NButton,
+					{
+						class: "viewItemButton",
+						secondary: true,
+						circle: true,
+						type: "primary",
+					},
+					{
+						icon: () =>
+							h(
+								NuxtLink,
+								{
+									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								},
+								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+							),
+					},
+				)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-						NButton,
-						{
-							class: "editItemButton",
-							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-							onClick: (e) => {
-								e.preventDefault();
-								if (!isMobile)
-									openDrawer(table.value?.slug as string, row.id, toRaw(row));
-								else
-									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-									);
-							},
-							secondary: true,
-							circle: true,
-							type: "info",
+					NButton,
+					{
+						class: "editItemButton",
+						tag: "a",
+						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+						onClick: (e) => {
+							e.preventDefault();
+							if (!isMobile)
+								openDrawer(table.value?.slug as string, row.id, toRaw(row));
+							else
+								navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+								);
 						},
-						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-					)
+						secondary: true,
+						circle: true,
+						type: "info",
+					},
+					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+				)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-						NPopconfirm,
-						{
-							onPositiveClick: () => deleteItem(row.id),
-						},
-						{
-							trigger: () =>
-								h(
-									NButton,
-									{
-										class: "deleteItemButton",
-										strong: true,
-										secondary: true,
-										circle: true,
-										type: "error",
-									},
-									{
-										icon: () =>
-											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-									},
-								),
-							default: () => t("theFollowingActionIsIrreversible"),
-						},
-					)
+					NPopconfirm,
+					{
+						onPositiveClick: () => deleteItem(row.id),
+					},
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{
+									class: "deleteItemButton",
+									strong: true,
+									secondary: true,
+									circle: true,
+									type: "error",
+								},
+								{
+									icon: () =>
+										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				)
 				: null,
 		].filter((i) => i !== null),
 	);

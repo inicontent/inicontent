@@ -40,6 +40,12 @@ export default {
 		info: "معلومة",
 		loading: "جاري التحميل",
 
+		// Field types that differ from default
+		fields: {
+			html: "محرر غني",
+			json: "JSON",
+		},
+
 		// Common nouns
 		name: "الإسم",
 		slug: "الإسم",
@@ -243,6 +249,10 @@ export default {
 		clearCache: "حذف الكاش",
 		log: "سجل التتبع",
 		enableActivityLog: "تفعيل سجل عمليات الجدول",
+		realtime: "المزامنة الفورية",
+		enableRealtimeSync: "تفعيل المزامنة الفورية للبيانات",
+		realtimeEnabled: "المزامنة الفورية مفعلة",
+		connectingToRealtime: "جاري الاتصال بالمزامنة الفورية...",
 		defaultTableColumns: "الأعمدة الإفتراضية للجدول",
 		displayAs: "إظهار كـ",
 		tableItemLabel: "تسمية عناصر الجدول",
@@ -284,6 +294,8 @@ export default {
 		optimizeAssets: "تحسين الملفات",
 		optimizeAssetsDescription: "ضغط وتحسين الملفات المرفوعة تلقائياً لأداء أفضل",
 		fieldTypeNotExisting: "نوع الحقل غير موجود",
+		format: "تنسيق",
+		invalidJSON: "JSON غير صحيح",
 
 		// Activity log
 		latestActivities: "أخر العمليات",
@@ -380,6 +392,7 @@ export default {
 			range: "مجال",
 			slider: "شريط",
 			ip: "عنوان IP",
+			json: "JSON",
 			custom: "مخصص",
 		},
 
@@ -505,5 +518,9 @@ export default {
 					"تواصل مع فريق المبيعات للحصول على أسعار مؤسسية مخصصة وخصومات حجم.",
 			},
 		},
+
+		// JSON Field
+		format: "تنسيق",
+		invalidJSON: "JSON غير صحيح",
 	},
 } as const;

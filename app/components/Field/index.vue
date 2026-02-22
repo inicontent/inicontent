@@ -8,7 +8,8 @@
         }))
     }" />
     <LazyFieldIcon v-else-if="detectedFieldType === 'icon'" v-model="modelValue" :field />
-    <LazyFieldTextarea v-else-if="['textarea', 'json'].includes(detectedFieldType)" v-model="modelValue" :field />
+    <LazyFieldJSON v-else-if="detectedFieldType === 'json'" v-model="modelValue" :field />
+    <LazyFieldTextarea v-else-if="detectedFieldType === 'textarea'" v-model="modelValue" :field />
     <LazyFieldRadio v-else-if="detectedFieldType === 'radio'" v-model="modelValue" :field />
     <LazyFieldCheckbox v-else-if="detectedFieldType === 'checkbox'" v-model="modelValue" :field />
     <LazyFieldAsset v-else-if="field.table === 'assets'" v-model="modelValue" :field />

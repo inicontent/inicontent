@@ -182,6 +182,11 @@ export default function fieldsList(): fieldListOptionType[] {
 			key: "table",
 			icon: renderIcon("table"),
 		},
+		{
+			label: t("fields.json"),
+			key: "json",
+			icon: renderIcon("code"),
+		},
 	];
 }
 
