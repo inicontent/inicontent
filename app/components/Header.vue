@@ -199,6 +199,10 @@ const userDropdownOptions = computed(() => [
     },
 ])
 
+const sessionID = useCookie<string | null>("sessionID", {
+    sameSite: true,
+});
+
 async function onSelectUserDropdown(v: string) {
     switch (v) {
         case "edit":

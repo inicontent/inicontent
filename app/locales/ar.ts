@@ -40,12 +40,6 @@ export default {
 		info: "معلومة",
 		loading: "جاري التحميل",
 
-		// Field types that differ from default
-		fields: {
-			html: "محرر غني",
-			json: "JSON",
-		},
-
 		// Common nouns
 		name: "الإسم",
 		slug: "الإسم",
@@ -294,8 +288,6 @@ export default {
 		optimizeAssets: "تحسين الملفات",
 		optimizeAssetsDescription: "ضغط وتحسين الملفات المرفوعة تلقائياً لأداء أفضل",
 		fieldTypeNotExisting: "نوع الحقل غير موجود",
-		format: "تنسيق",
-		invalidJSON: "JSON غير صحيح",
 
 		// Activity log
 		latestActivities: "أخر العمليات",
@@ -449,7 +441,7 @@ export default {
 				uncollectible: "غير قابل للتحصيل",
 				unknown: "غير معروف",
 			},
-			currentPeriod: "الفترة الحالية",
+			period: "الفترة الحالية",
 			databaseStorage: "تخزين قاعدة البيانات",
 			assetStorage: "تخزين الملفات",
 			changePlan: "تغيير الخطة",

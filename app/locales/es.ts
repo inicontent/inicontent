@@ -41,12 +41,6 @@ export default {
 		info: "Info",
 		loading: "Cargando",
 
-		// Field types that differ from default
-		fields: {
-			html: "Editor Enriquecido",
-			json: "JSON",
-		},
-
 		// Common nouns
 		name: "Nombre",
 		slug: "Identificador",
@@ -291,8 +285,6 @@ export default {
 		optimizeAssetsDescription:
 			"Comprimir y optimizar automáticamente los archivos cargados para mejor rendimiento",
 		fieldTypeNotExisting: "El tipo de campo no existe",
-		format: "Formatear",
-		invalidJSON: "JSON inválido",
 
 		// Activity log
 		latestActivities: "Actividades recientes",
@@ -414,7 +406,7 @@ export default {
 				uncollectible: "Incobrable",
 				unknown: "Desconocido",
 			},
-			currentPeriod: "Periodo actual",
+			period: "Periodo actual",
 			databaseStorage: "Almacenamiento de base de datos",
 			assetStorage: "Almacenamiento de archivos",
 			changePlan: "Cambiar plan",

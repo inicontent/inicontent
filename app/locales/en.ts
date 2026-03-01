@@ -127,7 +127,7 @@ export default {
 				uncollectible: "Uncollectible",
 				unknown: "Unknown",
 			},
-			currentPeriod: "Current Period",
+			period: "Current Period",
 			databaseStorage: "Database Storage",
 			assetStorage: "Asset Storage",
 			changePlan: "Change Plan",
