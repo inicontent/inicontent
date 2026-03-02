@@ -104,7 +104,7 @@ import {
 	NTooltip,
 	NFlex,
 } from "#components";
-import { generateSearchArray } from "~/composables/search";
+import { generateSearchArray, generateSearchString } from "~/composables/search";
 import { useRealtimeSync } from "~/composables/useRealtimeSync";
 
 const user = useState<User>("user");
@@ -140,6 +140,20 @@ watch(searchString, (v) => {
 		},
 	});
 });
+
+watch(
+	searchArray,
+	(v) => {
+		const searchInput = v ? generateSearchString(v, "display") : undefined;
+		const nextSearchString = searchInput
+			? Inison.stringify(searchInput)
+			: undefined;
+
+		if (searchString.value !== nextSearchString)
+			searchString.value = nextSearchString;
+	},
+	{ deep: true },
+);
 
 const tablesConfig = computed({
 	get: () => user.value?.config?.tables ?? {},
