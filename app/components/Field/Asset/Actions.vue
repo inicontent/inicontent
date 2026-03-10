@@ -63,7 +63,7 @@ const showAssetsModal = defineModel<boolean>("showAssetsModal")
 
 const importInputRef = ref<InstanceType<typeof NInput>>()
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const assetURLs = ref()
 const database = useState<Database>("database")
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
@@ -76,7 +76,7 @@ const sessionID = useCookie<string | null>("sessionID", {
 async function importAsset() {
     Loading.value.import = true
     const data = await $fetch<apiResponse<Asset | Asset[]>>(
-        `${appConfig.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
+        `${config.public.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
         {
             method: "POST",
             headers: {

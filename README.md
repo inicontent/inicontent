@@ -22,21 +22,21 @@ The easiest way to integrate Inicontent CMS is to use it as a Nuxt Layer.
 
 **Database Configuration:**  
 - By default, the CMS is a multi-database manager.  
-  - When no `database` is set in `appConfig`, the admin interface (`/admin`) will display all available databases. Users can then navigate to a specific database's admin panel at `/admin/<dbName>`.  
-  - If a `database` is specified in `appConfig`, the `/admin` route will directly display the tables for the specified database, removing the need to include the database name in the path.  
+  - When no `database` is set in `.env`, the admin interface (`/admin`) will display all available databases. Users can then navigate to a specific database's admin panel at `/admin/<dbName>`.  
+  - If a `database` is specified in `.env`, the `/admin` route will directly display the tables for the specified database, removing the need to include the database name in the path.  
 
 **Example Configuration:**
 
 ```javascript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  appConfig: {
-    database: "PUT_HERE_YOUR_DATABASE_NAME", 
-    // If set, "/admin" will directly show the tables for the specified database.
-    // If not set, "/admin" will list all databases, and you can navigate to "/admin/<dbName>".
-  },
   extends: [["github:inicontent/inicontent", { install: true }]]
 });
+```
+
+```sh
+// .env
+database=DATABASE_SLUG
 ```
 
 This method keeps your project clean and allows for easy updates to the CMS.

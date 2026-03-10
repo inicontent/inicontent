@@ -134,7 +134,7 @@ const searchArray = defineModel<searchType>("array", {
     default: () => reactive({ and: [[null, "=", null]] }),
 });
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const { isMobile } = useDevice();
 const user = useState<User>("user");
 const database = useState<Database>("database");
@@ -199,7 +199,7 @@ async function updateFavoriteFilters(filters: any[]) {
         };
 
         await $fetch(
-            `${appConfig.apiBase}${database.value.slug}/users/${user.value.id}`,
+            `${config.public.apiBase}${database.value.slug}/users/${user.value.id}`,
             {
                 method: "PUT",
                 body: updatedUser,

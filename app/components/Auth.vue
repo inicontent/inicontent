@@ -30,7 +30,7 @@ const emit = defineEmits<{
 	loggedIn: [];
 }>();
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 const fromPath = useCookie("from", { sameSite: true });
@@ -82,7 +82,7 @@ async function SigninSubmit(e: Event) {
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
 				const data = await $fetch<Record<string, any>>(
-					`${appConfig.apiBase}${database.value.slug}/auth/signin`,
+					`${config.public.apiBase}${database.value.slug}/auth/signin`,
 					{
 						method: "PUT",
 						body: bodyContent,
@@ -98,7 +98,7 @@ async function SigninSubmit(e: Event) {
 					user.value = data.result;
 					database.value = (
 						await $fetch<apiResponse<Database>>(
-							`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+							`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
 							{
 								credentials: "include",
 								params: {

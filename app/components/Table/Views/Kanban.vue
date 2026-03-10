@@ -94,7 +94,7 @@ const searchString = defineModel<string>("searchString")
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const { isMobile } = useDevice()
 
 const database = useState<Database>("database")
@@ -174,7 +174,7 @@ async function executeFetch() {
 			[(field as Field).key]: column.key === UNSET_KEY ? "" : column.key,
 		})
 		const _data = await $fetch<apiResponse<Item[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}`,
+			`${config.public.apiBase}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
 					where: searchString.value
@@ -217,7 +217,7 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 
 	/* API call ------------------------------------------------------ */
 	const _data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value.slug}/${card.id}`,
+		`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${card.id}`,
 		{
 			method: "PUT",
 			body: { [field.key]: toKey === UNSET_KEY ? "" : toKey },

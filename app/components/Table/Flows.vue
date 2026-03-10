@@ -291,7 +291,7 @@ onMounted(() => {
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const database = useState<Database>("database")
 const table = useState<Table>("table")
@@ -315,7 +315,7 @@ async function saveFlow() {
 	}
 
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${config.public.apiBase}inicontent/databases/${database.value.slug
 		}/${table.value.slug}`,
 		{
 			method: "PUT",

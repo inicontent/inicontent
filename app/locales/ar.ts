@@ -441,7 +441,6 @@ export default {
 				uncollectible: "غير قابل للتحصيل",
 				unknown: "غير معروف",
 			},
-			period: "الفترة الحالية",
 			databaseStorage: "تخزين قاعدة البيانات",
 			assetStorage: "تخزين الملفات",
 			changePlan: "تغيير الخطة",

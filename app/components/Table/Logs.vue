@@ -95,7 +95,7 @@ const { id, open } = defineProps<{
 }>()
 const isOpen = ref(open)
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const database = useState<Database>("database")
@@ -113,7 +113,7 @@ const sessionID = useCookie<string | null>("sessionID", {
 })
 
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
-	() => `${appConfig.apiBase}${database.value.slug}/${table.value.slug}/logs`,
+	() => `${config.public.apiBase}${database.value.slug}/${table.value.slug}/logs`,
 	{
 		query: {
 			where: id ? `{item:${id}}` : undefined,

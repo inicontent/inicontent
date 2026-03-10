@@ -91,7 +91,7 @@ const { isAssetRoute, table } = defineProps<{
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
 const modelValue = defineModel<Asset[]>();
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const CurrentAsset = ref<Asset>();
@@ -103,16 +103,16 @@ const sessionID = useCookie<string | null>("sessionID", {
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
-			{
-				method: "DELETE",
-				params: {
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
+		`${config.public.apiBase}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
+		{
+			method: "DELETE",
+			params: {
+				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
-		),
+			credentials: "include",
+		},
+	),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(

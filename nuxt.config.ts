@@ -74,4 +74,11 @@ export default defineNuxtConfig({
 		},
 	},
 	compatibilityDate: "latest",
-})
+	runtimeConfig: {
+		public: {
+			apiBase: process.env.apiBase || "https://api.inicontent.com/",
+			idOne: process.env.idOne || "d7b3d61a582e53ee29b5a1d02a436d55",
+			database: process.env.database || "inicontent",
+		},
+	},
+});

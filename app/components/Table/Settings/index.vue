@@ -153,7 +153,7 @@ function pushToSchema(type: string) {
 	);
 }
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
 const router = useRouter();
@@ -225,7 +225,7 @@ async function updateTable() {
 			const data = await $fetch<
 				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
 			>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug
+				`${config.public.apiBase}inicontent/databases/${database.value.slug
 				}/${route.params.table ?? table.value.slug}`,
 				{
 					method: "PUT",
@@ -270,7 +270,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug
+		`${config.public.apiBase}inicontent/databases/${database.value.slug
 		}/${route.params.table ?? table.value.slug}`,
 		{
 			method: "DELETE",

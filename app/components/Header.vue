@@ -31,7 +31,7 @@
         </template>
         <template #extra>
             <NButtonGroup>
-                <NPopover v-if="user?.role === appConfig.idOne" :delay="600" scrollable style="max-height: 240px;">
+                <NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
                     <template #trigger>
                         <NButton round size="small">{{ humanFileSize(
                             database?.size,
@@ -83,7 +83,7 @@
 import { isValidID } from "inibase/utils"
 import { Icon, NIcon, NTag, NText } from "#components"
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const route = useRoute()
 const user = useState<User | undefined>("user")
 const database = useState<Database>("database")
@@ -154,7 +154,7 @@ const userDropdownOptions = computed(() => [
         label: t("settings"),
         key: "settings",
         icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
-        show: user.value?.role === appConfig.idOne,
+        show: user.value?.role === config.public.idOne,
     },
     {
         label: t("toggleTheme"),
@@ -221,7 +221,7 @@ async function onSelectUserDropdown(v: string) {
             break
         case "logout":
             await $fetch(
-                `${appConfig.apiBase}${database.value.slug ?? "inicontent"
+                `${config.public.apiBase}${database.value.slug ?? "inicontent"
                 }/auth/signout`,
                 {
                     credentials: "include", params: {

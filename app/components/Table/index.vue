@@ -160,7 +160,7 @@ const tablesConfig = computed({
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v };
 		$fetch(
-			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
 			{
 				method: "PUT",
 				body: user.value,
@@ -178,7 +178,7 @@ const tablesConfig = computed({
 if (tablesConfig.value[table.value.slug]?.view)
 	table.value.displayAs = tablesConfig.value[table.value.slug]?.view;
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const sessionID = useCookie<string | null>("sessionID", {
@@ -189,7 +189,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;
 	Loading.value.data = true;
 	const deleteResponse = await $fetch<apiResponse>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
+		`${config.public.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
 		{
 			method: "DELETE",
 			query: {
@@ -204,7 +204,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 	else window.$message.error(deleteResponse.message);
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+			`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
 			{
 				credentials: "include",
 				query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -328,7 +328,7 @@ provide("isSlotSet", isSlotSet);
 
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
-		`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+		`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
 		{
 			credentials: "include",
 			query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -354,7 +354,7 @@ async function jobNotification() {
 			if (notificationRef.value) {
 				const currentJobProgress = (
 					await $fetch<apiResponse<number>>(
-						`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
+						`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
 						{
 							credentials: "include",
 							query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -374,7 +374,7 @@ async function jobNotification() {
 									type: "primary",
 									onClick: () => {
 										window.open(
-											`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
+											`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
 										);
 										notificationRef.value?.destroy();
 										notificationRef.value = undefined;
@@ -459,14 +459,14 @@ const toolsDropdownOptions = computed(() => [
 		label: t("import"),
 		key: "import",
 		disabled: true,
-		show: user.value?.role === appConfig.idOne,
+		show: user.value?.role === config.public.idOne,
 	},
 	{
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-export" })),
 		label: t("export"),
 		key: "export",
 		disabled: !table.value?.schema,
-		show: user.value?.role === appConfig.idOne,
+		show: user.value?.role === config.public.idOne,
 		children: [
 			{
 				icon: () =>
@@ -498,7 +498,7 @@ async function toolsDropdownOnSelect(
 	switch (value) {
 		case "exportAllData": {
 			await $fetch(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
+				`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
 				{
 					method: "POST",
 					credentials: "include",

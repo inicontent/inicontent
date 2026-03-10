@@ -1,8 +1,8 @@
 <template>
 	<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
-		:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination"
-		:row-key="(row) => row.id" v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange"
-		:getCsvCell :getCsvHeader :rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
+		:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination" :row-key="(row) => row.id"
+		v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" :getCsvCell :getCsvHeader
+		:rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
 	<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
 		:show="showDropdown" :onClickoutside @select="handleSelect" />
 </template>
@@ -45,7 +45,7 @@ const database = useState<Database>("database");
 const table = useState<Table>("table");
 const route = useRoute();
 const router = useRouter();
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const { isMobile } = useDevice();
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
@@ -134,7 +134,7 @@ const sessionID = useCookie<string | null>("sessionID", {
 });
 
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
-	`${appConfig.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+	`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
 	{
 		key: `${database.value.slug}/${table.value?.slug as string}`,
 		query: {
@@ -361,7 +361,7 @@ const tablesConfig = computed({
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v };
 		$fetch(
-			`${appConfig.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
 			{
 				method: "PUT",
 				body: user.value,
@@ -413,131 +413,131 @@ async function setColumns() {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
 			? [
-					{
-						type: "selection",
-						fixed: "left",
-						options: [
-							{
-								label: t("delete"),
-								key: "delete",
-								disabled: checkedRowKeys.value.length === 0,
-								icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-								children: [
-									{
-										label: () =>
-											h(
-												"span",
-												{
-													onClick: async () => {
-														await deleteItem();
-														checkedRowKeys.value = [];
-													},
+				{
+					type: "selection",
+					fixed: "left",
+					options: [
+						{
+							label: t("delete"),
+							key: "delete",
+							disabled: checkedRowKeys.value.length === 0,
+							icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+							children: [
+								{
+									label: () =>
+										h(
+											"span",
+											{
+												onClick: async () => {
+													await deleteItem();
+													checkedRowKeys.value = [];
 												},
-												t("clearTable"),
-											),
-										key: "clear",
-										disabled:
-											checkedRowKeys.value.length !==
-											_data.value?.result?.length,
-										icon: () =>
-											h(
-												NIcon,
-												{
-													onClick: async () => {
-														await deleteItem();
-														checkedRowKeys.value = [];
-													},
-												},
-												() => h(Icon, { name: "tabler:trash" }),
-											),
-									},
-								],
-								onSelect: async () => {
-									await deleteItem(checkedRowKeys.value);
-									checkedRowKeys.value = [];
-								},
-							},
-							{
-								label: t("columns"),
-								key: "columns",
-								icon: () =>
-									h(NIcon, () => h(Icon, { name: "tabler:columns-3" })),
-								children: table.value?.schema?.map(({ id, key }) => ({
-									label: t(key),
-									key: id,
+											},
+											t("clearTable"),
+										),
+									key: "clear",
+									disabled:
+										checkedRowKeys.value.length !==
+										_data.value?.result?.length,
 									icon: () =>
 										h(
 											NIcon,
 											{
-												onClick() {
-													if (
-														tablesConfig?.value[
-															table.value?.slug as string
-														]?.columns?.includes(id as number)
-													)
-														// @ts-ignore
-														tablesConfig.value[
-															table.value?.slug as string
-														].columns = tablesConfig.value[
-															table.value?.slug as string
-														]?.columns?.filter(
-															(itemID: number) => itemID !== id,
-														);
-													else {
-														const clonedTablesConfig = structuredClone(
-															toRaw(tablesConfig.value),
-														);
-														if (
-															!clonedTablesConfig[table.value?.slug as string]
-														)
-															clonedTablesConfig[table.value?.slug as string] =
-																{ columns: [] };
-
-														// @ts-ignore
-														clonedTablesConfig[
-															table.value?.slug as string
-														].columns?.push(id as number);
-
-														tablesConfig.value = clonedTablesConfig;
-													}
+												onClick: async () => {
+													await deleteItem();
+													checkedRowKeys.value = [];
 												},
 											},
-											() =>
-												h(Icon, {
-													name:
-														id !== undefined &&
+											() => h(Icon, { name: "tabler:trash" }),
+										),
+								},
+							],
+							onSelect: async () => {
+								await deleteItem(checkedRowKeys.value);
+								checkedRowKeys.value = [];
+							},
+						},
+						{
+							label: t("columns"),
+							key: "columns",
+							icon: () =>
+								h(NIcon, () => h(Icon, { name: "tabler:columns-3" })),
+							children: table.value?.schema?.map(({ id, key }) => ({
+								label: t(key),
+								key: id,
+								icon: () =>
+									h(
+										NIcon,
+										{
+											onClick() {
+												if (
+													tablesConfig?.value[
+														table.value?.slug as string
+													]?.columns?.includes(id as number)
+												)
+													// @ts-ignore
+													tablesConfig.value[
+														table.value?.slug as string
+													].columns = tablesConfig.value[
+														table.value?.slug as string
+													]?.columns?.filter(
+														(itemID: number) => itemID !== id,
+													);
+												else {
+													const clonedTablesConfig = structuredClone(
+														toRaw(tablesConfig.value),
+													);
+													if (
+														!clonedTablesConfig[table.value?.slug as string]
+													)
+														clonedTablesConfig[table.value?.slug as string] =
+															{ columns: [] };
+
+													// @ts-ignore
+													clonedTablesConfig[
+														table.value?.slug as string
+													].columns?.push(id as number);
+
+													tablesConfig.value = clonedTablesConfig;
+												}
+											},
+										},
+										() =>
+											h(Icon, {
+												name:
+													id !== undefined &&
 														tablesConfig.value[
 															table.value?.slug as string
 														]?.columns?.includes(id)
-															? "tabler:eye-off"
-															: "tabler:eye",
-												}),
-										),
-								})),
-							},
-						],
-					},
-				]
+														? "tabler:eye-off"
+														: "tabler:eye",
+											}),
+									),
+							})),
+						},
+					],
+				},
+			]
 			: []),
 		...((table.value?.defaultTableColumns && table.value?.schema
 			? [
-					...(tablesConfig.value[table.value?.slug as string]?.columns
-						? table.value.schema.filter(
-								({ id }) =>
-									id !== undefined &&
-									!tablesConfig.value[
-										table.value?.slug as string
-									]?.columns?.includes(id) &&
-									!table.value?.defaultTableColumns?.includes(id),
-							)
-						: []),
-					...table.value.defaultTableColumns
-						.map(
-							(id) =>
-								table.value?.schema?.find((field) => field.id === id) as Field,
-						)
-						.filter(Boolean),
-				]
+				...(tablesConfig.value[table.value?.slug as string]?.columns
+					? table.value.schema.filter(
+						({ id }) =>
+							id !== undefined &&
+							!tablesConfig.value[
+								table.value?.slug as string
+							]?.columns?.includes(id) &&
+							!table.value?.defaultTableColumns?.includes(id),
+					)
+					: []),
+				...table.value.defaultTableColumns
+					.map(
+						(id) =>
+							table.value?.schema?.find((field) => field.id === id) as Field,
+					)
+					.filter(Boolean),
+			]
 			: table.value?.schema
 		)
 			?.filter(
@@ -570,108 +570,107 @@ async function setColumns() {
 					field.render
 						? field.render(row)
 						: table.value?.allowedMethods?.includes("u") &&
-								![
-									"id",
-									"createdAt",
-									"createdBy",
-									"updatedAt",
-									"updatedBy",
-								].includes(field.key)
+							![
+								"id",
+								"createdAt",
+								"createdBy",
+								"updatedAt",
+								"updatedBy",
+							].includes(field.key)
 							? h(LazyColumnEdit, {
-									loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
-									modelValue: row[field.key],
-									"onUpdate:modelValue": async (value: any) => {
-										if (!row.id) return;
-										Loading.value[`${row.id}-${field.key}`] = true;
-										row[field.key] = value;
-										const __data = await $fetch<apiResponse<Item | boolean>>(
-											`${appConfig.apiBase}${database.value.slug}/${
-												table.value?.slug
-											}/${row.id}`,
-											{
-												method: "PUT",
-												body: row,
-												params: {
-													return: false,
-													locale: Language.value,
-													[`${database.value.slug}_sid`]: sessionID.value,
-												},
-												credentials: "include",
+								loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
+								modelValue: row[field.key],
+								"onUpdate:modelValue": async (value: any) => {
+									if (!row.id) return;
+									Loading.value[`${row.id}-${field.key}`] = true;
+									row[field.key] = value;
+									const __data = await $fetch<apiResponse<Item | boolean>>(
+										`${config.public.apiBase}${database.value.slug}/${table.value?.slug
+										}/${row.id}`,
+										{
+											method: "PUT",
+											body: row,
+											params: {
+												return: false,
+												locale: Language.value,
+												[`${database.value.slug}_sid`]: sessionID.value,
 											},
-										);
-										if (
-											(typeof __data?.result === "boolean" &&
-												__data.result !== true) ||
-											(typeof __data.result !== "boolean" && !__data.result?.id)
-										)
-											window.$message.error(__data.message);
-										Loading.value[`${row.id}-${field.key}`] = false;
-									},
-									field,
-								})
+											credentials: "include",
+										},
+									);
+									if (
+										(typeof __data?.result === "boolean" &&
+											__data.result !== true) ||
+										(typeof __data.result !== "boolean" && !__data.result?.id)
+									)
+										window.$message.error(__data.message);
+									Loading.value[`${row.id}-${field.key}`] = false;
+								},
+								field,
+							})
 							: h(LazyColumn, {
-									value: row[field.key],
-									field,
-								}),
+								value: row[field.key],
+								field,
+							}),
 			})) ?? []),
 		...(isSlotSet("itemActions") && isSlotEmpty("itemActions")
 			? []
 			: [
-					{
-						title: t("actions"),
-						align: "center",
-						width:
-							isMobile || tablesConfig.value[table.value.slug]?.size === "small"
-								? 70
-								: 150 +
-									(isSlotSet("itemExtraButtons") &&
-									!isSlotEmpty("itemExtraButtons")
-										? (props.slots.itemExtraButtons as any)().length * 20
-										: 0),
-						key: "actions",
-						fixed: "right",
-						render: (row: any) =>
-							isSlotSet("itemActions") && !isSlotEmpty("itemActions")
-								? props.slots.itemActions(row)
-								: [
-										isSlotSet("itemExtraActions") &&
-										!isSlotEmpty("itemExtraActions")
-											? props.slots.itemExtraActions(row)
-											: undefined,
-										isMobile ||
-										tablesConfig.value[table.value.slug]?.size === "small"
-											? h(
-													NPopover,
+				{
+					title: t("actions"),
+					align: "center",
+					width:
+						isMobile || tablesConfig.value[table.value.slug]?.size === "small"
+							? 70
+							: 150 +
+							(isSlotSet("itemExtraButtons") &&
+								!isSlotEmpty("itemExtraButtons")
+								? (props.slots.itemExtraButtons as any)().length * 20
+								: 0),
+					key: "actions",
+					fixed: "right",
+					render: (row: any) =>
+						isSlotSet("itemActions") && !isSlotEmpty("itemActions")
+							? props.slots.itemActions(row)
+							: [
+								isSlotSet("itemExtraActions") &&
+									!isSlotEmpty("itemExtraActions")
+									? props.slots.itemExtraActions(row)
+									: undefined,
+								isMobile ||
+									tablesConfig.value[table.value.slug]?.size === "small"
+									? h(
+										NPopover,
+										{
+											scrollable: true,
+											style: "max-height: 240px;border-radius:34px",
+											contentStyle: "padding: 0",
+											trigger: "click",
+										},
+										{
+											trigger: () =>
+												h(
+													NButton,
 													{
-														scrollable: true,
-														style: "max-height: 240px;border-radius:34px",
-														contentStyle: "padding: 0",
-														trigger: "click",
+														size: "small",
+														circle: true,
+														secondary: true,
+														type: "primary",
 													},
 													{
-														trigger: () =>
-															h(
-																NButton,
-																{
-																	size: "small",
-																	circle: true,
-																	secondary: true,
-																	type: "primary",
-																},
-																{
-																	icon: () =>
-																		h(NIcon, () =>
-																			h(Icon, { name: "tabler:dots" }),
-																		),
-																},
+														icon: () =>
+															h(NIcon, () =>
+																h(Icon, { name: "tabler:dots" }),
 															),
-														default: () => renderItemButtons(row),
 													},
-												)
-											: renderItemButtons(row),
-									],
-					},
-				]),
+												),
+											default: () => renderItemButtons(row),
+										},
+									)
+									: renderItemButtons(row),
+							],
+				},
+			]),
 	] as DataTableColumns;
 
 	if (cols.length > 2 || table.value?.defaultTableColumns) columns.value = cols;

@@ -26,7 +26,7 @@
 			</NCard>
 		</NGridItem>
 
-		<NGridItem v-if="user?.role === appConfig.idOne">
+		<NGridItem v-if="user?.role === config.public.idOne">
 			<NPopover placement="bottom">
 				<template #trigger>
 					<NPopover trigger="click" v-model:show="showPopover">
@@ -73,7 +73,7 @@ const modelValue = defineModel<Database>({ required: true })
 
 const showPopover = ref(false)
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const user = useState<User>("user")
 const Hover = ref<Record<string, boolean>>({})
@@ -98,7 +98,7 @@ const createTable = async () => {
 		Loading.value.Table = true
 
 		const data = await $fetch<apiResponse<Table>>(
-			`${appConfig.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
+			`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
 				params: {
@@ -156,7 +156,7 @@ const getDropdownOptions = (table: Table) => {
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 			show:
 				!["sessions", "translations", "assets"].includes(table.slug) &&
-				user.value?.role === appConfig.idOne,
+				user.value?.role === config.public.idOne,
 		},
 		{
 			key: `${tableUrl}/flows`,
@@ -164,7 +164,7 @@ const getDropdownOptions = (table: Table) => {
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 			show:
 				!["sessions", "translations"].includes(table.slug) &&
-				user.value?.role === appConfig.idOne,
+				user.value?.role === config.public.idOne,
 		},
 	]
 }

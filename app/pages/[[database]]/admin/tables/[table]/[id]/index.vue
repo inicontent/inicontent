@@ -81,7 +81,7 @@ definePageMeta({
     layout: "table",
 })
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const route = useRoute()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
@@ -91,7 +91,7 @@ const sessionID = useCookie<string | null>("sessionID", {
 })
 
 const { data } = await useFetch<Item>(
-    `${appConfig.apiBase}${database.value.slug}/${table.value.slug
+    `${config.public.apiBase}${database.value.slug}/${table.value.slug
     }/${route.params.id}`,
     {
         query: {

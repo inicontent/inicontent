@@ -33,7 +33,7 @@ onBeforeUpdate(() => {
 	clearNuxtState("isMenuOpen");
 });
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const route = useRoute();
 const user = useState<User>("user");
 const table = useState<Table>("table");
@@ -92,7 +92,7 @@ function renderSingleItem(table: Table): MenuOption {
 			key: `${table.slug}-settings`,
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 			show:
-				user.value?.role === appConfig.idOne &&
+				user.value?.role === config.public.idOne &&
 				!["sessions", "translations", "assets"].includes(table.slug),
 		},
 		{
@@ -107,7 +107,7 @@ function renderSingleItem(table: Table): MenuOption {
 			key: `${table.slug}-flows`,
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 			show:
-				user.value?.role === appConfig.idOne &&
+				user.value?.role === config.public.idOne &&
 				!["sessions", "translations"].includes(table.slug),
 		},
 	];
@@ -136,25 +136,10 @@ function renderSingleItem(table: Table): MenuOption {
 const menuOptions = computed(() =>
 	database.value?.tables
 		? ([
-				...(database.value.tables
-					.filter(
-						({ slug, allowedMethods, show }) =>
-							![
-								"users",
-								"sessions",
-								"assets",
-								"translations",
-								"pages",
-								"blocks",
-							].includes(slug) &&
-							!!allowedMethods &&
-							allowedMethods.trim() !== "" &&
-							show !== false,
-					)
-					.map(renderSingleItem) ?? []),
-				database.value.tables.filter(
+			...(database.value.tables
+				.filter(
 					({ slug, allowedMethods, show }) =>
-						[
+						![
 							"users",
 							"sessions",
 							"assets",
@@ -165,24 +150,39 @@ const menuOptions = computed(() =>
 						!!allowedMethods &&
 						allowedMethods.trim() !== "" &&
 						show !== false,
-				).length
-					? {
-							key: "divider-1",
-							type: "divider",
-						}
-					: undefined,
-				...(database.value.tables
-					?.filter(
-						({ slug, allowedMethods, show }) =>
-							["users", "sessions", "assets", "pages", "blocks"].includes(
-								slug,
-							) &&
-							!!allowedMethods &&
-							allowedMethods.trim() !== "" &&
-							show !== false,
-					)
-					.map(renderSingleItem) ?? []),
-			].filter((item) => item) as MenuOption[])
+				)
+				.map(renderSingleItem) ?? []),
+			database.value.tables.filter(
+				({ slug, allowedMethods, show }) =>
+					[
+						"users",
+						"sessions",
+						"assets",
+						"translations",
+						"pages",
+						"blocks",
+					].includes(slug) &&
+					!!allowedMethods &&
+					allowedMethods.trim() !== "" &&
+					show !== false,
+			).length
+				? {
+					key: "divider-1",
+					type: "divider",
+				}
+				: undefined,
+			...(database.value.tables
+				?.filter(
+					({ slug, allowedMethods, show }) =>
+						["users", "sessions", "assets", "pages", "blocks"].includes(
+							slug,
+						) &&
+						!!allowedMethods &&
+						allowedMethods.trim() !== "" &&
+						show !== false,
+				)
+				.map(renderSingleItem) ?? []),
+		].filter((item) => item) as MenuOption[])
 		: [],
 );
 </script>

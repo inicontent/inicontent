@@ -43,7 +43,7 @@ definePageMeta({
     middleware: ["database", "global"],
 })
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const database = useState<Database>("database")
 const route = useRoute()
 const sessionID = useCookie<string | null>("sessionID", { sameSite: true })
@@ -56,7 +56,7 @@ const shouldRedirect = await useAsyncData("api-doc-auth", async () => {
     if (!database.value?.slug || !sessionID.value) return false
     try {
         const data = await $fetch<{ result: boolean }>(
-            `${appConfig.apiBase}${database.value.slug}/auth/current`,
+            `${config.public.apiBase}${database.value.slug}/auth/current`,
             {
                 credentials: "include",
                 query: {
@@ -82,7 +82,7 @@ const publicTables = computed(() =>
         .filter(({ allowedMethods, show }) => allowedMethods?.includes("r") && show !== false)
         .map((tableItem) => {
             const baseSlug = database.value?.slug ?? "inicontent"
-            const basePath = `${appConfig.apiBase}${baseSlug}/${tableItem.slug}`
+            const basePath = `${config.public.apiBase}${baseSlug}/${tableItem.slug}`
             return {
                 ...tableItem,
                 http: "GET",

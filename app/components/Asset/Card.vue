@@ -46,7 +46,7 @@
 						</NInputGroup>
 					</NPopover>
 					<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
-						:action="`${appConfig.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+						:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 						<NPopover trigger="manual" placement="top-end"
 							:show="UploadProgress > 0 && UploadProgress !== 1001" scrollable style="max-height: 160px">
@@ -117,7 +117,7 @@ const { where, suffix } = defineProps<{
 	where?: any;
 	suffix?: string;
 }>();
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;
 const HUGE_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
@@ -212,7 +212,7 @@ const database = useState<Database>("database");
 if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
-			`${appConfig.apiBase}inicontent/databases/${database.value.slug}/assets`,
+			`${config.public.apiBase}inicontent/databases/${database.value.slug}/assets`,
 			{
 				credentials: "include",
 				params: {
@@ -375,7 +375,7 @@ const queryOptions = computed(() =>
 );
 
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
-	() => `${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
+	() => `${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
 	{
 		onRequest: () => {
 			Loading.value.AssetData = true;
@@ -578,7 +578,7 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 		return false;
 	}
 	const data = await $fetch<apiResponse<Asset>>(
-		`${appConfig.apiBase}${database.value.slug
+		`${config.public.apiBase}${database.value.slug
 		}/assets${currentPath.value}/${file.name}`,
 		{
 			method: "DELETE",
@@ -606,7 +606,7 @@ async function createFolder() {
 	if (folder.value) {
 		currentPath.value += `/${folder.value}`;
 		await $fetch<apiResponse>(
-			`${appConfig.apiBase}${database.value.slug}/assets${currentPath.value}`,
+			`${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
 			{
 				method: "POST",
 				credentials: "include",

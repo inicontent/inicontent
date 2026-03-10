@@ -81,7 +81,7 @@ onMounted(() => {
 	}
 })
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const route = useRoute()
 const router = useRouter()
@@ -160,7 +160,7 @@ async function updateDatabase() {
 			const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value))
 			Loading.value.updateDatabase = true
 			const data = await $fetch<apiResponse>(
-				`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+				`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
 				{
 					method: "PUT",
 					body: bodyContent,
@@ -187,7 +187,7 @@ async function updateDatabase() {
 async function deleteDatabase() {
 	Loading.value.deleteDatabase = true
 	const data = await $fetch<apiResponse>(
-		`${appConfig.apiBase}inicontent/databases/${database.value.slug}`,
+		`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
 		{
 			method: "DELETE",
 			credentials: "include",

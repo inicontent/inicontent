@@ -10,8 +10,7 @@
 				: {}">
 			<template #action v-if="table?.allowedMethods?.includes('c')">
 				<NFlex justify="center">
-					<NButton round strong secondary type="primary"
-						@click="() => openDrawer(field.table as string)">
+					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table as string)">
 						<template #icon>
 							<Icon name="tabler:plus" />
 						</template>
@@ -71,7 +70,7 @@ const rule: FormItemRule = {
 	},
 };
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 type tableOption = {
@@ -110,8 +109,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
+		getPath(table.schema ?? [], columnID),
+	)
 	: field.searchIn;
 
 const pagination = ref<pageInfo>();
@@ -129,14 +128,14 @@ async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;
 	const searchOrObject =
 		searchValue &&
-		(typeof searchValue !== "string" || searchValue.trim().length) &&
-		searchIn
+			(typeof searchValue !== "string" || searchValue.trim().length) &&
+			searchIn
 			? (searchIn.reduce((result, searchKey) => {
-					Object.assign(result, {
-						[searchKey]: `*%${searchValue}%`,
-					});
-					return result;
-				}, {}) ?? false)
+				Object.assign(result, {
+					[searchKey]: `*%${searchValue}%`,
+				});
+				return result;
+			}, {}) ?? false)
 			: false;
 
 	let _where = "";
@@ -145,8 +144,8 @@ async function loadOptions(searchValue?: string | number) {
 			_where = Inison.stringify({
 				...((typeof field.where === "string"
 					? Inison.unstringify(
-							renderLabel({ ...(table as Table), label: field.where }),
-						)
+						renderLabel({ ...(table as Table), label: field.where }),
+					)
 					: field.where) as any),
 				or: searchOrObject,
 			});
@@ -155,9 +154,9 @@ async function loadOptions(searchValue?: string | number) {
 				typeof field.where === "string"
 					? renderLabel({ ...(table as Table), label: field.where })
 					: renderLabel({
-							...(table as Table),
-							label: Inison.stringify(field.where),
-						});
+						...(table as Table),
+						label: Inison.stringify(field.where),
+					});
 	} else if (searchOrObject)
 		_where = Inison.stringify({
 			or: searchOrObject,
@@ -176,7 +175,7 @@ async function loadOptions(searchValue?: string | number) {
 	} else where.value = undefined;
 
 	const request = await $fetch<apiResponse<tableOption[]>>(
-		`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+		`${config.public.apiBase}${database.value.slug}/${field.table}`,
 		{
 			params: {
 				where: where.value,
@@ -215,12 +214,12 @@ async function handleScroll(e: Event) {
 		return;
 	if (
 		currentTarget.scrollTop + currentTarget.offsetHeight >=
-			currentTarget.scrollHeight &&
+		currentTarget.scrollHeight &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		Loading.value[`options_${field.key}`] = true;
 		const request = await $fetch<apiResponse<tableOption[]>>(
-			`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+			`${config.public.apiBase}${database.value.slug}/${field.table}`,
 			{
 				params: {
 					where: where.value,
@@ -250,7 +249,7 @@ if (
 ) {
 	Loading.value[`options_${field.key}`] = true;
 	await useLazyFetch<apiResponse<Item[]>>(
-		`${appConfig.apiBase}${database.value.slug}/${field.table}`,
+		`${config.public.apiBase}${database.value.slug}/${field.table}`,
 		{
 			cache: "no-cache",
 			query: {

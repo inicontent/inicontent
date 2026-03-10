@@ -8,7 +8,7 @@
 		</template>
 		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`${appConfig.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
+			:action="`${config.public.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			:fileList @update:file-list="setModelValue" :custom-request @remove="handleRemoveUpload"
 			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false">
 			<NUploadDragger v-if="compressionIndicator">
@@ -69,7 +69,7 @@ const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;
 const HUGE_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
 const LARGE_PDF_BYTES = 50 * 1024 * 1024;
@@ -133,7 +133,7 @@ async function handleRemoveUpload({
 				)
 				: "";
 			await $fetch(
-				`${appConfig.apiBase}${database.value.slug}/assets${path}/${assetId}`,
+				`${config.public.apiBase}${database.value.slug}/assets${path}/${assetId}`,
 				{
 					method: "DELETE",
 					params: {

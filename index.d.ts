@@ -225,11 +225,12 @@ declare global {
 	>;
 }
 declare module "nuxt/schema" {
-	interface appConfig {
-		apiBase: string;
-		idOne: string;
-		database?: string;
-		fileBase?: string;
+	interface runtimeConfig {
+		public: {
+			apiBase: string;
+			idOne: string;
+			database?: string;
+		};
 	}
 }
 

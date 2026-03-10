@@ -26,7 +26,7 @@
 //     clearNuxtState("translations");
 // })
 
-const appConfig = useAppConfig()
+const config = useRuntimeConfig()
 const route = useRoute()
 const database = useState<Database>("database")
 
@@ -48,7 +48,7 @@ async function checkAuth() {
 
 	try {
 		const data = await $fetch<{ result: boolean }>(
-			`${appConfig.apiBase}${database.value.slug}/auth/current`,
+			`${config.public.apiBase}${database.value.slug}/auth/current`,
 			{
 				credentials: "include",
 				query: { isSignedIn: true, [`${database.value.slug}_sid`]: sessionID.value },

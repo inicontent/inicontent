@@ -36,7 +36,7 @@ defineExpose<FormRef>({
 	data: modelValue.value,
 });
 
-const appConfig = useAppConfig();
+const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
 const database = useState<Database>("database");
@@ -186,7 +186,7 @@ async function fetchSchemaAndData() {
 			Loading.value.SCHEMA = true;
 
 			response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
+				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
 				{
 					method: bodyContent?.id ? "PUT" : "POST",
 					body: bodyContent,
@@ -307,7 +307,7 @@ async function UPDATE() {
 
 			Loading.value.UPDATE = true;
 			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 				}/${bodyContent?.id}`,
 				{
 					method: "PUT",
@@ -342,7 +342,7 @@ async function DELETE() {
 
 	Loading.value.DELETE = true;
 	const data = await $fetch<apiResponse<Item>>(
-		`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
+		`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
 		}/${bodyContent?.id}`,
 		{
 			method: "DELETE",
@@ -384,7 +384,7 @@ async function CREATE() {
 
 			Loading.value.CREATE = true;
 			const data = await $fetch<apiResponse>(
-				`${appConfig.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 				{
 					method: "POST",
 					body: bodyContent,

@@ -406,7 +406,6 @@ export default {
 				uncollectible: "Incobrable",
 				unknown: "Desconocido",
 			},
-			period: "Periodo actual",
 			databaseStorage: "Almacenamiento de base de datos",
 			assetStorage: "Almacenamiento de archivos",
 			changePlan: "Cambiar plan",

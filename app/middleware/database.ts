@@ -4,23 +4,23 @@ const sessionID = useCookie<string | null>("sessionID", {
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
-	const appConfig = useAppConfig();
+	const config = useRuntimeConfig();
 
 	if (!database.value)
 		database.value = (
 			await $fetch<apiResponse<Database>>(
-				`${appConfig.apiBase}inicontent/databases/${
-					appConfig.database === "inicontent"
-						? to.params.database || appConfig.database
-						: appConfig.database || to.params.database
+				`${config.public.apiBase}inicontent/databases/${
+					config.public.database === "inicontent"
+						? to.params.database || config.public.database
+						: config.public.database || to.params.database
 				}`,
 				{
 					credentials: "include",
 					query: {
 						[`${
-							appConfig.database === "inicontent"
-								? to.params.database || appConfig.database
-								: appConfig.database || to.params.database
+							config.public.database === "inicontent"
+								? to.params.database || config.public.database
+								: config.public.database || to.params.database
 						}_sid`]: sessionID.value,
 					},
 				},
