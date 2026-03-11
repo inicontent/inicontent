@@ -1,12 +1,12 @@
 <template>
     <NPopover style="max-height: 240px;" :style="`width: ${isMobile ? '100vw' : '500px'}`" placement="bottom-end"
         scrollable v-model:show="isSearchPopoverVisible" :x="isMobile ? 0 : undefined" :y="isMobile ? 180 : undefined"
-        :show-arrow="!isMobile" trigger="manual">
+        :show-arrow="!isMobile" trigger="click">
         <template #trigger>
             <NTooltip :delay="1500">
                 <template #trigger>
-                    <NButton round :size="props.size" @click="isSearchPopoverVisible = !isSearchPopoverVisible"
-                        :tertiary="isSearchPopoverVisible" :type="isSearchPopoverVisible ? 'primary' : undefined">
+                    <NButton round :size="props.size" :tertiary="isSearchPopoverVisible"
+                        :type="isSearchPopoverVisible ? 'primary' : undefined">
                         <template #icon>
                             <NIcon>
                                 <Icon v-if="isSearchPopoverVisible" name="tabler:x" />
@@ -160,7 +160,7 @@ watch(
 function emitSearchQuery(locSearchArray: searchType) {
     const searchInput = generateSearchString(locSearchArray, "display");
     searchArray.value = locSearchArray;
-    searchString.value = searchInput ? Inison.stringify(searchInput) : undefined;
+    searchString.value = searchInput ? Inison.stringify(searchInput as any) : undefined;
 }
 
 // Handle search button click

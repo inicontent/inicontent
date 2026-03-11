@@ -3,9 +3,7 @@
 		<template v-for="(item, index) in formatedItems">
 			<NInputGroup v-if="Array.isArray(item)" class="searchGroupInput">
 				<NCascader size="small" :consistent-menu-width="false" filterable :value="item[0]"
-					@update:value="(v) => item[0] = v"
-					:options="generateSearchInOptions(
-						schema, formatedItems?.toSpliced(index, 1).filter((_item => Array.isArray(_item) && _item[0])).map(([value1]) => value1))"
+					@update:value="(v) => item[0] = v" :options="generateSearchInOptions(schema)"
 					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
 				<template v-if="item[3]">
 					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
@@ -14,9 +12,9 @@
 					<template v-if="isRelativeOperator(item[1])">
 						<NSelect size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
 							:value="(item[2] as string | null) ?? null"
-							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null)"
+							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null, item[3])"
 							filterable remote clearable :on-search="(pattern) => handleRelativeSearch(index, pattern)"
-							@update:value="(v) => updateRelativeValue(item, v as string | null)"
+							tag @update:value="(v) => updateRelativeValue(item, v as string | null)"
 							@keydown.enter.prevent="() => callback && callback()" />
 					</template>
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
@@ -40,6 +38,7 @@
 import {
 	getField as getFieldFromSchema,
 	isArrayOfObjects,
+	isNumber,
 	isObject,
 } from "inibase/utils"
 import { Icon } from "#components"
@@ -83,11 +82,28 @@ const relativeBaseAutocompleteOptions = relativeBaseSuggestionValues.map(
 
 const formatedItems = computed(() =>
 	modelValue.value?.map((item) => {
-		if (Array.isArray(item) && item[0])
+		if (Array.isArray(item) && item[0]) {
 			item[3] = getFieldFromSchema(item[0], schema.value as any)
+			item[2] = normalizeSearchItemValue(item)
+		}
 		return item
 	}),
 )
+
+function normalizeSearchItemValue(item: searchTypeValueItem) {
+	const value = item[2]
+	const field = item[3] as Field | undefined
+	if (!field || isRelativeOperator(item[1])) return value
+
+	if (
+		checkFieldType(field.type, ["date", "number"]) &&
+		typeof value === "string" &&
+		isNumber(value)
+	)
+		return Number(value)
+
+	return value
+}
 
 function getFieldFromItem(item: searchTypeValueItem) {
 	return {
@@ -140,7 +156,7 @@ function getAvailableComparisonOperator(field: Field) {
 		return ![">", ">=", "<", "<=", "[]", "![]"].includes(optionValue)
 	})
 
-	if (checkFieldType(field.type, "date")) {
+	if (checkFieldType(field.type, ["date", "number"])) {
 		const relativeCandidates = selectableOptions.filter(
 			(option) =>
 				option.value &&
@@ -167,7 +183,19 @@ function isRelativeOperator(value: string | undefined) {
 	return typeof value === "string" && value.startsWith("r")
 }
 
-function getRelativeAutocompleteOptions(value: unknown) {
+function getRelativeAutocompleteOptions(value: unknown, field?: Field) {
+	if (field?.type && checkFieldType(field.type, "number")) {
+		const input = typeof value === "string" ? value.trim() : ""
+		if (!input)
+			return ["0", "1", "-1", "10", "-10"].map((v) => ({ label: v, value: v }))
+
+		const numericPattern = /^[+-]?\d+(?:\.\d+)?$/
+		if (numericPattern.test(input))
+			return [{ label: input, value: input }]
+
+		return []
+	}
+
 	const input = typeof value === "string" ? value.trim() : ""
 	const numericPattern = /^[+-]?\d+$/
 	if (numericPattern.test(input)) {
@@ -202,9 +230,13 @@ function getRelativeAutocompleteOptions(value: unknown) {
 // NSelect support (remote filter): state and helpers
 const relativeSelectOptions = ref<Record<number, { label: string; value: string }[]>>({})
 
-function getRelativeSelectOptions(pattern: unknown, currentValue: string | null) {
+function getRelativeSelectOptions(
+	pattern: unknown,
+	currentValue: string | null,
+	field?: Field,
+) {
 	// Reuse existing generator, ensure current value is present
-	const options = getRelativeAutocompleteOptions(pattern)
+	const options = getRelativeAutocompleteOptions(pattern, field)
 	const list = Array.isArray(options) ? [...options] : []
 	if (currentValue && !list.some((o) => o.value === currentValue)) {
 		list.unshift({ label: currentValue, value: currentValue })
@@ -215,7 +247,8 @@ function getRelativeSelectOptions(pattern: unknown, currentValue: string | null)
 function handleRelativeSearch(index: number, pattern: string) {
 	const currentItem = modelValue.value?.[index]
 	const currentValue = Array.isArray(currentItem) ? (currentItem[2] as string | null) : null
-	relativeSelectOptions.value[index] = getRelativeSelectOptions(pattern, currentValue)
+	const currentField = Array.isArray(currentItem) ? (currentItem[3] as Field | undefined) : undefined
+	relativeSelectOptions.value[index] = getRelativeSelectOptions(pattern, currentValue, currentField)
 }
 
 function updateRelativeValue(
