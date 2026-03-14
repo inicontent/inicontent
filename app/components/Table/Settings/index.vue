@@ -454,7 +454,7 @@ const generalSettingsSchema = reactive<Schema>([
 				disabled: true,
 			}
 			: {},
-		width: 5,
+		width: 6,
 	},
 	{
 		key: "cache",
@@ -464,7 +464,7 @@ const generalSettingsSchema = reactive<Schema>([
 				disabled: true,
 			}
 			: {},
-		width: 5,
+		width: 6,
 	},
 	{
 		key: "prepend",
@@ -475,7 +475,7 @@ const generalSettingsSchema = reactive<Schema>([
 				disabled: true,
 			}
 			: {},
-		width: 5,
+		width: 6,
 	},
 	{
 		key: "decodeID",
@@ -486,19 +486,19 @@ const generalSettingsSchema = reactive<Schema>([
 				disabled: true,
 			}
 			: {},
-		width: 5,
+		width: 6,
 	},
 	{
 		key: "log",
 		type: "boolean",
 		description: "enableActivityLog",
-		width: 5,
+		width: 6,
 	},
 	{
 		key: "realtime",
 		type: "boolean",
 		description: "enableRealtimeSync",
-		width: 5,
+		width: 6,
 	},
 ]);
 

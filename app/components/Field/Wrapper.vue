@@ -60,6 +60,8 @@ function numberToPercentage(width: number, wrapperWidth?: string | number) {
 			return "25";
 		case 5:
 			return "20";
+		case 6:
+			return "16.66";
 	}
 }
 const Drawers = useState<DrawerRef>("drawers", () => []);
