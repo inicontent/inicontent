@@ -86,6 +86,9 @@ interface Props {
 }
 
 const { asset, containerSelector, size } = defineProps<Props>();
+const emit = defineEmits<{
+	(e: "click", event: MouseEvent): void;
+}>();
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 
@@ -497,6 +500,10 @@ const shouldListenForDownloadShortcut = computed(
 let removePreviewShortcut: (() => void) | undefined;
 
 function handleAssetClick(event: MouseEvent) {
+	emit("click", event);
+
+	if (event.defaultPrevented) return false;
+
 	if (asset.type === "dir") return false;
 
 	if (event.ctrlKey || event.metaKey) {
