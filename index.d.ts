@@ -234,6 +234,21 @@ declare module "nuxt/schema" {
 	}
 }
 
+import type * as _LayerComposables from "./app/composables/index";
+/** All function exports from layer composables become available as Vue template globals */
+// biome-ignore lint/suspicious/noExplicitAny: required for TypeScript function-type discrimination in conditional mapped types
+type LayerComposables = {
+	[K in keyof _LayerComposables as _LayerComposables[K] extends (
+		...args: any[]
+	) => any
+		? K
+		: never]: _LayerComposables[K];
+};
+
+declare module "vue" {
+	interface ComponentCustomProperties extends LayerComposables {}
+}
+
 export type {
 	CMS_FieldType,
 	DB_FieldType,

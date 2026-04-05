@@ -160,11 +160,46 @@ export default {
 				"Are you sure you want to cancel your subscription? You will lose access to paid features at the end of the current billing period.",
 			cancelModalKeep: "Keep Subscription",
 			cancelModalConfirm: "Yes, Cancel",
-			invoiceId: "Invoice ID",
+			invoiceId: "Transaction ID",
 			period: "Period",
+			description: "Description",
+			date: "Date",
 			amount: "Amount",
 			invoice: "Invoice",
 			downloadPdf: "Download PDF",
+			checkoutSuccess: {
+				processingPayment: "Processing your payment...",
+				paymentFailed: "Payment Failed",
+				returnToBilling: "Return to Billing",
+				subscriptionActivated: "Subscription Activated!",
+				thankYou: "Thank you for choosing Inicontent.",
+				goToDashboard: "Go to Dashboard",
+				viewBillingDetails: "View Billing Details",
+				subscriptionStatus: "Subscription Status",
+				active: "Active",
+				orderId: "Order ID",
+				databaseStorage: "Database Storage",
+				assetStorage: "Asset Storage",
+				validUntil: "Valid Until",
+				nextSteps: "Next Steps",
+				firstProject: "You can now create your first project.",
+				confirmationEmail:
+					"A confirmation email has been sent to your PayPal email address. To get started, head to your dashboard and create your first CMS database.",
+				errors: {
+					noPaymentToken: "No payment token found. Please try again.",
+					failedToProcess: "Failed to process payment. Please contact support.",
+					paymentProcessingFailed: "Payment processing failed",
+				},
+			},
+			checkoutCanceled: {
+				title: "Checkout Canceled",
+				description:
+					"Your subscription was not completed. No charges were made.",
+				returnToBilling: "Return to Billing",
+				backToHome: "Back to Home",
+				supportMessage:
+					"If you encountered any issues during checkout, please contact our support team:",
+			},
 		},
 
 		pricingUi: {
@@ -196,6 +231,16 @@ export default {
 				annualDiscountBody:
 					"Contact our sales team for custom enterprise pricing and volume discounts.",
 			},
+		},
+
+		pricingPageUi: {
+			headerTitle: "Pricing Plans",
+			headerSubtitle:
+				"Simple, transparent pricing with no hidden fees. Pay only for what you use.",
+			ctaTitle: "Ready to get started?",
+			ctaSubtitle:
+				"Join thousands of developers using Inicontent to manage their content.",
+			viewSubscription: "View Your Subscription",
 		},
 
 		// JSON Field

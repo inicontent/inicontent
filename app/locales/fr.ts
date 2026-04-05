@@ -442,11 +442,47 @@ export default {
 				"Êtes-vous sûr de vouloir annuler votre abonnement ? Vous perdrez l'accès aux fonctionnalités payantes à la fin de la période en cours.",
 			cancelModalKeep: "Conserver l'abonnement",
 			cancelModalConfirm: "Oui, annuler",
-			invoiceId: "ID de facture",
+			invoiceId: "ID de transaction",
 			period: "Période",
+			description: "Description",
+			date: "Date",
 			amount: "Montant",
 			invoice: "Facture",
 			downloadPdf: "Télécharger le PDF",
+			checkoutSuccess: {
+				processingPayment: "Traitement de votre paiement...",
+				paymentFailed: "Paiement échoué",
+				returnToBilling: "Retour à la facturation",
+				subscriptionActivated: "Abonnement activé !",
+				thankYou: "Merci d'avoir choisi Inicontent.",
+				goToDashboard: "Aller au tableau de bord",
+				viewBillingDetails: "Voir les détails de facturation",
+				subscriptionStatus: "Statut de l'abonnement",
+				active: "Actif",
+				orderId: "ID de commande",
+				databaseStorage: "Stockage de la base de données",
+				assetStorage: "Stockage des fichiers",
+				validUntil: "Valide jusqu'au",
+				nextSteps: "Prochaines étapes",
+				firstProject: "Vous pouvez maintenant créer votre premier projet.",
+				confirmationEmail:
+					"Un email de confirmation a été envoyé à votre adresse PayPal. Pour commencer, accédez à votre tableau de bord et créez votre première base de données CMS.",
+				errors: {
+					noPaymentToken: "Aucun jeton de paiement trouvé. Veuillez réessayer.",
+					failedToProcess:
+						"Impossible de traiter le paiement. Veuillez contacter le support.",
+					paymentProcessingFailed: "Échec du traitement du paiement",
+				},
+			},
+			checkoutCanceled: {
+				title: "Paiement annulé",
+				description:
+					"Votre abonnement n'a pas été finalisé. Aucun frais n'a été facturé.",
+				returnToBilling: "Retour à la facturation",
+				backToHome: "Retour à l'accueil",
+				supportMessage:
+					"Si vous avez rencontré des problèmes pendant le paiement, contactez notre équipe support :",
+			},
 		},
 
 		pricingUi: {
@@ -478,6 +514,16 @@ export default {
 				annualDiscountBody:
 					"Contactez notre équipe commerciale pour des tarifs entreprise personnalisés et des remises volume.",
 			},
+		},
+
+		pricingPageUi: {
+			headerTitle: "Plans tarifaires",
+			headerSubtitle:
+				"Des tarifs simples et transparents, sans frais cachés. Payez seulement ce que vous utilisez.",
+			ctaTitle: "Prêt à commencer ?",
+			ctaSubtitle:
+				"Rejoignez des milliers de développeurs qui utilisent Inicontent pour gérer leur contenu.",
+			viewSubscription: "Voir votre abonnement",
 		},
 
 		// JSON Field

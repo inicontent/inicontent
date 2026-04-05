@@ -90,7 +90,7 @@ const database = useState<Database>("database")
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
-const fromPath = useCookie("from", { sameSite: true })
+const redirectTo = useCookie("redirectTo", { sameSite: true })
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
     primaryColor: "#FF9800",
@@ -157,6 +157,18 @@ const userDropdownOptions = computed(() => [
         show: user.value?.role === config.public.idOne,
     },
     {
+        label: t("billing"),
+        key: "billing",
+        icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
+        show:
+            !!user.value?.id &&
+            (
+                user.value?.role === config.public.idOne ||
+                database.value?.slug === "inicontent"
+            ),
+        disabled: route.path.includes("/admin/billing"),
+    },
+    {
         label: t("toggleTheme"),
         key: "theme",
         icon: () =>
@@ -211,6 +223,13 @@ async function onSelectUserDropdown(v: string) {
                 }/edit`,
             )
             break
+        case "billing":
+            navigateTo(
+                database.value?.slug === "inicontent"
+                    ? "/admin/billing"
+                    : `/${route.params.database ?? database.value?.slug}/admin/billing`,
+            )
+            break
         case "settings":
             navigateTo(
                 `${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
@@ -230,7 +249,7 @@ async function onSelectUserDropdown(v: string) {
                     },
                 },
             )
-            fromPath.value = undefined
+            redirectTo.value = undefined
             user.value = undefined
             await navigateTo(
                 `${route.params.database ? `/${route.params.database}` : ""}/auth`,

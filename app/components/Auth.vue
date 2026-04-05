@@ -33,7 +33,7 @@ const emit = defineEmits<{
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-const fromPath = useCookie("from", { sameSite: true });
+const redirectTo = useCookie("redirectTo", { sameSite: true });
 
 const SigninFormRef = ref<FormInst | null>(null);
 const route = useRoute();
@@ -74,6 +74,13 @@ const sessionID = useCookie<string | null>("sessionID", {
 	sameSite: true,
 });
 
+const isSafeRedirect = (value?: string) =>
+	!!value &&
+	value.startsWith("/") &&
+	!value.startsWith("//") &&
+	!value.endsWith("/auth") &&
+	!value.includes("/auth?");
+
 async function SigninSubmit(e: Event) {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
@@ -110,12 +117,18 @@ async function SigninSubmit(e: Event) {
 					if (props.modal) {
 						emit("loggedIn");
 					} else {
+						const queryRedirectTo =
+							typeof route.query.redirectTo === "string"
+								? route.query.redirectTo
+								: undefined;
+						const target = isSafeRedirect(queryRedirectTo)
+							? queryRedirectTo
+							: isSafeRedirect(redirectTo.value ?? undefined)
+								? redirectTo.value
+								: undefined;
 						await navigateTo(
-							fromPath.value &&
-								(fromPath.value.startsWith(`/${database.value.slug}`) ||
-									fromPath.value.startsWith("/admin")) &&
-								!fromPath.value.endsWith("/auth")
-								? fromPath.value
+							target
+								? target
 								: route.params.database
 									? `/${database.value.slug}/admin`
 									: "/admin",

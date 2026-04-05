@@ -473,11 +473,46 @@ export default {
 				"هل أنت متأكد من إلغاء الاشتراك؟ ستفقد الوصول إلى الميزات المدفوعة في نهاية فترة الفوترة الحالية.",
 			cancelModalKeep: "الاحتفاظ بالاشتراك",
 			cancelModalConfirm: "نعم، إلغاء",
-			invoiceId: "معرف الفاتورة",
+			invoiceId: "معرف المعاملة",
 			period: "الفترة",
+			description: "الوصف",
+			date: "التاريخ",
 			amount: "المبلغ",
 			invoice: "الفاتورة",
 			downloadPdf: "تنزيل PDF",
+			checkoutSuccess: {
+				processingPayment: "جار معالجة الدفع...",
+				paymentFailed: "فشل الدفع",
+				returnToBilling: "العودة إلى الفوترة",
+				subscriptionActivated: "تم تفعيل الاشتراك!",
+				thankYou: "شكرا لاختيارك Inicontent.",
+				goToDashboard: "الانتقال إلى لوحة التحكم",
+				viewBillingDetails: "عرض تفاصيل الفوترة",
+				subscriptionStatus: "حالة الاشتراك",
+				active: "نشط",
+				orderId: "معرف الطلب",
+				databaseStorage: "تخزين قاعدة البيانات",
+				assetStorage: "تخزين الملفات",
+				validUntil: "صالح حتى",
+				nextSteps: "الخطوات التالية",
+				firstProject: "يمكنك الآن إنشاء أول مشروع لك.",
+				confirmationEmail:
+					"تم إرسال رسالة تأكيد إلى بريدك الإلكتروني في باي بال. للبدء، توجه إلى لوحة التحكم وأنشئ أول قاعدة بيانات CMS.",
+				errors: {
+					noPaymentToken:
+						"لم يتم العثور على رمز الدفع. يرجى المحاولة مرة أخرى.",
+					failedToProcess: "تعذر معالجة الدفع. يرجى التواصل مع الدعم.",
+					paymentProcessingFailed: "فشلت معالجة الدفع",
+				},
+			},
+			checkoutCanceled: {
+				title: "تم إلغاء الدفع",
+				description: "لم يكتمل اشتراكك. لم يتم تحصيل أي رسوم.",
+				returnToBilling: "العودة إلى الفوترة",
+				backToHome: "العودة إلى الرئيسية",
+				supportMessage:
+					"إذا واجهت أي مشكلة أثناء الدفع، يرجى التواصل مع فريق الدعم لدينا:",
+			},
 		},
 
 		pricingUi: {
@@ -508,6 +543,16 @@ export default {
 				annualDiscountBody:
 					"تواصل مع فريق المبيعات للحصول على أسعار مؤسسية مخصصة وخصومات حجم.",
 			},
+		},
+
+		pricingPageUi: {
+			headerTitle: "خطط الأسعار",
+			headerSubtitle:
+				"أسعار بسيطة وشفافة بلا رسوم خفية. ادفع فقط مقابل ما تستخدمه.",
+			ctaTitle: "جاهز للبدء؟",
+			ctaSubtitle:
+				"انضم إلى آلاف المطورين الذين يستخدمون Inicontent لإدارة محتواهم.",
+			viewSubscription: "عرض اشتراكك",
 		},
 
 		// JSON Field

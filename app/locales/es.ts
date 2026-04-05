@@ -439,11 +439,46 @@ export default {
 				"¿Seguro que quieres cancelar tu suscripción? Perderás el acceso a las funciones de pago al final del periodo actual.",
 			cancelModalKeep: "Mantener suscripción",
 			cancelModalConfirm: "Sí, cancelar",
-			invoiceId: "ID de factura",
+			invoiceId: "ID de transacción",
 			period: "Periodo",
+			description: "Descripción",
+			date: "Fecha",
 			amount: "Importe",
 			invoice: "Factura",
 			downloadPdf: "Descargar PDF",
+			checkoutSuccess: {
+				processingPayment: "Procesando tu pago...",
+				paymentFailed: "Pago fallido",
+				returnToBilling: "Volver a facturación",
+				subscriptionActivated: "¡Suscripción activada!",
+				thankYou: "Gracias por elegir Inicontent.",
+				goToDashboard: "Ir al panel",
+				viewBillingDetails: "Ver detalles de facturación",
+				subscriptionStatus: "Estado de la suscripción",
+				active: "Activa",
+				orderId: "ID de pedido",
+				databaseStorage: "Almacenamiento de base de datos",
+				assetStorage: "Almacenamiento de archivos",
+				validUntil: "Válido hasta",
+				nextSteps: "Siguientes pasos",
+				firstProject: "Ahora puedes crear tu primer proyecto.",
+				confirmationEmail:
+					"Se ha enviado un correo de confirmación a tu dirección de PayPal. Para comenzar, ve a tu panel y crea tu primera base de datos CMS.",
+				errors: {
+					noPaymentToken:
+						"No se encontró un token de pago. Inténtalo de nuevo.",
+					failedToProcess: "No se pudo procesar el pago. Contacta con soporte.",
+					paymentProcessingFailed: "Falló el procesamiento del pago",
+				},
+			},
+			checkoutCanceled: {
+				title: "Pago cancelado",
+				description: "Tu suscripción no se completó. No se realizaron cargos.",
+				returnToBilling: "Volver a facturación",
+				backToHome: "Volver al inicio",
+				supportMessage:
+					"Si tuviste algún problema durante el pago, contacta a nuestro equipo de soporte:",
+			},
 		},
 
 		pricingUi: {
@@ -476,6 +511,16 @@ export default {
 				annualDiscountBody:
 					"Contacta a nuestro equipo de ventas para precios empresariales personalizados y descuentos por volumen.",
 			},
+		},
+
+		pricingPageUi: {
+			headerTitle: "Planes de precios",
+			headerSubtitle:
+				"Precios simples y transparentes, sin cargos ocultos. Paga solo por lo que usas.",
+			ctaTitle: "¿Listo para comenzar?",
+			ctaSubtitle:
+				"Únete a miles de desarrolladores que usan Inicontent para gestionar su contenido.",
+			viewSubscription: "Ver tu suscripción",
 		},
 
 		// JSON Field
