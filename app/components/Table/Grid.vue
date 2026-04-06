@@ -166,6 +166,15 @@ const getDropdownOptions = (table: Table) => {
 				!["sessions", "translations"].includes(table.slug) &&
 				user.value?.role === config.public.idOne,
 		},
+		{
+			key: `${tableUrl}/schedules`,
+			label: t("tableSchedules"),
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:clock-play" })),
+			show:
+				!["sessions", "translations", "assets"].includes(table.slug) &&
+				table.allowedMethods?.includes("c") &&
+				user.value?.role === config.public.idOne,
+		},
 	]
 }
 

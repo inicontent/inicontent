@@ -110,6 +110,22 @@ function renderSingleItem(table: Table): MenuOption {
 				user.value?.role === config.public.idOne &&
 				!["sessions", "translations"].includes(table.slug),
 		},
+		{
+			label: () =>
+				h(
+					NuxtLink,
+					{
+						to: `${tableUrl}/schedules`,
+					},
+					{ default: () => t("schedules") },
+				),
+			key: `${table.slug}-schedules`,
+			icon: () => h(NIcon, () => h(Icon, { name: "tabler:clock-play" })),
+			show:
+				user.value?.role === config.public.idOne &&
+				!["sessions", "translations", "assets"].includes(table.slug) &&
+				table.allowedMethods?.includes("c"),
+		},
 	];
 	return {
 		label: () =>

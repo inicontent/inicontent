@@ -138,6 +138,26 @@ declare global {
 	type Item = Data & {
 		createdBy?: User;
 	};
+	type CreationSchedulePreset =
+		| "hourly"
+		| "daily"
+		| "weekly"
+		| "monthly"
+		| "custom";
+	type CreationSchedule = Item & {
+		databaseSlug: string;
+		tableSlug: string;
+		name: string;
+		preset?: CreationSchedulePreset;
+		cronExpression: string;
+		timezone: "UTC";
+		isActive: boolean;
+		payload: Record<string, any>;
+		excludeWeekdays?: number[];
+		nextRunAt?: number;
+		lastRunAt?: number;
+		lastError?: string;
+	};
 	type User = Item & {
 		username: string;
 		email: string;
