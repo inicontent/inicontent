@@ -104,6 +104,6 @@ useHead({
     padding: 6px 8px;
     overflow-x: auto;
     display: block;
-    font-family: "Cairo", monospace;
+    font-family: inherit;
 }
 </style>

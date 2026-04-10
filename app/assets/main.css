@@ -21,11 +21,6 @@ a {
 	color: inherit;
 }
 
-html,
-body {
-	font-family: "Cairo", sans-serif;
-}
-
 .n-input-number,
 .n-date-picker {
 	width: 100%;

@@ -99,6 +99,7 @@
 
 <script lang="ts" setup>
 import type { DataTableColumns, SelectOption } from "naive-ui"
+import Inison from "inison"
 import { Icon, NButton, NButtonGroup, NIcon, NTag } from "#components"
 
 const config = useRuntimeConfig()
@@ -227,9 +228,20 @@ function buildPayloadExample() {
 	return result
 }
 
+function parsePayloadText(payloadText: string) {
+	const normalizedPayloadText = payloadText.trim()
+	if (!normalizedPayloadText) return {}
+
+	try {
+		return JSON.parse(normalizedPayloadText)
+	} catch {
+		return Inison.unstringify(normalizedPayloadText) as Record<string, any>
+	}
+}
+
 function formatPayloadText() {
 	try {
-		form.payloadText = JSON.stringify(JSON.parse(form.payloadText || "{}"), null, 2)
+		form.payloadText = JSON.stringify(parsePayloadText(form.payloadText || "{}"), null, 2)
 	} catch {
 		window.$message.error(t("invalidJSON"))
 	}
@@ -296,7 +308,7 @@ async function saveSchedule() {
 	let payload: Record<string, any>
 
 	try {
-		payload = JSON.parse(form.payloadText || "{}")
+		payload = parsePayloadText(form.payloadText || "{}")
 	} catch {
 		window.$message.error(t("invalidJSON"))
 		return
