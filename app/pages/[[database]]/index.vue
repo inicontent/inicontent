@@ -6,8 +6,5 @@ definePageMeta({
 	middleware: ["database", "user", "dashboard", "global"],
 })
 
-const database = useState<Database>("database")
-await navigateTo(
-	database.value.slug === "inicontent" ? "admin" : "admin/tables",
-)
+await navigateTo("admin")
 </script>
