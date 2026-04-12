@@ -122,8 +122,8 @@ const createTable = async () => {
 const filteredTables = computed(() =>
 	modelValue.value.tables
 		?.filter(
-			({ allowedMethods, show }) =>
-				allowedMethods?.includes("r") && show !== false,
+			({ allowedMethods, show, slug }) =>
+				allowedMethods?.includes("r") && show !== false && slug !== "dashboards",
 		)
 		.sort(
 			(a, b) =>

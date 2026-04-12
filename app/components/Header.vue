@@ -108,28 +108,15 @@ const showBreadcrumb = computed(
 )
 
 function breadCrumbItemLink(index: number) {
-    if (index === 0) {
-        return (
-            route.path
-                .split("/")
-                .slice(
-                    0,
-                    index +
-                    (breadcrumbArray.value[0] &&
-                        ["database", "admin"].includes(breadcrumbArray.value[0])
-                        ? 3
-                        : 2),
-                )
-                .join("/") + (database.value?.slug === "inicontent" ? "" : "/tables")
-        )
+    const segments = route.path.split("/").filter(Boolean)
+    const segmentValue = breadcrumbArray.value[index]
+    const actualIndex = segments.indexOf(segmentValue)
+    if (actualIndex === -1) return route.path
+    const pathSegments = ["", ...segments.slice(0, actualIndex + 1)].join("/")
+    if (index === 0 && database.value?.slug !== "inicontent") {
+        return pathSegments + "/tables"
     }
-    return route.path
-        .split("/")
-        .slice(
-            0,
-            index + (String(route.matched[0]?.name)?.startsWith("database") ? 3 : 2),
-        )
-        .join("/")
+    return pathSegments
 }
 const breadcrumbArray = computed(() =>
     route.path
@@ -137,17 +124,23 @@ const breadcrumbArray = computed(() =>
         .filter(Boolean)
         .slice(
             !["database", "admin"].includes(route.matched[0]?.name as string) ? 1 : 0,
-        ),
+        )
+        .filter((segment) => segment !== "admin"),
 )
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
+const currentDashboard = useState<Dashboard | null>("currentDashboard")
 const itemLabel = computed(() => renderLabel(table.value, currentItem.value))
 
 function breadCrumbItemLabel(index: number) {
     const childRoute = breadcrumbArray.value[index]
-    return isValidID(childRoute) && currentItem.value
-        ? itemLabel.value
-        : t(childRoute === "admin" ? "adminPanel" : childRoute)
+    if (isValidID(childRoute)) {
+        if (currentDashboard.value?.name && route.path.includes('/dashboards/'))
+            return currentDashboard.value.name
+        if (currentItem.value)
+            return itemLabel.value
+    }
+    return t(childRoute)
 }
 const userDropdownOptions = computed(() => [
     {

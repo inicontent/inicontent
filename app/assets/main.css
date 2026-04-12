@@ -553,12 +553,24 @@ a {
 	color: rgb(var(--primaryColor));
 }
 
+.rtl .n-input-group > .n-button:not(:first-child) .n-button__state-border,
+.rtl .n-input-group > .n-button:not(:first-child) .n-button__border,
 .rtl .n-input-group > .n-button:not(:first-child) {
-	border-radius: 0 !important;
+	border-top-left-radius: var(--n-border-radius)!important;
+	border-bottom-left-radius: var(--n-border-radius)!important;
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
 }
 
 .rtl .n-input-group {
 	direction: rtl;
+}
+
+.rtl .n-input-group > .n-input:not(:last-child) {
+	border-top-right-radius: var(--n-border-radius)!important;
+	border-bottom-right-radius: var(--n-border-radius)!important;
+	border-top-left-radius: 0 !important;
+	border-bottom-left-radius: 0 !important;
 }
 
 .rtl .n-input-group .n-input--round {

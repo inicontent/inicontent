@@ -243,6 +243,34 @@ declare global {
 			size?: "small" | "medium" | "large";
 		}
 	>;
+
+	type WidgetType = "counter" | "line" | "bar" | "pie" | "recent";
+	type WidgetSize = "small" | "medium" | "large";
+	type WidgetOperation = "count" | "sum" | "max" | "min";
+	type WidgetDateRange = "7d" | "30d" | "90d" | "1y" | "all";
+
+	type Widget = {
+		id: string;
+		icon?: string;
+		type: WidgetType;
+		title: string;
+		table: string;
+		field?: string;
+		operation?: WidgetOperation;
+		groupBy?: string;
+		dateField?: string;
+		dateRange?: WidgetDateRange;
+		limit?: number;
+		color?: string;
+		size?: WidgetSize;
+	};
+
+	type Dashboard = Item & {
+		name: string;
+		description?: string;
+		icon?: string;
+		widgets?: Widget[];
+	};
 }
 declare module "nuxt/schema" {
 	interface runtimeConfig {
@@ -287,4 +315,10 @@ export type {
 	FormRef,
 	DrawerRef,
 	TablesCookie,
+	WidgetType,
+	WidgetSize,
+	WidgetOperation,
+	WidgetDateRange,
+	Widget,
+	Dashboard,
 };

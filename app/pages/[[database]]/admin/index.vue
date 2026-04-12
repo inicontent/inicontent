@@ -1,7 +1,12 @@
 <template>
-	<NCard :title="t('tables')" style="background:none" :bordered="false">
-		<TableGrid v-model="database" />
-	</NCard>
+	<NFlex style="width: 100%;" vertical :size="24">
+		<NCard :title="t('tables')" style="background:none" :bordered="false">
+			<LazyTableGrid v-model="database" />
+		</NCard>
+		<NCard :title="t('dashboards')" style="background:none" :bordered="false">
+			<LazyDashboardGrid v-model="database" />
+		</NCard>
+	</NFlex>
 </template>
 
 <script setup lang="ts">
