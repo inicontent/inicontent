@@ -177,6 +177,8 @@ const currentItem = ref<Item>();
 const showDropdown = ref(false);
 const x = ref(0);
 const y = ref(0);
+const rowTouchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+
 async function handleSelect(value: string) {
 	showDropdown.value = false;
 	if (!currentItem.value) return;
@@ -199,54 +201,108 @@ const dropdownOptions: DropdownOption[] = [
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:copy" })),
 	},
 ];
-function rowProps(row: Item) {
-	return {
-		onContextmenu: async (e: MouseEvent) => {
-			const target = e.target as HTMLElement;
-			// If it's a link or an image, do not show the dropdown
+
+function clearRowTouchTimeout() {
+	if (rowTouchTimeout.value) {
+		clearTimeout(rowTouchTimeout.value);
+		rowTouchTimeout.value = null;
+	}
+}
+
+function shouldIgnoreRowContextMenu(target: HTMLElement | null) {
+	if (!target) return true;
+
+	return !!(
+		target.closest("a[href]") ||
+		target.closest("img") ||
+		target.closest("button") ||
+		target.closest('[role="button"]') ||
+		target.closest("input, textarea, select") ||
+		target.closest('[contenteditable="true"]') ||
+		target.closest(".editable") ||
+		target.closest(".n-ellipsis") ||
+		target.closest(".n-tag") ||
+		target.closest(".n-text")
+	);
+}
+
+async function openRowDropdown(
+	row: Item,
+	{
+		target,
+		clientX,
+		clientY,
+		checkSelection = false,
+	}: {
+		target: HTMLElement | null;
+		clientX: number;
+		clientY: number;
+		checkSelection?: boolean;
+	},
+) {
+	if (shouldIgnoreRowContextMenu(target)) {
+		showDropdown.value = false;
+		return;
+	}
+
+	if (checkSelection) {
+		const selection = window.getSelection();
+		if (selection && selection.toString().trim() !== "" && selection.rangeCount) {
+			const range = selection.getRangeAt(0);
+			const rect = range.getBoundingClientRect();
 			if (
-				target.closest("a[href]") || // Link
-				target.closest("img") || // Image
-				target.closest("button") || // Button
-				target.closest('[role="button"]') || // ARIA role button
-				target.closest(".n-ellipsis") || // Text
-				target.closest(".n-tag") || // Tag
-				target.closest(".n-text") // Text
+				clientX >= rect.left &&
+				clientX <= rect.right &&
+				clientY >= rect.top &&
+				clientY <= rect.bottom
 			) {
 				showDropdown.value = false;
 				return;
 			}
+		}
+	}
 
-			// Check if text is selected and the mouse is above the selection
-			const selection = window.getSelection();
-			if (selection && selection.toString().trim() !== "") {
-				const range = selection.getRangeAt(0); // Get the range of the selected text
-				const rect = range.getBoundingClientRect(); // Get the bounding rectangle of the selection
+	showDropdown.value = false;
+	await nextTick();
+	currentItem.value = (({ id, createdAt, updatedAt, ...rest }) => rest)(row);
+	showDropdown.value = true;
+	x.value = clientX + 8;
+	y.value = clientY + 6;
+}
 
-				// Check if the mouse is within the bounding rectangle of the selection
-				if (
-					e.clientX >= rect.left &&
-					e.clientX <= rect.right &&
-					e.clientY >= rect.top &&
-					e.clientY <= rect.bottom
-				) {
-					showDropdown.value = false;
-					return;
-				}
-			}
-
+function rowProps(row: Item) {
+	return {
+		onContextmenu: async (e: MouseEvent) => {
 			e.preventDefault();
-			showDropdown.value = false;
-			await nextTick();
-			currentItem.value = (({ id, createdAt, updatedAt, ...rest }) => rest)(
-				row,
-			);
-			showDropdown.value = true;
-			x.value = e.clientX + 8;
-			y.value = e.clientY + 6;
+			clearRowTouchTimeout();
+			await openRowDropdown(row, {
+				target: e.target as HTMLElement,
+				clientX: e.clientX,
+				clientY: e.clientY,
+				checkSelection: true,
+			});
 		},
+		onTouchstart: (e: TouchEvent) => {
+			const touch = e.touches[0];
+			const target = e.target as HTMLElement | null;
+			if (!touch || shouldIgnoreRowContextMenu(target)) return;
+
+			clearRowTouchTimeout();
+			rowTouchTimeout.value = window.setTimeout(() => {
+				openRowDropdown(row, {
+					target,
+					clientX: touch.clientX,
+					clientY: touch.clientY,
+				});
+			}, 450);
+		},
+		onTouchend: clearRowTouchTimeout,
+		onTouchcancel: clearRowTouchTimeout,
+		onTouchmove: clearRowTouchTimeout,
 	};
 }
+
+onBeforeUnmount(clearRowTouchTimeout);
 
 function getVNodeTextContent(vnode: VNodeChild): string {
 	if (vnode === null || vnode === undefined || vnode === false) return "";
@@ -377,6 +433,7 @@ const tablesConfig = computed({
 });
 
 function handleScroll() {
+	clearRowTouchTimeout();
 	showDropdown.value = false; // Hide dropdown on scroll
 }
 
@@ -578,6 +635,8 @@ async function setColumns() {
 								"updatedBy",
 							].includes(field.key)
 							? h(LazyColumnEdit, {
+								editKey: `${row.id ?? "row"}-${field.key}`,
+								itemLabel: renderLabel(table.value, row),
 								loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
 								modelValue: row[field.key],
 								"onUpdate:modelValue": async (value: any) => {

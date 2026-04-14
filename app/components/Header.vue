@@ -102,7 +102,7 @@ const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 const showBreadcrumb = computed(
     () =>
         database.value?.slug &&
-        !["index", "auth", "dashboard", "database", "database-auth"].includes(
+        !["index", "auth", "database-auth"].includes(
             String(route.matched[0]?.name),
         ),
 )
@@ -110,22 +110,15 @@ const showBreadcrumb = computed(
 function breadCrumbItemLink(index: number) {
     const segments = route.path.split("/").filter(Boolean)
     const segmentValue = breadcrumbArray.value[index]
-    const actualIndex = segments.indexOf(segmentValue)
+    const actualIndex = segments.indexOf(segmentValue as string)
     if (actualIndex === -1) return route.path
     const pathSegments = ["", ...segments.slice(0, actualIndex + 1)].join("/")
-    if (index === 0 && database.value?.slug !== "inicontent") {
-        return pathSegments + "/tables"
-    }
     return pathSegments
 }
 const breadcrumbArray = computed(() =>
     route.path
         .split("/")
         .filter(Boolean)
-        .slice(
-            !["database", "admin"].includes(route.matched[0]?.name as string) ? 1 : 0,
-        )
-        .filter((segment) => segment !== "admin"),
 )
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")
@@ -140,6 +133,7 @@ function breadCrumbItemLabel(index: number) {
         if (currentItem.value)
             return itemLabel.value
     }
+    if(childRoute === "admin") return t("adminPanel")
     return t(childRoute)
 }
 const userDropdownOptions = computed(() => [
@@ -219,9 +213,9 @@ async function onSelectUserDropdown(v: string) {
         case "billing":
             navigateTo(
                 database.value?.slug === "inicontent"
-                    ? "/admin/billing"
-                    : `/${route.params.database ?? database.value?.slug}/admin/billing`,
-            )
+                    ? "https://inicontent.com/admin/billing"
+                    : `https://inicontent.com/${database.value.slug}/admin/billing`,
+            { external: true })
             break
         case "settings":
             navigateTo(
@@ -233,7 +227,7 @@ async function onSelectUserDropdown(v: string) {
             break
         case "logout":
             await $fetch(
-                `${config.public.apiBase}${database.value.slug ?? "inicontent"
+                `${config.public.apiBase}${database.value?.slug ?? "inicontent"
                 }/auth/signout`,
                 {
                     credentials: "include", params: {

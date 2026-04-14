@@ -1,6 +1,8 @@
 export default {
 	en: {
 		optional: "Optional",
+		rightClickToEdit: "Right click to edit",
+		pressAndHoldToEdit: "Press and hold to edit",
 
 		// Field types that differ from default
 		fields: {

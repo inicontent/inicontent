@@ -58,8 +58,7 @@
 														check-strategy="child" expand-trigger="click" show-path
 														separator="." filterable v-model:value="rule.value[1]" />
 													<NSelect size="small"
-														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-														style="overflow: hidden;" :consistent-menu-width="false"
+														:consistent-menu-width="false"
 														filterable tag
 														:options="generateFlowSelectOptions(rule.value[1], false, true)"
 														:value="String(rule.value[2])"
@@ -635,89 +634,3 @@ useHead({
 	],
 })
 </script>
-
-<style scoped>
-.handle,
-.inputHandle {
-	cursor: move;
-}
-
-.rtl .handle {
-	left: auto;
-	right: 0;
-	border-radius: 0 0 0 50px;
-}
-
-.handle {
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 9;
-	border-radius: 0 0 50px 0;
-}
-
-.masonry {
-	column-count: 1;
-	column-gap: 1rem;
-	width: 100%;
-}
-
-.masonry>* {
-	break-inside: avoid;
-	margin-bottom: 1rem;
-	position: relative;
-}
-
-@media only screen and (min-width: 869px) and (max-width: 1200px) {
-	.masonry {
-		columns: 2;
-	}
-}
-
-@media only screen and (min-width: 1201px) {
-	.masonry {
-		columns: 3;
-	}
-}
-
-.flowCard:hover .flowCardButtons {
-	visibility: visible;
-}
-
-.rtl .flowCardButtons {
-	left: 0;
-	right: auto;
-}
-
-.flowCardButtons {
-	position: absolute;
-	top: 0;
-	right: 0;
-	z-index: 9;
-	visibility: hidden;
-}
-
-.rtl .flowSaveButton {
-	left: 20px;
-	right: auto;
-}
-
-.flowSaveButton {
-	position: fixed;
-	bottom: 20px;
-	right: 20px;
-	z-index: 9999;
-}
-
-.flowCardRulesEdit {
-	display: flex;
-	flex-flow: column;
-	justify-content: start;
-	gap: 8px 12px;
-	padding: 20px 22px;
-}
-
-.rtl .flowCardRulesGroupInput {
-	flex-direction: row !important;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-	<NCard hoverable style="max-width: 300px">
+	<NCard hoverable style="max-width: 300px; margin: auto;">
 		<NTabs ref="tabsInstRef" v-model:value="tabsValue" size="large" justify-content="center" animated>
 			<NTabPane name="signin" :tab="t('signin')">
 				<NForm ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">

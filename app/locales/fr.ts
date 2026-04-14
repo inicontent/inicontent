@@ -30,6 +30,7 @@ export default {
 		createFromClipboard: "Créer à partir du presse-papiers",
 		view: "Vue",
 		rightClickToEdit: "Clic droit pour modifier",
+		pressAndHoldToEdit: "Appuyer longuement pour modifier",
 		copyItem: "Copier l'élément",
 		pasteItem: "Coller l'élément",
 		publish: "Publier",

@@ -42,7 +42,7 @@
 				<template #trigger>
 					<NCard
 						style="cursor: pointer"
-						content-style="padding: 15px 0"
+						content-style="padding: 36.5px 0px"
 						hoverable
 						@click="showPopover = !showPopover"
 					>

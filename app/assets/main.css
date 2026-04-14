@@ -9,6 +9,10 @@
 	filter: blur(1rem);
 }
 
+:root {
+	font-family: "Cairo", sans-serif;
+}
+
 a,
 a:hover,
 a:visited,
@@ -38,9 +42,7 @@ a {
 	--n-padding-multiple: 3px 12px 0 26px !important;
 }
 
-.rtl
-	.n-base-select-menu
-	.n-base-select-option.n-base-select-option--show-checkmark {
+.rtl .n-base-select-menu .n-base-select-option.n-base-select-option--show-checkmark {
 	padding-left: calc(var(--n-option-padding-right) + 20px);
 	padding-right: var(--n-option-padding-left);
 }
@@ -65,12 +67,7 @@ a {
 
 .rtl .n-pagination .n-pagination-item.n-pagination-item--button .n-base-icon,
 .rtl .n-layout-sider .n-layout-toggle-bar,
-.rtl
-	.n-collapse
-	.n-collapse-item
-	.n-collapse-item__header
-	.n-collapse-item-arrow
-	.n-icon,
+.rtl .n-collapse .n-collapse-item .n-collapse-item__header .n-collapse-item-arrow .n-icon,
 .rtl .n-switch,
 .rtl .n-pagination .n-pagination-item svg,
 .rtl .i-tabler\:arrow-left,
@@ -115,11 +112,7 @@ a {
 	margin-right: 4px;
 }
 
-.n-upload-file-list
-	.n-upload-file.n-upload-file--image-type
-	.n-upload-file-info
-	.n-upload-file-info__thumbnail
-	img {
+.n-upload-file-list .n-upload-file.n-upload-file--image-type .n-upload-file-info .n-upload-file-info__thumbnail img {
 	overflow: hidden;
 	height: 44px;
 }
@@ -142,11 +135,7 @@ a {
 	padding-left: 44px !important;
 }
 
-.ltr
-	.n-layout-sider--show-content
-	.n-submenu
-	> .n-menu-item
-	.n-menu-item-content {
+.ltr .n-layout-sider--show-content .n-submenu>.n-menu-item .n-menu-item-content {
 	padding-right: 12px !important;
 	padding-left: 18px !important;
 }
@@ -172,24 +161,16 @@ a {
 }
 
 /* Fix DataTable Selection Icon */
-.n-data-table .n-data-table-th.n-data-table-th--selection
-	.n-data-table-check-extra
-	svg {
+.n-data-table .n-data-table-th.n-data-table-th--selection .n-data-table-check-extra svg {
 	transform: rotate(-90deg);
 	right: 1.5px;
 }
 
-.n-data-table
-	.n-data-table-th.n-data-table-th--selection
-	.n-data-table-check-extra {
+.n-data-table .n-data-table-th.n-data-table-th--selection .n-data-table-check-extra {
 	right: 0;
 }
 
-.rtl
-	.n-data-table
-	.n-data-table-th.n-data-table-th--selection
-	.n-data-table-check-extra
-	svg {
+.rtl .n-data-table .n-data-table-th.n-data-table-th--selection .n-data-table-check-extra svg {
 	transform: scaleX(-1) rotate(-90deg);
 }
 
@@ -290,10 +271,7 @@ a {
 }
 
 /* Fix image height in NUpload */
-.n-upload-file-list .n-upload-file.n-upload-file--image-type
-	.n-upload-file-info
-	.n-upload-file-info__thumbnail
-	img {
+.n-upload-file-list .n-upload-file.n-upload-file--image-type .n-upload-file-info .n-upload-file-info__thumbnail img {
 	height: 100%;
 }
 
@@ -392,8 +370,8 @@ a {
 	vertical-align: top;
 }
 
-.internalRichEditor table td > *,
-.internalRichEditor table th > * {
+.internalRichEditor table td>*,
+.internalRichEditor table th>* {
 	margin-bottom: 0;
 }
 
@@ -532,6 +510,7 @@ a {
 .rtl .n-anchor .n-anchor-rail {
 	right: 0;
 }
+
 .rtl .n-anchor .n-anchor-link-background {
 	right: calc(var(--n-rail-width) / 2);
 	transform: scaleX(-1);
@@ -553,11 +532,11 @@ a {
 	color: rgb(var(--primaryColor));
 }
 
-.rtl .n-input-group > .n-button:not(:first-child) .n-button__state-border,
-.rtl .n-input-group > .n-button:not(:first-child) .n-button__border,
-.rtl .n-input-group > .n-button:not(:first-child) {
-	border-top-left-radius: var(--n-border-radius)!important;
-	border-bottom-left-radius: var(--n-border-radius)!important;
+.rtl .n-input-group>.n-button:not(:first-child) .n-button__state-border,
+.rtl .n-input-group>.n-button:not(:first-child) .n-button__border,
+.rtl .n-input-group>.n-button:not(:first-child) {
+	border-top-left-radius: var(--n-border-radius) !important;
+	border-bottom-left-radius: var(--n-border-radius) !important;
 	border-top-right-radius: 0 !important;
 	border-bottom-right-radius: 0 !important;
 }
@@ -566,9 +545,9 @@ a {
 	direction: rtl;
 }
 
-.rtl .n-input-group > .n-input:not(:last-child) {
-	border-top-right-radius: var(--n-border-radius)!important;
-	border-bottom-right-radius: var(--n-border-radius)!important;
+.rtl .n-input-group>.n-input:not(:last-child) {
+	border-top-right-radius: var(--n-border-radius) !important;
+	border-bottom-right-radius: var(--n-border-radius) !important;
 	border-top-left-radius: 0 !important;
 	border-bottom-left-radius: 0 !important;
 }
@@ -598,6 +577,7 @@ a {
 	border-radius: 0 16px;
 	padding: 2px 5px 0;
 }
+
 .previewOverlay {
 	position: relative;
 	height: 100px;
@@ -612,13 +592,101 @@ a {
 	--n-border-radius: 15px !important;
 }
 
+.flowCardRulesGroupInput>.n-select>.n-base-selection {
+	--n-border-radius: 0 !important;
+}
+
+.handle,
+.inputHandle {
+	cursor: move;
+}
+
+.rtl .handle {
+	left: auto;
+	right: 0;
+	border-radius: 0 0 0 50px;
+}
+
+.handle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	border-radius: 0 0 50px 0;
+}
+
+.masonry {
+	column-count: 1;
+	column-gap: 1rem;
+	width: 100%;
+}
+
+.masonry>* {
+	break-inside: avoid;
+	margin-bottom: 1rem;
+	position: relative;
+}
+
+@media only screen and (min-width: 869px) and (max-width: 1200px) {
+	.masonry {
+		columns: 2;
+	}
+}
+
+@media only screen and (min-width: 1201px) {
+	.masonry {
+		columns: 3;
+	}
+}
+
+.flowCard:hover .flowCardButtons {
+	visibility: visible;
+}
+
+.rtl .flowCardButtons {
+	left: 0;
+	right: auto;
+}
+
+.flowCardButtons {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 9;
+	visibility: hidden;
+}
+
+.rtl .flowSaveButton {
+	left: 20px;
+	right: auto;
+}
+
+.flowSaveButton {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 9999;
+}
+
+.flowCardRulesEdit {
+	display: flex;
+	flex-flow: column;
+	justify-content: start;
+	gap: 8px 12px;
+	padding: 20px 22px;
+}
+
+.rtl .flowCardRulesGroupInput {
+	flex-direction: row !important;
+}
+
 @media (max-width: 768px) {
-	#tableCard > .n-card-header {
+	#tableCard>.n-card-header {
 		flex-direction: column;
 		gap: 8px;
 	}
 
-	#assetsContainer > .n-card-header {
+	#assetsContainer>.n-card-header {
 		flex-direction: column;
 	}
 }
@@ -673,9 +741,9 @@ a {
 	}
 
 	#iniHeader,
-	.printable-direct-parent ~ *,
-	.printable-direct-parent + *,
-	.printable-direct-parent > *:not(.printable) {
+	.printable-direct-parent~*,
+	.printable-direct-parent+*,
+	.printable-direct-parent>*:not(.printable) {
 		display: none !important;
 	}
 }

@@ -29,6 +29,7 @@ export default {
 		createFromClipboard: "إنشاء من الحافظة",
 		view: "عرض",
 		rightClickToEdit: "إضغط يمين للتعديل",
+		pressAndHoldToEdit: "إضغط مطولاً للتعديل",
 		copyItem: "نسخ العنصر",
 		pasteItem: "لصق العنصر",
 		publish: "نشر",

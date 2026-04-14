@@ -1,7 +1,7 @@
 <template>
 	<NTooltip :disabled="!asset.name">
 		<template #trigger>
-			<NTooltip :disabled="!asset.name || !asset.createdAt" :delay="3500">
+			<NTooltip :disabled="!asset.name || !asset.createdAt" :delay="1500">
 				<template #trigger>
 					<!-- Image -->
 					<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset"

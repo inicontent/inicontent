@@ -30,6 +30,7 @@ export default {
 		createFromClipboard: "Crear desde el portapapeles",
 		view: "Ver",
 		rightClickToEdit: "Clic derecho para editar",
+		pressAndHoldToEdit: "Mantén pulsado para editar",
 		copyItem: "Copiar elemento",
 		pasteItem: "Pegar elemento",
 		publish: "Publicar",
