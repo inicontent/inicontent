@@ -116,6 +116,10 @@ export default {
 		excludedDays: "Excluded days",
 		noExcludedDays: "None",
 		payloadHelp: "Use a JSON object or an Inison-stringified object for the row you want to create.",
+		payloadTemplateVariablesHelp:
+			"Templates: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
+		previewResolvedPayload: "Preview resolved payload",
+		resolvedPayloadPreview: "Resolved payload preview",
 		formatJSON: "Format as JSON",
 		fillExample: "Fill example",
 		customCronHint: "Use a standard 5-part cron expression in UTC.",

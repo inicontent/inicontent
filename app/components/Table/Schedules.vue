@@ -74,11 +74,18 @@
                             <NButtonGroup size="small">
                                 <NButton @click="formatPayloadText">{{ t("formatJSON") }}</NButton>
                                 <NButton @click="fillPayloadExample">{{ t("fillExample") }}</NButton>
+								<NButton :loading="previewing" @click="previewResolvedPayload">{{ t("previewResolvedPayload") }}</NButton>
                             </NButtonGroup>
                         </NFlex>
+						<NText depth="3" style="display: block; margin: 0 0 8px;">{{ t("payloadTemplateVariablesHelp") }}</NText>
+						<pre style="margin: 0; background: var(--n-code-color); border: 1px solid var(--n-border-color); border-radius: 10px; padding: 10px; max-height: 220px; overflow: auto; font-size: 12px; line-height: 1.45;">{{ payloadTemplateExamples }}</pre>
+						<div v-if="resolvedPreviewText" style="margin-top: 12px;">
+							<NText depth="3" style="display: block; margin: 0 0 8px;">{{ t("resolvedPayloadPreview") }}</NText>
+							<pre style="margin: 0; background: var(--n-code-color); border: 1px solid var(--n-border-color); border-radius: 10px; padding: 10px; max-height: 240px; overflow: auto; font-size: 12px; line-height: 1.45;">{{ resolvedPreviewText }}</pre>
+						</div>
                     </template>
 				</NFormItem>
-				<NAlert type="default" :show-icon="false" style="margin-bottom: 15px;">
+				<NAlert type="default" :show-icon="false" style="margin: 15px 0">
 					{{ scheduleSummaryPreview }}
 				</NAlert>
 				<NFlex justify="space-between" align="center">
@@ -111,9 +118,11 @@ const table = useState<Table>("table")
 
 const loading = ref(false)
 const saving = ref(false)
+const previewing = ref(false)
 const showModal = ref(false)
 const schedules = ref<CreationSchedule[]>([])
 const editingSchedule = ref<CreationSchedule | null>(null)
+const resolvedPreviewText = ref("")
 
 const presetCronMap: Record<Exclude<CreationSchedulePreset, "custom">, string> = {
 	hourly: "0 * * * *",
@@ -163,6 +172,25 @@ const currentPresetDescription = computed(() => {
 			return t("presetDescriptionCustom")
 	}
 })
+
+const payloadTemplateExamples = computed(() =>
+	JSON.stringify(
+		{
+			title: "Digest for {{ today|date }}",
+			runAt: "{{ now }}",
+			runAtISO: "{{ now|iso }}",
+			expiresAt: "{{ now + 7d }}",
+			meta: {
+				scheduleId: "{{ schedule.id }}",
+				database: "{{ database.slug }}",
+				table: "{{ table.slug }}",
+				note: "Generated at {{ run.iso }}",
+			},
+		},
+		null,
+		2,
+	),
+)
 
 const scheduleSummaryPreview = computed(() => {
 	const excluded = formatExcludedDays(form.excludeWeekdays)
@@ -251,6 +279,48 @@ function fillPayloadExample() {
 	form.payloadText = JSON.stringify(buildPayloadExample(), null, 2)
 }
 
+async function previewResolvedPayload() {
+	let payload: Record<string, unknown>
+
+	try {
+		payload = parsePayloadText(form.payloadText || "{}") as Record<string, unknown>
+	} catch {
+		window.$message.error(t("invalidJSON"))
+		return
+	}
+
+	if (Array.isArray(payload) || !payload || typeof payload !== "object") {
+		window.$message.error(t("invalidJSON"))
+		return
+	}
+
+	previewing.value = true
+	try {
+		const response = await $fetch<apiResponse<Record<string, unknown>>>(
+			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules/preview`,
+			{
+				method: "POST",
+				body: {
+					payload,
+					scheduleID: editingSchedule.value?.id,
+				},
+				params: getRequestParams(),
+				credentials: "include",
+			},
+		)
+
+		resolvedPreviewText.value = JSON.stringify(response.result ?? {}, null, 2)
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null && "message" in error
+				? String((error as { message?: unknown }).message ?? t("error"))
+				: t("error")
+		window.$message.error(errorMessage)
+	} finally {
+		previewing.value = false
+	}
+}
+
 function resetForm() {
 	form.name = ""
 	form.preset = "hourly"
@@ -258,6 +328,7 @@ function resetForm() {
 	form.payloadText = "{}"
 	form.excludeWeekdays = []
 	form.isActive = true
+	resolvedPreviewText.value = ""
 	editingSchedule.value = null
 	showModal.value = false
 	return true
@@ -276,6 +347,7 @@ function openEditModal(schedule: CreationSchedule) {
 	form.payloadText = JSON.stringify(schedule.payload ?? {}, null, 2)
 	form.excludeWeekdays = [...(schedule.excludeWeekdays ?? [])]
 	form.isActive = schedule.isActive !== false
+	resolvedPreviewText.value = ""
 	showModal.value = true
 }
 

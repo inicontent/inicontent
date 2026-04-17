@@ -417,6 +417,10 @@ export default {
 		excludedDays: "الأيام المستثناة",
 		noExcludedDays: "لا يوجد",
 		payloadHelp: "استخدم كائناً بصيغة JSON أو كائناً مُحوّلاً إلى نص بواسطة Inison للصف الذي تريد إنشاءه.",
+		payloadTemplateVariablesHelp:
+			"القوالب: {{ now }}، {{ now + 2h }}، {{ now|iso }}، {{ today|date }}، {{ schedule.id }}، {{ database.slug }}، {{ table.slug }}، {{ run.iso }}.",
+		previewResolvedPayload: "معاينة الحمولة بعد الحل",
+		resolvedPayloadPreview: "معاينة الحمولة النهائية",
 		formatJSON: "تحويل وتنسيق JSON",
 		fillExample: "ملء مثال",
 		customCronHint: "استخدم تعبير كرون مكوناً من 5 أجزاء بتوقيت UTC.",

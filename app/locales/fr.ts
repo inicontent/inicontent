@@ -399,6 +399,10 @@ export default {
 		excludedDays: "Jours exclus",
 		noExcludedDays: "Aucun",
 		payloadHelp: "Utilisez un objet JSON ou un objet Inison sérialisé pour la ligne à créer.",
+		payloadTemplateVariablesHelp:
+			"Modèles: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
+		previewResolvedPayload: "Prévisualiser la charge résolue",
+		resolvedPayloadPreview: "Aperçu de la charge résolue",
 		formatJSON: "Convertir et formater en JSON",
 		fillExample: "Remplir un exemple",
 		customCronHint: "Utilisez une expression cron UTC standard en 5 parties.",

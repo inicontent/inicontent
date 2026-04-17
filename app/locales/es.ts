@@ -396,6 +396,10 @@ export default {
 		excludedDays: "Días excluidos",
 		noExcludedDays: "Ninguno",
 		payloadHelp: "Usa un objeto JSON o un objeto serializado con Inison para la fila que quieres crear.",
+		payloadTemplateVariablesHelp:
+			"Plantillas: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
+		previewResolvedPayload: "Previsualizar carga resuelta",
+		resolvedPayloadPreview: "Vista previa de la carga resuelta",
 		formatJSON: "Convertir y formatear JSON",
 		fillExample: "Rellenar ejemplo",
 		customCronHint: "Usa una expresión cron estándar de 5 partes en UTC.",
