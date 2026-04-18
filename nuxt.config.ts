@@ -15,6 +15,14 @@ export default defineNuxtConfig({
 	icon: {
 		provider: "server",
 	},
+	fonts: {
+		experimental: {
+			disableLocalFallbacks: true,
+		},
+		defaults: {
+			subsets: ["latin", "arabic"],
+		}
+	},
 	tiptap: {
 		prefix: "Tiptap",
 	},

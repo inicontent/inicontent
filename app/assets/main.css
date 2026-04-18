@@ -9,9 +9,7 @@
 	filter: blur(1rem);
 }
 
-:root {
-	font-family: "Cairo", sans-serif;
-}
+body { font-family: "Cairo", sans-serif; }
 
 a,
 a:hover,
