@@ -669,6 +669,7 @@ async function setColumns() {
 							})
 							: h(LazyColumn, {
 								value: row[field.key],
+								itemLabel: renderLabel(table.value, row),
 								field,
 							}),
 			})) ?? []),

@@ -1,5 +1,5 @@
 <template>
-    <NButton circle @click="showModal = true" :disabled="!value || value.length < 8" size="small"
+    <NButton circle @click="showModal = true" :disabled="!valueRef || valueRef.length < 8" size="small"
         @mouseover="buttonHovered = true" @mouseout="buttonHovered = false">
         <template #icon>
             <NIcon>
@@ -8,13 +8,20 @@
             </NIcon>
         </template>
     </NButton>
-    <NModal v-model:show="showModal" :title="t(field.key)" draggable preset="card" style="width: 600px;">
-        <div v-html="value?.replaceAll('<img ', '<img style=\'width:100%\'') || ''"></div>
+    <NModal v-model:show="showModal" :title="modalTitle" draggable preset="card" style="width: 600px;">
+        <div v-html="valueRef?.replaceAll('<img ', '<img style=\'width:100%\'') || ''"></div>
     </NModal>
 </template>
 
 <script lang="ts" setup>
-const { field, value } = defineProps<{ field: Field; value?: string }>()
+const props = defineProps<{ field: Field; value?: string; itemLabel?: string }>()
+const fieldRef = toRef(props, "field")
+const valueRef = toRef(props, "value")
 const showModal = ref(false)
 const buttonHovered = ref(false)
+const modalTitle = computed(() => {
+	const titleParts = [t(fieldRef.value.key)]
+    if (props.itemLabel && props.itemLabel !== "--") titleParts.push(props.itemLabel)
+    return titleParts.join(" - ")
+})
 </script>

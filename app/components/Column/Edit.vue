@@ -13,7 +13,7 @@
 				:onTouchmove="clearLongPress"
 				:class="{ 'editable': !isEdit && isEditable }"
 			>
-				<LazyColumn v-if="!isEdit || isModalEdit" :field="fieldRef" :value="currentValue" />
+				<LazyColumn v-if="!isEdit || isModalEdit" :field="fieldRef" :value="currentValue" :item-label="props.itemLabel" />
 				<Field v-else-if="isEdit" :field="inputField" v-model="inputValue" />
 			</NSpin>
 		</template>

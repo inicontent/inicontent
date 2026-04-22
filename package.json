@@ -34,7 +34,9 @@
 		"@tiptap/extension-text-align": "^3.20.4",
 		"@tiptap/extension-underline": "^3.20.4",
 		"@vite-pwa/nuxt": "^1.1.1",
+		"docx-preview": "^0.3.7",
 		"echarts": "^6.0.0",
+		"html2canvas": "^1.4.1",
 		"idb": "^8.0.3",
 		"inibase": "^1.5.7",
 		"inidot": "latest",
@@ -47,7 +49,8 @@
 		"vue": "^3.5.30",
 		"vue-echarts": "^8.0.1",
 		"vue-router": "^5.0.4",
-		"vuedraggable": "4.1.0"
+		"vuedraggable": "4.1.0",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8"

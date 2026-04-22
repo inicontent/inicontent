@@ -38,6 +38,21 @@
 						</NIcon>
 					</NSpin>
 
+					<!-- Document with thumbnail (docx, xlsx, pptx, etc.) -->
+					<NImage v-else-if="officeExtensions.includes(asset.extension) && docThumbs[assetKey]" class="asset"
+						:src="docThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
+						@click="handleAssetClick" :width="size" :height="size" />
+
+					<!-- Document generating thumbnail -->
+					<NSpin v-else-if="officeExtensions.includes(asset.extension)"
+						:show="generatingDoc[assetKey]" size="small">
+						<NIcon class="asset"
+							v-intersect="() => officeExtensions.includes(asset.extension) && !docThumbs[assetKey] && generateDocThumb()"
+							@click="handleAssetClick" :size>
+							<LazyAssetIcon :type="asset.type" class="icon" />
+						</NIcon>
+					</NSpin>
+
 					<!-- Other file types as icon -->
 					<NIcon v-else class="asset" @click="handleAssetClick" :size="size">
 						<LazyAssetIcon :type="asset.type" class="icon" />
@@ -45,22 +60,22 @@
 				</template>
 				<div :style="{ direction: Language === 'ar' ? 'rtl' : 'ltr' }">
 					<div>
-						<NText strong>{{ t('name') }} :</NText>
-						<NText>{{ asset.name }}{{ asset.extension ? `.${asset.extension}` :
+						<strong>{{ t('name') }} :</strong>
+						<span>{{ asset.name }}{{ asset.extension ? `.${asset.extension}` :
 							''
-						}}</NText>
+						}}</span>
 					</div>
 					<div>
-						<NText strong>{{ t("size") }}: </NText>
-						<NText>{{ humanFileSize(asset.size) }}</NText>
+						<strong>{{ t("size") }}: </strong>
+						<span>{{ humanFileSize(asset.size) }}</span>
 					</div>
 					<div>
-						<NText strong>{{ t("type") }}: </NText>
-						<NText>{{ asset.type }}</NText>
+						<strong>{{ t("type") }}: </strong>
+						<span>{{ asset.type }}</span>
 					</div>
 					<div>
-						<NText strong>{{ t('createdAt') }} :</NText>
-						<NText>{{ asset.createdAt ? formatDate(asset.createdAt) : '' }}</NText>
+						<strong>{{ t('createdAt') }} :</strong>
+						<span>{{ asset.createdAt ? formatDate(asset.createdAt) : '' }}</span>
 					</div>
 				</div>
 			</NTooltip>
@@ -73,11 +88,12 @@
 import type { ImageRenderToolbarProps } from "naive-ui";
 import type { Directive, VNodeChild } from "vue";
 import { Icon, NIcon, NTooltip } from "#components";
-import { imageExtensions, videoExtensions } from "~/composables";
+import { imageExtensions, videoExtensions, officeExtensions, wordExtensions, spreadsheetExtensions, presentationExtensions } from "~/composables";
 import {
 	getCachedThumbnail,
 	cacheThumbnail,
 } from "~/composables/useThumbnailCache";
+import { generateDocumentThumbnail } from "~/composables/useDocumentThumbnail";
 
 interface Props {
 	asset: Asset;
@@ -113,6 +129,10 @@ const videoThumbs = reactive<Record<string, string | undefined>>({});
 const generatingVideo = reactive<Record<string, boolean>>({});
 const pdfThumbs = reactive<Record<string, string | undefined>>({});
 const generatingPdf = reactive<Record<string, boolean>>({});
+
+// Document (Office) thumbnail generation state
+const docThumbs = reactive<Record<string, string | undefined>>({});
+const generatingDoc = reactive<Record<string, boolean>>({});
 
 const assetKey = computed(() =>
 	String(asset.id ?? asset.publicURL ?? asset.name),
@@ -410,6 +430,33 @@ async function generatePdfThumb() {
 	return pdfThumbs[key];
 }
 
+async function generateDocThumb() {
+	if (!officeExtensions.includes(asset.extension)) return;
+	const key = assetKeyValue(asset);
+	if (docThumbs[key] !== undefined) return docThumbs[key];
+
+	try {
+		generatingDoc[key] = true;
+
+		// Try to get from cache first
+		const cached = await getCachedThumbnail(`doc-${key}`);
+		if (cached) {
+			docThumbs[key] = cached;
+			return cached;
+		}
+
+		const dataUrl = await generateDocumentThumbnail(asset);
+		docThumbs[key] = dataUrl;
+		return dataUrl;
+	} catch (error) {
+		console.warn("Error in generateDocThumb:", error);
+		docThumbs[key] = undefined;
+	} finally {
+		generatingDoc[key] = false;
+	}
+	return docThumbs[key];
+}
+
 // Intersection observer directive for lazy actions
 const vIntersect: Directive<HTMLElement, () => void> = {
 	mounted(el, binding) {
@@ -487,7 +534,7 @@ const renderToolbar: (
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset");
 const requiresPreviewDownloadShortcut = computed(
-	() => asset.extension === "pdf" || videoExtensions.includes(asset.extension),
+	() => asset.extension === "pdf" || videoExtensions.includes(asset.extension) || officeExtensions.includes(asset.extension),
 );
 const isPreviewingCurrentAsset = computed(() => {
 	const previewAsset = currentPreviewAsset.value;
@@ -518,6 +565,19 @@ function handleAssetClick(event: MouseEvent) {
 	if (videoExtensions.includes(asset.extension)) {
 		currentPreviewAsset.value = asset;
 		Loading.value.previewModal = true;
+		return;
+	}
+
+	// DOCX/XLSX: open in preview modal; legacy/ppt: download-to-preview
+	if (officeExtensions.includes(asset.extension)) {
+		if (asset.extension === "docx" || spreadsheetExtensions.includes(asset.extension) && asset.extension !== "xls") {
+			currentPreviewAsset.value = asset;
+			Loading.value.previewModal = true;
+		} else {
+			// Legacy formats (doc, xls, ppt) and pptx: open in new tab
+			window.open(asset.publicURL as string, "_blank");
+		}
+		return;
 	}
 
 	return false;

@@ -356,16 +356,16 @@ export const imageExtensions = [
 
 export const videoExtensions = ["mp4", "webm", "ogg", "mov", "avi", "mkv"];
 
-// ToDo: in app preview support for other document types like docx, xlsx, pptx
-export const documentExtensions = [
-	"pdf",
-	"doc",
-	"docx",
-	"xls",
-	"xlsx",
-	"ppt",
-	"pptx",
+export const wordExtensions = ["doc", "docx"];
+export const spreadsheetExtensions = ["xls", "xlsx"];
+export const presentationExtensions = ["ppt", "pptx"];
+export const officeExtensions = [
+	...wordExtensions,
+	...spreadsheetExtensions,
+	...presentationExtensions,
 ];
+
+export const documentExtensions = ["pdf", ...officeExtensions];
 
 /**
  * Extracts the file name and extension from a file path or file name string.
