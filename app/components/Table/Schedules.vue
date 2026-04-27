@@ -445,7 +445,7 @@ async function removeSchedule(schedule: CreationSchedule) {
 			},
 		)
 
-		if (response.result) {
+		if (response.result || response.code === 204) {
 			window.$message.success(response.message)
 			await loadSchedules()
 		} else window.$message.error(response.message)
