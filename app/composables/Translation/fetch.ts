@@ -40,8 +40,9 @@ export default async function () {
 					// @ts-ignore
 					translationsState.value[Language.value] = {};
 				// @ts-ignore
+				// Canonical field is `translation`; fall back to legacy `translated` for older API responses.
 				translationsState.value[Language.value][translation.original] =
-					translation.translated;
+					translation.translation ?? translation.translated;
 			}
 	}
 }

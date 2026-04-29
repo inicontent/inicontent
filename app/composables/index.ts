@@ -154,6 +154,56 @@ export function handleSelectedSchemaType(type: string) {
 				type: "string",
 				subType: "color",
 			};
+		case "date-datetime":
+			return {
+				type: "date",
+				date: "datetime",
+			};
+		case "date-daterange":
+			return {
+				type: "date",
+				date: "daterange",
+			};
+		case "date-datetimerange":
+			return {
+				type: "date",
+				date: "datetimerange",
+			};
+		case "date-month":
+			return {
+				type: "date",
+				date: "month",
+			};
+		case "date-monthrange":
+			return {
+				type: "date",
+				date: "monthrange",
+			};
+		case "date-year":
+			return {
+				type: "date",
+				date: "year",
+			};
+		case "date-yearrange":
+			return {
+				type: "date",
+				date: "yearrange",
+			};
+		case "date-quarter":
+			return {
+				type: "date",
+				date: "quarter",
+			};
+		case "date-quarterrange":
+			return {
+				type: "date",
+				date: "quarterrange",
+			};
+		case "date-week":
+			return {
+				type: "date",
+				date: "week",
+			};
 		case "array":
 		case "object":
 			return {

@@ -5,6 +5,11 @@
 				<slot name="form" :onAfterCreate :onAfterUpdate></slot>
 			</template>
 		</LazyFormDrawer>
+		<LazyTableTranslateDrawer
+			v-if="database.secondaryLanguages?.length"
+			v-model:show="translateDrawerShow"
+			:item="translateDrawerItem"
+		/>
 		<NCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
@@ -221,10 +226,44 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 }
 provide("deleteItem", deleteItem);
 
+const translateDrawerShow = ref(false);
+const translateDrawerItem = ref<Item | null>(null);
+
+function openTranslateDrawer(row: Item) {
+	translateDrawerItem.value = row;
+	translateDrawerShow.value = true;
+}
+
 function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
 		[
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
+			database.value?.secondaryLanguages?.length
+				? h(
+						NTooltip,
+						{ delay: 1500 },
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										class: "translateItemButton",
+										secondary: true,
+										circle: true,
+										type: "warning",
+										onClick: () => openTranslateDrawer(row),
+									},
+									{
+										icon: () =>
+											h(NIcon, () =>
+												h(Icon, { name: "tabler:language" }),
+											),
+									},
+								),
+							default: () => t("translateItem"),
+						},
+				  )
+				: null,
 			table.value?.allowedMethods?.includes("r")
 				? h(
 					NButton,

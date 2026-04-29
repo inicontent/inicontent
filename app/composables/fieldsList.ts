@@ -7,7 +7,7 @@ function renderIcon(iconName: string) {
 
 type fieldListOptionType = {
 	type?: string;
-	key: CMS_FieldType | DB_FieldType;
+	key: string;
 	label: string;
 	icon: () => VNodeChild;
 	disabled?: boolean;
@@ -102,6 +102,63 @@ export default function fieldsList(): fieldListOptionType[] {
 			label: t("fields.date"),
 			key: "date",
 			icon: renderIcon("calendar"),
+			children: [
+				{
+					label: t("fields.date"),
+					key: "date",
+					icon: renderIcon("calendar"),
+				},
+				{
+					label: t("fields.dateTime"),
+					key: "date-datetime",
+					icon: renderIcon("calendar-time"),
+				},
+				{
+					label: t("fields.dateRange"),
+					key: "date-daterange",
+					icon: renderIcon("calendar-week"),
+				},
+				{
+					label: t("fields.dateTimeRange"),
+					key: "date-datetimerange",
+					icon: renderIcon("calendar-stats"),
+				},
+				{
+					label: t("fields.month"),
+					key: "date-month",
+					icon: renderIcon("calendar-month"),
+				},
+				{
+					label: t("fields.monthRange"),
+					key: "date-monthrange",
+					icon: renderIcon("calendar-due"),
+				},
+				{
+					label: t("fields.year"),
+					key: "date-year",
+					icon: renderIcon("calendar-event"),
+				},
+				{
+					label: t("fields.yearRange"),
+					key: "date-yearrange",
+					icon: renderIcon("calendar-up"),
+				},
+				{
+					label: t("fields.quarter"),
+					key: "date-quarter",
+					icon: renderIcon("calendar-plus"),
+				},
+				{
+					label: t("fields.quarterRange"),
+					key: "date-quarterrange",
+					icon: renderIcon("calendar-share"),
+				},
+				{
+					label: t("fields.week"),
+					key: "date-week",
+					icon: renderIcon("calendar-time"),
+				},
+			],
 		},
 		{
 			label: t("fields.toggle"),
@@ -201,6 +258,13 @@ export function flatFieldsList() {
 }
 
 export function getField(field: Field) {
+	if (field.type === "date" && field.date) {
+		return (
+			flatFieldsList().find(({ key }) => key === `date-${field.date}`) ??
+			flatFieldsList().find(({ key }) => key === "date") ??
+			defaultField
+		);
+	}
 	if (field.table === "assets")
 		return (
 			flatFieldsList().find(

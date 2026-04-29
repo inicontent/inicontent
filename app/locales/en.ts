@@ -8,6 +8,16 @@ export default {
 		fields: {
 			html: "Rich Editor",
 			json: "JSON",
+			dateTime: "Date & time",
+			dateRange: "Date range",
+			dateTimeRange: "Date & time range",
+			month: "Month",
+			monthRange: "Month range",
+			year: "Year",
+			yearRange: "Year range",
+			quarter: "Quarter",
+			quarterRange: "Quarter range",
+			week: "Week",
 		},
 
 		apiDocs: {
@@ -346,5 +356,13 @@ export default {
 		medium: "Medium",
 		large: "Large",
 		noData: "No data",
+
+		// Translation drawer
+		translateItem: "Translate item",
+		noSecondaryLanguages: "No secondary languages are configured for this database.",
+		noTranslatableFields: "No translatable text fields found in this table.",
+		translationPlaceholder: "Enter translation…",
+		translationsSaved: "Translations saved",
+		translated: "Translated",
 	},
 } as const;

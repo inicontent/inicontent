@@ -529,10 +529,22 @@ function getDisplayKey(element: Field) {
 	return buffered !== undefined ? buffered : (element.key ?? "");
 }
 
-// Memoize getField(element) by a stable signature of the element's type/subType
+// Memoize getField(element) by a stable signature of field-shape properties
 const getFieldCache = new Map<string, ReturnType<typeof getField>>();
 function getFieldCached(element: Field) {
-	const key = `${Array.isArray(element.type) ? element.type.join(",") : element.type}-${element.subType ?? ""}`;
+	const typeKey = Array.isArray(element.type)
+		? element.type.join(",")
+		: element.type;
+	const childrenKey = Array.isArray(element.children)
+		? "schema"
+		: (element.children ?? "");
+	const key = [
+		typeKey,
+		element.subType ?? "",
+		element.date ?? "",
+		element.table ?? "",
+		childrenKey,
+	].join("|");
 	const cached = getFieldCache.get(key);
 	if (cached) return cached;
 	const v = getField(element);
