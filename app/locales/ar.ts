@@ -686,5 +686,19 @@ export default {
 		translationPlaceholder: "أدخل الترجمة…",
 		translationsSaved: "تم حفظ الترجمات",
 		translated: "مترجم",
+
+		passkey: {
+			securityTitle: "أمان مفتاح المرور",
+			description: "سجّل مفتاح مرور لتسجيل الدخول باستخدام التحقق من جهازك.",
+			register: "تسجيل مفتاح مرور",
+			notSupported: "هذا المتصفح لا يدعم مفاتيح المرور.",
+			hint: "يمكنك استخدام Face ID أو Touch ID أو مفتاح أمان بعد التسجيل.",
+			registeredSuccessfully: "تم تسجيل مفتاح المرور بنجاح.",
+			registrationFailed: "فشل تسجيل مفتاح المرور.",
+			signin: "تسجيل الدخول بمفتاح المرور",
+			signinHintUsername: "أدخل اسم المستخدم أو البريد الإلكتروني ثم تابع باستخدام مفتاح المرور.",
+			signinHintDevice: "استخدم التحقق من جهازك (Face ID أو Touch ID أو مفتاح أمان).",
+			signinFailed: "فشل تسجيل الدخول بمفتاح المرور.",
+		},
 	},
 } as const;

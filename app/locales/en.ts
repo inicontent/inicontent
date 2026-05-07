@@ -378,5 +378,19 @@ export default {
 		translationPlaceholder: "Enter translation…",
 		translationsSaved: "Translations saved",
 		translated: "Translated",
+
+		passkey: {
+			securityTitle: "Passkey Security",
+			description: "Register a passkey to sign in using your device verification.",
+			register: "Register passkey",
+			notSupported: "This browser does not support passkeys.",
+			hint: "You can use Face ID, Touch ID, or a security key after registration.",
+			registeredSuccessfully: "Passkey registered successfully.",
+			registrationFailed: "Passkey registration failed.",
+			signin: "Sign in with passkey",
+			signinHintUsername: "Enter your username or email, then continue with passkey.",
+			signinHintDevice: "Use your device verification (Face ID, Touch ID, or security key).",
+			signinFailed: "Passkey sign-in failed.",
+		},
 	},
 } as const;

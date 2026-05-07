@@ -4,12 +4,12 @@
 
 		<NCard
 			v-if="isCurrentUserProfile"
-			title="Passkey Security"
+			:title="t('passkey.securityTitle')"
 			hoverable
 		>
 			<NFlex vertical :size="12">
 				<NText depth="3">
-					Register a passkey to sign in using your device verification.
+					{{ t('passkey.description') }}
 				</NText>
 
 				<NButton
@@ -20,7 +20,7 @@
 					:loading="isRegisteringPasskey"
 					@click="registerPasskey"
 				>
-					Register passkey
+					{{ t('passkey.register') }}
 				</NButton>
 
 				<NText depth="3" style="font-size: 12px;">
@@ -65,10 +65,10 @@ const isCurrentUserProfile = computed(
 
 const passkeyRegisterHint = computed(() => {
 	if (!isPasskeySupported.value) {
-		return "This browser does not support passkeys.";
+		return t("passkey.notSupported");
 	}
 
-	return "You can use Face ID, Touch ID, or a security key after registration.";
+	return t("passkey.hint");
 })
 
 async function registerPasskey() {
@@ -82,10 +82,10 @@ async function registerPasskey() {
 	isRegisteringPasskey.value = true
 	try {
 		const response = await registerCurrentUserPasskey()
-		window.$message.success(response.message || "Passkey registered successfully.")
+		window.$message.success(response.message || t("passkey.registeredSuccessfully"))
 	} catch (error: unknown) {
 		window.$message.error(
-			error instanceof Error ? error.message : "Passkey registration failed.",
+			error instanceof Error ? error.message : t("passkey.registrationFailed"),
 		)
 	} finally {
 		isRegisteringPasskey.value = false

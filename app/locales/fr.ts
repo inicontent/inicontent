@@ -654,5 +654,17 @@ export default {
 		translationPlaceholder: "Saisir la traduction…",
 		translationsSaved: "Traductions enregistrées",
 		translated: "Traduit",
-	},
-} as const;
+
+                passkey: {
+                        securityTitle: "Sécurité par clé d'accès",
+                        description: "Enregistrez une clé d'accès pour vous connecter via la vérification de votre appareil.",
+                        register: "Enregistrer la clé d'accès",
+                        notSupported: "Ce navigateur ne prend pas en charge les clés d'accès.",
+                        hint: "Vous pouvez utiliser Face ID, Touch ID ou une clé de sécurité après l'enregistrement.",
+                        registeredSuccessfully: "Clé d'accès enregistrée avec succès.",
+                        registrationFailed: "Échec de l'enregistrement de la clé d'accès.",
+                        signin: "Se connecter avec une clé d'accès",
+                        signinHintUsername: "Entrez votre nom d'utilisateur ou e-mail, puis continuez avec la clé d'accès.",
+                        signinHintDevice: "Utilisez la vérification de votre appareil (Face ID, Touch ID ou clé de sécurité).",
+                        signinFailed: "Échec de la connexion avec la clé d'accès.",
+                },

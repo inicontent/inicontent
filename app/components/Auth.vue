@@ -4,24 +4,34 @@
 			<NTabPane name="signin" :tab="t('signin')">
 				<NForm ref="SigninFormRef" :model="SigninForm" @submit="SigninSubmit">
 					<FieldS v-model="SigninForm" :schema="SigninColumns" />
-					<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
-						{{ t("signin") }}
-					</NButton>
-					<NButton
-						style="margin-top: 10px"
-						type="default"
-						block
-						secondary
-						strong
-						:loading="Loading.PasskeySignin"
-						:disabled="!canStartPasskeySignin"
-						@click="SigninWithPasskey"
-					>
-						Sign in with passkey
-					</NButton>
-					<NText depth="3" style="display: block; margin-top: 10px; text-align: center; font-size: 12px;">
-						{{ passkeySigninHint }}
-					</NText>
+					<NButtonGroup style="width: 100%;">
+						<NButton attr-type="submit" type="primary" style="flex: 1;" secondary strong :loading="Loading.Signin">
+							{{ t("signin") }}
+						</NButton>
+						<NTooltip trigger="hover" :disabled="!passkeySigninHint">
+							<template #trigger>
+								<NButton
+									type="primary"
+									secondary
+									strong
+									:loading="Loading.PasskeySignin"
+									:disabled="!canStartPasskeySignin"
+									@click="SigninWithPasskey"
+								>
+									<template #icon>
+										<NIcon>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<circle cx="8" cy="8" r="3"/>
+												<path d="M13 8a5 5 0 0 1 5 5v1h2v2h-2v2h-2v-2h-4.17"/>
+												<line x1="8" y1="11" x2="8" y2="21"/>
+											</svg>
+										</NIcon>
+									</template>
+								</NButton>
+							</template>
+							{{ passkeySigninHint }}
+						</NTooltip>
+					</NButtonGroup>
 				</NForm>
 			</NTabPane>
 			<NTabPane name="signup" :tab="t('signup')" :disabled="!table?.allowedMethods?.includes('c')">
@@ -72,14 +82,14 @@ const canStartPasskeySignin = computed(
 );
 const passkeySigninHint = computed(() => {
 	if (!isPasskeySupported.value) {
-		return "This browser does not support passkeys.";
+		return t("passkey.notSupported");
 	}
 
 	if (!SigninForm.value.username?.trim()) {
-		return "Enter your username or email, then continue with passkey.";
+		return t("passkey.signinHintUsername");
 	}
 
-	return "Use your device verification (Face ID, Touch ID, or security key).";
+	return t("passkey.signinHintDevice");
 });
 const SigninColumns: Schema = [
 	{
@@ -199,7 +209,7 @@ async function SigninWithPasskey() {
 		}
 	} catch (error: unknown) {
 		window.$message.error(
-			error instanceof Error ? error.message : "Passkey sign-in failed.",
+			error instanceof Error ? error.message : t("passkey.signinFailed"),
 		);
 	} finally {
 		Loading.value.PasskeySignin = false;

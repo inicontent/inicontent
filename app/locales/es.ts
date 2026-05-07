@@ -651,5 +651,17 @@ export default {
 		translationPlaceholder: "Ingrese la traducción…",
 		translationsSaved: "Traducciones guardadas",
 		translated: "Traducido",
-	},
-} as const;
+
+                passkey: {
+                        securityTitle: "Seguridad con llave de acceso",
+                        description: "Registra una llave de acceso para iniciar sesión mediante la verificación de tu dispositivo.",
+                        register: "Registrar llave de acceso",
+                        notSupported: "Este navegador no admite llaves de acceso.",
+                        hint: "Puedes usar Face ID, Touch ID o una llave de seguridad después del registro.",
+                        registeredSuccessfully: "Llave de acceso registrada correctamente.",
+                        registrationFailed: "Error al registrar la llave de acceso.",
+                        signin: "Iniciar sesión con llave de acceso",
+                        signinHintUsername: "Introduce tu nombre de usuario o correo y continúa con la llave de acceso.",
+                        signinHintDevice: "Usa la verificación de tu dispositivo (Face ID, Touch ID o llave de seguridad).",
+                        signinFailed: "Error al iniciar sesión con llave de acceso.",
+                },
