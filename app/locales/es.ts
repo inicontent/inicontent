@@ -549,6 +549,67 @@ export default {
 				supportMessage:
 					"Si tuviste algún problema durante el pago, contacta a nuestro equipo de soporte:",
 			},
+			credit: {
+				balance: "Saldo de crédito",
+				balanceSubtitle: "Tu crédito usado para los cargos mensuales.",
+				addCredit: "Añadir crédito",
+				requestBankTransfer: "Solicitar transferencia bancaria",
+				topupTitle: "Recargar cuenta",
+				topupDescription:
+					"Añade crédito mediante PayPal. Tu crédito se usará para pagar los cargos mensuales automáticamente.",
+				amount: "Importe (USD)",
+				amountPlaceholder: "Introduce el importe",
+				youWillAdd: "Añadirás",
+				payWithPayPal: "Pagar con PayPal",
+				amountTooLow: "El importe mínimo es $1",
+				amountTooHigh: "El importe máximo es $1.000",
+				topupFailed: "Error al iniciar la recarga. Inténtalo de nuevo.",
+				topupSuccess: "Crédito añadido con éxito",
+				topupSuccessDescription: "Tu saldo ha sido actualizado.",
+				topupCanceled: "Recarga cancelada",
+				topupCanceledDescription: "Tu pago de PayPal fue cancelado. No se realizaron cargos.",
+				processingTopup: "Procesando tu pago…",
+				orderId: "ID de pedido",
+				amountAdded: "Importe añadido",
+				newBalance: "Nuevo saldo",
+				requestTitle: "Solicitar crédito por transferencia",
+				requestDescription:
+					"Envía una solicitud de transferencia. Un administrador lo verificará y aplicará el crédito.",
+				note: "Referencia de transferencia / Nota",
+				notePlaceholder: "Referencia de transferencia bancaria o notas adicionales",
+				noteRequired: "Por favor, proporciona una referencia de transferencia o nota",
+				submitRequest: "Enviar solicitud",
+				requestSubmitted: "Tu solicitud de crédito ha sido enviada. Un administrador la revisará pronto.",
+				requestFailed: "Error al enviar la solicitud. Inténtalo de nuevo.",
+				pendingRequests: "Solicitudes de crédito pendientes",
+				noPendingRequests: "No hay solicitudes pendientes",
+				refreshRequests: "Actualizar",
+				approve: "Aprobar",
+				reject: "Rechazar",
+				requestUser: "Usuario",
+				requestAmount: "Importe",
+				requestNote: "Nota",
+				requestStatus: "Estado",
+				graceWarning:
+					"Tu suscripción está en período de gracia. Añade crédito antes de que expire para evitar la suspensión.",
+			},
+			autoCharge: {
+				title: "Cargo automático PayPal",
+				subtitle:
+					"Cargar automáticamente tu cuenta PayPal cuando el crédito sea insuficiente.",
+				statusEnabled: "Activado",
+				enable: "Activar cargo automático",
+				disable: "Desactivar cargo automático",
+				activating: "Activando cargo automático…",
+				activatedTitle: "Cargo automático activado",
+				activatedDescription:
+					"Tu cuenta PayPal ha sido guardada. Los cargos mensuales se cobrarán automáticamente.",
+				activationFailed: "Error al activar el cargo automático",
+				missingApprovalSession: "Sesión de aprobación no encontrada. Inténtalo de nuevo.",
+				setupCanceled: "Configuración cancelada",
+				setupCanceledDescription:
+					"Cancelaste la autorización de PayPal. El cargo automático no fue activado.",
+			},
 		},
 
 		pricingUi: {
@@ -665,3 +726,5 @@ export default {
                         signinHintDevice: "Usa la verificación de tu dispositivo (Face ID, Touch ID o llave de seguridad).",
                         signinFailed: "Error al iniciar sesión con llave de acceso.",
                 },
+        },
+} as const;

@@ -259,6 +259,69 @@ export default {
 				supportMessage:
 					"If you encountered any issues during checkout, please contact our support team:",
 			},
+			credit: {
+				balance: "Credit Balance",
+				balanceSubtitle: "Your account credit used for monthly charges.",
+				addCredit: "Add Credit",
+				requestBankTransfer: "Request Bank Transfer",
+				topupTitle: "Add Account Credit",
+				topupDescription:
+					"Add credit via PayPal. Your credit will be used to pay monthly charges automatically.",
+				amount: "Amount (USD)",
+				amountPlaceholder: "Enter amount",
+				youWillAdd: "You will add",
+				payWithPayPal: "Pay with PayPal",
+				amountTooLow: "Minimum amount is $1",
+				amountTooHigh: "Maximum amount is $1,000",
+				topupFailed: "Failed to initiate top-up. Please try again.",
+				topupSuccess: "Credit Added Successfully",
+				topupSuccessDescription: "Your account credit has been updated.",
+				topupCanceled: "Top-up Canceled",
+				topupCanceledDescription:
+					"Your PayPal payment was canceled. No charges were made.",
+				processingTopup: "Processing your payment…",
+				orderId: "Order ID",
+				amountAdded: "Amount Added",
+				newBalance: "New Balance",
+				requestTitle: "Request Bank Transfer Credit",
+				requestDescription:
+					"Submit a bank transfer request. An admin will verify and apply the credit to your account.",
+				note: "Transfer Reference / Note",
+				notePlaceholder: "Enter bank transfer reference or additional notes",
+				noteRequired: "Please provide a transfer reference or note",
+				submitRequest: "Submit Request",
+				requestSubmitted:
+					"Your credit request has been submitted. An admin will review it shortly.",
+				requestFailed: "Failed to submit credit request. Please try again.",
+				pendingRequests: "Pending Credit Requests",
+				noPendingRequests: "No pending credit requests",
+				refreshRequests: "Refresh",
+				approve: "Approve",
+				reject: "Reject",
+				requestUser: "User",
+				requestAmount: "Amount",
+				requestNote: "Note",
+				requestStatus: "Status",
+				graceWarning:
+					"Your subscription is in a grace period. Please add credit before the grace period expires to avoid suspension.",
+			},
+			autoCharge: {
+				title: "PayPal Auto-Charge",
+				subtitle:
+					"Automatically charge your PayPal account when credit is insufficient.",
+				statusEnabled: "Enabled",
+				enable: "Enable Auto-Charge",
+				disable: "Disable Auto-Charge",
+				activating: "Activating auto-charge…",
+				activatedTitle: "Auto-Charge Enabled",
+				activatedDescription:
+					"Your PayPal account has been saved. Monthly charges will be collected automatically.",
+				activationFailed: "Failed to activate auto-charge",
+				missingApprovalSession: "Missing approval session. Please try again.",
+				setupCanceled: "Auto-Charge Setup Canceled",
+				setupCanceledDescription:
+					"You canceled the PayPal authorization. Auto-charge was not enabled.",
+			},
 		},
 
 		pricingUi: {

@@ -553,6 +553,67 @@ export default {
 				supportMessage:
 					"Si vous avez rencontré des problèmes pendant le paiement, contactez notre équipe support :",
 			},
+			credit: {
+				balance: "Solde de crédit",
+				balanceSubtitle: "Votre crédit utilisé pour les frais mensuels.",
+				addCredit: "Ajouter du crédit",
+				requestBankTransfer: "Demande de virement bancaire",
+				topupTitle: "Recharger le compte",
+				topupDescription:
+					"Ajoutez du crédit via PayPal. Votre crédit sera utilisé pour payer les frais mensuels automatiquement.",
+				amount: "Montant (USD)",
+				amountPlaceholder: "Entrez le montant",
+				youWillAdd: "Vous allez ajouter",
+				payWithPayPal: "Payer avec PayPal",
+				amountTooLow: "Le montant minimum est de 1 $",
+				amountTooHigh: "Le montant maximum est de 1 000 $",
+				topupFailed: "Échec de la recharge. Veuillez réessayer.",
+				topupSuccess: "Crédit ajouté avec succès",
+				topupSuccessDescription: "Votre solde a été mis à jour.",
+				topupCanceled: "Recharge annulée",
+				topupCanceledDescription: "Votre paiement PayPal a été annulé. Aucun frais n'a été effectué.",
+				processingTopup: "Traitement du paiement en cours…",
+				orderId: "ID de commande",
+				amountAdded: "Montant ajouté",
+				newBalance: "Nouveau solde",
+				requestTitle: "Demande de crédit par virement",
+				requestDescription:
+					"Soumettez une demande de virement. Un administrateur vérifiera et appliquera le crédit.",
+				note: "Référence de virement / Note",
+				notePlaceholder: "Référence du virement ou notes supplémentaires",
+				noteRequired: "Veuillez fournir une référence de virement ou une note",
+				submitRequest: "Soumettre la demande",
+				requestSubmitted: "Votre demande de crédit a été soumise. Un administrateur la traitera bientôt.",
+				requestFailed: "Échec de la demande de crédit. Veuillez réessayer.",
+				pendingRequests: "Demandes de crédit en attente",
+				noPendingRequests: "Aucune demande en attente",
+				refreshRequests: "Actualiser",
+				approve: "Approuver",
+				reject: "Rejeter",
+				requestUser: "Utilisateur",
+				requestAmount: "Montant",
+				requestNote: "Note",
+				requestStatus: "Statut",
+				graceWarning:
+					"Votre abonnement est en période de grâce. Ajoutez du crédit avant l'expiration pour éviter la suspension.",
+			},
+			autoCharge: {
+				title: "Prélèvement automatique PayPal",
+				subtitle:
+					"Prélever automatiquement votre compte PayPal lorsque le crédit est insuffisant.",
+				statusEnabled: "Activé",
+				enable: "Activer le prélèvement automatique",
+				disable: "Désactiver le prélèvement automatique",
+				activating: "Activation du prélèvement automatique…",
+				activatedTitle: "Prélèvement automatique activé",
+				activatedDescription:
+					"Votre compte PayPal a été enregistré. Les frais mensuels seront prélevés automatiquement.",
+				activationFailed: "Échec de l'activation du prélèvement automatique",
+				missingApprovalSession: "Session d'approbation manquante. Veuillez réessayer.",
+				setupCanceled: "Configuration annulée",
+				setupCanceledDescription:
+					"Vous avez annulé l'autorisation PayPal. Le prélèvement automatique n'a pas été activé.",
+			},
 		},
 
 		pricingUi: {
@@ -668,3 +729,5 @@ export default {
                         signinHintDevice: "Utilisez la vérification de votre appareil (Face ID, Touch ID ou clé de sécurité).",
                         signinFailed: "Échec de la connexion avec la clé d'accès.",
                 },
+        },
+} as const;
