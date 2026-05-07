@@ -1,7 +1,8 @@
 <template>
     <FieldWrapper :field :rule v-model="modelValue">
-        <NDatePicker :month-format="field.date && field.date === 'month' ? 'MMM' : 'MM'" format="dd-MM-yyyy"
-            :type="field.date ?? 'date'" :actions="null" v-model:value="modelValue" clearable
+        <NDatePicker :month-format="field.date && field.date === 'month' ? 'MMM' : 'MM'"
+            :format="field.date && ['datetime', 'datetimerange'].includes(field.date) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
+            :type="field.date ?? 'date'" :actions="field.date && ['datetime', 'datetimerange'].includes(field.date) ? ['confirm'] : null" v-model:value="modelValue" clearable
             :placeholder="t(field.key)" v-bind="field.inputProps
                 ? typeof field.inputProps === 'function'
                     ? field.inputProps(modelValue) ?? {}

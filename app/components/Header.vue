@@ -64,7 +64,7 @@
                         </template>
                     </NButton>
                 </NDropdown>
-                <NDropdown v-if="languagesDropdownOptions?.length" :value="Language" :options="languagesDropdownOptions"
+                <NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
                     @select="(v) => Language = v">
                     <NButton round size="small">
                         <template #icon>
@@ -198,9 +198,7 @@ const userDropdownOptions = computed(() => [
     },
 ])
 
-const sessionID = useCookie<string | null>("sessionID", {
-    sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 async function onSelectUserDropdown(v: string) {
     switch (v) {
@@ -253,11 +251,17 @@ onMounted(async () => {
     cacheStats.value = await getCacheStats()
 })
 
-const languagesDropdownOptions = database.value?.secondaryLanguages?.map(
-    (language) => ({
+const languagesDropdownOptions = computed(() => {
+    const primary = database.value?.primaryLanguage
+    const secondary = database.value?.secondaryLanguages ?? []
+    const languages = [primary, ...secondary].filter(
+        (language): language is LanguagesType => !!language,
+    )
+
+    return [...new Set(languages)].map((language) => ({
         label: t(`languages.${language}`),
         key: language,
-    }),
-)
+    }))
+})
 
 </script>

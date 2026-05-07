@@ -12,9 +12,7 @@ export default async function () {
 	);
 
 	const database = useState<Database>("database");
-	const sessionID = useCookie<string | null>("sessionID", {
-		sameSite: true,
-	});
+	const sessionID = useSessionCookie();
 
 	if (Language.value && unfoundTranslationsState.value) {
 		const fetchResult = (

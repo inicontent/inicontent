@@ -70,7 +70,7 @@ const routeBase = computed(() =>
 );
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const sessionID = useCookie<string | null>("sessionID", { sameSite: true });
+const sessionID = useSessionCookie();
 
 const dashboard = ref<Dashboard | null>(null);
 const currentDashboard = useState<Dashboard | null>("currentDashboard", () => null);

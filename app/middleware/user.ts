@@ -3,9 +3,7 @@ export default defineNuxtRouteMiddleware(async () => {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
 
-	const sessionID = useCookie<string | null>("sessionID", {
-		sameSite: true,
-	});
+	const sessionID = useSessionCookie();
 
 	if (!user.value) {
 		user.value = (

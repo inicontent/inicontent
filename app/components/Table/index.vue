@@ -186,9 +186,7 @@ if (tablesConfig.value[table.value.slug]?.view)
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;

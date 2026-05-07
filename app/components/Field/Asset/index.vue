@@ -570,7 +570,5 @@ const getChecked = (asset: Asset) =>
 				: value.id === asset.id,
 		) > -1;
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 </script>

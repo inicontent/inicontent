@@ -69,9 +69,7 @@ const database = useState<Database>("database")
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const sessionID = useCookie<string | null>("sessionID", {
-    sameSite: true,
-})
+const sessionID = useSessionCookie()
 
 async function importAsset() {
     Loading.value.import = true

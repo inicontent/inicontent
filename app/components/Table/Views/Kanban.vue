@@ -155,9 +155,7 @@ if (field?.options) {
 	})
 }
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-})
+const sessionID = useSessionCookie()
 
 // Watch searchString changes and refetch data for Kanban view
 watch(

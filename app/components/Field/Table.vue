@@ -120,9 +120,7 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 	await loadOptions(searchValue);
 }, 1000);
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 async function loadOptions(searchValue?: string | number) {
 	Loading.value[`options_${field.key}`] = true;

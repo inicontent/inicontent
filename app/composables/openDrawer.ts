@@ -4,9 +4,7 @@ async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const drawer = Drawers.value[index];
 
-	const sessionID = useCookie<string | null>("sessionID", {
-		sameSite: true,
-	});
+	const sessionID = useSessionCookie();
 
 	if (!drawer) return;
 

@@ -105,6 +105,7 @@ export default {
 		chatPlaceholder: "Describe a database you'd like to build...",
 		chatPlaceholderShort: "Type a message...",
 		applyChanges: "Apply changes",
+		skipAiHelp: "Skip AI help",
 		applied: "Applied",
 		schedules: "Schedules",
 		tableSchedules: "Table schedules",
@@ -306,6 +307,19 @@ export default {
 		invalidJSON: "Invalid JSON",
 
 		// Dashboards
+		databases: "Databases",
+		createDatabase: "Create database",
+		basicInformation: "Basic information",
+		basicInformationDescription: "Set database details and default locale.",
+		buildTables: "Build tables",
+		buildTablesDescription:
+			"Describe your tables and we will generate a starter schema.",
+		languages: {
+			ar: "Arabic",
+			en: "English",
+			fr: "French",
+			es: "Spanish",
+		},
 		dashboards: "Dashboards",
 		dashboard: "Dashboard",
 		dashboardName: "Dashboard name",

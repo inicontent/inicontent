@@ -96,9 +96,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const CurrentAsset = ref<Asset>();
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;

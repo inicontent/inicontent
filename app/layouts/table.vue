@@ -59,7 +59,7 @@ const defaultValue = computed(() => {
 	}
 	return decodeURI(lastPathInRoute?.toString() ?? "");
 });
-const sessionID = useCookie<string | null>("sessionID", { sameSite: true });
+const sessionID = useSessionCookie();
 const hasDashboardsTable = computed(
 	() =>
 		database.value?.tables?.some(

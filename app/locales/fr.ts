@@ -187,6 +187,14 @@ export default {
 		guest: "Invité",
 		translations: "Traductions",
 		assets: "Fichiers",
+		databases: "Bases de données",
+		createDatabase: "Créer une base de données",
+		basicInformation: "Informations de base",
+		basicInformationDescription:
+			"Définissez les détails de la base et la langue par défaut.",
+		buildTables: "Construire les tables",
+		buildTablesDescription:
+			"Décrivez vos tables et nous générerons un schéma de départ.",
 		tables: "Tables",
 		table: "Table",
 		totalDatabaseSize: "Taille totale de la base de données",
@@ -194,6 +202,12 @@ export default {
 		roles: "Rôles",
 		primaryLanguage: "Langue principale",
 		secondaryLanguages: "Langues secondaires",
+		languages: {
+			ar: "Arabe",
+			en: "Anglais",
+			fr: "Français",
+			es: "Espagnol",
+		},
 		tableSettings: "Paramètres de table",
 		primaryColor: "Couleur principale",
 		primaryDarkColor: "Couleur principale sombre",

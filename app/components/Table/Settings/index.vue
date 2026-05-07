@@ -200,9 +200,7 @@ function sanitizeSchema(schema: Schema): Schema {
 		});
 }
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {

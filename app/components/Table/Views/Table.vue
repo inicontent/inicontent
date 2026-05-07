@@ -129,9 +129,7 @@ const queryOptions = computed(() =>
 );
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,

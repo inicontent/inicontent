@@ -135,9 +135,7 @@ const filterDefaultColumns = (field: Field) =>
 		field.key,
 	);
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 function hasFunctionsProperties(items: Schema): boolean {
 	return items.some((item) => {

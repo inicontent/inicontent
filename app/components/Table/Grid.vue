@@ -88,9 +88,7 @@ function getTableUrl(slug: string) {
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-})
+const sessionID = useSessionCookie()
 
 const createTable = async () => {
 	if (newTableSlug.value) {

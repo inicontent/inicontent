@@ -58,7 +58,7 @@ export function useRealtimeSync(
 					database: database.value?.slug,
 					table: table.value?.slug,
 					userId: undefined, // Set from auth if available
-					sessionId: useCookie("sessionID").value,
+					sessionId: useSessionCookie().value,
 				};
 
 				websocket.value?.send(JSON.stringify(subscribeMessage));

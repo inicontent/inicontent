@@ -25,6 +25,7 @@
 		"@nuxt/icon": "^2.2.1",
 		"@nuxt/kit": "^4.4.2",
 		"@nuxtjs/device": "4.0.0",
+		"@simplewebauthn/browser": "^13.3.0",
 		"@tiptap/extension-color": "^3.20.4",
 		"@tiptap/extension-highlight": "^3.20.4",
 		"@tiptap/extension-table": "^3.20.4",

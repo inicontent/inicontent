@@ -1,27 +1,22 @@
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
-
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
+	const currentDatabaseSlug = String(
+		config.public.database === "inicontent"
+			? to.params.database || config.public.database
+			: config.public.database || to.params.database,
+	);
+
+	const sessionID = useSessionCookie(currentDatabaseSlug);
 
 	if (!database.value)
 		database.value = (
 			await $fetch<apiResponse<Database>>(
-				`${config.public.apiBase}inicontent/databases/${
-					config.public.database === "inicontent"
-						? to.params.database || config.public.database
-						: config.public.database || to.params.database
-				}`,
+				`${config.public.apiBase}inicontent/databases/${currentDatabaseSlug}`,
 				{
 					credentials: "include",
 					query: {
-						[`${
-							config.public.database === "inicontent"
-								? to.params.database || config.public.database
-								: config.public.database || to.params.database
-						}_sid`]: sessionID.value,
+						[`${currentDatabaseSlug}_sid`]: sessionID.value,
 					},
 				},
 			)
@@ -34,6 +29,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		});
 
 	formatDatabase();
+	syncCookiesFromDatabase(database.value.slug);
 
 	useState<ThemeConfig>("ThemeConfig", () => ({
 		primaryColor: "#FF9800",

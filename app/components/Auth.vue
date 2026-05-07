@@ -7,6 +7,21 @@
 					<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.Signin">
 						{{ t("signin") }}
 					</NButton>
+					<NButton
+						style="margin-top: 10px"
+						type="default"
+						block
+						secondary
+						strong
+						:loading="Loading.PasskeySignin"
+						:disabled="!canStartPasskeySignin"
+						@click="SigninWithPasskey"
+					>
+						Sign in with passkey
+					</NButton>
+					<NText depth="3" style="display: block; margin-top: 10px; text-align: center; font-size: 12px;">
+						{{ passkeySigninHint }}
+					</NText>
 				</NForm>
 			</NTabPane>
 			<NTabPane name="signup" :tab="t('signup')" :disabled="!table?.allowedMethods?.includes('c')">
@@ -21,6 +36,7 @@
 
 <script lang="ts" setup>
 import type { FormInst, TabsInst } from "naive-ui";
+import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
 
 const props = defineProps<{
 	modal?: boolean;
@@ -32,6 +48,7 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const { beginPasskeySignIn, isPasskeySupported } = usePasskeyAuth();
 
 const redirectTo = useCookie("redirectTo", { sameSite: true });
 
@@ -49,6 +66,20 @@ const SignupFormRef = ref<FormRef>();
 const SigninForm = ref({
 	username: "",
 	password: "",
+});
+const canStartPasskeySignin = computed(
+	() => isPasskeySupported.value && !!SigninForm.value.username?.trim(),
+);
+const passkeySigninHint = computed(() => {
+	if (!isPasskeySupported.value) {
+		return "This browser does not support passkeys.";
+	}
+
+	if (!SigninForm.value.username?.trim()) {
+		return "Enter your username or email, then continue with passkey.";
+	}
+
+	return "Use your device verification (Face ID, Touch ID, or security key).";
 });
 const SigninColumns: Schema = [
 	{
@@ -70,9 +101,7 @@ function onAfterSignup(data?: Item) {
 	tabsInstRef.value?.syncBarPosition();
 }
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-});
+const sessionID = useSessionCookie();
 
 const isSafeRedirect = (value?: string) =>
 	!!value &&
@@ -81,6 +110,48 @@ const isSafeRedirect = (value?: string) =>
 	!value.endsWith("/auth") &&
 	!value.includes("/auth?");
 
+type LoginPayload = User & { sessionID: string };
+type LoginResponse = apiResponse<LoginPayload>;
+
+async function handleSuccessfulLogin(data: LoginResponse) {
+	sessionID.value = data.result.sessionID;
+	window.$message.success(data.message);
+	user.value = data.result;
+	database.value = (
+		await $fetch<apiResponse<Database>>(
+			`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
+			{
+				credentials: "include",
+				params: {
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		)
+	).result;
+
+	if (props.modal) {
+		emit("loggedIn");
+		return;
+	}
+
+	const queryRedirectTo =
+		typeof route.query.redirectTo === "string"
+			? route.query.redirectTo
+			: undefined;
+	const target = isSafeRedirect(queryRedirectTo)
+		? queryRedirectTo
+		: isSafeRedirect(redirectTo.value ?? undefined)
+			? redirectTo.value
+			: undefined;
+	await navigateTo(
+		target
+			? target
+			: route.params.database
+				? `/${database.value.slug}/admin`
+				: "/admin",
+	);
+}
+
 async function SigninSubmit(e: Event) {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
@@ -88,7 +159,7 @@ async function SigninSubmit(e: Event) {
 			const bodyContent = toRaw(SigninForm.value);
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
-				const data = await $fetch<Record<string, any>>(
+				const data = await $fetch<LoginResponse>(
 					`${config.public.apiBase}${database.value.slug}/auth/signin`,
 					{
 						method: "PUT",
@@ -100,40 +171,7 @@ async function SigninSubmit(e: Event) {
 					},
 				);
 				if (data.result?.id) {
-					sessionID.value = data.result.sessionID;
-					window.$message.success(data.message);
-					user.value = data.result;
-					database.value = (
-						await $fetch<apiResponse<Database>>(
-							`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
-							{
-								credentials: "include",
-								params: {
-									[`${database.value.slug}_sid`]: sessionID.value,
-								},
-							},
-						)
-					).result;
-					if (props.modal) {
-						emit("loggedIn");
-					} else {
-						const queryRedirectTo =
-							typeof route.query.redirectTo === "string"
-								? route.query.redirectTo
-								: undefined;
-						const target = isSafeRedirect(queryRedirectTo)
-							? queryRedirectTo
-							: isSafeRedirect(redirectTo.value ?? undefined)
-								? redirectTo.value
-								: undefined;
-						await navigateTo(
-							target
-								? target
-								: route.params.database
-									? `/${database.value.slug}/admin`
-									: "/admin",
-						);
-					}
+					await handleSuccessfulLogin(data);
 				} else window.$message.error(data.message);
 				Loading.value.Signin = false;
 			}
@@ -141,10 +179,37 @@ async function SigninSubmit(e: Event) {
 	});
 }
 
-useHead({
+async function SigninWithPasskey() {
+	if (!canStartPasskeySignin.value) {
+		window.$message.error(passkeySigninHint.value);
+		return;
+	}
+
+	const identifier = SigninForm.value.username.trim();
+
+	if (Loading.value.PasskeySignin === true) return;
+
+	Loading.value.PasskeySignin = true;
+	try {
+		const data = await beginPasskeySignIn(identifier);
+		if (data.result?.id) {
+			await handleSuccessfulLogin(data);
+		} else {
+			window.$message.error(data.message);
+		}
+	} catch (error: unknown) {
+		window.$message.error(
+			error instanceof Error ? error.message : "Passkey sign-in failed.",
+		);
+	} finally {
+		Loading.value.PasskeySignin = false;
+	}
+}
+
+useHead(() => ({
 	title: `${t(database.value.slug)} | ${t("authentication")}`,
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-});
+}));
 </script>

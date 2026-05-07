@@ -17,7 +17,7 @@ export function useDashboardData(
 	dateRangeOverride?: Ref<WidgetDateRange | undefined>,
 ): WidgetDataResult {
 	const config = useRuntimeConfig();
-	const sessionID = useCookie<string | null>("sessionID", { sameSite: true });
+	const sessionID = useSessionCookie();
 	const Language = useCookie<LanguagesType>("language", { sameSite: true });
 	const database = useState<Database>("database");
 

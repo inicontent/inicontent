@@ -298,9 +298,7 @@ const tableCopy = ref<any>(toRaw(table.value))
 const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-})
+const sessionID = useSessionCookie()
 
 async function saveFlow() {
 	Loading.value.updateTable = true

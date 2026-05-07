@@ -135,7 +135,7 @@ const databaseSchema: Schema = [
 	},
 ]
 
-const translationSchema: Schema = [
+const translationSchema = computed<Schema>(() => [
 	{
 		key: "primaryLanguage",
 		type: "string",
@@ -146,13 +146,14 @@ const translationSchema: Schema = [
 		key: "secondaryLanguages",
 		type: "array",
 		children: "string",
-		subType: "locale",
+		subType: "select",
+		options: translationLanguages
+			.filter((l) => l !== databaseCopy.value.primaryLanguage)
+			.map((l) => ({ label: t(`languages.${l}`), value: l })),
 	},
-]
+])
 
-const sessionID = useCookie<string | null>("sessionID", {
-	sameSite: true,
-})
+const sessionID = useSessionCookie()
 
 async function updateDatabase() {
 	databaseRef.value?.validate(async (errors) => {

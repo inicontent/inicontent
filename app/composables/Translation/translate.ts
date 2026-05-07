@@ -117,7 +117,7 @@ function formatUnfoundTranslation(
  * Interpolate variables into a translation string
  * Supports both {{variable}} and {variable} syntax
  */
-function interpolate(text: string, params: Record<string, any>): string {
+function interpolate(text: string, params: Record<string, unknown>): string {
 	return text.replace(/\{\{?\s*(\w+)\s*\}?\}/g, (_, key) => {
 		return params[key] !== undefined ? String(params[key]) : `{${key}}`;
 	});
@@ -168,20 +168,24 @@ function getPluralForm(
  * Handle plural translations
  */
 function handlePlural(
-	translation: any,
+	translation: unknown,
 	count: number,
 	language: LanguagesType,
-	params?: Record<string, any>,
+	params?: Record<string, unknown>,
 ): string {
 	if (typeof translation === "string") return translation;
 
 	const pluralForm = getPluralForm(count, language);
-	const forms = ["zero", "one", "two", "few", "many", "other"];
+	const translationRecord =
+		translation && typeof translation === "object"
+			? (translation as Record<string, unknown>)
+			: {};
 
 	// Try to find the exact form, then fallback to more general forms
 	for (const form of [pluralForm, "other", "one"]) {
-		if (translation[form]) {
-			let result = translation[form];
+		const value = translationRecord[form];
+		if (typeof value === "string") {
+			let result = value;
 			if (params) {
 				result = interpolate(result, { ...params, count });
 			}
@@ -192,8 +196,9 @@ function handlePlural(
 	return String(translation);
 }
 
-type TranslationParams = Record<string, any> & {
+type TranslationParams = Record<string, unknown> & {
 	count?: number;
+	returnObjects?: boolean;
 };
 
 export default function (
@@ -218,6 +223,8 @@ export default function (
 		getProperty(translationsState.value ?? {}, `${Language.value}.${key}`) ??
 		formatUnfoundTranslation(key, Language.value);
 
+	if (params?.returnObjects) return translation;
+
 	// Handle pluralization if count is provided
 	if (params?.count !== undefined) {
 		translation = handlePlural(
@@ -228,7 +235,7 @@ export default function (
 		);
 	}
 	// Handle interpolation if params are provided
-	else if (params) {
+	else if (params && typeof translation === "string") {
 		translation = interpolate(translation, params);
 	}
 
