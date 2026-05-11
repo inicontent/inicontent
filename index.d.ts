@@ -107,6 +107,7 @@ declare global {
 		  ]
 		| ["unset", null | string | string[]]
 		| ["error", null | string]
+		| ["email", null | string, null | string]
 		| [
 				`@${"user" | "data" | "where"}.${string | number}` | "@method",
 				ComparisonOperator,
@@ -146,7 +147,7 @@ declare global {
 		| "custom";
 	type CreationSchedule = Item & {
 		databaseSlug: string;
-		tableSlug: string;
+		table: string;
 		name: string;
 		preset?: CreationSchedulePreset;
 		cronExpression: string;
@@ -175,6 +176,15 @@ declare global {
 		roles?: { name: string; id: string }[];
 		tables?: Table[];
 		size?: number;
+		email?: {
+			smtp_host?: string;
+			smtp_port?: number;
+			smtp_user?: string;
+			smtp_pass?: string;
+			smtp_secure?: boolean;
+			from_email?: string;
+			from_name?: string;
+		};
 	};
 	type apiResponse<T = any> = {
 		result: T;

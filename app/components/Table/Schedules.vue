@@ -297,7 +297,7 @@ async function previewResolvedPayload() {
 	previewing.value = true
 	try {
 		const response = await $fetch<apiResponse<Record<string, unknown>>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules/preview`,
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/preview`,
 			{
 				method: "POST",
 				body: {
@@ -359,7 +359,7 @@ async function loadSchedules() {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<CreationSchedule[]>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules`,
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`,
 			{
 				params: getRequestParams(),
 				credentials: "include",
@@ -408,9 +408,8 @@ async function saveSchedule() {
 		}
 
 		const endpoint = editingSchedule.value?.id
-			? `${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
-			: `${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules`
-
+				? `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
+				: `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`
 		const method = editingSchedule.value?.id ? "PUT" : "POST"
 		const response = await $fetch<apiResponse<CreationSchedule>>(endpoint, {
 			method,
@@ -437,7 +436,7 @@ async function removeSchedule(schedule: CreationSchedule) {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/schedules/${schedule.id}`,
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}`,
 			{
 				method: "DELETE",
 				params: getRequestParams(),

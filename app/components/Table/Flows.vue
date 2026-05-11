@@ -78,8 +78,24 @@
 														filterable tag
 														:options="[{ label: t('accessDenied'), value: 'accessDenied' }]"
 														v-model:value="rule.value[1]" />
-												</template>
-												<template v-else-if="rule.value[0] === 'unset'">
+												</template>										<template v-else-if="rule.value[0] === 'email'">
+											<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+												<NButton class="inputHandle" size="small" type="info" secondary
+													:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+													style="width: 70px;">
+													{{ t('email') }}
+												</NButton>
+											</NDropdown>
+											<NCascader size="small" style="height: fit-content;"
+												:options="generateFlowCascaderOptions(false, false, true)"
+												check-strategy="child" expand-trigger="click" show-path
+												separator="." filterable v-model:value="rule.value[1]" />
+											<NSelect size="small"
+												:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+												style="overflow: hidden;" :consistent-menu-width="false"
+												filterable tag :options="templateNames"
+												v-model:value="rule.value[2]" />
+										</template>												<template v-else-if="rule.value[0] === 'unset'">
 													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
 														<NButton class="inputHandle" size="small" type="warning"
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
@@ -176,6 +192,22 @@
 													{{ secondValue ? t(secondValue) : '--' }}
 												</NTag>
 											</NFlex>
+										</template>
+										<template v-else-if="firstValue === 'email'">
+											<NFlex :wrap="false" :size="0">
+												<NTag type="info" :bordered="false"
+													:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0' : '50px 0 0 50px' }"
+													style="padding: 0 13px;">
+													{{ t('email') }}
+												</NTag>
+												<NTag :bordered="false"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px' : '0 50px 50px 0', padding: '0 10px 0' }">
+													{{ formatValue(secondValue) ?? '--' }}
+												</NTag>
+											</NFlex>
+											<NTag :bordered="false" round>
+												{{ thirdValue ?? '--' }}
+											</NTag>
 										</template>
 										<template v-else-if="firstValue === 'unset'">
 											<NFlex :wrap="false" :size="0">
@@ -286,6 +318,20 @@ onMounted(() => {
 		e.preventDefault()
 		saveFlow()
 	}
+	// Load template names for flow email action
+	$fetch<apiResponse>(
+		`${config.public.apiBase}${database.value.slug}/templates`,
+		{
+			params: { columns: "name", perPage: 100, locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value },
+			credentials: "include",
+		},
+	).then((data) => {
+		if (Array.isArray(data?.result))
+			templateNames.value = (data.result as { name: string }[]).map(({ name }) => ({
+				label: name,
+				value: name,
+			}))
+	}).catch(() => {})
 })
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
@@ -299,6 +345,8 @@ const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
 
 const sessionID = useSessionCookie()
+
+const templateNames = ref<SelectOption[]>([])
 
 async function saveFlow() {
 	Loading.value.updateTable = true
@@ -609,15 +657,22 @@ const addRuleDropdownOptions = [
 		key: "error",
 		label: t("throwError"),
 	},
+	{
+		key: "email",
+		label: t("email"),
+	},
 ]
 
-function pushRuleToFlow(flow: any, value: "if" | "set" | "unset" | "error") {
+function pushRuleToFlow(flow: any, value: "if" | "set" | "unset" | "error" | "email") {
 	switch (value) {
 		case "if":
 			flow.push({ id: randomID(), value: [null, null, null] })
 			break
 		case "set":
 			flow.push({ id: randomID(), value: ["set", null, null] })
+			break
+		case "email":
+			flow.push({ id: randomID(), value: ["email", null, null] })
 			break
 		default:
 			flow.push({ id: randomID(), value: [value, null] })

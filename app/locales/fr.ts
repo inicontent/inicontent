@@ -396,6 +396,21 @@ export default {
 			custom: "Personnalisé",
 		},
 
+		// Email settings
+		emailSettings: "Paramètres e-mail",
+		emailConfig: {
+			from_email: "Adresse d'expéditeur",
+			from_name: "Nom de l'expéditeur",
+			smtp_host: "Hôte SMTP",
+			smtp_port: "Port SMTP",
+			smtp_user: "Identifiant SMTP",
+			smtp_pass: "Mot de passe SMTP",
+			smtp_secure: "Connexion sécurisée (TLS)",
+		},
+
+		// Tables
+		templates: "Modèles",
+
 		// Flows
 		accessDenied: "Accès refusé",
 		throwError: "Erreur",

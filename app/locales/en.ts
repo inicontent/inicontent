@@ -455,5 +455,20 @@ export default {
 			signinHintDevice: "Use your device verification (Face ID, Touch ID, or security key).",
 			signinFailed: "Passkey sign-in failed.",
 		},
+
+		// Email settings
+		emailSettings: "Email Settings",
+		emailConfig: {
+			from_email: "From Email",
+			from_name: "Sender Name",
+			smtp_host: "SMTP Host",
+			smtp_port: "SMTP Port",
+			smtp_user: "SMTP Username",
+			smtp_pass: "SMTP Password",
+			smtp_secure: "Secure Connection (TLS)",
+		},
+
+		// Tables
+		templates: "Templates",
 	},
 } as const;

@@ -44,7 +44,9 @@
 						</n-form>
 					</n-card>
 					<n-card id="email" :title="t('emailSettings')" hoverable>
-						<n-empty :description="t('soon')" />
+						<n-form ref="emailRef" :model="databaseCopy">
+							<FieldS v-model="databaseCopy" :schema="emailSchema" />
+						</n-form>
 					</n-card>
 				</n-flex>
 			</n-card>
@@ -87,6 +89,7 @@ const route = useRoute()
 const router = useRouter()
 const database = useState<Database>("database")
 const databaseRef = ref<FormInst>()
+const emailRef = ref<FormInst>()
 const databaseCopy = ref(JSON.parse(JSON.stringify(database.value)))
 
 const databaseSchema: Schema = [
@@ -152,6 +155,37 @@ const translationSchema = computed<Schema>(() => [
 			.map((l) => ({ label: t(`languages.${l}`), value: l })),
 	},
 ])
+
+const emailSchema: Schema = [
+	{
+		key: "emailConfig.from_email",
+		type: "email",
+	},
+	{
+		key: "emailConfig.from_name",
+		type: "string",
+	},
+	{
+		key: "emailConfig.smtp_host",
+		type: "string",
+	},
+	{
+		key: "emailConfig.smtp_port",
+		type: "number",
+	},
+	{
+		key: "emailConfig.smtp_user",
+		type: "string",
+	},
+	{
+		key: "emailConfig.smtp_pass",
+		type: "password",
+	},
+	{
+		key: "emailConfig.smtp_secure",
+		type: "boolean",
+	},
+]
 
 const sessionID = useSessionCookie()
 

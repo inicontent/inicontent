@@ -412,6 +412,21 @@ export default {
 			custom: "مخصص",
 		},
 
+		// Email settings
+		emailSettings: "إعدادات البريد الإلكتروني",
+		emailConfig: {
+			from_email: "بريد المُرسِل",
+			from_name: "اسم المُرسِل",
+			smtp_host: "خادم SMTP",
+			smtp_port: "منفذ SMTP",
+			smtp_user: "اسم مستخدم SMTP",
+			smtp_pass: "كلمة مرور SMTP",
+			smtp_secure: "اتصال آمن (TLS)",
+		},
+
+		// Tables
+		templates: "القوالب",
+
 		// Flows
 		accessDenied: "لا توجد صلاحيات كافية",
 		throwError: "خطأ",
