@@ -18,7 +18,7 @@
         <ColumnHtml v-else-if="detectedFieldType === 'html'" :value :field :item-label="itemLabel" />
         <ColumnPassword v-else-if="detectedFieldType === 'password'" :value />
         <ColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
-        <ColumnDate v-else-if="detectedFieldType === 'date'" :value />
+        <ColumnDate v-else-if="detectedFieldType === 'date'" :value :field />
         <ColumnObject v-else-if="detectedFieldType === 'object'" :value :field />
         <ColumnArray v-else-if="detectedFieldType === 'array'" :value :field />
         <ColumnText

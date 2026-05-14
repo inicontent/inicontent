@@ -22,7 +22,7 @@
             <LazyDataHtml v-else-if="['html', 'textarea', 'json'].includes(detectedFieldType)" :value />
             <LazyColumnPassword v-else-if="detectedFieldType === 'password'" :value />
             <LazyColumnBoolean v-else-if="detectedFieldType === 'boolean'" :value />
-            <LazyColumnDate v-else-if="detectedFieldType === 'date'" :value />
+            <LazyColumnDate v-else-if="detectedFieldType === 'date'" :value :field />
             <LazyDataObject v-else-if="detectedFieldType === 'object'" :value :field />
             <LazyDataArray v-else-if="detectedFieldType === 'array'" :value :field />
             <LazyColumnText
