@@ -538,7 +538,10 @@ function getVisualColumnWidths(): number[] {
 			return String(column.type ?? "");
 		})
 		.join("|");
-	const cacheKey = `${sizeKey}:${resultRows.length}:${columnSignature}:${visualWidthVersion.value}`;
+	const rowSignature = resultRows
+		.map((row, index) => String(row?.id ?? `row-${index}`))
+		.join("|");
+	const cacheKey = `${sizeKey}:${pagination.page}:${pagination.pageSize}:${resultRows.length}:${rowSignature}:${columnSignature}:${visualWidthVersion.value}`;
 	const cachedColumns = visualWidthCache.get(resultRows)?.get(cacheKey);
 	if (cachedColumns) return cachedColumns;
 

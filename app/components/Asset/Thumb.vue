@@ -1,11 +1,12 @@
 <template>
-	<NTooltip :disabled="!asset.name">
+	<NTooltip :disabled="hideTooltip || !asset.name">
 		<template #trigger>
-			<NTooltip :disabled="!asset.name || !asset.createdAt" :delay="1500">
+			<NTooltip :disabled="hideTooltip || !asset.name || !asset.createdAt" :delay="1500">
 				<template #trigger>
 					<!-- Image -->
 					<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset"
 						:src="asset.publicURL" :intersectionObserverOptions lazy
+						:preview-disabled="previewDisabled || useSharedPreview"
 						:renderToolbar="(props) => renderToolbar(props, asset)" @click="handleAssetClick"
 						:width="size" :height="size"
 						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
@@ -98,20 +99,35 @@
 import type { ImageRenderToolbarProps } from "naive-ui";
 import type { Directive, VNodeChild } from "vue";
 import { Icon, NIcon, NTooltip } from "#components";
-import { imageExtensions, videoExtensions, officeExtensions, wordExtensions, spreadsheetExtensions, presentationExtensions } from "~/composables";
+import { imageExtensions, videoExtensions, officeExtensions } from "~/composables";
 import {
 	getCachedThumbnail,
 	cacheThumbnail,
 } from "~/composables/useThumbnailCache";
 import { generateDocumentThumbnail } from "~/composables/useDocumentThumbnail";
+import { useAssetPreview } from "~/composables/useAssetPreview";
 
 interface Props {
 	asset: Asset;
 	containerSelector?: string | null;
 	size?: number;
+	hideTooltip?: boolean;
+	previewDisabled?: boolean;
+	disableDefaultClickAction?: boolean;
+	previewAssets?: Asset[];
+	useSharedPreview?: boolean;
 }
 
-const { asset, containerSelector, size } = defineProps<Props>();
+const {
+	asset,
+	containerSelector,
+	size,
+	hideTooltip,
+	previewDisabled = false,
+	disableDefaultClickAction = false,
+	previewAssets,
+	useSharedPreview = true,
+} = defineProps<Props>();
 const emit = defineEmits<{
 	(e: "click", event: MouseEvent): void;
 }>();
@@ -541,8 +557,7 @@ const renderToolbar: (
 		];
 	};
 
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset");
+const { currentPreviewAsset, openPreview } = useAssetPreview();
 const requiresPreviewDownloadShortcut = computed(
 	() => asset.extension === "pdf" || videoExtensions.includes(asset.extension) || officeExtensions.includes(asset.extension),
 );
@@ -557,11 +572,14 @@ const shouldListenForDownloadShortcut = computed(
 let removePreviewShortcut: (() => void) | undefined;
 
 function handleAssetClick(event: MouseEvent) {
-	emit("click", event);
-
 	if (event.defaultPrevented) return false;
 
 	if (asset.type === "dir") return false;
+
+	if (disableDefaultClickAction) {
+		emit("click", event);
+		return false;
+	}
 
 	if (event.ctrlKey || event.metaKey) {
 		event.preventDefault();
@@ -569,26 +587,27 @@ function handleAssetClick(event: MouseEvent) {
 		return window.open(asset.publicURL as string, "_blank");
 	}
 
-	if (asset.extension === "pdf")
-		return window.open(asset.publicURL as string, "_blank");
+	if (imageExtensions.includes(asset.extension)) {
+		openPreview(asset, { assets: previewAssets });
+		return;
+	}
+
+	if (useSharedPreview || asset.extension === "pdf") {
+		openPreview(asset, { assets: previewAssets });
+		return;
+	}
 
 	if (videoExtensions.includes(asset.extension)) {
-		currentPreviewAsset.value = asset;
-		Loading.value.previewModal = true;
+		openPreview(asset, { assets: previewAssets });
 		return;
 	}
 
-	// DOCX/XLSX: open in preview modal; legacy/ppt: download-to-preview
 	if (officeExtensions.includes(asset.extension)) {
-		if (asset.extension === "docx" || spreadsheetExtensions.includes(asset.extension) && asset.extension !== "xls") {
-			currentPreviewAsset.value = asset;
-			Loading.value.previewModal = true;
-		} else {
-			// Legacy formats (doc, xls, ppt) and pptx: open in new tab
-			window.open(asset.publicURL as string, "_blank");
-		}
+		openPreview(asset, { assets: previewAssets });
 		return;
 	}
+
+	emit("click", event);
 
 	return false;
 }

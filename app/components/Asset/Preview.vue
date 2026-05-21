@@ -1,144 +1,277 @@
 <template>
-    <NModal :show="currentPreviewAsset !== undefined" @mask-click="onClosePreview" @close="onClosePreview"
-        @esc="onClosePreview" :width="800">
-        <NSpin v-if="currentPreviewAsset" :show="Loading.previewModal" size="large" style="width: 80%;">
-            <video v-if="videoExtensions.includes(currentPreviewAsset.extension)" controls autoplay
-                style="width:100%;height:auto;max-height:100vh;" :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
-                @loadeddata="Loading.previewModal = false" @canplay="Loading.previewModal = false"
-                @error="Loading.previewModal = false">
-                <source :src="currentPreviewAsset?.publicURL" :type="currentPreviewAsset?.type" />
-            </video>
-            <object v-else-if="currentPreviewAsset.extension === 'pdf'" :data="currentPreviewAsset.publicURL"
-                type="application/pdf" style="width:100%;height:80vh;"
-                :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }"
-                @load="Loading.previewModal = false"></object>
-
-            <!-- DOCX preview -->
-            <div v-else-if="currentPreviewAsset.extension === 'docx'"
-                style="width:100%;height:80vh;overflow:auto;background:white;border-radius:8px;"
-                :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }">
-                <div ref="docxContainer" style="min-height:100%;"></div>
-            </div>
-
-            <!-- XLSX preview -->
-            <div v-else-if="currentPreviewAsset.extension === 'xlsx'"
-                style="width:100%;height:80vh;overflow:auto;background:white;border-radius:8px;"
-                :style="{ visibility: Loading.previewModal ? 'hidden' : 'visible' }">
-                <div v-if="xlsxSheetNames.length > 1" style="display:flex;gap:4px;padding:8px;border-bottom:1px solid #eee;flex-wrap:wrap;">
-                    <NButton v-for="name in xlsxSheetNames" :key="name" size="small"
-                        :type="xlsxActiveSheet === name ? 'primary' : 'default'"
-                        @click="xlsxActiveSheet = name">
-                        {{ name }}
-                    </NButton>
-                </div>
-                <div v-html="xlsxHtml" class="xlsx-preview" style="padding:12px;font-size:13px;"></div>
-            </div>
-        </NSpin>
-        <NEmpty v-else />
-    </NModal>
+	<NModal :show="showPreview" class="assetLightbox" :auto-focus="false" :mask-closable="true"
+		:close-on-esc="true" @mask-click="closePreview" @close="closePreview" @esc="closePreview">
+		<NCard v-if="activeAsset" embedded :bordered="false" class="assetLightboxCard" role="dialog"
+			:title="`${activeAsset.name}${activeAsset.extension ? `.${activeAsset.extension}` : ''}`">
+			<template #header-extra>
+				<div class="assetLightboxHeaderExtra">
+					<NText depth="3">{{ previewAssetIndex + 1 }} / {{ previewAssetList.length }}</NText>
+					<button class="assetLightboxClose" type="button" aria-label="Close preview" @click="closePreview">
+						<NIcon :size="18">
+							<Icon name="tabler:x" />
+						</NIcon>
+					</button>
+				</div>
+			</template>
+			<div class="assetLightboxBody">
+				<video v-if="isVideoAsset(activeAsset)" :key="activeAsset.id" controls autoplay playsinline
+					class="assetLightboxMedia" @loadeddata="Loading.previewModal = false"
+					@canplay="Loading.previewModal = false" @error="Loading.previewModal = false">
+					<source :src="activeAsset.publicURL" :type="activeAsset.type" />
+				</video>
+				<NImage v-else-if="isImageAsset(activeAsset)" :src="activeAsset.publicURL" preview-disabled
+					class="assetLightboxMedia" object-fit="contain" :img-props="{ style: imageTransformStyle }" />
+				<div v-else class="assetDocPanel">
+					<LazyAssetThumb :asset="activeAsset" :hide-tooltip="true" :size="340" :preview-disabled="true"
+						:disable-default-click-action="true" @click="openAssetInNewTab(activeAsset)" />
+					<button class="assetDocOpenButton" type="button" @click="openAssetInNewTab(activeAsset)">
+						<NIcon :size="30">
+							<Icon name="tabler:external-link" />
+						</NIcon>
+					</button>
+				</div>
+			</div>
+			<div v-if="isImageAsset(activeAsset)" class="assetLightboxControls" aria-label="Image rotation controls">
+				<button class="assetLightboxControl" type="button" @click="rotatePreviewImageLeft">
+					<NIcon :size="18">
+						<Icon name="tabler:rotate-2" />
+					</NIcon>
+				</button>
+				<button class="assetLightboxControl" type="button" @click="resetPreviewImageRotation">
+					<NIcon :size="18">
+						<Icon name="tabler:reload" />
+					</NIcon>
+				</button>
+				<button class="assetLightboxControl" type="button" @click="rotatePreviewImageRight">
+					<NIcon :size="18">
+						<Icon name="tabler:rotate-clockwise-2" />
+					</NIcon>
+				</button>
+			</div>
+			<button class="assetLightboxNav assetLightboxPrev" type="button" @click="showPrevByLanguage"
+				:disabled="previewAssetList.length <= 1">
+				<NIcon :size="22">
+					<Icon :name="Language === 'ar' ? 'tabler:chevron-right' : 'tabler:chevron-left'" />
+				</NIcon>
+			</button>
+			<button class="assetLightboxNav assetLightboxNext" type="button" @click="showNextByLanguage"
+				:disabled="previewAssetList.length <= 1">
+				<NIcon :size="22">
+					<Icon :name="Language === 'ar' ? 'tabler:chevron-left' : 'tabler:chevron-right'" />
+				</NIcon>
+			</button>
+		</NCard>
+	</NModal>
 </template>
 
 <script setup lang="ts">
-import { videoExtensions } from "~/composables";
+import { Icon, NIcon } from "#components";
+import { imageExtensions, videoExtensions } from "~/composables";
+import { useAssetPreview } from "~/composables/useAssetPreview";
 
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const currentPreviewAsset = useState<Asset | undefined>("currentPreviewAsset");
+const {
+	currentPreviewAsset,
+	previewAssetList,
+	previewAssetIndex,
+	previewImageRotation,
+	closePreview,
+	showPrevPreviewAsset,
+	showNextPreviewAsset,
+	rotatePreviewImageLeft,
+	rotatePreviewImageRight,
+	resetPreviewImageRotation,
+} = useAssetPreview();
 
-const docxContainer = ref<HTMLElement | null>(null);
+const showPreview = computed(() => !!currentPreviewAsset.value);
+const activeAsset = computed(() => currentPreviewAsset.value);
+const imageTransformStyle = computed(() => {
+	const rotation = previewImageRotation.value % 360;
+	return `transform: rotate(${rotation}deg); transform-origin: center center; transition: transform .2s ease;`;
+});
 
-// XLSX state
-const xlsxSheetNames = ref<string[]>([]);
-const xlsxActiveSheet = ref<string>("");
-const xlsxSheets = ref<Record<string, string>>({});
-const xlsxHtml = computed(() => xlsxSheets.value[xlsxActiveSheet.value] ?? "");
-
-function onClosePreview() {
-	currentPreviewAsset.value = undefined;
-	Loading.value.previewModal = false;
-	xlsxSheetNames.value = [];
-	xlsxActiveSheet.value = "";
-	xlsxSheets.value = {};
+function isVideoAsset(asset: Asset) {
+	return asset.type !== "dir" && videoExtensions.includes(asset.extension);
 }
 
-async function renderDocxPreview(asset: Asset) {
-	await nextTick();
-	if (!docxContainer.value || !asset.publicURL) return;
-	try {
-		const response = await fetch(asset.publicURL);
-		if (!response.ok) throw new Error("Failed to fetch DOCX");
-		const data = await response.arrayBuffer();
+function isImageAsset(asset: Asset) {
+	return asset.type !== "dir" && imageExtensions.includes(asset.extension);
+}
 
-		const { renderAsync } = await import("docx-preview");
-		await renderAsync(data, docxContainer.value, undefined, {
-			breakPages: true,
-			ignoreLastRenderedPageBreak: false,
-			ignoreWidth: false,
-			ignoreHeight: false,
-			ignoreFonts: false,
-			inWrapper: true,
-		});
-	} catch (error) {
-		console.warn("Failed to render DOCX preview:", error);
-		if (docxContainer.value)
-			docxContainer.value.innerHTML = '<p style="padding:20px;color:#999;">Failed to load document preview.</p>';
-	} finally {
-		Loading.value.previewModal = false;
+function openAssetInNewTab(asset?: Asset) {
+	if (!asset?.publicURL) return;
+	window.open(asset.publicURL, "_blank", "noopener");
+}
+
+function showPrevByLanguage() {
+	Language.value === "ar" ? showNextPreviewAsset() : showPrevPreviewAsset();
+}
+
+function showNextByLanguage() {
+	Language.value === "ar" ? showPrevPreviewAsset() : showNextPreviewAsset();
+}
+
+function onPreviewKeydown(event: KeyboardEvent) {
+	if (!showPreview.value) return;
+	if (event.key === "Escape") {
+		event.preventDefault();
+		closePreview();
 	}
-}
-
-async function renderXlsxPreview(asset: Asset) {
-	try {
-		const response = await fetch(asset.publicURL);
-		if (!response.ok) throw new Error("Failed to fetch XLSX");
-		const data = await response.arrayBuffer();
-
-		const XLSX = await import("xlsx");
-		const workbook = XLSX.read(data, { type: "array" });
-
-		const sheets: Record<string, string> = {};
-		for (const name of workbook.SheetNames) {
-			const sheet = workbook.Sheets[name];
-			if (sheet) sheets[name] = XLSX.utils.sheet_to_html(sheet);
-		}
-
-		xlsxSheetNames.value = workbook.SheetNames;
-		xlsxSheets.value = sheets;
-		xlsxActiveSheet.value = workbook.SheetNames[0] ?? "";
-	} catch (error) {
-		console.warn("Failed to render XLSX preview:", error);
-	} finally {
-		Loading.value.previewModal = false;
+	if (event.key === "ArrowLeft") {
+		event.preventDefault();
+		showPrevByLanguage();
+	}
+	if (event.key === "ArrowRight") {
+		event.preventDefault();
+		showNextByLanguage();
 	}
 }
 
 watch(currentPreviewAsset, (asset) => {
-	if (!asset) return;
-	if (asset.extension === "docx") renderDocxPreview(asset);
-	else if (asset.extension === "xlsx") renderXlsxPreview(asset);
+	if (!asset) {
+		Loading.value.previewModal = false;
+		return;
+	}
+	Loading.value.previewModal = isVideoAsset(asset);
+});
+
+onMounted(() => {
+	window.addEventListener("keydown", onPreviewKeydown);
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener("keydown", onPreviewKeydown);
 });
 </script>
 
 <style scoped>
-.xlsx-preview :deep(table) {
-	border-collapse: collapse;
+.assetLightboxCard {
+	position: relative;
+	width: min(90vw, 1080px);
+	max-width: 1080px;
+	margin: 0 auto;
+}
+
+.assetLightboxHeaderExtra {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.assetLightboxClose {
+	border: 0;
+	width: 34px;
+	height: 34px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: var(--n-text-color);
+	background: color-mix(in srgb, var(--n-color) 76%, #000 24%);
+}
+
+.assetLightboxBody {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: min(72vh, 760px);
+	text-align: center;
+}
+
+.assetLightboxMedia {
+	width: 100%;
+	max-height: min(72vh, 760px);
+	object-fit: contain;
+	margin: 0 auto;
+}
+
+.assetDocPanel {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
 	width: 100%;
 }
-.xlsx-preview :deep(td),
-.xlsx-preview :deep(th) {
-	border: 1px solid #d0d0d0;
-	padding: 4px 8px;
-	text-align: left;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 200px;
-	font-size: 12px;
+
+.assetDocOpenButton {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border: 0;
+	width: 68px;
+	height: 68px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: var(--n-text-color);
+	background: color-mix(in srgb, var(--n-color) 70%, #000 30%);
+	box-shadow: 0 6px 24px color-mix(in srgb, #000 30%, transparent);
+	backdrop-filter: blur(4px);
 }
-.xlsx-preview :deep(th) {
-	background: #f5f5f5;
-	font-weight: 600;
+
+.assetLightboxControls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	padding-top: 12px;
 }
-.xlsx-preview :deep(tr:nth-child(even)) {
-	background: #fafafa;
+
+.assetLightboxControl {
+	border: 0;
+	width: 38px;
+	height: 38px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: var(--n-text-color);
+	background: color-mix(in srgb, var(--n-color) 76%, #000 24%);
+}
+
+.assetLightboxNav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 3;
+	border: 0;
+	width: 44px;
+	height: 44px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: var(--n-text-color);
+	background: color-mix(in srgb, var(--n-color) 68%, #000 32%);
+}
+
+.assetLightboxNav:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.assetLightboxPrev {
+	left: 14px;
+}
+
+.assetLightboxNext {
+	right: 14px;
+}
+
+.assetLightbox :deep(.n-modal) {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 100vh;
 }
 </style>

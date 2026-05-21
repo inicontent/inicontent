@@ -6,12 +6,8 @@
 
             <NPopover style="max-height: 240px" scrollable trigger="click" placement="top">
                 <template #trigger>
-                    <NButton size="small" aria-label="Show more related records">
-                        <template #icon>
-                            <NIcon>
-                                <Icon name="tabler:dots" />
-                            </NIcon>
-                        </template>
+                    <NButton size="small">
+                        +{{ values.length - 1 }}
                     </NButton>
                 </template>
                 <NFlex vertical>
