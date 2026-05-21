@@ -6,12 +6,9 @@
     <div v-else>
         <ColumnRole v-if="detectedFieldType === 'role'" :value />
         <ColumnId v-else-if="['id', 'ip'].includes(detectedFieldType)" :value />
-        <NScrollbar v-else-if="['table', 'tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)"
-            x-scrollable>
-            <ColumnAsset v-if="field.table === 'assets'" :value />
-            <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
-            <ColumnTags v-else-if="['tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)" :value :field />
-        </NScrollbar>
+        <ColumnAsset v-else-if="field.table === 'assets'" :value />
+        <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
+        <ColumnTags v-else-if="['tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)" :value :field />
         <ColumnColor v-else-if="detectedFieldType === 'color'" :value />
         <ColumnUrl v-else-if="detectedFieldType === 'url'" :value />
         <ColumnEmail v-else-if="detectedFieldType === 'email'" :value />
@@ -28,10 +25,14 @@
 </template>
 
 <script lang="ts" setup>
-const { field, value, itemLabel } = defineProps<{ field: Field; value?: any; itemLabel?: string }>()
+const { field, value, itemLabel } = defineProps<{
+	field: Field;
+	value?: any;
+	itemLabel?: string;
+}>();
 
 let detectedFieldType = (field.subType ?? field.type) as
-    | DB_FieldType
-    | CMS_FieldType
-if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key
+	| DB_FieldType
+	| CMS_FieldType;
+if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
 </script>

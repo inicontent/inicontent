@@ -245,7 +245,11 @@ async function openRowDropdown(
 
 	if (checkSelection) {
 		const selection = window.getSelection();
-		if (selection && selection.toString().trim() !== "" && selection.rangeCount) {
+		if (
+			selection &&
+			selection.toString().trim() !== "" &&
+			selection.rangeCount
+		) {
 			const range = selection.getRangeAt(0);
 			const rect = range.getBoundingClientRect();
 			if (
@@ -436,163 +440,362 @@ function handleScroll() {
 }
 
 const tableWidth = ref<number>(0);
+let measureTextWidthSpan: HTMLSpanElement | null = null;
+const visualWidthCache = new WeakMap<Item[], Map<string, number[]>>();
+const visualWidthVersion = ref(0);
+const textWidthCache = new Map<string, number>();
+let refreshVisualWidthsTask: Promise<void> | null = null;
+
+function invalidateVisualWidthCache() {
+	visualWidthVersion.value += 1;
+	const rows = _data.value?.result;
+	if (rows) visualWidthCache.delete(rows);
+}
+
+function updateTableWidthFromColumns() {
+	tableWidth.value =
+		columns.value?.reduce(
+			(accumulator: number, { width }) =>
+				accumulator + ((width as number | undefined) ?? 0),
+			40,
+		) ?? 40;
+}
+
+async function refreshVisualWidths() {
+	if (refreshVisualWidthsTask) return refreshVisualWidthsTask;
+
+	refreshVisualWidthsTask = (async () => {
+		await nextTick();
+		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+		applyVisualColumnWidths();
+		await nextTick();
+		updateTableWidthFromColumns();
+	})().finally(() => {
+		refreshVisualWidthsTask = null;
+	});
+
+	return refreshVisualWidthsTask;
+}
+
 function measureTextWidth(
 	text: string,
 	opts?: { min?: number; startWith?: number },
 ): number {
 	const str = String(text ?? "");
+	const startWith = opts?.startWith || 0;
+	const min = opts?.min;
+	const cacheKey = `${str}:${startWith}:${min ?? ""}`;
+	const cachedWidth = textWidthCache.get(cacheKey);
+	if (cachedWidth !== undefined) return cachedWidth;
 
-	// No element/font provided -> use a hidden span that inherits the document/body font
-	// (this avoids having to re-mention the font and matches browser defaults)
-	let span = (measureTextWidth as any)._span as HTMLSpanElement | undefined;
-	if (!span) {
-		span = document.createElement("span");
-		const s = span.style;
+	if (typeof document === "undefined") {
+		const fallbackWidth = Math.ceil((str || " ").length * 8) + startWith;
+		const result = min ? Math.max(fallbackWidth, min) : fallbackWidth;
+		if (textWidthCache.size > 1000) textWidthCache.clear();
+		textWidthCache.set(cacheKey, result);
+		return result;
+	}
+
+	if (!measureTextWidthSpan) {
+		measureTextWidthSpan = document.createElement("span");
+		const s = measureTextWidthSpan.style;
 		s.position = "absolute";
 		s.visibility = "hidden";
 		s.whiteSpace = "pre";
+		s.pointerEvents = "none";
 		s.left = "-9999px";
 		s.top = "-9999px";
-		// do NOT set font styles here so the span inherits the document/body default font
-		(measureTextWidth as any)._span = span;
 	}
-	span.textContent = str || " ";
-	if (!span.parentElement) document.body.appendChild(span);
-	const width = Math.ceil(span.getBoundingClientRect().width);
-	// keep span for reuse but clear text
-	span.textContent = "";
-	if (opts?.min) return Math.max(width + (opts?.startWith || 0), opts.min);
-	return width + (opts?.startWith || 0);
+
+	if (!measureTextWidthSpan.parentElement)
+		document.body.appendChild(measureTextWidthSpan);
+
+	measureTextWidthSpan.textContent = str || " ";
+	const width = Math.ceil(measureTextWidthSpan.getBoundingClientRect().width);
+	measureTextWidthSpan.textContent = "";
+
+	const measuredWidth = width + startWith;
+	const result = min ? Math.max(measuredWidth, min) : measuredWidth;
+	if (textWidthCache.size > 1000) textWidthCache.clear();
+	textWidthCache.set(cacheKey, result);
+	return result;
+}
+
+function getVisualColumnWidths(): number[] {
+	const resultRows = _data.value?.result;
+	if (typeof document === "undefined" || !resultRows?.length) return [];
+
+	const tableElement = document.getElementById("DataTable");
+	if (!tableElement) return [];
+
+	const sizeKey = tablesConfig.value[table.value.slug]?.size ?? "default";
+	const columnSignature = (columns.value ?? [])
+		.map((column) => {
+			if ("key" in column) {
+				return `${String(column.type ?? "")}:${String(column.key ?? "")}`;
+			}
+			return String(column.type ?? "");
+		})
+		.join("|");
+	const cacheKey = `${sizeKey}:${resultRows.length}:${columnSignature}:${visualWidthVersion.value}`;
+	const cachedColumns = visualWidthCache.get(resultRows)?.get(cacheKey);
+	if (cachedColumns) return cachedColumns;
+
+	const headerCells = Array.from(
+		tableElement.querySelectorAll<HTMLElement>(".n-data-table-th"),
+	);
+	if (!headerCells.length) return [];
+
+	const widths = headerCells.map((headerCell) => headerCell.scrollWidth);
+	const rows = tableElement.querySelectorAll<HTMLElement>(".n-data-table-tr");
+
+	function getCellVisualWidth(cell: HTMLElement): number {
+		const buttonElements = Array.from(
+			cell.querySelectorAll<HTMLElement>(".n-button"),
+		).filter((button) => button.getClientRects().length > 0);
+		if (buttonElements.length) {
+			const cellRect = cell.getBoundingClientRect();
+			let minLeft = Number.POSITIVE_INFINITY;
+			let maxRight = 0;
+			let intrinsicButtonsWidth = 0;
+
+			buttonElements.forEach((button, index) => {
+				const buttonRect = button.getBoundingClientRect();
+				const left = buttonRect.left - cellRect.left;
+				const right = buttonRect.right - cellRect.left;
+				minLeft = Math.min(minLeft, left);
+				maxRight = Math.max(maxRight, right);
+
+				const buttonContent = button.querySelector<HTMLElement>(
+					".n-button__content",
+				);
+				const buttonLabel = buttonContent?.textContent?.trim() ?? "";
+				const labelWidth = buttonLabel ? measureTextWidth(buttonLabel) : 0;
+				const iconPadding = button.querySelector(".n-icon") ? 52 : 32;
+				const intrinsicWidth = Math.max(
+					button.scrollWidth,
+					buttonContent?.scrollWidth ?? 0,
+					labelWidth + iconPadding,
+					Math.ceil(buttonRect.width),
+				);
+				intrinsicButtonsWidth += intrinsicWidth;
+				if (index < buttonElements.length - 1) intrinsicButtonsWidth += 6;
+			});
+
+			const visualSpan =
+				Number.isFinite(minLeft) && maxRight > minLeft ? maxRight - minLeft : 0;
+			return Math.ceil(Math.max(visualSpan, intrinsicButtonsWidth) + 24);
+		}
+
+		const tagElements = cell.querySelectorAll<HTMLElement>(".n-tag");
+		if (tagElements.length) {
+			let tagWidth = 0;
+			tagElements.forEach((tag, index) => {
+				tagWidth += tag.getBoundingClientRect().width;
+				if (index < tagElements.length - 1) tagWidth += 6;
+			});
+			return Math.ceil(tagWidth + 24);
+		}
+
+		const textLikeElements = Array.from(
+			cell.querySelectorAll<HTMLElement>(
+				".n-base-selection-label, .n-radio__label, .n-checkbox__label, .n-ellipsis, .n-text",
+			),
+		).filter((element) => element.getClientRects().length > 0);
+		if (textLikeElements.length) {
+			const contentWidth = textLikeElements.reduce((maxWidth, element) => {
+				const label = element.textContent?.trim() ?? "";
+				const measuredTextWidth = label ? measureTextWidth(label) : 0;
+				return Math.max(
+					maxWidth,
+					element.scrollWidth,
+					Math.ceil(element.getBoundingClientRect().width),
+					measuredTextWidth,
+				);
+			}, 0);
+			return Math.ceil(Math.max(cell.scrollWidth, contentWidth + 32));
+		}
+
+		return cell.scrollWidth;
+	}
+
+	for (const row of rows) {
+		if (!row.querySelector(".n-data-table-td")) continue;
+		const cells = row.children;
+		const limit = Math.min(cells.length, widths.length);
+		for (let index = 0; index < limit; index += 1) {
+			const cell = cells.item(index) as HTMLElement | null;
+			if (!cell) continue;
+			widths[index] = Math.max(widths[index] ?? 0, getCellVisualWidth(cell));
+		}
+	}
+
+	let cache = visualWidthCache.get(resultRows);
+	if (!cache) {
+		cache = new Map();
+		visualWidthCache.set(resultRows, cache);
+	}
+	cache.set(cacheKey, widths);
+
+	return widths;
+}
+
+function applyVisualColumnWidths() {
+	if (!columns.value?.length) return;
+	const measuredWidths = getVisualColumnWidths();
+	if (!measuredWidths.length) return;
+
+	columns.value = columns.value.map((column, index) => {
+		if (
+			column.type === "selection" ||
+			("key" in column && column.key === "actions")
+		)
+			return column;
+
+		const measured = measuredWidths[index];
+		if (!measured) return column;
+
+		const minWidth =
+			typeof column.minWidth === "number" ? column.minWidth : 150;
+
+		if (column.width === Math.max(measured + 24, minWidth)) return column;
+
+		return {
+			...column,
+			width: Math.max(measured + 24, minWidth),
+		};
+	}) as DataTableColumns;
 }
 async function setColumns() {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
 			? [
-				{
-					type: "selection",
-					fixed: "left",
-					options: [
-						{
-							label: t("delete"),
-							key: "delete",
-							disabled: checkedRowKeys.value.length === 0,
-							icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-							children: [
-								{
-									label: () =>
-										h(
-											"span",
-											{
-												onClick: async () => {
-													await deleteItem();
-													checkedRowKeys.value = [];
+					{
+						type: "selection",
+						fixed: "left",
+						options: [
+							{
+								label: t("delete"),
+								key: "delete",
+								disabled: checkedRowKeys.value.length === 0,
+								icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+								children: [
+									{
+										label: () =>
+											h(
+												"span",
+												{
+													onClick: async () => {
+														await deleteItem();
+														checkedRowKeys.value = [];
+													},
 												},
-											},
-											t("clearTable"),
-										),
-									key: "clear",
-									disabled:
-										checkedRowKeys.value.length !==
-										_data.value?.result?.length,
+												t("clearTable"),
+											),
+										key: "clear",
+										disabled:
+											checkedRowKeys.value.length !==
+											_data.value?.result?.length,
+										icon: () =>
+											h(
+												NIcon,
+												{
+													onClick: async () => {
+														await deleteItem();
+														checkedRowKeys.value = [];
+													},
+												},
+												() => h(Icon, { name: "tabler:trash" }),
+											),
+									},
+								],
+								onSelect: async () => {
+									await deleteItem(checkedRowKeys.value);
+									checkedRowKeys.value = [];
+								},
+							},
+							{
+								label: t("columns"),
+								key: "columns",
+								icon: () =>
+									h(NIcon, () => h(Icon, { name: "tabler:columns-3" })),
+								children: table.value?.schema?.map(({ id, key }) => ({
+									label: t(key),
+									key: id,
 									icon: () =>
 										h(
 											NIcon,
 											{
-												onClick: async () => {
-													await deleteItem();
-													checkedRowKeys.value = [];
+												onClick() {
+													if (
+														tablesConfig?.value[
+															table.value?.slug as string
+														]?.columns?.includes(id as number)
+													)
+														// @ts-ignore
+														tablesConfig.value[
+															table.value?.slug as string
+														].columns = tablesConfig.value[
+															table.value?.slug as string
+														]?.columns?.filter(
+															(itemID: number) => itemID !== id,
+														);
+													else {
+														const clonedTablesConfig = structuredClone(
+															toRaw(tablesConfig.value),
+														);
+														if (
+															!clonedTablesConfig[table.value?.slug as string]
+														)
+															clonedTablesConfig[table.value?.slug as string] =
+																{ columns: [] };
+
+														// @ts-ignore
+														clonedTablesConfig[
+															table.value?.slug as string
+														].columns?.push(id as number);
+
+														tablesConfig.value = clonedTablesConfig;
+													}
 												},
 											},
-											() => h(Icon, { name: "tabler:trash" }),
-										),
-								},
-							],
-							onSelect: async () => {
-								await deleteItem(checkedRowKeys.value);
-								checkedRowKeys.value = [];
-							},
-						},
-						{
-							label: t("columns"),
-							key: "columns",
-							icon: () =>
-								h(NIcon, () => h(Icon, { name: "tabler:columns-3" })),
-							children: table.value?.schema?.map(({ id, key }) => ({
-								label: t(key),
-								key: id,
-								icon: () =>
-									h(
-										NIcon,
-										{
-											onClick() {
-												if (
-													tablesConfig?.value[
-														table.value?.slug as string
-													]?.columns?.includes(id as number)
-												)
-													// @ts-ignore
-													tablesConfig.value[
-														table.value?.slug as string
-													].columns = tablesConfig.value[
-														table.value?.slug as string
-													]?.columns?.filter(
-														(itemID: number) => itemID !== id,
-													);
-												else {
-													const clonedTablesConfig = structuredClone(
-														toRaw(tablesConfig.value),
-													);
-													if (
-														!clonedTablesConfig[table.value?.slug as string]
-													)
-														clonedTablesConfig[table.value?.slug as string] =
-															{ columns: [] };
-
-													// @ts-ignore
-													clonedTablesConfig[
-														table.value?.slug as string
-													].columns?.push(id as number);
-
-													tablesConfig.value = clonedTablesConfig;
-												}
-											},
-										},
-										() =>
-											h(Icon, {
-												name:
-													id !== undefined &&
+											() =>
+												h(Icon, {
+													name:
+														id !== undefined &&
 														tablesConfig.value[
 															table.value?.slug as string
 														]?.columns?.includes(id)
-														? "tabler:eye-off"
-														: "tabler:eye",
-											}),
-									),
-							})),
-						},
-					],
-				},
-			]
+															? "tabler:eye-off"
+															: "tabler:eye",
+												}),
+										),
+								})),
+							},
+						],
+					},
+				]
 			: []),
 		...((table.value?.defaultTableColumns && table.value?.schema
 			? [
-				...(tablesConfig.value[table.value?.slug as string]?.columns
-					? table.value.schema.filter(
-						({ id }) =>
-							id !== undefined &&
-							!tablesConfig.value[
-								table.value?.slug as string
-							]?.columns?.includes(id) &&
-							!table.value?.defaultTableColumns?.includes(id),
-					)
-					: []),
-				...table.value.defaultTableColumns
-					.map(
-						(id) =>
-							table.value?.schema?.find((field) => field.id === id) as Field,
-					)
-					.filter(Boolean),
-			]
+					...(tablesConfig.value[table.value?.slug as string]?.columns
+						? table.value.schema.filter(
+								({ id }) =>
+									id !== undefined &&
+									!tablesConfig.value[
+										table.value?.slug as string
+									]?.columns?.includes(id) &&
+									!table.value?.defaultTableColumns?.includes(id),
+							)
+						: []),
+					...table.value.defaultTableColumns
+						.map(
+							(id) =>
+								table.value?.schema?.find((field) => field.id === id) as Field,
+						)
+						.filter(Boolean),
+				]
 			: table.value?.schema
 		)
 			?.filter(
@@ -600,147 +803,147 @@ async function setColumns() {
 					id !== undefined &&
 					!tablesConfig.value[table.value?.slug]?.columns?.includes(id),
 			)
-			.map((field) => ({
-				title: () =>
-					h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
-						getField(field).icon(),
-						h(NPerformantEllipsis, () => t(field.key)),
-					]),
-				width: measureTextWidth(t(field.key), {
-					startWith:
-						tablesConfig.value[table.value.slug]?.size === "small" ? 70 : 80,
-					min:
-						tablesConfig.value[table.value.slug]?.size === "small" ? 100 : 150,
-				}),
-				key: field.key,
-				sorter: !!_data.value?.result,
-				ellipsis: {
-					tooltip: true,
-				},
-				resizable: !field.children || !isArrayOfObjects(field.children),
-				sortOrder: sort.value[field.key]
-					? `${sort.value[field.key]}end`
-					: undefined,
-				render: (row: Item) =>
-					field.render
-						? field.render(row)
-						: table.value?.allowedMethods?.includes("u") &&
-							![
-								"id",
-								"createdAt",
-								"createdBy",
-								"updatedAt",
-								"updatedBy",
-							].includes(field.key)
-							? h(LazyColumnEdit, {
-								editKey: `${row.id ?? "row"}-${field.key}`,
-								itemLabel: renderLabel(table.value, row),
-								loading: !!row.id && Loading.value[`${row.id}-${field.key}`],
-								modelValue: row[field.key],
-								"onUpdate:modelValue": async (value: any) => {
-									if (!row.id) return;
-									Loading.value[`${row.id}-${field.key}`] = true;
-									row[field.key] = value;
-									const __data = await $fetch<apiResponse<Item | boolean>>(
-										`${config.public.apiBase}${database.value.slug}/${table.value?.slug
-										}/${row.id}`,
-										{
-											method: "PUT",
-											body: row,
-											params: {
-												return: false,
-												locale: Language.value,
-												[`${database.value.slug}_sid`]: sessionID.value,
-											},
-											credentials: "include",
+			.map((field) => {
+				const minWidth = measureTextWidth(t(field.key), {
+					startWith: 70,
+					min: 150,
+				});
+				return {
+					title: () =>
+						h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
+							getField(field).icon(),
+							h(NPerformantEllipsis, () => t(field.key)),
+						]),
+					minWidth,
+					width: minWidth,
+					key: field.key,
+					sorter: !!_data.value?.result,
+					ellipsis: field.table !== undefined ? false : ({
+						tooltip: true,
+					}),
+					resizable: !field.children || !isArrayOfObjects(field.children),
+					sortOrder: sort.value[field.key]
+						? `${sort.value[field.key]}end`
+						: undefined,
+					render: (row: Item) =>
+						field.render
+							? field.render(row)
+							: table.value?.allowedMethods?.includes("u") &&
+									![
+										"id",
+										"createdAt",
+										"createdBy",
+										"updatedAt",
+										"updatedBy",
+									].includes(field.key)
+								? h(LazyColumnEdit, {
+										editKey: `${row.id ?? "row"}-${field.key}`,
+										itemLabel: renderLabel(table.value, row),
+										loading:
+											!!row.id && Loading.value[`${row.id}-${field.key}`],
+										modelValue: row[field.key],
+										"onUpdate:modelValue": async (value: any) => {
+											if (!row.id) return;
+											Loading.value[`${row.id}-${field.key}`] = true;
+											row[field.key] = value;
+											invalidateVisualWidthCache();
+											await refreshVisualWidths();
+											const __data = await $fetch<apiResponse<Item | boolean>>(
+												`${config.public.apiBase}${database.value.slug}/${
+													table.value?.slug
+												}/${row.id}`,
+												{
+													method: "PUT",
+													body: row,
+													params: {
+														return: false,
+														locale: Language.value,
+														[`${database.value.slug}_sid`]: sessionID.value,
+													},
+													credentials: "include",
+												},
+											);
+											if (
+												(typeof __data?.result === "boolean" &&
+													__data.result !== true) ||
+												(typeof __data.result !== "boolean" &&
+													!__data.result?.id)
+											)
+												window.$message.error(__data.message);
+											Loading.value[`${row.id}-${field.key}`] = false;
 										},
-									);
-									if (
-										(typeof __data?.result === "boolean" &&
-											__data.result !== true) ||
-										(typeof __data.result !== "boolean" && !__data.result?.id)
-									)
-										window.$message.error(__data.message);
-									Loading.value[`${row.id}-${field.key}`] = false;
-								},
-								field,
-							})
-							: h(LazyColumn, {
-								value: row[field.key],
-								itemLabel: renderLabel(table.value, row),
-								field,
-							}),
-			})) ?? []),
+										field,
+									})
+								: h(LazyColumn, {
+										value: row[field.key],
+										itemLabel: renderLabel(table.value, row),
+										field,
+									}),
+				};
+			}) ?? []),
 		...(isSlotSet("itemActions") && isSlotEmpty("itemActions")
 			? []
 			: [
-				{
-					title: t("actions"),
-					align: "center",
-					width:
-						isMobile || tablesConfig.value[table.value.slug]?.size === "small"
-							? 70
-							: 150 +
-							(isSlotSet("itemExtraButtons") &&
-								!isSlotEmpty("itemExtraButtons")
-								? (props.slots.itemExtraButtons as any)().length * 20
-								: 0),
-					key: "actions",
-					fixed: "right",
-					render: (row: any) =>
-						isSlotSet("itemActions") && !isSlotEmpty("itemActions")
-							? props.slots.itemActions(row)
-							: [
-								isSlotSet("itemExtraActions") &&
-									!isSlotEmpty("itemExtraActions")
-									? props.slots.itemExtraActions(row)
-									: undefined,
-								isMobile ||
-									tablesConfig.value[table.value.slug]?.size === "small"
-									? h(
-										NPopover,
-										{
-											scrollable: true,
-											style: "max-height: 240px;border-radius:34px",
-											contentStyle: "padding: 0",
-											trigger: "click",
-										},
-										{
-											trigger: () =>
-												h(
-													NButton,
+					{
+						title: t("actions"),
+						align: "center",
+						width:
+							isMobile || tablesConfig.value[table.value.slug]?.size === "small"
+								? 70
+								: 150 +
+									(isSlotSet("itemExtraButtons") &&
+									!isSlotEmpty("itemExtraButtons")
+										? (props.slots.itemExtraButtons as any)().length * 20
+										: 0),
+						key: "actions",
+						fixed: "right",
+						render: (row: any) =>
+							isSlotSet("itemActions") && !isSlotEmpty("itemActions")
+								? props.slots.itemActions(row)
+								: [
+										isSlotSet("itemExtraActions") &&
+										!isSlotEmpty("itemExtraActions")
+											? props.slots.itemExtraActions(row)
+											: undefined,
+										isMobile ||
+										tablesConfig.value[table.value.slug]?.size === "small"
+											? h(
+													NPopover,
 													{
-														size: "small",
-														circle: true,
-														secondary: true,
-														type: "primary",
+														scrollable: true,
+														style: "max-height: 240px;border-radius:34px",
+														contentStyle: "padding: 0",
+														trigger: "click",
 													},
 													{
-														icon: () =>
-															h(NIcon, () =>
-																h(Icon, { name: "tabler:dots" }),
+														trigger: () =>
+															h(
+																NButton,
+																{
+																	size: "small",
+																	circle: true,
+																	secondary: true,
+																	type: "primary",
+																},
+																{
+																	icon: () =>
+																		h(NIcon, () =>
+																			h(Icon, { name: "tabler:dots" }),
+																		),
+																},
 															),
+														default: () => renderItemButtons(row),
 													},
-												),
-											default: () => renderItemButtons(row),
-										},
-									)
-									: renderItemButtons(row),
-							],
-				},
-			]),
+												)
+											: renderItemButtons(row),
+									],
+					},
+				]),
 	] as DataTableColumns;
 
 	if (cols.length > 2 || table.value?.defaultTableColumns) columns.value = cols;
 
-	await nextTick();
-
-	tableWidth.value =
-		columns.value?.reduce(
-			(accumulator: number, { width }) =>
-				accumulator + ((width as number | undefined) ?? 0),
-			40,
-		) ?? 40;
+	await refreshVisualWidths();
 }
 watch([Language, checkedRowKeys, _data, tablesConfig], setColumns, {
 	deep: true,

@@ -7,13 +7,17 @@
 					<NImage v-if="asset.publicURL && imageExtensions.includes(asset.extension)" class="asset"
 						:src="asset.publicURL" :intersectionObserverOptions lazy
 						:renderToolbar="(props) => renderToolbar(props, asset)" @click="handleAssetClick"
+						:width="size" :height="size"
 						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
 						:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
 					<!-- PDF with thumbnail -->
 					<NImage v-else-if="asset.extension === 'pdf' && pdfThumbs[assetKey]" class="asset"
 						:src="pdfThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
-						@click="handleAssetClick" :width="size" :height="size" />
+						@click="handleAssetClick" 
+						:width="size" :height="size"
+						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
+						:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
 					<!-- PDF generating thumbnail -->
 					<NSpin v-else-if="asset.extension === 'pdf'" :show="generatingPdf[assetKey]" size="small">
@@ -26,7 +30,10 @@
 					<!-- Video with thumbnail -->
 					<NImage v-else-if="videoExtensions.includes(asset.extension) && videoThumbs[assetKey]" class="asset"
 						:src="videoThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
-						@click="handleAssetClick" :width="size" :height="size" />
+						@click="handleAssetClick"
+						:width="size" :height="size"
+						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
+						:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
 					<!-- Video generating thumbnail -->
 					<NSpin v-else-if="videoExtensions.includes(asset.extension)"
@@ -41,7 +48,10 @@
 					<!-- Document with thumbnail (docx, xlsx, pptx, etc.) -->
 					<NImage v-else-if="officeExtensions.includes(asset.extension) && docThumbs[assetKey]" class="asset"
 						:src="docThumbs[assetKey]" :intersectionObserverOptions lazy preview-disabled
-						@click="handleAssetClick" :width="size" :height="size" />
+						@click="handleAssetClick"
+						:width="size" :height="size"
+						:style="size ? `width: ${size}px; height: ${size}px;` : undefined"
+						:img-props="size ? { style: `width: ${size}px; height: ${size}px;` } : undefined" />
 
 					<!-- Document generating thumbnail -->
 					<NSpin v-else-if="officeExtensions.includes(asset.extension)"
