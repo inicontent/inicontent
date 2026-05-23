@@ -88,7 +88,7 @@ const showPreview = computed(() => !!currentPreviewAsset.value);
 const activeAsset = computed(() => currentPreviewAsset.value);
 const imageTransformStyle = computed(() => {
 	const rotation = previewImageRotation.value % 360;
-	return `transform: rotate(${rotation}deg); transform-origin: center center; transition: transform .2s ease;`;
+	return `transform: rotate(${rotation}deg); transform-origin: center center; transition: transform .2s ease;width:100%;`;
 });
 
 function isVideoAsset(asset: Asset) {

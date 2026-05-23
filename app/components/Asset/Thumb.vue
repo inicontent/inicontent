@@ -574,9 +574,12 @@ let removePreviewShortcut: (() => void) | undefined;
 function handleAssetClick(event: MouseEvent) {
 	if (event.defaultPrevented) return false;
 
-	if (asset.type === "dir") return false;
-
 	if (disableDefaultClickAction) {
+		emit("click", event);
+		return false;
+	}
+
+	if (asset.type === "dir") {
 		emit("click", event);
 		return false;
 	}
