@@ -747,6 +747,19 @@ function applyVisualColumnWidths(): boolean {
 
 	return true;
 }
+
+function dedupeColumnsByKey(cols: DataTableColumns): DataTableColumns {
+	const seenKeys = new Set<string | number>();
+	return cols.filter((col) => {
+		if (!("key" in col)) return true;
+		const key = col.key;
+		if (typeof key !== "string" && typeof key !== "number") return true;
+		if (seenKeys.has(key)) return false;
+		seenKeys.add(key);
+		return true;
+	}) as DataTableColumns;
+}
+
 async function setColumns() {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
@@ -1020,7 +1033,10 @@ async function setColumns() {
 				]),
 	] as DataTableColumns;
 
-	if (cols.length > 2 || table.value?.defaultTableColumns) columns.value = cols;
+	const uniqueCols = dedupeColumnsByKey(cols);
+
+	if (uniqueCols.length > 2 || table.value?.defaultTableColumns)
+		columns.value = uniqueCols;
 	
 	await ensureVisualWidthsReady();
 }
