@@ -624,7 +624,20 @@ function getVisualColumnWidths(): number[] {
 	);
 	if (!headerCells.length) return [];
 
-	const widths = headerCells.map((headerCell) => headerCell.scrollWidth);
+	const widths = headerCells.map((headerCell, index) => {
+		const column = columns.value?.[index] as
+			| { minWidth?: number }
+			| undefined;
+		const minWidth = typeof column?.minWidth === "number" ? column.minWidth : 0;
+		const headerTitle =
+			headerCell
+				.querySelector<HTMLElement>(".n-data-table-th__title")
+				?.textContent?.trim() ?? "";
+		const measuredHeaderWidth = headerTitle
+			? measureTextWidth(headerTitle, { startWith: 56, min: minWidth })
+			: minWidth;
+		return Math.ceil(Math.max(minWidth, measuredHeaderWidth));
+	});
 	const rows = tableElement.querySelectorAll<HTMLElement>(".n-data-table-tr");
 
 	function getCellVisualWidth(cell: HTMLElement): number {
@@ -691,10 +704,22 @@ function getVisualColumnWidths(): number[] {
 					measuredTextWidth,
 				);
 			}, 0);
-			return Math.ceil(Math.max(cell.scrollWidth, contentWidth + 32));
+			return Math.ceil(contentWidth + 32);
 		}
 
-		return cell.scrollWidth;
+		const plainText = cell.textContent?.trim() ?? "";
+		if (plainText) {
+			return Math.ceil(measureTextWidth(plainText, { startWith: 32 }));
+		}
+
+		const childWidths = Array.from(cell.children).map((child) =>
+			Math.ceil((child as HTMLElement).getBoundingClientRect().width),
+		);
+		if (childWidths.length) {
+			return Math.max(...childWidths) + 24;
+		}
+
+		return 0;
 	}
 
 	for (const row of rows) {
