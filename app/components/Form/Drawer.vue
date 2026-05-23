@@ -1,6 +1,6 @@
 <template><template v-for="(drawer, index) in Drawers" :key="index">
 		<NDrawer :onEsc :show="drawer.show || false" @update:show="(show) => onUpdateShow(index, show)"
-			:width="drawer.width" @update:width="(width) => {
+			:width="$device.isMobile ? '100%' : drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
 			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :class="`${drawer.table.replaceAll(' ','_')}-drawer`"
@@ -8,13 +8,13 @@
 			<NDrawerContent closable :native-scrollbar="false">
 				<template #header>
 					<span v-if="drawer.id">
-						{{ t('edit') }}
+						{{ t(drawer.mode === 'view' ? 'view' : 'edit') }}
 						<NuxtLink
-							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}/edit`">
+							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`">
 							<NText type="primary">
 								{{ itemsLabels[index] }}
 								<NIcon size="small">
-									<Icon name="tabler:external-link" />
+									<Icon :name="drawer.mode === 'view' ? 'tabler:eye' : 'tabler:external-link'" />
 								</NIcon>
 							</NText>
 						</NuxtLink>
@@ -36,7 +36,17 @@
 							</template>
 						</NButton>
 
-						<NButton round secondary type="primary"
+						<NButton v-if="drawer.mode === 'view' && canEditDrawer(drawer)" round secondary type="info"
+							@click="switchDrawerToEdit(index)">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:pencil" />
+								</NIcon>
+							</template>
+							{{ t('edit') }}
+						</NButton>
+
+						<NButton v-else round secondary type="primary"
 							:disabled="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							:loading="Loading.UPDATE || Loading.CREATE || Loading.SCHEMA"
 							@click="drawer.id ? formRefs[index]?.update() : formRefs[index]?.create()">
@@ -49,15 +59,21 @@
 						</NButton>
 					</NFlex>
 				</template>
-				<div class="drawerSpin" v-if="!drawer.schema?.length || Loading.UPDATE || Loading.CREATE">
+				<div class="drawerSpin" v-if="isDrawerFormMode(drawer) && (!drawer.schema?.length || Loading.UPDATE || Loading.CREATE)">
 					<NSpin />
 				</div>
 
-				<slot @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
+				<slot v-if="isDrawerFormMode(drawer)" @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
 					<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
 						@after-create="() => onAfterUpdateCreate(index)"
 						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
 				</slot>
+
+				<NSpin v-else :show="!!(drawer.id && Loading[`Drawer_${drawer.table}_${drawer.id}`])">
+					<LazyDataS v-if="drawer.data && getDrawerTable(drawer)?.schema"
+						:value="drawer.data"
+						:schema="(getDrawerTable(drawer)?.schema ?? [])" />
+				</NSpin>
 			</NDrawerContent>
 		</NDrawer>
 	</template>
@@ -89,10 +105,38 @@ const formRefs = ref<FormRef[]>([]);
 
 const screenHalf = window.screen.width / 2;
 
+function getDrawerTable(drawer?: DrawerRef[number]) {
+	if (!drawer?.table) return undefined;
+	return database.value.tables?.find(({ slug }) => slug === drawer.table);
+}
+
+function isDrawerFormMode(drawer?: DrawerRef[number]) {
+	return drawer?.mode !== "view" || !drawer?.id;
+}
+
+function canEditDrawer(drawer?: DrawerRef[number]) {
+	return !!(drawer?.id && getDrawerTable(drawer)?.allowedMethods?.includes("u"));
+}
+
+function switchDrawerToEdit(index: number) {
+	const drawer = Drawers.value[index];
+	if (!drawer?.id) return;
+	drawer.mode = "edit";
+}
+
 function onUpdateShow(index: number, show: boolean) {
 	if (!Drawers.value[index]) return;
 	Drawers.value[index].show = show;
-	if (!show) setTimeout(() => Drawers.value.splice(index, 1), 100);
+	if (!show) {
+		for (let i = 0; i < index; i++) {
+			const drawer = Drawers.value[i];
+			if (!drawer || typeof drawer.width !== "number") continue;
+			const lastIncrement = drawer.nestedWidthIncrements?.pop();
+			if (!lastIncrement) continue;
+			drawer.width = Math.max(251, drawer.width - lastIncrement);
+		}
+		setTimeout(() => Drawers.value.splice(index, 1), 100);
+	}
 }
 
 async function onAfterUpdateCreate(index: number) {

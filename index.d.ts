@@ -243,6 +243,8 @@ declare global {
 		data?: Item;
 		schema?: Schema;
 		width?: number | string;
+		nestedWidthIncrements?: number[];
+		mode?: "view" | "edit";
 	}[];
 
 	type TablesCookie = Record<

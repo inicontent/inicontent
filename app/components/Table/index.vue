@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<LazyFormDrawer v-if="!isMobile">
+		<LazyFormDrawer>
 			<template #default="{ onAfterCreate, onAfterUpdate }">
 				<slot name="form" :onAfterCreate :onAfterUpdate></slot>
 			</template>

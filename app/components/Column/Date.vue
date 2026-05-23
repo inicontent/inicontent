@@ -48,16 +48,7 @@ const timeValue = computed<number | undefined>(() => {
 })
 
 const hasTime = computed(() => {
-    if (field?.date && datetimeFieldTypes.includes(field.date)) return true
-
-    if (typeof value === "string")
-        return /[T\s]\d{1,2}:\d{2}/.test(value)
-
-    const currentTime = timeValue.value
-    if (currentTime === undefined) return false
-
-    const date = new Date(currentTime)
-    return date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0 || date.getMilliseconds() !== 0
+    return !!field?.date && datetimeFieldTypes.includes(field.date)
 })
 
 const absoluteType = computed<"date" | "datetime">(() =>

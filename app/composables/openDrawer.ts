@@ -1,5 +1,16 @@
 import Inison from "inison";
 
+function rollbackNestedWidthIncrements(index: number) {
+	const Drawers = useState<DrawerRef>("drawers", () => []);
+	for (let i = 0; i < index; i++) {
+		const drawer = Drawers.value[i];
+		if (!drawer || typeof drawer.width !== "number") continue;
+		const lastIncrement = drawer.nestedWidthIncrements?.pop();
+		if (!lastIncrement) continue;
+		drawer.width = Math.max(251, drawer.width - lastIncrement);
+	}
+}
+
 async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const drawer = Drawers.value[index];
@@ -38,6 +49,7 @@ async function loadDrawer(index: number) {
 
 		Loading.value[key] = false;
 		if (!response.result) {
+			rollbackNestedWidthIncrements(index);
 			Drawers.value.splice(index, 1);
 			window.$message.error(response.message);
 			return;
@@ -49,7 +61,12 @@ async function loadDrawer(index: number) {
 	drawer.show = true;
 }
 
-export default function (table: string, id?: string | number, data: any = {}) {
+export default function (
+	table: string,
+	id?: string | number,
+	data: Partial<Item> = {},
+	mode: "view" | "edit" = "edit",
+) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const defaultWidth = useCookie<number | string>("width", {
 		sameSite: true,
@@ -66,8 +83,18 @@ export default function (table: string, id?: string | number, data: any = {}) {
 				if (!drawer) continue;
 				if (typeof drawer.width === "string") continue;
 				if (drawer.width) width = drawer.width;
-				if (typeof width === "number")
-					drawer.width = Math.min(window.screen.width, width + width * 0.1);
+				if (typeof width === "number") {
+					const previousWidth =
+						typeof drawer.width === "number" ? drawer.width : width;
+					const nextWidth = Math.min(
+						window.screen.width,
+						previousWidth + previousWidth * 0.1,
+					);
+					drawer.width = nextWidth;
+					if (!drawer.nestedWidthIncrements)
+						drawer.nestedWidthIncrements = [];
+					drawer.nestedWidthIncrements.push(nextWidth - previousWidth);
+				}
 			}
 		}
 		// If drawer doesn't exist, create it
@@ -78,11 +105,13 @@ export default function (table: string, id?: string | number, data: any = {}) {
 			show: false,
 			schema: undefined,
 			width, // Set width based on nesting level
+			mode,
 		});
 
 		loadDrawer(Drawers.value.length - 1);
 	} else if (Drawers.value[index]) {
 		// If drawer already exists, just update it
+		Drawers.value[index].mode = mode;
 		Drawers.value[index].show = true;
 		if (!Drawers.value[index].width) Drawers.value[index].width = width;
 	}

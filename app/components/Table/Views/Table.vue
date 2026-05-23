@@ -445,6 +445,9 @@ const visualWidthCache = new WeakMap<Item[], Map<string, number[]>>();
 const visualWidthVersion = ref(0);
 const textWidthCache = new Map<string, number>();
 let refreshVisualWidthsTask: Promise<void> | null = null;
+let tableWidthResizeObserver: ResizeObserver | null = null;
+let tableWidthMutationObserver: MutationObserver | null = null;
+let tableObserverStartTimer: ReturnType<typeof setTimeout> | null = null;
 
 function invalidateVisualWidthCache() {
 	visualWidthVersion.value += 1;
@@ -462,13 +465,24 @@ function updateTableWidthFromColumns() {
 }
 
 async function refreshVisualWidths() {
+	if (typeof window === "undefined") {
+		updateTableWidthFromColumns();
+		return;
+	}
+
 	if (refreshVisualWidthsTask) return refreshVisualWidthsTask;
 
 	refreshVisualWidthsTask = (async () => {
-		await nextTick();
-		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-		applyVisualColumnWidths();
+		invalidateVisualWidthCache();
+
+		// First load can render table internals lazily; retry for a few frames.
+		for (let attempt = 0; attempt < 8; attempt += 1) {
+			await nextTick();
+			await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+			const measured = applyVisualColumnWidths();
+			if (measured) break;
+		}
+
 		await nextTick();
 		updateTableWidthFromColumns();
 	})().finally(() => {
@@ -476,6 +490,66 @@ async function refreshVisualWidths() {
 	});
 
 	return refreshVisualWidthsTask;
+}
+
+async function ensureVisualWidthsReady(maxAttempts = 8) {
+	if (typeof window === "undefined") {
+		updateTableWidthFromColumns();
+		return;
+	}
+
+	for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+		await refreshVisualWidths();
+
+		if (!_data.value?.result?.length || !columns.value?.length) return;
+
+		if (getVisualColumnWidths().length) {
+			updateTableWidthFromColumns();
+			return;
+		}
+
+		await new Promise<void>((resolve) => setTimeout(resolve, 80));
+	}
+}
+
+function stopTableWidthObservers() {
+	if (tableObserverStartTimer) {
+		clearTimeout(tableObserverStartTimer);
+		tableObserverStartTimer = null;
+	}
+
+	tableWidthResizeObserver?.disconnect();
+	tableWidthResizeObserver = null;
+
+	tableWidthMutationObserver?.disconnect();
+	tableWidthMutationObserver = null;
+}
+
+function startTableWidthObservers() {
+	if (typeof window === "undefined") return;
+
+	stopTableWidthObservers();
+
+	const tableElement = document.getElementById("DataTable");
+	if (!tableElement) {
+		tableObserverStartTimer = setTimeout(() => {
+			startTableWidthObservers();
+		}, 120);
+		return;
+	}
+
+	tableWidthResizeObserver = new ResizeObserver(() => {
+		void ensureVisualWidthsReady(3);
+	});
+	tableWidthResizeObserver.observe(tableElement);
+
+	tableWidthMutationObserver = new MutationObserver(() => {
+		void ensureVisualWidthsReady(3);
+	});
+	tableWidthMutationObserver.observe(tableElement, {
+		childList: true,
+		subtree: true,
+	});
 }
 
 function measureTextWidth(
@@ -644,10 +718,10 @@ function getVisualColumnWidths(): number[] {
 	return widths;
 }
 
-function applyVisualColumnWidths() {
-	if (!columns.value?.length) return;
+function applyVisualColumnWidths(): boolean {
+	if (!columns.value?.length) return false;
 	const measuredWidths = getVisualColumnWidths();
-	if (!measuredWidths.length) return;
+	if (!measuredWidths.length) return false;
 
 	columns.value = columns.value.map((column, index) => {
 		if (
@@ -661,14 +735,17 @@ function applyVisualColumnWidths() {
 
 		const minWidth =
 			typeof column.minWidth === "number" ? column.minWidth : 150;
+		const targetWidth = Math.max(measured, minWidth);
 
-		if (column.width === Math.max(measured + 24, minWidth)) return column;
+		if (column.width === targetWidth) return column;
 
 		return {
 			...column,
-			width: Math.max(measured + 24, minWidth),
+			width: targetWidth,
 		};
 	}) as DataTableColumns;
+
+	return true;
 }
 async function setColumns() {
 	const cols = [
@@ -849,7 +926,6 @@ async function setColumns() {
 											if (!row.id) return;
 											Loading.value[`${row.id}-${field.key}`] = true;
 											row[field.key] = value;
-											invalidateVisualWidthCache();
 											await refreshVisualWidths();
 											const __data = await $fetch<apiResponse<Item | boolean>>(
 												`${config.public.apiBase}${database.value.slug}/${
@@ -930,7 +1006,7 @@ async function setColumns() {
 																},
 																{
 																	icon: () =>
-																		h(NIcon, () =>
+																			h(NIcon, () =>
 																			h(Icon, { name: "tabler:dots" }),
 																		),
 																},
@@ -945,10 +1021,21 @@ async function setColumns() {
 	] as DataTableColumns;
 
 	if (cols.length > 2 || table.value?.defaultTableColumns) columns.value = cols;
-
-	await refreshVisualWidths();
+	
+	await ensureVisualWidthsReady();
 }
-watch([Language, checkedRowKeys, _data, tablesConfig], setColumns, {
+watch([Language, checkedRowKeys, _data, tablesConfig, table], setColumns, {
 	deep: true,
+	immediate: true,
+	flush: "post",
+});
+
+onMounted(() => {
+	startTableWidthObservers();
+	void ensureVisualWidthsReady();
+});
+
+onBeforeUnmount(() => {
+	stopTableWidthObservers();
 });
 </script>

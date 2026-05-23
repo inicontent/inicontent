@@ -35,6 +35,8 @@ const sessionID = useSessionCookie()
 
 
 const showAuthModal = ref(false)
+const authCheckFailCount = ref(0)
+const AUTH_CHECK_MAX_FAILS = 3
 
 async function checkAuth() {
 	if (showAuthModal.value || String(route.name).endsWith('auth')) return;
@@ -52,16 +54,22 @@ async function checkAuth() {
 				query: { isSignedIn: true, [`${database.value.slug}_sid`]: sessionID.value },
 			},
 		)
+		authCheckFailCount.value = 0
 		if (!data.result) {
 			showAuthModal.value = true
 		}
 	} catch (error) {
-		showAuthModal.value = true
+		// Do not force logout on a single transient network/server error.
+		authCheckFailCount.value += 1
+		if (authCheckFailCount.value >= AUTH_CHECK_MAX_FAILS) {
+			showAuthModal.value = true
+		}
 	}
 }
 
 function onLoggedIn() {
 	showAuthModal.value = false
+	authCheckFailCount.value = 0
 	// User and sessionID are already updated in Auth component
 }
 
