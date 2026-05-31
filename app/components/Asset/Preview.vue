@@ -273,5 +273,6 @@ onBeforeUnmount(() => {
 	justify-content: center;
 	width: 100%;
 	min-height: 100vh;
+	z-index: 9999999999 !important;
 }
 </style>

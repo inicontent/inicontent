@@ -159,7 +159,7 @@ const toggleDrawerWidth = (index: number) => {
 function onEsc() {
 	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show);
 	if (openDrawerIndex !== -1) {
-		const previewModal = document.querySelector(".n-image-preview-container");
+		const previewModal = document.querySelector(".assetLightbox");
 		if (!previewModal) onUpdateShow(openDrawerIndex, false);
 	}
 }

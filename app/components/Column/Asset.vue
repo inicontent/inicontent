@@ -11,3 +11,11 @@
 const { value } = defineProps<{ value: Asset | Asset[] }>();
 const assets = computed(() => ([] as Asset[]).concat(value));
 </script>
+
+<style scoped>
+.list {
+	max-width: 100%;
+	overflow: hidden;
+	min-width: 0;
+}
+</style>

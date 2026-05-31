@@ -581,7 +581,7 @@ a {
 	height: 100px;
 }
 
-.n-image-preview-container {
+.n-modal-container:has(.assetLightbox) {
 	z-index: 9999999999 !important;
 }
 

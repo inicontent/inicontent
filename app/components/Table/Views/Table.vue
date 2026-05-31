@@ -446,7 +446,6 @@ const visualWidthVersion = ref(0);
 const textWidthCache = new Map<string, number>();
 let refreshVisualWidthsTask: Promise<void> | null = null;
 let tableWidthResizeObserver: ResizeObserver | null = null;
-let tableWidthMutationObserver: MutationObserver | null = null;
 let tableObserverStartTimer: ReturnType<typeof setTimeout> | null = null;
 
 function invalidateVisualWidthCache() {
@@ -520,9 +519,6 @@ function stopTableWidthObservers() {
 
 	tableWidthResizeObserver?.disconnect();
 	tableWidthResizeObserver = null;
-
-	tableWidthMutationObserver?.disconnect();
-	tableWidthMutationObserver = null;
 }
 
 function startTableWidthObservers() {
@@ -542,14 +538,6 @@ function startTableWidthObservers() {
 		void ensureVisualWidthsReady(3);
 	});
 	tableWidthResizeObserver.observe(tableElement);
-
-	tableWidthMutationObserver = new MutationObserver(() => {
-		void ensureVisualWidthsReady(3);
-	});
-	tableWidthMutationObserver.observe(tableElement, {
-		childList: true,
-		subtree: true,
-	});
 }
 
 function measureTextWidth(
@@ -785,6 +773,43 @@ function dedupeColumnsByKey(cols: DataTableColumns): DataTableColumns {
 	}) as DataTableColumns;
 }
 
+function getContentAwareMinWidth(field: Field, headerMinWidth: number): number {
+	if (!field.table || !_data.value?.result?.length) return headerMinWidth;
+
+	const relatedTable = database.value.tables?.find(
+		({ slug }) => slug === field.table,
+	);
+	if (!relatedTable) return headerMinWidth;
+
+	let longestLabel = "";
+	let hasMultipleRelations = false;
+
+	for (const row of _data.value.result) {
+		const raw = row[field.key];
+		if (raw === undefined || raw === null) continue;
+
+		const relations = ([] as Item[]).concat(raw as Item | Item[]);
+		if (relations.length > 1) hasMultipleRelations = true;
+
+		for (const relation of relations) {
+			if (!relation || typeof relation !== "object") continue;
+			const label = renderLabel(relatedTable, relation);
+			if (label.length > longestLabel.length) longestLabel = label;
+		}
+	}
+
+	if (!longestLabel) return headerMinWidth;
+
+	const labelWidth = measureTextWidth(longestLabel, {
+		// Icon + rounded button paddings + spacing.
+		startWith: 96,
+		min: headerMinWidth,
+	});
+
+	// In grouped mode we show "first +N", so reserve room for the count button.
+	return hasMultipleRelations ? labelWidth + 56 : labelWidth;
+}
+
 async function setColumns() {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
@@ -922,10 +947,11 @@ async function setColumns() {
 					!tablesConfig.value[table.value?.slug]?.columns?.includes(id),
 			)
 			.map((field) => {
-				const minWidth = measureTextWidth(t(field.key), {
+				const headerMinWidth = measureTextWidth(t(field.key), {
 					startWith: 70,
 					min: 150,
 				});
+				const minWidth = getContentAwareMinWidth(field, headerMinWidth);
 				return {
 					title: () =>
 						h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
@@ -1072,7 +1098,6 @@ watch([Language, checkedRowKeys, _data, tablesConfig, table], setColumns, {
 });
 
 onMounted(() => {
-	startTableWidthObservers();
 	void ensureVisualWidthsReady();
 });
 
