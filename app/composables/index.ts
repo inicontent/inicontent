@@ -317,6 +317,8 @@ export function getTableIcon(table: Table) {
 			return "tabler:app-window";
 		case "blocks":
 			return "tabler:tournament";
+		case "templates":
+			return "tabler:template";
 		default:
 			return t(table.slug).charAt(0).toUpperCase();
 	}

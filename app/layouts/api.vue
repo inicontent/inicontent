@@ -152,6 +152,7 @@ const primaryTables = computed(() =>
                 "translations",
                 "pages",
                 "blocks",
+                "templates",
             ].includes(slug) &&
             allowedMethods?.includes("r") &&
             show !== false,
@@ -168,6 +169,7 @@ const secondaryTables = computed(() =>
                 "translations",
                 "pages",
                 "blocks",
+                "templates",
             ].includes(slug) &&
             allowedMethods?.includes("r") &&
             show !== false,

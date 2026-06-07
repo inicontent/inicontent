@@ -108,17 +108,26 @@ const showBreadcrumb = computed(
 )
 
 function breadCrumbItemLink(index: number) {
-    const segments = route.path.split("/").filter(Boolean)
-    const segmentValue = breadcrumbArray.value[index]
-    const actualIndex = segments.indexOf(segmentValue as string)
-    if (actualIndex === -1) return route.path
-    const pathSegments = ["", ...segments.slice(0, actualIndex + 1)].join("/")
-    return pathSegments
+    const breadcrumbSegments = breadcrumbArray.value.slice(0, index + 1)
+    if (hideDatabaseInBreadcrumb.value && databaseParam.value)
+        return `/${databaseParam.value}/${breadcrumbSegments.join("/")}`
+    return `/${breadcrumbSegments.join("/")}`
 }
+const routeSegments = computed(() => route.path.split("/").filter(Boolean))
+const databaseParam = computed(() => {
+    const param = route.params.database
+    return typeof param === "string" ? param : undefined
+})
+const hideDatabaseInBreadcrumb = computed(
+    () =>
+        !!databaseParam.value
+        && routeSegments.value[0] === databaseParam.value
+        && routeSegments.value[1] === "admin",
+)
 const breadcrumbArray = computed(() =>
-    route.path
-        .split("/")
-        .filter(Boolean)
+    hideDatabaseInBreadcrumb.value
+        ? routeSegments.value.slice(1)
+        : routeSegments.value,
 )
 const table = useState<Table>("table")
 const currentItem = useState<Item>("currentItem")

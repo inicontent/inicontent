@@ -1,5 +1,7 @@
 import { flattenSchema } from "inibase/utils"
 
+const hiddenTableSlugs = new Set(["passkey_credentials", "passkey_challenges"])
+
 export default function () {
 	const database = useState<Database>("database")
 	const tables = database.value.tables
@@ -74,6 +76,8 @@ export default function () {
 	}
 
 	const formatTable = (table: Table) => {
+		if (hiddenTableSlugs.has(table.slug)) table.show = false
+
 		if (table.columns) return table
 
 		if (table.schema && (table.label || table.customLabel)) {

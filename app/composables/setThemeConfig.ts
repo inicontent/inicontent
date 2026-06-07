@@ -29,5 +29,8 @@ export default function () {
 		primaryColorPressed: adjustColor(mainColor, 0.9),
 		primaryColorSuppl: adjustColor(mainColor, 0.8),
 	}
-	if (!Language.value) Language.value = database.value.primaryLanguage ?? "en"
+
+	if (database.value?.primaryLanguage && Language.value !== database.value.primaryLanguage) {
+		Language.value = database.value.primaryLanguage;
+	}
 }

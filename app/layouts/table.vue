@@ -274,6 +274,7 @@ const menuOptions = computed(() => {
 						"pages",
 						"blocks",
 						"dashboards",
+               			"templates",
 					].includes(slug) &&
 					!!allowedMethods &&
 					allowedMethods.trim() !== "" &&
@@ -285,7 +286,7 @@ const menuOptions = computed(() => {
 		database.value.tables
 			.filter(
 				({ slug, allowedMethods, show }) =>
-					["users", "sessions", "assets", "pages", "blocks"].includes(slug) &&
+					["users", "sessions", "assets", "pages", "blocks", "templates"].includes(slug) &&
 					!!allowedMethods &&
 					allowedMethods.trim() !== "" &&
 					show !== false,

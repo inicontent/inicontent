@@ -98,11 +98,15 @@ export default {
 		chatbot: "AI Assistant",
 		chatWelcomeDefault:
 			"Hi! I can help you create new database tables or modify existing ones. Describe what you need and I'll generate the schemas for you.",
+		chatWelcomeScopedDatabase:
+			"Hi! I can help you create and update tables in this database. For creating a new database, use the Inicontent database workspace.",
 		chatWelcomeTables:
 			"I'm ready to help you design and manage your database tables. You can ask me to create new tables or edit existing ones.",
 		chatWelcomePages:
 			"I can help you build website pages. Describe the page you'd like and I'll generate the structure.",
 		chatPlaceholder: "Describe a database you'd like to build...",
+		chatPlaceholderScopedDatabase:
+			"Describe the tables you want to create or update in this database...",
 		chatPlaceholderShort: "Type a message...",
 		applyChanges: "Apply changes",
 		skipAiHelp: "Skip AI help",

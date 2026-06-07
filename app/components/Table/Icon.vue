@@ -1,7 +1,7 @@
 <template>
     <NIcon>
         <Icon
-            v-if="table.icon || ['assets', 'translations', 'users', 'sessions', 'pages', 'blocks'].includes(table.slug)"
+            v-if="table.icon || ['assets', 'translations', 'users', 'sessions', 'pages', 'blocks', 'templates'].includes(table.slug)"
             :name="getTableIcon(table)" />
         <span v-else>{{ t(table.slug).charAt(0).toUpperCase() }}</span>
     </NIcon>
@@ -27,6 +27,8 @@ function getTableIcon(table: Table) {
 			return "tabler:app-window"
 		case "blocks":
 			return "tabler:tournament"
+		case "templates":
+			return "tabler:template"
 		default:
 			return "tabler:table"
 	}
