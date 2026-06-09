@@ -83,7 +83,7 @@ const route = useRoute()
 const database = useState<Database>("database")
 
 function getTableUrl(slug: string) {
-	return `/${route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : ""}admin/tables/${slug}`
+	return `/${route.params.database ? ((database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : `${route.params.database}/`) : ""}admin/tables/${slug}`
 }
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })

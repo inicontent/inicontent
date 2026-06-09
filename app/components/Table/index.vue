@@ -99,7 +99,6 @@ import type {
 } from "naive-ui";
 import {
 	Icon,
-	NuxtLink,
 	NButton,
 	NButtonGroup,
 	NIcon,
@@ -233,6 +232,8 @@ function openTranslateDrawer(row: Item) {
 }
 
 function renderItemButtons(row: Item) {
+	const viewHref = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`;
+
 	return h(NButtonGroup, { vertical: isMobile }, () =>
 		[
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
@@ -267,19 +268,29 @@ function renderItemButtons(row: Item) {
 					NButton,
 					{
 						class: "viewItemButton",
+						tag: "a",
+						href: viewHref,
+						onClick: (e: MouseEvent) => {
+							// Keep native anchor behaviors for modified/middle clicks.
+							if (
+								e.button !== 0 ||
+								e.metaKey ||
+								e.ctrlKey ||
+								e.shiftKey ||
+								e.altKey
+							)
+								return;
+
+							e.preventDefault();
+							openDrawer(table.value?.slug as string, row.id, {}, "view");
+						},
 						secondary: true,
 						circle: true,
 						type: "primary",
 					},
 					{
 						icon: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-								},
-								() => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-							),
+							h(NIcon, () => h(Icon, { name: "tabler:eye" })),
 					},
 				)
 				: null,
