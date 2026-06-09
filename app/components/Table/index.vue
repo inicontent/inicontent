@@ -66,7 +66,7 @@
 									{{ t("newItem") }}
 								</NTooltip>
 							</NDropdown>
-							<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray"
+							<TableSearchButton v-model:string="searchString" v-model:array="searchArray"
 								size="small" />
 							<slot name="navbarExtraButtons"></slot>
 						</NButtonGroup>
