@@ -9,7 +9,6 @@ import type {
 import type {
 	DataTableColumns,
 	SelectOption,
-	SelectBaseOption,
 } from "naive-ui";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";

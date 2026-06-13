@@ -13,7 +13,8 @@ export default defineNuxtConfig({
 		payloadExtraction: true,
 	},
 	icon: {
-		provider: "server",
+		// Serve icons from your Nuxt app endpoint, not Iconify API
+		provider: 'server',
 	},
 	fonts: {
 		experimental: {
