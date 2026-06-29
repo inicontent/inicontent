@@ -28,10 +28,11 @@
 				</NButton>
 			</NFlex>
 			<NDataTable
+				remote
 				:columns="columns"
 				:data="schedules"
 				:loading="loading"
-				:pagination="false"
+				:pagination="tablePagination"
 				:single-line="false"
 			/>
 		</NCard>
@@ -120,11 +121,16 @@ const loading = ref(false)
 const saving = ref(false)
 const previewing = ref(false)
 const showModal = ref(false)
-const schedules = ref<CreationSchedule[]>([])
-const editingSchedule = ref<CreationSchedule | null>(null)
+const schedules = ref<Schedules[]>([])
+const editingSchedule = ref<Schedules | null>(null)
 const resolvedPreviewText = ref("")
+const pagination = reactive({
+	page: 1,
+	pageSize: 15,
+	itemCount: 0,
+})
 
-const presetCronMap: Record<Exclude<CreationSchedulePreset, "custom">, string> = {
+const presetCronMap: Record<Exclude<SchedulesPreset, "custom">, string> = {
 	hourly: "0 * * * *",
 	daily: "0 0 * * *",
 	weekly: "0 0 * * 1",
@@ -133,7 +139,7 @@ const presetCronMap: Record<Exclude<CreationSchedulePreset, "custom">, string> =
 
 const form = reactive({
 	name: "",
-	preset: "hourly" as CreationSchedulePreset,
+	preset: "hourly" as SchedulesPreset,
 	cronExpression: presetCronMap.hourly,
 	payloadText: "{}",
 	excludeWeekdays: [] as number[],
@@ -199,6 +205,23 @@ const scheduleSummaryPreview = computed(() => {
 		: t("scheduleSummaryWithExcluded", { days: excluded })
 })
 
+const tablePagination = computed(() => ({
+	page: pagination.page,
+	pageSize: pagination.pageSize,
+	itemCount: pagination.itemCount,
+	showSizePicker: true,
+	pageSizes: [15, 30, 60, 100],
+	onChange: async (page: number) => {
+		pagination.page = page
+		await loadSchedules()
+	},
+	onUpdatePageSize: async (pageSize: number) => {
+		pagination.pageSize = pageSize
+		pagination.page = 1
+		await loadSchedules()
+	},
+}))
+
 watch(
 	() => form.preset,
 	(preset) => {
@@ -226,7 +249,7 @@ function formatExcludedDays(excludedDays?: number[]) {
 }
 
 function buildPayloadExample() {
-	const result: Record<string, any> = {}
+	const result: Record<string, unknown> = {}
 	for (const field of table.value.schema ?? []) {
 		if (["id", "createdAt", "updatedAt"].includes(field.key)) continue
 		switch (Array.isArray(field.type) ? field.type[0] : field.type) {
@@ -263,7 +286,7 @@ function parsePayloadText(payloadText: string) {
 	try {
 		return JSON.parse(normalizedPayloadText)
 	} catch {
-		return Inison.unstringify(normalizedPayloadText) as Record<string, any>
+		return Inison.unstringify(normalizedPayloadText) as Record<string, unknown>
 	}
 }
 
@@ -339,7 +362,7 @@ function openCreateModal() {
 	showModal.value = true
 }
 
-function openEditModal(schedule: CreationSchedule) {
+function openEditModal(schedule: Schedules) {
 	editingSchedule.value = schedule
 	form.name = schedule.name
 	form.preset = schedule.preset ?? "custom"
@@ -358,18 +381,39 @@ function closeModal() {
 async function loadSchedules() {
 	loading.value = true
 	try {
-		const response = await $fetch<apiResponse<CreationSchedule[]>>(
+		const response = await $fetch<apiResponse<Schedules[]>>(
 			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`,
 			{
-				params: getRequestParams(),
+				params: {
+					...getRequestParams(),
+					options: Inison.stringify({
+						page: pagination.page,
+						perPage: pagination.pageSize,
+					})
+				},
 				credentials: "include",
 			},
 		)
 
-		if (response.result) schedules.value = response.result
+		schedules.value = response.result ?? []
+
+		if (response.options) {
+			pagination.page = Number(response.options.page ?? pagination.page)
+			// pagination.pageSize = Number(response.options.perPage ?? pagination.pageSize)
+			pagination.itemCount = Number(response.options.total ?? schedules.value.length)
+		} else {
+			pagination.itemCount = schedules.value.length
+		}
+
 		return response
-	} catch (error: any) {
-		window.$message.error(error?.data?.message ?? error?.message ?? t("error"))
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null
+				? (error as { data?: { message?: string }; message?: string })
+				: undefined
+		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+		schedules.value = []
+		pagination.itemCount = 0
 		return null
 	} finally {
 		loading.value = false
@@ -377,7 +421,7 @@ async function loadSchedules() {
 }
 
 async function saveSchedule() {
-	let payload: Record<string, any>
+	let payload: Record<string, unknown>
 
 	try {
 		payload = parsePayloadText(form.payloadText || "{}")
@@ -411,7 +455,7 @@ async function saveSchedule() {
 				? `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
 				: `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`
 		const method = editingSchedule.value?.id ? "PUT" : "POST"
-		const response = await $fetch<apiResponse<CreationSchedule>>(endpoint, {
+		const response = await $fetch<apiResponse<Schedules>>(endpoint, {
 			method,
 			body: requestBody,
 			params: getRequestParams(),
@@ -423,14 +467,18 @@ async function saveSchedule() {
 			closeModal()
 			await loadSchedules()
 		} else window.$message.error(response.message)
-	} catch (error: any) {
-		window.$message.error(error?.data?.message ?? error?.message ?? t("error"))
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null
+				? (error as { data?: { message?: string }; message?: string })
+				: undefined
+		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
 	} finally {
 		saving.value = false
 	}
 }
 
-async function removeSchedule(schedule: CreationSchedule) {
+async function removeSchedule(schedule: Schedules) {
 	if (!window.confirm(t("theFollowingActionIsIrreversible"))) return
 
 	loading.value = true
@@ -444,18 +492,27 @@ async function removeSchedule(schedule: CreationSchedule) {
 			},
 		)
 
-		if (response.result || response.code === 204) {
+		const responseCode =
+			typeof response === "object" && response !== null && "code" in response
+				? (response as { code?: number }).code
+				: undefined
+
+		if (response.result || responseCode === 204) {
 			window.$message.success(response.message)
 			await loadSchedules()
 		} else window.$message.error(response.message)
-	} catch (error: any) {
-		window.$message.error(error?.data?.message ?? error?.message ?? t("error"))
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null
+				? (error as { data?: { message?: string }; message?: string })
+				: undefined
+		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
 	} finally {
 		loading.value = false
 	}
 }
 
-const columns = computed<DataTableColumns<CreationSchedule>>(() => [
+const columns = computed<DataTableColumns<Schedules>>(() => [
 	{
 		title: t("name"),
 		key: "name",

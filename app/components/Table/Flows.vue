@@ -57,7 +57,26 @@
 														:options="generateFlowCascaderOptions(true, true)"
 														check-strategy="child" expand-trigger="click" show-path
 														separator="." filterable v-model:value="rule.value[1]" />
-													<NSelect size="small"
+													<template v-if="isDateFlowField(rule.value[1])">
+														<NSelect size="small"
+															:style="{ borderRadius: !isRelativeDateValue(rule.value[2]) ? '0!important' : (Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important') }"
+															style="overflow: hidden;"
+															:consistent-menu-width="false"
+															filterable
+															:options="dateFlowValueOptions"
+															:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
+															@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
+														<NDatePicker v-if="!isRelativeDateValue(rule.value[2])"
+															size="small"
+															:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+															style="overflow: hidden; width: 180px;"
+															clearable
+															:type="getDateFlowPickerType(rule.value[1])"
+															:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[1])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
+															:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
+															@update:value="(value) => rule.value[2] = value" />
+													</template>
+													<NSelect v-else size="small"
 														:consistent-menu-width="false"
 														filterable tag
 														:options="generateFlowSelectOptions(rule.value[1], false, true)"
@@ -78,24 +97,26 @@
 														filterable tag
 														:options="[{ label: t('accessDenied'), value: 'accessDenied' }]"
 														v-model:value="rule.value[1]" />
-												</template>										<template v-else-if="rule.value[0] === 'email'">
-											<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-												<NButton class="inputHandle" size="small" type="info" secondary
-													:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
-													style="width: 70px;">
-													{{ t('email') }}
-												</NButton>
-											</NDropdown>
-											<NCascader size="small" style="height: fit-content;"
-												:options="generateFlowCascaderOptions(false, false, true)"
-												check-strategy="child" expand-trigger="click" show-path
-												separator="." filterable v-model:value="rule.value[1]" />
-											<NSelect size="small"
-												:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-												style="overflow: hidden;" :consistent-menu-width="false"
-												filterable tag :options="templateNames"
-												v-model:value="rule.value[2]" />
-										</template>												<template v-else-if="rule.value[0] === 'unset'">
+												</template>
+												<template v-else-if="rule.value[0] === 'email'">
+													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+														<NButton class="inputHandle" size="small" type="info" secondary
+															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+															style="width: 70px;">
+															{{ t('email') }}
+														</NButton>
+													</NDropdown>
+													<NCascader size="small" style="height: fit-content;"
+														:options="generateFlowCascaderOptions(false, false, true)"
+														check-strategy="child" expand-trigger="click" show-path
+														separator="." filterable v-model:value="rule.value[1]" />
+													<NSelect size="small"
+														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+														style="overflow: hidden;" :consistent-menu-width="false"
+														filterable tag :options="templateNames"
+														v-model:value="rule.value[2]" />
+												</template>
+												<template v-else-if="rule.value[0] === 'unset'">
 													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
 														<NButton class="inputHandle" size="small" type="warning"
 															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
@@ -128,7 +149,23 @@
 														:render-tag="({ option }) => option.value"
 														:options="checkFieldType(formatValue(rule.value[0], undefined, 'type', 'string'), ['number', 'date']) ? comparisonOperatorOptions().filter(({ value }) => !['*', '!*'].includes(value)) : comparisonOperatorOptions().filter(({ value }) => !['>', '>=', '<', '<=', ...(rule[0] === '@method' ? ['*', '!*'] : [])].includes(value))"
 														v-model:value="rule.value[1]" />
-													<NSelect size="small" style="overflow: hidden;"
+													<template v-if="isDateFlowField(rule.value[0])">
+														<NSelect size="small"
+															:consistent-menu-width="false"
+															filterable
+															:options="dateFlowValueOptions"
+															:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
+															@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
+														<NDatePicker size="small"
+															:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+															style="overflow: hidden; width: 180px;"
+															clearable
+															:type="getDateFlowPickerType(rule.value[0])"
+															:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[0])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
+															:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
+															@update:value="(value) => rule.value[2] = value" />
+													</template>
+													<NSelect v-else size="small" style="overflow: hidden;"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
 														:consistent-menu-width="false" filterable tag
 														:options="generateFlowSelectOptions(rule.value[0], false, true)"
@@ -175,7 +212,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ formatValue(value, secondValue) }}
+														{{ formatDateFlowValue(value, secondValue) }}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -257,7 +294,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ value === null ? '@null' : formatValue(value, firstValue) }}
+														{{ value === null ? '@null' : formatDateFlowValue(value, firstValue) }}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -637,6 +674,75 @@ function formatValue(
 	}
 	return value || defaultValue
 }
+
+function getFlowField(value: string | null) {
+	if (!value || value === "@method") return undefined
+
+	const valueRoot = value.split(".")[0]
+	const fieldID = value.split(".").pop()
+	if (!fieldID) return undefined
+
+	const schema =
+		valueRoot === "@user"
+			? database.value.tables?.find(({ slug }) => slug === "users")?.schema
+			: table.value.schema
+
+	if (!schema) return undefined
+
+	return flattenSchema(schema as any, true).find(
+		({ id }) => String(id) === fieldID,
+	)
+}
+
+function isDateFlowField(value: string | null) {
+	return getFlowField(value)?.type === "date"
+}
+
+function getDateFlowPickerType(value: string | null) {
+	return getFlowField(value)?.date ?? "date"
+}
+
+function isRelativeDateValue(value: unknown) {
+	return (
+		typeof value === "string" &&
+		["@date.now", "@date.tomorrow", "@date.yesterday"].includes(value)
+	)
+}
+
+function formatDateFlowValue(value: unknown, parentKey?: string | null) {
+	const field = getFlowField(parentKey ?? null)
+	if (field?.type !== "date") return formatValue(value as any, parentKey ?? undefined)
+
+	if (typeof value === "string") {
+		switch (value) {
+			case "@date.now":
+				return "Now"
+			case "@date.tomorrow":
+				return "Tomorrow"
+			case "@date.yesterday":
+				return "Yesterday"
+			default:
+				if (/^\d+$/.test(value)) value = Number(value)
+		}
+	}
+
+	if (typeof value === "number") {
+		const date = new Date(value)
+		if (Number.isNaN(date.getTime())) return String(value)
+		return ["datetime", "datetimerange"].includes(getDateFlowPickerType(parentKey ?? null))
+			? date.toLocaleString(Language.value)
+			: date.toLocaleDateString(Language.value)
+	}
+
+	return formatValue(value as any, parentKey ?? undefined)
+}
+
+const dateFlowValueOptions = [
+	{ label: "Now", value: "@date.now" },
+	{ label: "Tomorrow", value: "@date.tomorrow" },
+	{ label: "Yesterday", value: "@date.yesterday" },
+	{ label: "Custom", value: "__custom__" },
+]
 
 const addRuleDropdownOptions = [
 	{

@@ -138,17 +138,17 @@ declare global {
 	type Item = Data & {
 		createdBy?: User;
 	};
-	type CreationSchedulePreset =
+	type SchedulesPreset =
 		| "hourly"
 		| "daily"
 		| "weekly"
 		| "monthly"
 		| "custom";
-	type CreationSchedule = Item & {
+	type Schedules = Item & {
 		databaseSlug: string;
 		table: string;
 		name: string;
-		preset?: CreationSchedulePreset;
+		preset?: SchedulesPreset;
 		cronExpression: string;
 		timezone: "UTC";
 		isActive: boolean;
