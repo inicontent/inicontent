@@ -270,7 +270,7 @@ function renderItemButtons(row: Item) {
 						class: "viewItemButton",
 						tag: "a",
 						href: viewHref,
-						onClick: (e: MouseEvent) => {
+						onClick: async (e: MouseEvent) => {
 							// Keep native anchor behaviors for modified/middle clicks.
 							if (
 								e.button !== 0 ||
@@ -282,6 +282,19 @@ function renderItemButtons(row: Item) {
 								return;
 
 							e.preventDefault();
+
+							// If a page component exists for this table's item route, bail out and let
+							try {
+								// Use project-root relative path so glob works in dev and production builds
+								const pages = Object.keys(import.meta.glob('/pages/admin/tables/**/[id]/index.vue'));
+								const slug = table.value?.slug;
+								if (slug && pages.some(p => p.includes(`/tables/${slug}/[id]/index.vue`)))
+									return navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+									);
+							} catch (e) {
+								// ignore and continue with drawer behavior
+							}
 							openDrawer(table.value?.slug as string, row.id, {}, "view");
 						},
 						secondary: true,
