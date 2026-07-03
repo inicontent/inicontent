@@ -602,7 +602,7 @@ a {
 .rtl .handle {
 	left: auto;
 	right: 0;
-	border-radius: 0 0 0 50px;
+	border-radius: 0 15px;
 }
 
 .handle {
@@ -610,7 +610,7 @@ a {
 	top: 0;
 	left: 0;
 	z-index: 9;
-	border-radius: 0 0 50px 0;
+	border-radius: 15px 0;
 }
 
 .masonry {
@@ -654,16 +654,12 @@ a {
 	visibility: hidden;
 }
 
-.rtl .flowSaveButton {
-	left: 20px;
-	right: auto;
+.n-tabs-tab[data-name="__save__"] {
+    background-color: rgb(var(--primaryColor),.6);
 }
 
-.flowSaveButton {
-	position: fixed;
-	bottom: 80px;
-	right: 20px;
-	z-index: 9999;
+.n-tabs-tab[data-name="__save__"]:hover {
+    background-color: rgb(var(--primaryColor));
 }
 
 .flowCardRulesEdit {

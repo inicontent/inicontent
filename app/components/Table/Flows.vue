@@ -1,14 +1,6 @@
 <template>
 	<div>
-		<NButton class="flowSaveButton" round secondary :loading="Loading.updateTable" type="primary" size="large"
-			@click="saveFlow">
-			<template #icon>
-				<NIcon>
-					<Icon name="tabler:device-floppy" />
-				</NIcon>
-			</template>
-		</NButton>
-		<NTabs type="segment" animated v-model:value="currentFlow">
+		<NTabs type="segment" animated v-model:value="currentFlow" @update:value="handleFlowTabChange">
 			<NTabPane v-for="flowName of flowNames" :name="flowName" :tab="t(flowName)">
 				<Draggable v-model="tableCopy[flowName]" group="flows" itemKey="id" handle=".handle" class="masonry">
 					<template #item="{ element, index }">
@@ -76,7 +68,10 @@
 															:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
 															@update:value="(value) => rule.value[2] = value" />
 													</template>
-													<NSelect v-else size="small"
+													<NSelect v-else
+														size="small"
+														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+														style="overflow: hidden;"
 														:consistent-menu-width="false"
 														filterable tag
 														:options="generateFlowSelectOptions(rule.value[1], false, true)"
@@ -327,6 +322,19 @@
 					</template>
 				</Draggable>
 			</NTabPane>
+			<NTabPane :name="saveFlowTabName">
+				<template #tab>
+					<NFlex align="center">
+						<NIcon :size="18">
+							<Icon name="tabler:device-floppy" />
+						</NIcon>
+						{{ t('save') }}
+					</NFlex>
+				</template>
+				<div style="padding: 24px 0; display: flex; justify-content: center; align-items: center;">
+					<NSpin :show="Loading.updateTable" />
+				</div>
+			</NTabPane>
 		</NTabs>
 	</div>
 </template>
@@ -336,8 +344,7 @@ import {
 	flattenSchema,
 	isArrayOfObjects,
 	isNumber,
-	isObject,
-	isValidID,
+	isObject
 } from "inibase/utils"
 import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui"
 import Draggable from "vuedraggable"
@@ -380,10 +387,23 @@ const table = useState<Table>("table")
 const tableCopy = ref<any>(toRaw(table.value))
 const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
+const saveFlowTabName = "__save__"
+const previousFlowTab = ref<string>(currentFlow.value)
 
 const sessionID = useSessionCookie()
 
 const templateNames = ref<SelectOption[]>([])
+
+async function handleFlowTabChange(value: string) {
+	if (value === saveFlowTabName) {
+		await saveFlow()
+		currentFlow.value = previousFlowTab.value
+		return
+	}
+
+	previousFlowTab.value = value
+	currentFlow.value = value
+}
 
 async function saveFlow() {
 	Loading.value.updateTable = true
