@@ -326,7 +326,13 @@ function changeFieldType(
 	switch (newType) {
 		case "object":
 		case "array":
-			return { id, key, type: newType, required, children };
+			return {
+				id,
+				key,
+				type: newType,
+				required,
+				children: Array.isArray(children) ? children : [],
+			};
 		default:
 			return {
 				id,
