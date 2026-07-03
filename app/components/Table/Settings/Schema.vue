@@ -326,7 +326,13 @@ function changeFieldType(
 	switch (newType) {
 		case "object":
 		case "array":
-			return { id, key, type: newType, required, children };
+			return {
+				id,
+				key,
+				type: newType,
+				required,
+				children: Array.isArray(children) ? children : [],
+			};
 		default:
 			return {
 				id,
@@ -557,7 +563,7 @@ function onKeyInput(element: Field, v: string) {
 	const existing = keyCommitTimers.get(id);
 	if (existing) clearTimeout(existing);
 	const timeout = setTimeout(() => {
-		element.key = v;
+		element.key = v.trim();
 		keyCommitTimers.delete(id);
 	}, 200);
 	keyCommitTimers.set(id, timeout);
