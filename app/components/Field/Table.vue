@@ -1,6 +1,6 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
-		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options remote
+		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options="options" remote
 			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="Loading[`options_${field.key}`]"
 			:multiple="!!field.isArray" :consistent-menu-width="false" max-tag-count="responsive"
 			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
@@ -204,18 +204,20 @@ async function loadOptions(searchValue?: string | number) {
 
 async function handleScroll(e: Event) {
 	const currentTarget = e.currentTarget as HTMLElement;
+	const loadingKey = `options_${field.key}`;
 	if (
+		Loading.value[loadingKey] ||
 		!pagination.value ||
 		!pagination.value.page ||
 		!pagination.value.totalPages
 	)
 		return;
 	if (
-		currentTarget.scrollTop + currentTarget.offsetHeight >=
-		currentTarget.scrollHeight &&
+		currentTarget.scrollTop + currentTarget.clientHeight >=
+		currentTarget.scrollHeight - 4 &&
 		pagination.value.page < pagination.value.totalPages
 	) {
-		Loading.value[`options_${field.key}`] = true;
+		Loading.value[loadingKey] = true;
 		const request = await $fetch<apiResponse<tableOption[]>>(
 			`${config.public.apiBase}${database.value.slug}/${field.table}`,
 			{
@@ -233,8 +235,8 @@ async function handleScroll(e: Event) {
 		);
 		if (request.result) request.result = request.result.map(singleOption);
 		pagination.value = request.options;
-		if (options.value) options.value.push(...request.result);
-		Loading.value[`options_${field.key}`] = false;
+		if (options.value && request.result) options.value.push(...request.result);
+		Loading.value[loadingKey] = false;
 	}
 }
 
