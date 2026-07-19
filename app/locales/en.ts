@@ -1,5 +1,7 @@
 export default {
 	en: {
+		selectAll: "Select all",
+		clearAll: "Clear all",
 		optional: "Optional",
 		rightClickToEdit: "Right click to edit",
 		pressAndHoldToEdit: "Press and hold to edit",

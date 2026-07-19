@@ -22,7 +22,7 @@
 				<NImage v-else-if="isImageAsset(activeAsset)" :src="activeAsset.publicURL" preview-disabled
 					class="assetLightboxMedia" object-fit="contain" :img-props="{ style: imageTransformStyle }" />
 				<div v-else-if="isPdfAsset(activeAsset)" class="assetPdfPanel">
-					<canvas ref="pdfCanvasRef" class="assetPdfCanvas" />
+					<div ref="pdfPagesContainerRef" class="assetPdfPages" />
 					<NText v-if="pdfError" depth="3">{{ pdfError }}</NText>
 				</div>
 				<iframe v-else-if="isHtmlAsset(activeAsset)" :src="activeAsset.publicURL" class="assetLightboxFrame"
@@ -38,18 +38,6 @@
 				</div>
 			</div>
 			<div v-if="isPdfAsset(activeAsset)" class="assetPdfControls" aria-label="PDF controls">
-				<button class="assetLightboxControl" type="button" :disabled="pdfPage <= 1" @click="showPreviousPdfPage">
-					<NIcon :size="18">
-						<Icon name="tabler:chevron-left" />
-					</NIcon>
-				</button>
-				<NText depth="3">{{ pdfPage }} / {{ pdfPageCount || 1 }}</NText>
-				<button class="assetLightboxControl" type="button" :disabled="pdfPage >= pdfPageCount"
-					@click="showNextPdfPage">
-					<NIcon :size="18">
-						<Icon name="tabler:chevron-right" />
-					</NIcon>
-				</button>
 				<button class="assetLightboxControl" type="button" @click="openAssetInNewTab(activeAsset)">
 					<NIcon :size="18">
 						<Icon name="tabler:external-link" />
@@ -111,9 +99,8 @@ const {
 
 const showPreview = computed(() => !!currentPreviewAsset.value);
 const activeAsset = computed(() => currentPreviewAsset.value);
-const pdfCanvasRef = ref<HTMLCanvasElement>();
+const pdfPagesContainerRef = ref<HTMLDivElement>();
 const pdfError = ref("");
-const pdfPage = ref(1);
 const pdfPageCount = ref(0);
 
 type PdfViewport = {
@@ -143,7 +130,6 @@ type PdfDocument = {
 
 let pdfjsLib: Awaited<typeof import("pdfjs-dist")> | undefined;
 let pdfDocument: PdfDocument | undefined;
-let currentPdfRenderTask: PdfRenderTask | undefined;
 let pdfLoadToken = 0;
 
 const imageTransformStyle = computed(() => {
@@ -192,18 +178,7 @@ async function ensurePdfJsLoaded() {
 	return pdfjsLib;
 }
 
-function cleanupPdfRenderTask() {
-	if (!currentPdfRenderTask) return;
-	try {
-		currentPdfRenderTask.cancel();
-	} catch {
-		// Ignore cancellation errors.
-	}
-	currentPdfRenderTask = undefined;
-}
-
 async function cleanupPdfDocument() {
-	cleanupPdfRenderTask();
 	if (!pdfDocument) return;
 	try {
 		await pdfDocument.destroy();
@@ -213,37 +188,27 @@ async function cleanupPdfDocument() {
 	pdfDocument = undefined;
 }
 
-async function renderPdfPage(pageNumber: number) {
-	if (!pdfDocument || !pdfCanvasRef.value) return;
-	const page = await pdfDocument.getPage(pageNumber);
-	const viewport = page.getViewport({ scale: 1.5 });
-	const canvas = pdfCanvasRef.value;
-	canvas.width = viewport.width;
-	canvas.height = viewport.height;
+async function renderAllPdfPages() {
+	if (!pdfDocument || !pdfPagesContainerRef.value) return;
+	const token = pdfLoadToken;
+	const container = pdfPagesContainerRef.value;
+	container.innerHTML = "";
 
-	const context = canvas.getContext("2d");
-	if (!context) return;
-
-	cleanupPdfRenderTask();
-	currentPdfRenderTask = page.render({
-		canvasContext: context,
-		viewport,
-		canvas,
-	});
-	await currentPdfRenderTask.promise;
-	currentPdfRenderTask = undefined;
-}
-
-async function showPreviousPdfPage() {
-	if (pdfPage.value <= 1) return;
-	pdfPage.value -= 1;
-	await renderPdfPage(pdfPage.value);
-}
-
-async function showNextPdfPage() {
-	if (pdfPage.value >= pdfPageCount.value) return;
-	pdfPage.value += 1;
-	await renderPdfPage(pdfPage.value);
+	for (let pageNum = 1; pageNum <= pdfPageCount.value; pageNum++) {
+		if (token !== pdfLoadToken) return;
+		const page = await pdfDocument.getPage(pageNum);
+		if (token !== pdfLoadToken) return;
+		const viewport = page.getViewport({ scale: 1.5 });
+		const canvas = document.createElement("canvas");
+		canvas.className = "assetPdfCanvas";
+		canvas.width = viewport.width;
+		canvas.height = viewport.height;
+		container.appendChild(canvas);
+		const context = canvas.getContext("2d");
+		if (!context) continue;
+		const renderTask = page.render({ canvasContext: context, viewport, canvas });
+		await renderTask.promise;
+	}
 }
 
 async function initializePdfPreview(asset: Asset) {
@@ -251,7 +216,6 @@ async function initializePdfPreview(asset: Asset) {
 	const currentLoadToken = pdfLoadToken;
 	Loading.value.previewModal = true;
 	pdfError.value = "";
-	pdfPage.value = 1;
 	pdfPageCount.value = 0;
 
 	try {
@@ -267,8 +231,7 @@ async function initializePdfPreview(asset: Asset) {
 
 		pdfDocument = document;
 		pdfPageCount.value = document.numPages || 1;
-		pdfPage.value = 1;
-		await renderPdfPage(1);
+		await renderAllPdfPages();
 	} catch {
 		pdfError.value = "Unable to preview this PDF file.";
 	} finally {
@@ -299,7 +262,6 @@ watch(currentPreviewAsset, (asset) => {
 		pdfLoadToken += 1;
 		void cleanupPdfDocument();
 		pdfError.value = "";
-		pdfPage.value = 1;
 		pdfPageCount.value = 0;
 		Loading.value.previewModal = false;
 		return;
@@ -311,7 +273,6 @@ watch(currentPreviewAsset, (asset) => {
 	pdfLoadToken += 1;
 	void cleanupPdfDocument();
 	pdfError.value = "";
-	pdfPage.value = 1;
 	pdfPageCount.value = 0;
 	Loading.value.previewModal = isVideoAsset(asset);
 });
@@ -379,18 +340,27 @@ onBeforeUnmount(() => {
 
 .assetPdfPanel {
 	display: flex;
-	align-items: center;
-	justify-content: center;
 	flex-direction: column;
+	align-items: center;
 	gap: 10px;
 	width: 100%;
 	max-height: min(72vh, 760px);
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	padding: 4px;
+}
+
+.assetPdfPages {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
 }
 
 .assetPdfCanvas {
 	max-width: 100%;
+	width: 100%;
 	height: auto;
 	background: #fff;
 	border-radius: 10px;

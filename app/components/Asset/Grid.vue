@@ -41,7 +41,7 @@
 				<template v-else #default>
 					<NGridItem v-for="asset in sortedAssets">
 						<div @contextmenu="handleContextMenu($event, asset)">
-							<NFlex vertical class="assetContainer">
+							<NFlex vertical class="assetContainer" :class="{ selectedAsset: selectedAssetIdsSet.has(asset.id) }">
 								<NFlex class="assetActions">
 									<slot :asset></slot>
 								</NFlex>
@@ -85,10 +85,11 @@ import { imageExtensions, officeExtensions, videoExtensions } from "~/composable
 import { useAssetPreview } from "~/composables/useAssetPreview";
 
 const path = defineModel<string>("path");
-const { isAssetRoute, table } = defineProps<{
+const { isAssetRoute, table, selectedAssetIds } = defineProps<{
 	targetID?: string;
 	isAssetRoute?: boolean;
 	table: Table;
+	selectedAssetIds?: Asset["id"][];
 }>();
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
@@ -194,6 +195,9 @@ function dropdownOnClickOutside(e: MouseEvent) {
 	if (!isRightClick) showDropdown.value = false;
 }
 const route = useRoute();
+const selectedAssetIdsSet = computed(
+	() => new Set(selectedAssetIds ?? []),
+);
 const sortedAssets = computed(() =>
 	((modelValue.value ?? []) as Asset[]).slice().sort((a, b) => {
 		if (a.type === "dir" && b.type !== "dir") return -1;
@@ -230,6 +234,12 @@ async function handleOnClickAsset(_e: MouseEvent, asset: Asset) {
 <style scoped>
 .previewOverlay {
 	position: relative;
+}
+
+.selectedAsset {
+	border-radius: 8px;
+	outline: 2px solid var(--n-color-target);
+	outline-offset: 2px;
 }
 
 .assetIndicator {

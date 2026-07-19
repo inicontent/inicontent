@@ -34,6 +34,8 @@ export default {
 		copyItem: "Copier l'élément",
 		pasteItem: "Coller l'élément",
 		publish: "Publier",
+		selectAll: "Tout sélectionner",
+		clearAll: "Tout désélectionner",
 
 		// Status messages
 		success: "Succès",
@@ -318,6 +320,9 @@ export default {
 		as: "comme",
 
 		// Assets
+		uploadFiles: "Envoyer des fichiers",
+		uploadFolder: "Envoyer un dossier",
+		dropFilesHere: "Déposez les fichiers ici",
 		folderName: "Nom du dossier",
 		image: "Image",
 		video: "Vidéo",

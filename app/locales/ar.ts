@@ -33,6 +33,8 @@ export default {
 		copyItem: "نسخ العنصر",
 		pasteItem: "لصق العنصر",
 		publish: "نشر",
+		selectAll: "تحديد الكل",
+		clearAll: "إلغاء تحديد الكل",
 
 		// Status messages
 		success: "نجح",
@@ -316,6 +318,9 @@ export default {
 		as: "كـ",
 
 		// Assets
+		uploadFiles: "رفع ملفات",
+		uploadFolder: "رفع مجلد",
+		dropFilesHere: "أسقط الملفات هنا",
 		folderName: "إسم المجلد",
 		image: "صورة",
 		video: "فيديو",
