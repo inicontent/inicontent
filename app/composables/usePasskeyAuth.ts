@@ -18,6 +18,7 @@ export function usePasskeyAuth() {
   const config = useRuntimeConfig();
   const database = useState<Database>("database");
   const language = useCookie<LanguagesType>("language", { sameSite: true });
+  const sessionID = useSessionCookie();
 
   const isPasskeySupported = computed(
     () => import.meta.client && typeof window.PublicKeyCredential !== "undefined",
@@ -50,8 +51,9 @@ export function usePasskeyAuth() {
         body: {
           identifier,
         },
-        params: {
+         params: {
           locale: language.value,
+          [`${database.value.slug}_sid`]: sessionID.value,
         },
       },
     );
@@ -82,8 +84,9 @@ export function usePasskeyAuth() {
           challengeRef: beginResponse.result.challengeRef,
           credential,
         },
-        params: {
+         params: {
           locale: language.value,
+          [`${database.value.slug}_sid`]: sessionID.value,
         },
       },
     );
@@ -100,6 +103,7 @@ export function usePasskeyAuth() {
         },
         params: {
           locale: language.value,
+          [`${database.value.slug}_sid`]: sessionID.value,
         },
       },
     );
@@ -129,8 +133,9 @@ export function usePasskeyAuth() {
           challengeRef: beginResponse.result.challengeRef,
           credential,
         },
-        params: {
+         params: {
           locale: language.value,
+          [`${database.value.slug}_sid`]: sessionID.value,
         },
       },
     );
