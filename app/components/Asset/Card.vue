@@ -197,7 +197,7 @@ import { useAssetUploader } from "~/composables/useAssetUploader";
 import { usePdfCompressor } from "~/composables/usePdfCompressor";
 import { useVideoCompressor } from "~/composables/useVideoCompressor";
 
-const { where, suffix } = defineProps<{
+const { where, suffix, targetID } = defineProps<{
 	targetID?: string;
 	where?: any;
 	suffix?: string;
@@ -608,12 +608,13 @@ const schema: Schema = [
 ];
 
 const pagination = reactive({
-	page: route.query.page ? Number(route.query.page) : 1,
+	page: (isAssetRoute && !targetID && route.query.page) ? Number(route.query.page) : 1,
 	pageCount: 1,
-	pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
+	pageSize: (isAssetRoute && !targetID && route.query.perPage) ? Number(route.query.perPage) : 15,
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
+		if (!isAssetRoute || targetID) return;
 		let { page, ...Query }: any = route.query;
 		Query = {
 			...Query,
@@ -624,6 +625,7 @@ const pagination = reactive({
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = toRaw(pagination.pageSize);
 		pagination.pageSize = pageSize;
+		if (!isAssetRoute || targetID) return;
 		let { perPage, page, ...Query }: any = route.query;
 		if (pageSize !== 15) {
 			pagination.page = Math.round(
@@ -649,7 +651,7 @@ async function onUpdatePage(currentPage: number) {
 	pagination.page = currentPage;
 	let Query = route.query;
 	if (currentPage !== 1) Query = { ...Query, page: currentPage as any };
-	if (route.params.path || route.params.path === "")
+	if (isAssetRoute && !targetID)
 		router.push({ query: (({ page, ...rest }) => rest)(Query) });
 	return refresh();
 }
@@ -660,8 +662,8 @@ async function onUpdatePageSize(currentPageSize: number) {
 	if (pagination.pageSize !== 15) {
 		const newPage = Math.round(
 			OLD_pageSize < pagination.pageSize
-				? (Query.page ?? 1) / (pagination.pageSize / OLD_pageSize)
-				: (Query.page ?? 1) * (pagination.pageSize / OLD_pageSize),
+				? pagination.page / (pagination.pageSize / OLD_pageSize)
+				: pagination.page * (pagination.pageSize / OLD_pageSize),
 		);
 		pagination.page = Number.isNaN(newPage) ? 1 : newPage;
 		Query = {
@@ -670,7 +672,7 @@ async function onUpdatePageSize(currentPageSize: number) {
 			page: pagination.page,
 		};
 	}
-	if (route.params.path || route.params.path === "")
+	if (isAssetRoute && !targetID)
 		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
 	return refresh();
 }
