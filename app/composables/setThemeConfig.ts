@@ -30,7 +30,19 @@ export default function () {
 		primaryColorSuppl: adjustColor(mainColor, 0.8),
 	}
 
-	if (database.value?.primaryLanguage && Language.value !== database.value.primaryLanguage) {
-		Language.value = database.value.primaryLanguage;
+	const supportedLanguages = [
+		database.value?.primaryLanguage,
+		...(database.value?.secondaryLanguages ?? []),
+	].filter(Boolean) as LanguagesType[]
+
+	// Keep user's language choice. Only fall back when no language exists,
+	// or when current language is not available for this database.
+	if (!Language.value) {
+		Language.value = database.value?.primaryLanguage ?? "en"
+	} else if (
+		supportedLanguages.length > 0
+		&& !supportedLanguages.includes(Language.value)
+	) {
+		Language.value = database.value?.primaryLanguage ?? "en"
 	}
 }
