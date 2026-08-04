@@ -53,7 +53,10 @@ const modelValue = defineModel<any>({ default: () => ref().value });
 const database = useState<Database>("database");
 
 watchEffect(() => {
-    if (field.value.defaultValue && !modelValue.value)
+    if (
+        field.value.defaultValue !== undefined &&
+        (modelValue.value === undefined || modelValue.value === null)
+    )
         modelValue.value = field.value.defaultValue;
     if (
         (Array.isArray(field.value.type) && field.value.type.includes("array")) ||
