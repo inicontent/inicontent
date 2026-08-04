@@ -189,6 +189,7 @@ declare global {
 		result: T;
 		message: string;
 		options: pageInfo;
+		code: string|number;
 	};
 	type Asset = Item & {
 		name: string;

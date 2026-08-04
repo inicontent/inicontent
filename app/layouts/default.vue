@@ -37,6 +37,7 @@ import {
 	unstableStepsRtl,
 	unstableTableRtl,
 	unstableTagRtl,
+	unstableAlertRtl,
 } from "naive-ui"
 
 import "~/assets/main.css"
@@ -67,6 +68,7 @@ const rtlStyles: any = [
 	unstablePaginationRtl,
 	unstableNotificationRtl,
 	unstableStepsRtl,
+	unstableAlertRtl
 ]
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true })

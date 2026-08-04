@@ -116,11 +116,7 @@
 <script setup lang="ts">
 import { isArrayOfObjects, isStringified } from "inibase/utils";
 import Inison from "inison";
-import {
-	NButtonGroup,
-	type DataTableColumns,
-	type DropdownOption,
-} from "naive-ui";
+import type { DataTableColumns, DropdownOption } from "naive-ui";
 import {
 	Icon,
 	LazyField,
@@ -129,6 +125,7 @@ import {
 	NIcon,
 	NPerformantEllipsis,
 	NText,
+	NButtonGroup
 } from "#components";
 
 const Language = useCookie<LanguagesType>("language", { sameSite: true });

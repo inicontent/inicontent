@@ -503,6 +503,10 @@ export default {
 		applyChanges: "تطبيق التغييرات",
 		skipAiHelp: "تخطي مساعدة الذكاء الاصطناعي",
 		applied: "تم التطبيق",
+		publishData: "نشر البيانات",
+		published: "تم النشر",
+		translateData: "ترجمة",
+		translated: "تمت الترجمة",
 		tableDemo: "معاينة الجدول",
 		billing: "الفوترة",
 
