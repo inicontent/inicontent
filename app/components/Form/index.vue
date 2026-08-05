@@ -157,9 +157,11 @@ function hasFunctionsProperties(items: Schema): boolean {
 	});
 }
 const oldModelValue = ref();
+let schemaFetchSequence = 0;
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
 	const bodyContent = toRaw(modelValue.value);
+	const requestSequence = ++schemaFetchSequence;
 
 	let response: apiResponse<{ schema: Schema; data: Item }>;
 	let setSchema = false;
@@ -198,6 +200,10 @@ async function fetchSchemaAndData() {
 
 			if (Object.keys(bodyContent).length === 0) setSchema = true;
 		}
+
+		// A newer edit already started another request; don't let this
+		// stale response overwrite the schema/data the user is now seeing.
+		if (requestSequence !== schemaFetchSequence) return;
 
 		const currentSchema = schema.value.filter(filterDefaultColumns);
 
@@ -265,12 +271,18 @@ const debouncedFetchSchemaAndData = debounce(async () => {
 	await fetchSchemaAndData();
 }, 1000);
 
+// Debounce the change check itself so a fast typist doesn't pay the cost
+// of deep-diffing the whole form object on every keystroke.
+const debouncedCheckForChanges = debounce((v: Item) => {
+	if (JSON.stringify(oldModelValue.value) !== JSON.stringify(v))
+		debouncedFetchSchemaAndData();
+}, 300);
+
 // Trigger schema fetch on input changes with debounce
 watch(
 	modelValue,
 	(v) => {
-		if (JSON.stringify(oldModelValue.value) !== JSON.stringify(v))
-			debouncedFetchSchemaAndData();
+		debouncedCheckForChanges(v);
 	},
 	{ deep: true, immediate: true },
 );
