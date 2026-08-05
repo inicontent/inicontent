@@ -9,6 +9,7 @@
 
 <script lang="ts" setup>
 import { useDashboardData } from "~/composables/useDashboardData";
+import { VChart } from "~/composables/useEcharts";
 
 const props = defineProps<{
 	widget: Widget;
