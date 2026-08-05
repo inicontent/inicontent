@@ -810,7 +810,7 @@ function getContentAwareMinWidth(field: Field, headerMinWidth: number): number {
 	return hasMultipleRelations ? labelWidth + 56 : labelWidth;
 }
 
-async function setColumns() {
+async function setColumns(skipVisualWidths = false) {
 	const cols = [
 		...(table.value?.allowedMethods !== "r"
 			? [
@@ -1088,14 +1088,18 @@ async function setColumns() {
 
 	if (uniqueCols.length > 2 || table.value?.defaultTableColumns)
 		columns.value = uniqueCols;
-	
-	await ensureVisualWidthsReady();
+
+	if (!skipVisualWidths) await ensureVisualWidthsReady();
 }
-watch([Language, checkedRowKeys, _data, tablesConfig, table], setColumns, {
+watch([Language, _data, tablesConfig, table], () => setColumns(), {
 	deep: true,
 	immediate: true,
 	flush: "post",
 });
+// Selection doesn't affect column widths, so rebuild the columns (to
+// refresh the delete-selection dropdown state) without paying for the
+// DOM remeasure pass that only matters when content actually changed.
+watch(checkedRowKeys, () => setColumns(true), { flush: "post" });
 
 onMounted(() => {
 	void ensureVisualWidthsReady();
