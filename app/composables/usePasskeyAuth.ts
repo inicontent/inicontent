@@ -1,12 +1,12 @@
 import {
-  startAuthentication,
-  startRegistration,
+	startAuthentication,
+	startRegistration,
 } from "@simplewebauthn/browser";
 
 interface PasskeyBeginOptions {
-  challenge: string;
-  challengeRef?: string;
-  [key: string]: unknown;
+	challenge: string;
+	challengeRef?: string;
+	[key: string]: unknown;
 }
 
 type PasskeyBeginResponse = apiResponse<PasskeyBeginOptions>;
@@ -15,135 +15,142 @@ type LoginResponse = apiResponse<LoginPayload>;
 type PasskeyRegisterResponse = apiResponse<Record<string, unknown>>;
 
 export function usePasskeyAuth() {
-  const config = useRuntimeConfig();
-  const database = useState<Database>("database");
-  const language = useCookie<LanguagesType>("language", { sameSite: true });
-  const sessionID = useSessionCookie();
+	const config = useRuntimeConfig();
+	const database = useState<Database>("database");
+	const language = useCookie<LanguagesType>("language", { sameSite: true });
+	const sessionID = useSessionCookie();
 
-  const isPasskeySupported = computed(
-    () => import.meta.client && typeof window.PublicKeyCredential !== "undefined",
-  );
+	const isPasskeySupported = ref(false);
 
-  function mapPasskeyError(error: unknown, fallback: string) {
-    if (!(error instanceof Error)) return fallback;
+	onMounted(() => {
+		isPasskeySupported.value =
+			typeof window.PublicKeyCredential !== "undefined";
+	});
 
-    if (error.name === "AbortError") {
-      return "Passkey prompt was closed before completion.";
-    }
+	function mapPasskeyError(error: unknown, fallback: string) {
+		if (!(error instanceof Error)) return fallback;
 
-    if (error.name === "NotAllowedError") {
-      return "Passkey verification was cancelled or not allowed.";
-    }
+		if (error.name === "AbortError") {
+			return "Passkey prompt was closed before completion.";
+		}
 
-    if (error.name === "InvalidStateError") {
-      return "This device is already registered with a passkey for this account.";
-    }
+		if (error.name === "NotAllowedError") {
+			return "Passkey verification was cancelled or not allowed.";
+		}
 
-    return error.message || fallback;
-  }
+		if (error.name === "InvalidStateError") {
+			return "This device is already registered with a passkey for this account.";
+		}
 
-  async function beginPasskeySignIn(identifier: string) {
-    const beginResponse = await $fetch<PasskeyBeginResponse>(
-      `${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/begin`,
-      {
-        method: "PUT",
-        credentials: "include",
-        body: {
-          identifier,
-        },
-         params: {
-          locale: language.value,
-          [`${database.value.slug}_sid`]: sessionID.value,
-        },
-      },
-    );
+		return error.message || fallback;
+	}
 
-    if (!beginResponse.result?.challenge) {
-      throw new Error(beginResponse.message || "Passkey sign-in could not start");
-    }
+	async function beginPasskeySignIn(identifier: string) {
+		const beginResponse = await $fetch<PasskeyBeginResponse>(
+			`${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/begin`,
+			{
+				method: "PUT",
+				credentials: "include",
+				body: {
+					identifier,
+				},
+				params: {
+					locale: language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		);
 
-    let credential: unknown;
-    try {
-      credential = await startAuthentication({
-        optionsJSON: beginResponse.result,
-      });
-    } catch (error) {
-      throw new Error(
-        mapPasskeyError(error, "Passkey sign-in could not be completed"),
-      );
-    }
+		if (!beginResponse.result?.challenge) {
+			throw new Error(
+				beginResponse.message || "Passkey sign-in could not start",
+			);
+		}
 
-    return $fetch<LoginResponse>(
-      `${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/complete`,
-      {
-        method: "PUT",
-        credentials: "include",
-        body: {
-          identifier,
-          challenge: beginResponse.result.challenge,
-          challengeRef: beginResponse.result.challengeRef,
-          credential,
-        },
-         params: {
-          locale: language.value,
-          [`${database.value.slug}_sid`]: sessionID.value,
-        },
-      },
-    );
-  }
+		let credential: unknown;
+		try {
+			credential = await startAuthentication({
+				optionsJSON: beginResponse.result,
+			});
+		} catch (error) {
+			throw new Error(
+				mapPasskeyError(error, "Passkey sign-in could not be completed"),
+			);
+		}
 
-  async function registerCurrentUserPasskey() {
-    const beginResponse = await $fetch<PasskeyBeginResponse>(
-      `${config.public.apiBase}${database.value.slug}/auth/passkey/register/begin`,
-      {
-        method: "PUT",
-        credentials: "include",
-        body: {
-          source: "auth",
-        },
-        params: {
-          locale: language.value,
-          [`${database.value.slug}_sid`]: sessionID.value,
-        },
-      },
-    );
+		return $fetch<LoginResponse>(
+			`${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/complete`,
+			{
+				method: "PUT",
+				credentials: "include",
+				body: {
+					identifier,
+					challenge: beginResponse.result.challenge,
+					challengeRef: beginResponse.result.challengeRef,
+					credential,
+				},
+				params: {
+					locale: language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		);
+	}
 
-    if (!beginResponse.result?.challenge) {
-      throw new Error(beginResponse.message || "Passkey registration could not start");
-    }
+	async function registerCurrentUserPasskey() {
+		const beginResponse = await $fetch<PasskeyBeginResponse>(
+			`${config.public.apiBase}${database.value.slug}/auth/passkey/register/begin`,
+			{
+				method: "PUT",
+				credentials: "include",
+				body: {
+					source: "auth",
+				},
+				params: {
+					locale: language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		);
 
-    let credential: unknown;
-    try {
-      credential = await startRegistration({
-        optionsJSON: beginResponse.result,
-      });
-    } catch (error) {
-      throw new Error(
-        mapPasskeyError(error, "Passkey registration could not be completed"),
-      );
-    }
+		if (!beginResponse.result?.challenge) {
+			throw new Error(
+				beginResponse.message || "Passkey registration could not start",
+			);
+		}
 
-    return $fetch<PasskeyRegisterResponse>(
-      `${config.public.apiBase}${database.value.slug}/auth/passkey/register/complete`,
-      {
-        method: "PUT",
-        credentials: "include",
-        body: {
-          challenge: beginResponse.result.challenge,
-          challengeRef: beginResponse.result.challengeRef,
-          credential,
-        },
-         params: {
-          locale: language.value,
-          [`${database.value.slug}_sid`]: sessionID.value,
-        },
-      },
-    );
-  }
+		let credential: unknown;
+		try {
+			credential = await startRegistration({
+				optionsJSON: beginResponse.result,
+			});
+		} catch (error) {
+			throw new Error(
+				mapPasskeyError(error, "Passkey registration could not be completed"),
+			);
+		}
 
-  return {
-    isPasskeySupported,
-    beginPasskeySignIn,
-    registerCurrentUserPasskey,
-  };
+		return $fetch<PasskeyRegisterResponse>(
+			`${config.public.apiBase}${database.value.slug}/auth/passkey/register/complete`,
+			{
+				method: "PUT",
+				credentials: "include",
+				body: {
+					challenge: beginResponse.result.challenge,
+					challengeRef: beginResponse.result.challengeRef,
+					credential,
+				},
+				params: {
+					locale: language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+			},
+		);
+	}
+
+	return {
+		isPasskeySupported,
+		beginPasskeySignIn,
+		registerCurrentUserPasskey,
+	};
 }

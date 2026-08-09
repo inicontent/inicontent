@@ -8,7 +8,7 @@
 						<NButton attr-type="submit" type="primary" style="flex: 1;" secondary strong :loading="Loading.Signin">
 							{{ t("signin") }}
 						</NButton>
-						<NTooltip trigger="hover" :disabled="!passkeySigninHint">
+						<NTooltip v-if="isPasskeySupported" trigger="hover" :disabled="!passkeySigninHint">
 							<template #trigger>
 								<NButton
 									type="primary"
@@ -42,6 +42,33 @@
 			</NTabPane>
 		</NTabs>
 	</NCard>
+
+	<NModal
+		v-model:show="showPasskeyEnrollment"
+		preset="card"
+		:mask-closable="false"
+		:close-on-esc="false"
+		:title="t('passkey.enrollmentTitle')"
+		style="width: min(420px, calc(100vw - 32px));"
+	>
+		<NFlex vertical :size="16">
+			<NText>{{ t("passkey.enrollmentPrompt") }}</NText>
+			<NFlex justify="end">
+				<NButton :disabled="Loading.PasskeyRegistration" @click="skipPasskeyEnrollment">
+					{{ t("passkey.notNow") }}
+				</NButton>
+				<NButton
+					type="primary"
+					secondary
+					strong
+					:loading="Loading.PasskeyRegistration"
+					@click="registerPasskeyAfterLogin"
+				>
+					{{ t("passkey.register") }}
+				</NButton>
+			</NFlex>
+		</NFlex>
+	</NModal>
 </template>
 
 <script lang="ts" setup>
@@ -58,7 +85,8 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const { beginPasskeySignIn, isPasskeySupported } = usePasskeyAuth();
+const { beginPasskeySignIn, isPasskeySupported, registerCurrentUserPasskey } =
+	usePasskeyAuth();
 
 const redirectTo = useCookie("redirectTo", { sameSite: true });
 
@@ -77,14 +105,12 @@ const SigninForm = ref({
 	username: "",
 	password: "",
 });
+const showPasskeyEnrollment = ref(false);
+let resolvePasskeyEnrollment: (() => void) | undefined;
 const canStartPasskeySignin = computed(
 	() => isPasskeySupported.value && !!SigninForm.value.username?.trim(),
 );
 const passkeySigninHint = computed(() => {
-	if (!isPasskeySupported.value) {
-		return t("passkey.notSupported");
-	}
-
 	if (!SigninForm.value.username?.trim()) {
 		return t("passkey.signinHintUsername");
 	}
@@ -120,10 +146,49 @@ const isSafeRedirect = (value?: string) =>
 	!value.endsWith("/auth") &&
 	!value.includes("/auth?");
 
-type LoginPayload = User & { sessionID: string };
+type LoginPayload = User & { sessionID: string; hasPasskey?: boolean };
 type LoginResponse = apiResponse<LoginPayload>;
 
-async function handleSuccessfulLogin(data: LoginResponse) {
+function promptForPasskeyEnrollment() {
+	showPasskeyEnrollment.value = true;
+	return new Promise<void>((resolve) => {
+		resolvePasskeyEnrollment = resolve;
+	});
+}
+
+function finishPasskeyEnrollment() {
+	showPasskeyEnrollment.value = false;
+	resolvePasskeyEnrollment?.();
+	resolvePasskeyEnrollment = undefined;
+}
+
+function skipPasskeyEnrollment() {
+	finishPasskeyEnrollment();
+}
+
+async function registerPasskeyAfterLogin() {
+	if (Loading.value.PasskeyRegistration === true) return;
+
+	Loading.value.PasskeyRegistration = true;
+	try {
+		const response = await registerCurrentUserPasskey();
+		window.$message.success(
+			response.message || t("passkey.registeredSuccessfully"),
+		);
+		finishPasskeyEnrollment();
+	} catch (error: unknown) {
+		window.$message.error(
+			error instanceof Error ? error.message : t("passkey.registrationFailed"),
+		);
+	} finally {
+		Loading.value.PasskeyRegistration = false;
+	}
+}
+
+async function handleSuccessfulLogin(
+	data: LoginResponse,
+	offerPasskeyEnrollment = false,
+) {
 	sessionID.value = data.result.sessionID;
 	window.$message.success(data.message);
 	user.value = data.result;
@@ -138,6 +203,14 @@ async function handleSuccessfulLogin(data: LoginResponse) {
 			},
 		)
 	).result;
+
+	if (
+		offerPasskeyEnrollment &&
+		isPasskeySupported.value &&
+		!data.result.hasPasskey
+	) {
+		await promptForPasskeyEnrollment();
+	}
 
 	if (props.modal) {
 		emit("loggedIn");
@@ -181,7 +254,7 @@ async function SigninSubmit(e: Event) {
 					},
 				);
 				if (data.result?.id) {
-					await handleSuccessfulLogin(data);
+					await handleSuccessfulLogin(data, true);
 				} else window.$message.error(data.message);
 				Loading.value.Signin = false;
 			}
