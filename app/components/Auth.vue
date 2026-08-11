@@ -80,7 +80,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	loggedIn: [];
+	"logged-in": [];
 }>();
 
 const config = useRuntimeConfig();
@@ -214,7 +214,7 @@ async function handleSuccessfulLogin(
 	}
 
 	if (props.modal) {
-		emit("loggedIn");
+		emit("logged-in");
 		return;
 	}
 
