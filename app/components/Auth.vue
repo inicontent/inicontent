@@ -156,8 +156,9 @@ function promptForPasskeyEnrollment() {
 	});
 }
 
-function finishPasskeyEnrollment() {
+async function finishPasskeyEnrollment() {
 	showPasskeyEnrollment.value = false;
+	await nextTick();
 	resolvePasskeyEnrollment?.();
 	resolvePasskeyEnrollment = undefined;
 }
