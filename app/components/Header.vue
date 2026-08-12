@@ -158,10 +158,7 @@ const userDropdownOptions = computed(() => [
         icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
         show:
             !!user.value?.id &&
-            (
-                user.value?.role === config.public.idOne ||
-                database.value?.slug === "inicontent"
-            ),
+            (database.value?.slug === "inicontent" || user.value?.role === config.public.idOne),
         disabled: route.path.includes("/admin/billing"),
     },
     {

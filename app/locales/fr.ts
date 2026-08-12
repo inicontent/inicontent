@@ -241,7 +241,6 @@ export default {
 		large: "Grand",
 		newTable: "Nouvelle table",
 		newItem: "Nouvel élément",
-		tableFlows: "Flux de table",
 		schedules: "Planifications",
 		tableSchedules: "Planifications de table",
 		tableSlug: "Identifiant de table",

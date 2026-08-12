@@ -14,7 +14,7 @@
 		</NLayout>
 
 		<NModal v-model:show="showAuthModal" :mask-closable="false" :close-on-esc="false">
-			<Auth modal @logged-in="onLoggedIn" />
+			<Auth :onLoggedIn />
 		</NModal>
 
 		<LazyAssetPreview />
@@ -30,9 +30,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const database = useState<Database>("database")
 
-
 const sessionID = useSessionCookie()
-
 
 const showAuthModal = ref(false)
 const authCheckFailCount = ref(0)

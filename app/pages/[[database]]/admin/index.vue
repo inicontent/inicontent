@@ -3,7 +3,7 @@
 		<NCard :title="t('tables')" style="background:none" :bordered="false">
 			<LazyTableGrid v-model="database" />
 		</NCard>
-		<NCard :title="t('dashboards')" style="background:none" :bordered="false">
+		<NCard v-if="user?.role === config.public.idOne" :title="t('dashboards')" style="background:none" :bordered="false">
 			<LazyDashboardGrid v-model="database" />
 		</NCard>
 	</NFlex>
@@ -16,6 +16,9 @@ definePageMeta({
 })
 
 const database = useState<Database>("database")
+const user = useState<User>("user");
+const config = useRuntimeConfig();
+
 useHead({
 	title: `${t(database.value.slug)} | ${t("dashboard")}`,
 	link: [

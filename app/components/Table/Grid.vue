@@ -150,7 +150,7 @@ const getDropdownOptions = (table: Table) => {
 		},
 		{
 			key: `${tableUrl}/settings`,
-			label: t("tableSettings"),
+			label: t("settings"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 			show:
 				!["sessions", "translations", "assets"].includes(table.slug) &&
@@ -158,7 +158,7 @@ const getDropdownOptions = (table: Table) => {
 		},
 		{
 			key: `${tableUrl}/flows`,
-			label: t("tableFlows"),
+			label: t("flows"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 			show:
 				!["sessions", "translations"].includes(table.slug) &&
@@ -166,7 +166,7 @@ const getDropdownOptions = (table: Table) => {
 		},
 		{
 			key: `${tableUrl}/schedules`,
-			label: t("tableSchedules"),
+			label: t("schedules"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:clock-play" })),
 			show:
 				!["sessions", "translations", "assets"].includes(table.slug) &&

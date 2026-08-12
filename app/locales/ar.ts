@@ -240,7 +240,6 @@ export default {
 		large: "كبير",
 		newTable: "جدول جديد",
 		newItem: "عنصر جديد",
-		tableFlows: "تدفقات الجدول",
 		schedules: "الجدولات",
 		tableSchedules: "جدولات الجدول",
 		tableSlug: "إسم الجدول",
@@ -774,7 +773,6 @@ export default {
 		noTranslatableFields: "لا توجد حقول نصية قابلة للترجمة في هذا الجدول.",
 		translationPlaceholder: "أدخل الترجمة…",
 		translationsSaved: "تم حفظ الترجمات",
-		translated: "مترجم",
 
 		passkey: {
 			securityTitle: "أمان مفتاح المرور",

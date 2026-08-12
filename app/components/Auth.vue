@@ -75,13 +75,11 @@
 import type { FormInst, TabsInst } from "naive-ui";
 import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
 
-const props = defineProps<{
-	modal?: boolean;
-}>();
-
 const emit = defineEmits<{
-	"logged-in": [];
+	loggedIn: [];
 }>();
+const instance = getCurrentInstance();
+const hasLoggedInListener = () => !!instance?.vnode.props?.onLoggedIn;
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -111,9 +109,8 @@ const canStartPasskeySignin = computed(
 	() => isPasskeySupported.value && !!SigninForm.value.username?.trim(),
 );
 const passkeySigninHint = computed(() => {
-	if (!SigninForm.value.username?.trim()) {
+	if (!SigninForm.value.username?.trim())
 		return t("passkey.signinHintUsername");
-	}
 
 	return t("passkey.signinHintDevice");
 });
@@ -205,18 +202,17 @@ async function handleSuccessfulLogin(
 		)
 	).result;
 
+	if (hasLoggedInListener()) {
+		emit("loggedIn");
+		return;
+	}
+
 	if (
 		offerPasskeyEnrollment &&
 		isPasskeySupported.value &&
 		!data.result.hasPasskey
-	) {
+	)
 		await promptForPasskeyEnrollment();
-	}
-
-	if (props.modal) {
-		emit("logged-in");
-		return;
-	}
 
 	const queryRedirectTo =
 		typeof route.query.redirectTo === "string"

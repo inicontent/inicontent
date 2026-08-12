@@ -8,17 +8,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	);
 
 	const sessionID = useSessionCookie(currentDatabaseSlug);
-	const platformSessionID = useSessionCookie("inicontent");
 	const query: Record<string, string> = {};
 
-	if (sessionID.value) {
+	if (sessionID.value)
 		query[`${currentDatabaseSlug}_sid`] = sessionID.value;
-	}
-
-	if (platformSessionID.value) {
-		query.inicontent_sid = platformSessionID.value;
-	}
-
+	
 	if (!database.value)
 		database.value = (
 			await $fetch<apiResponse<Database>>(
