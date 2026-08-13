@@ -12,7 +12,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	if (sessionID.value)
 		query[`${currentDatabaseSlug}_sid`] = sessionID.value;
-	
+		
 	if (!database.value)
 		database.value = (
 			await $fetch<apiResponse<Database>>(
