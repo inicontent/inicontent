@@ -10,6 +10,8 @@
 			v-model:show="translateDrawerShow"
 			:item="translateDrawerItem"
 		/>
+		<input ref="importFileInputRef" type="file" accept=".csv,.json,text/csv,application/json"
+			hidden @change="handleImportFileSelected" />
 		<NCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
@@ -186,6 +188,8 @@ const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const Language = useCookie<LanguagesType>("language", { sameSite: true });
 const sessionID = useSessionCookie();
+const importFileInputRef = ref<HTMLInputElement>();
+const importUploadProgress = ref(0);
 
 async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;
@@ -398,72 +402,214 @@ if (isSlotSet("default") && !table.value.displayAs)
 
 const notificationRef = ref<NotificationReactive>();
 const currentJob = computed(() => table.value?.currentJob);
-async function jobNotification() {
-	if (currentJob.value) {
-		if (!notificationRef.value)
-			notificationRef.value = window.$notification.info({
-				title: t(`an_${currentJob.value}_job_is_running_in_background`),
-				onClose() {
-					notificationRef.value?.destroy();
-					notificationRef.value = undefined;
-					table.value.currentJob = undefined;
-				},
-				meta: () => h(NTime),
-			});
+let jobTimer: ReturnType<typeof setTimeout> | undefined;
 
-		const jobTimer = setInterval(async () => {
-			if (notificationRef.value) {
-				const currentJobProgress = (
-					await $fetch<apiResponse<number>>(
-						`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/${currentJob.value}`,
-						{
-							credentials: "include",
-							query: { [`${database.value.slug}_sid`]: sessionID.value },
-						},
-					)
-				).result;
+function clearJobTimer() {
+	if (jobTimer) clearTimeout(jobTimer);
+	jobTimer = undefined;
+}
 
-				if (currentJobProgress === 100) {
-					clearInterval(jobTimer);
-					notificationRef.value.title = t(`an_${currentJob.value}_job_is_done`);
-					if (currentJob.value === "export")
-						notificationRef.value.action = () =>
-							h(
-								NButton,
-								{
-									text: true,
-									type: "primary",
-									onClick: () => {
-										window.open(
-											`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
-										);
-										notificationRef.value?.destroy();
-										notificationRef.value = undefined;
-										table.value.currentJob = undefined;
-									},
-								},
-								{
-									default: () => t("download"),
-								},
-							);
-					setTimeout(() => {
-						if (notificationRef.value)
-							notificationRef.value.content = undefined;
-					}, 500);
-				} else
-					notificationRef.value.content = () =>
-						h(NProgress, {
-							type: "line",
-							percentage: currentJobProgress,
-							indicatorPlacement: "inside",
-							processing: true,
-						});
-			}
-		}, 1000);
+async function refreshTableAfterImport() {
+	if (isSlotSet("default") && !table.value.displayAs)
+		data.value = await $fetch<apiResponse<Item[]>>(
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}`,
+			{
+				credentials: "include",
+				query: { [`${database.value.slug}_sid`]: sessionID.value },
+			},
+		);
+	else await refreshNuxtData(`${database.value.slug}/${table.value.slug}`);
+}
+
+function uploadImportFile(file: File) {
+	return new Promise<apiResponse<TableImportStatus>>((resolve, reject) => {
+		const url = new URL(
+			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/import`,
+			window.location.origin,
+		);
+		if (sessionID.value)
+			url.searchParams.set(`${database.value.slug}_sid`, sessionID.value);
+		if (Language.value) url.searchParams.set("locale", Language.value);
+
+		const request = new XMLHttpRequest();
+		request.open("POST", url.toString());
+		request.withCredentials = true;
+		request.responseType = "json";
+		request.setRequestHeader(
+			"Content-Type",
+			file.type || "application/octet-stream",
+		);
+		request.setRequestHeader("x-import-file-name", encodeURIComponent(file.name));
+		request.upload.onprogress = (event) => {
+			if (event.lengthComputable)
+				importUploadProgress.value = Math.round(
+					(event.loaded / event.total) * 100,
+				);
+		};
+		request.onload = () => {
+			const response = request.response as apiResponse<TableImportStatus> | null;
+			if (request.status >= 200 && request.status < 300 && response)
+				resolve(response);
+			else reject(new Error(response?.message || t("uploadFailed")));
+		};
+		request.onerror = () => reject(new Error(t("uploadFailed")));
+		request.onabort = () => reject(new Error(t("uploadFailed")));
+		request.send(file);
+	});
+}
+
+async function handleImportFileSelected(event: Event) {
+	const input = event.target as HTMLInputElement;
+	const file = input.files?.[0];
+	if (!file) return;
+
+	const extension = file.name.split(".").pop()?.toLowerCase();
+	if (!extension || !["csv", "json"].includes(extension)) {
+		window.$message.error(t("isInvalidFormat"));
+		input.value = "";
+		return;
 	}
+
+	Loading.value.import = true;
+	importUploadProgress.value = 0;
+	notificationRef.value?.destroy();
+	notificationRef.value = window.$notification.info({
+		title: t("uploadingImportFile"),
+		duration: 0,
+		content: () =>
+			h(NProgress, {
+				type: "line",
+				percentage: importUploadProgress.value,
+				indicatorPlacement: "inside",
+				processing: importUploadProgress.value < 100,
+			}),
+	});
+
+	try {
+		const response = await uploadImportFile(file);
+		if (!response.result) throw new Error(response.message);
+		notificationRef.value?.destroy();
+		notificationRef.value = undefined;
+		table.value.currentJob = "import";
+	} catch (error) {
+		notificationRef.value?.destroy();
+		notificationRef.value = undefined;
+		window.$message.error(
+			error instanceof Error ? error.message : t("uploadFailed"),
+		);
+	} finally {
+		Loading.value.import = false;
+		input.value = "";
+	}
+}
+
+async function jobNotification() {
+	clearJobTimer();
+	const job = currentJob.value;
+	if (!job) return;
+
+	if (!notificationRef.value)
+		notificationRef.value = window.$notification.info({
+			title: t(`an_${job}_job_is_running_in_background`),
+			duration: 0,
+			onClose() {
+				clearJobTimer();
+				notificationRef.value = undefined;
+			},
+			meta: () => h(NTime),
+		});
+	else
+		notificationRef.value.title = t(
+			`an_${job}_job_is_running_in_background`,
+		);
+
+	const pollJob = async () => {
+		if (!notificationRef.value || currentJob.value !== job) return true;
+
+		try {
+			const result = (
+				await $fetch<apiResponse<number | TableImportStatus>>(
+					`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/${job}`,
+					{
+						credentials: "include",
+						query: { [`${database.value.slug}_sid`]: sessionID.value },
+					},
+				)
+			).result;
+			const importStatus =
+				typeof result === "object" && result ? result : undefined;
+			const progress =
+				typeof result === "number" ? result : (importStatus?.progress ?? 0);
+
+			if (job === "import" && importStatus?.state === "failed") {
+				clearJobTimer();
+				notificationRef.value?.destroy();
+				notificationRef.value = window.$notification.error({
+					title: t("an_import_job_failed"),
+					content: importStatus.error || t("uploadFailed"),
+					duration: 0,
+				});
+				table.value.currentJob = undefined;
+				return true;
+			}
+
+			if (progress >= 100 || importStatus?.state === "completed") {
+				clearJobTimer();
+				if (notificationRef.value)
+					notificationRef.value.title = t(`an_${job}_job_is_done`);
+
+				if (job === "import") {
+					await refreshTableAfterImport();
+					if (notificationRef.value)
+						notificationRef.value.content = t("importedRows", {
+							count: importStatus?.processedRows ?? 0,
+						});
+					table.value.currentJob = undefined;
+				} else if (notificationRef.value)
+					notificationRef.value.action = () =>
+						h(
+							NButton,
+							{
+								text: true,
+								type: "primary",
+								onClick: () => {
+									window.open(
+										`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
+									);
+									notificationRef.value?.destroy();
+									notificationRef.value = undefined;
+									table.value.currentJob = undefined;
+								},
+							},
+							{ default: () => t("download") },
+						);
+				return true;
+			}
+
+			if (notificationRef.value)
+				notificationRef.value.content = () =>
+					h(NProgress, {
+						type: "line",
+						percentage: progress,
+						indicatorPlacement: "inside",
+						processing: true,
+					});
+		} catch (error) {
+			console.error("Failed to poll table job", error);
+		}
+		return false;
+	};
+
+	const schedulePoll = () => {
+		jobTimer = setTimeout(async () => {
+			if (!(await pollJob())) schedulePoll();
+		}, 1000);
+	};
+	if (!(await pollJob())) schedulePoll();
 }
 watch(currentJob, jobNotification);
 onMounted(jobNotification);
+onBeforeUnmount(clearJobTimer);
 
 const tableViewRef = ref();
 
@@ -519,7 +665,8 @@ const toolsDropdownOptions = computed(() => [
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:table-import" })),
 		label: t("import"),
 		key: "import",
-		disabled: true,
+		disabled:
+			!table.value?.schema || !!currentJob.value || Loading.value.import,
 		show: user.value?.role === config.public.idOne,
 	},
 	{
@@ -557,6 +704,10 @@ async function toolsDropdownOnSelect(
 		| "tableSizeL",
 ) {
 	switch (value) {
+		case "import": {
+			importFileInputRef.value?.click();
+			break;
+		}
 		case "exportAllData": {
 			await $fetch(
 				`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,

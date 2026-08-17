@@ -5,6 +5,20 @@ export default {
 		optional: "Optional",
 		rightClickToEdit: "Right click to edit",
 		pressAndHoldToEdit: "Press and hold to edit",
+		uploadingImportFile: "Uploading import file",
+		an_import_job_is_running_in_background: "An import is running",
+		an_import_job_is_done: "Import completed",
+		an_import_job_failed: "Import failed",
+		importedRows: "Imported {count} rows",
+		forgotPassword: "Forgot password?",
+		sendResetLink: "Send reset link",
+		resetPassword: "Reset password",
+		newPassword: "New password",
+		confirmPassword: "Confirm password",
+		passwordMinimumLength: "Password must be at least 8 characters.",
+		passwordsDoNotMatch: "Passwords do not match.",
+		invalidResetLink: "This password reset link is invalid or expired.",
+		backToSignIn: "Back to sign in",
 
 		// Field types that differ from default
 		fields: {
@@ -450,7 +464,6 @@ export default {
 		noTranslatableFields: "No translatable text fields found in this table.",
 		translationPlaceholder: "Enter translation…",
 		translationsSaved: "Translations saved",
-		translated: "Translated",
 
 		passkey: {
 			securityTitle: "Passkey Security",
@@ -480,6 +493,10 @@ export default {
 			smtp_pass: "SMTP Password",
 			smtp_secure: "Secure Connection (TLS)",
 		},
+		smtpPasswordUnchanged: "Leave blank to keep the current password",
+		testEmailRecipient: "Test recipient email",
+		sendTestEmail: "Send test email",
+		emailSendFailed: "The email could not be sent. Check the email settings.",
 
 		// Tables
 		templates: "Templates",

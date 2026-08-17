@@ -33,6 +33,7 @@ export default {
 		pressAndHoldToEdit: "Mantén pulsado para editar",
 		copyItem: "Copiar elemento",
 		pasteItem: "Pegar elemento",
+		clipboardItemIsNotCorrect: "El elemento del portapapeles no es correcto",
 		publish: "Publicar",
 		selectAll: "Seleccionar todo",
 		clearAll: "Deseleccionar todo",
@@ -97,6 +98,7 @@ export default {
 		post: "Crear",
 		put: "Actualizar",
 		delete: "Eliminar",
+		deleteSelectedItems: "Eliminar elementos seleccionados",
 
 		// API
 		apiDocumentation: "Documentación de API",
@@ -223,6 +225,15 @@ export default {
 		signin: "Iniciar sesión",
 		signup: "Registrarse",
 		authentication: "Página de inicio de sesión",
+		forgotPassword: "¿Olvidaste tu contraseña?",
+		sendResetLink: "Enviar enlace de restablecimiento",
+		resetPassword: "Restablecer contraseña",
+		newPassword: "Nueva contraseña",
+		confirmPassword: "Confirmar contraseña",
+		passwordMinimumLength: "La contraseña debe tener al menos 8 caracteres.",
+		passwordsDoNotMatch: "Las contraseñas no coinciden.",
+		invalidResetLink: "Este enlace de restablecimiento no es válido o ha caducado.",
+		backToSignIn: "Volver al inicio de sesión",
 
 		// Table actions
 		tools: "Herramientas",
@@ -232,6 +243,11 @@ export default {
 		columns: "Columnas",
 		an_export_job_is_running_in_background: "Una exportación está en curso",
 		an_export_job_is_done: "La exportación ha terminado",
+		uploadingImportFile: "Subiendo archivo de importación",
+		an_import_job_is_running_in_background: "Una importación está en curso",
+		an_import_job_is_done: "La importación ha terminado",
+		an_import_job_failed: "La importación ha fallado",
+		importedRows: "{count} filas importadas",
 		kanban: "Kanban",
 		small: "Pequeño",
 		medium: "Mediano",
@@ -408,6 +424,10 @@ export default {
 			smtp_pass: "Contraseña SMTP",
 			smtp_secure: "Conexión segura (TLS)",
 		},
+		smtpPasswordUnchanged: "Déjalo vacío para conservar la contraseña actual",
+		testEmailRecipient: "Correo del destinatario de prueba",
+		sendTestEmail: "Enviar correo de prueba",
+		emailSendFailed: "No se pudo enviar el correo. Comprueba la configuración.",
 
 		// Tables
 		templates: "Plantillas",

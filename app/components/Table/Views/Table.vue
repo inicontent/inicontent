@@ -830,6 +830,32 @@ async function setColumns(skipVisualWidths = false) {
 												"span",
 												{
 													onClick: async () => {
+														await deleteItem(checkedRowKeys.value);
+														checkedRowKeys.value = [];
+													},
+												},
+												t("deleteSelectedItems"),
+											),
+										key: "delete",
+										icon: () =>
+											h(
+												NIcon,
+												{
+													onClick: async () => {
+														await deleteItem(checkedRowKeys.value);
+														checkedRowKeys.value = [];
+													},
+												},
+												() => h(Icon, { name: "tabler:table-alias" }),
+											),
+									},
+									...(checkedRowKeys.value.length ===
+											_data.value?.result?.length ? [{
+										label: () =>
+											h(
+												"span",
+												{
+													onClick: async () => {
 														await deleteItem();
 														checkedRowKeys.value = [];
 													},
@@ -837,9 +863,6 @@ async function setColumns(skipVisualWidths = false) {
 												t("clearTable"),
 											),
 										key: "clear",
-										disabled:
-											checkedRowKeys.value.length !==
-											_data.value?.result?.length,
 										icon: () =>
 											h(
 												NIcon,
@@ -849,14 +872,10 @@ async function setColumns(skipVisualWidths = false) {
 														checkedRowKeys.value = [];
 													},
 												},
-												() => h(Icon, { name: "tabler:trash" }),
+												() => h(Icon, { name: "tabler:table-minus" }),
 											),
-									},
-								],
-								onSelect: async () => {
-									await deleteItem(checkedRowKeys.value);
-									checkedRowKeys.value = [];
-								},
+									}] : []),
+								]
 							},
 							{
 								label: t("columns"),

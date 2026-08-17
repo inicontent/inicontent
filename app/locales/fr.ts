@@ -33,6 +33,7 @@ export default {
 		pressAndHoldToEdit: "Appuyer longuement pour modifier",
 		copyItem: "Copier l'élément",
 		pasteItem: "Coller l'élément",
+		clipboardItemIsNotCorrect: "L'élément du presse-papiers n'est pas correct",
 		publish: "Publier",
 		selectAll: "Tout sélectionner",
 		clearAll: "Tout désélectionner",
@@ -98,6 +99,7 @@ export default {
 		post: "Créer",
 		put: "Mettre à jour",
 		delete: "Supprimer",
+		deleteSelectedItems: "Supprimer les éléments sélectionnés",
 
 		// API
 		apiDocumentation: "Documentation de l'API",
@@ -226,6 +228,15 @@ export default {
 		signin: "Connexion",
 		signup: "S'inscrire",
 		authentication: "Page de connexion",
+		forgotPassword: "Mot de passe oublié ?",
+		sendResetLink: "Envoyer le lien de réinitialisation",
+		resetPassword: "Réinitialiser le mot de passe",
+		newPassword: "Nouveau mot de passe",
+		confirmPassword: "Confirmer le mot de passe",
+		passwordMinimumLength: "Le mot de passe doit contenir au moins 8 caractères.",
+		passwordsDoNotMatch: "Les mots de passe ne correspondent pas.",
+		invalidResetLink: "Ce lien de réinitialisation est invalide ou expiré.",
+		backToSignIn: "Retour à la connexion",
 
 		// Table actions
 		tools: "Outils",
@@ -235,6 +246,11 @@ export default {
 		columns: "Colonnes",
 		an_export_job_is_running_in_background: "Une exportation est en cours",
 		an_export_job_is_done: "L'exportation est terminée",
+		uploadingImportFile: "Téléversement du fichier d'importation",
+		an_import_job_is_running_in_background: "Une importation est en cours",
+		an_import_job_is_done: "L'importation est terminée",
+		an_import_job_failed: "L'importation a échoué",
+		importedRows: "{count} lignes importées",
 		kanban: "Kanban",
 		small: "Petit",
 		medium: "Moyen",
@@ -411,6 +427,10 @@ export default {
 			smtp_pass: "Mot de passe SMTP",
 			smtp_secure: "Connexion sécurisée (TLS)",
 		},
+		smtpPasswordUnchanged: "Laissez vide pour conserver le mot de passe actuel",
+		testEmailRecipient: "Adresse e-mail de test",
+		sendTestEmail: "Envoyer un e-mail de test",
+		emailSendFailed: "L'e-mail n'a pas pu être envoyé. Vérifiez les paramètres.",
 
 		// Tables
 		templates: "Modèles",

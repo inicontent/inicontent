@@ -114,6 +114,21 @@ declare global {
 		  ]
 		| [null, null, null]
 	)[];
+	type TableImportStatus = {
+		id: string;
+		state: "queued" | "running" | "completed" | "failed";
+		fileName: string;
+		format: "csv" | "json";
+		progress: number;
+		processedRows: number;
+		processedBytes: number;
+		totalBytes: number;
+		createdAt: number;
+		updatedAt: number;
+		startedAt?: number;
+		finishedAt?: number;
+		error?: string;
+	};
 	type Table = {
 		id?: string;
 		slug: string;

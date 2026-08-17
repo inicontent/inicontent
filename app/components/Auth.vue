@@ -32,6 +32,9 @@
 							{{ passkeySigninHint }}
 						</NTooltip>
 					</NButtonGroup>
+					<NButton text type="primary" block style="margin-top: 12px;" @click="showPasswordResetRequest = true">
+						{{ t("forgotPassword") }}
+					</NButton>
 				</NForm>
 			</NTabPane>
 			<NTabPane name="signup" :tab="t('signup')" :disabled="!table?.allowedMethods?.includes('c')">
@@ -69,6 +72,16 @@
 			</NFlex>
 		</NFlex>
 	</NModal>
+
+	<NModal v-model:show="showPasswordResetRequest" preset="card" :title="t('forgotPassword')"
+		style="width: min(420px, calc(100vw - 32px));">
+		<NForm ref="ResetRequestFormRef" :model="ResetRequestForm" @submit="requestPasswordReset">
+			<FieldS v-model="ResetRequestForm" :schema="ResetRequestColumns" />
+			<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.PasswordResetRequest">
+				{{ t("sendResetLink") }}
+			</NButton>
+		</NForm>
+	</NModal>
 </template>
 
 <script lang="ts" setup>
@@ -89,6 +102,7 @@ const { beginPasskeySignIn, isPasskeySupported, registerCurrentUserPasskey } =
 const redirectTo = useCookie("redirectTo", { sameSite: true });
 
 const SigninFormRef = ref<FormInst | null>(null);
+const ResetRequestFormRef = ref<FormInst | null>(null);
 const route = useRoute();
 const tabsInstRef = ref<TabsInst | null>(null);
 const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
@@ -103,6 +117,8 @@ const SigninForm = ref({
 	username: "",
 	password: "",
 });
+const ResetRequestForm = ref({ email: "" });
+const showPasswordResetRequest = ref(false);
 const showPasskeyEnrollment = ref(false);
 let resolvePasskeyEnrollment: (() => void) | undefined;
 const canStartPasskeySignin = computed(
@@ -123,6 +139,13 @@ const SigninColumns: Schema = [
 	{
 		key: "password",
 		type: "password",
+		required: true,
+	},
+];
+const ResetRequestColumns: Schema = [
+	{
+		key: "email",
+		type: "email",
 		required: true,
 	},
 ];
@@ -283,6 +306,40 @@ async function SigninWithPasskey() {
 		);
 	} finally {
 		Loading.value.PasskeySignin = false;
+	}
+}
+
+async function requestPasswordReset(event: Event) {
+	event.preventDefault();
+	try {
+		await ResetRequestFormRef.value?.validate();
+	} catch {
+		window.$message.error(t("inputsAreInvalid"));
+		return;
+	}
+
+	if (Loading.value.PasswordResetRequest) return;
+	Loading.value.PasswordResetRequest = true;
+	try {
+		const data = await $fetch<apiResponse<boolean>>(
+			`${config.public.apiBase}${database.value.slug}/auth/reset`,
+			{
+				method: "POST",
+				body: toRaw(ResetRequestForm.value),
+				credentials: "include",
+				query: { locale: Language.value },
+			},
+		);
+		if (data.result) {
+			window.$message.success(data.message);
+			showPasswordResetRequest.value = false;
+			ResetRequestForm.value.email = "";
+		} else window.$message.error(data.message);
+	} catch (error: unknown) {
+		const message = (error as { data?: { message?: string } })?.data?.message;
+		window.$message.error(message ?? t("emailSendFailed"));
+	} finally {
+		Loading.value.PasswordResetRequest = false;
 	}
 }
 

@@ -32,6 +32,7 @@ export default {
 		pressAndHoldToEdit: "إضغط مطولاً للتعديل",
 		copyItem: "نسخ العنصر",
 		pasteItem: "لصق العنصر",
+		clipboardItemIsNotCorrect: "عنصر الحافظة غير صحيح",
 		publish: "نشر",
 		selectAll: "تحديد الكل",
 		clearAll: "إلغاء تحديد الكل",
@@ -97,6 +98,7 @@ export default {
 		post: "إنشاء",
 		put: "تعديل",
 		delete: "حذف",
+		deleteSelectedItems: "حذف العناصر المحددة",
 
 		// API
 		apiDocumentation: "دليل الواجهة البرمجية",
@@ -225,6 +227,15 @@ export default {
 		signin: "تسجيل الدخول",
 		signup: "إنشاء حساب",
 		authentication: "صفحة الدخول",
+		forgotPassword: "هل نسيت كلمة المرور؟",
+		sendResetLink: "إرسال رابط إعادة التعيين",
+		resetPassword: "إعادة تعيين كلمة المرور",
+		newPassword: "كلمة المرور الجديدة",
+		confirmPassword: "تأكيد كلمة المرور",
+		passwordMinimumLength: "يجب ألا تقل كلمة المرور عن 8 أحرف.",
+		passwordsDoNotMatch: "كلمتا المرور غير متطابقتين.",
+		invalidResetLink: "رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية.",
+		backToSignIn: "العودة إلى تسجيل الدخول",
 
 		// Table actions
 		tools: "الأدوات",
@@ -234,6 +245,11 @@ export default {
 		columns: "الأعمدة",
 		an_export_job_is_running_in_background: "هناك عملية تصدير جارية",
 		an_export_job_is_done: "عملية التصدير إنتهت",
+		uploadingImportFile: "جاري رفع ملف الاستيراد",
+		an_import_job_is_running_in_background: "هناك عملية استيراد جارية",
+		an_import_job_is_done: "اكتملت عملية الاستيراد",
+		an_import_job_failed: "فشلت عملية الاستيراد",
+		importedRows: "تم استيراد {count} عنصر",
 		kanban: "كانبان",
 		small: "صغير",
 		medium: "متوسط",
@@ -427,6 +443,10 @@ export default {
 			smtp_pass: "كلمة مرور SMTP",
 			smtp_secure: "اتصال آمن (TLS)",
 		},
+		smtpPasswordUnchanged: "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية",
+		testEmailRecipient: "البريد الإلكتروني لمستلم الاختبار",
+		sendTestEmail: "إرسال بريد تجريبي",
+		emailSendFailed: "تعذر إرسال البريد الإلكتروني. تحقق من إعدادات البريد.",
 
 		// Tables
 		templates: "القوالب",

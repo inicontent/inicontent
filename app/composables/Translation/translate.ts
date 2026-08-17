@@ -173,7 +173,8 @@ function handlePlural(
 	language: LanguagesType,
 	params?: Record<string, unknown>,
 ): string {
-	if (typeof translation === "string") return translation;
+	if (typeof translation === "string")
+		return interpolate(translation, { ...params, count });
 
 	const pluralForm = getPluralForm(count, language);
 	const translationRecord =
