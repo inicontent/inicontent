@@ -34,7 +34,11 @@
                 <NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
                     <template #trigger>
                         <NButton round size="small">{{ humanFileSize(
-                            database?.size,
+                            database?.tables
+                                ?.map(({ size }) => size)
+                                .reduce((total, num) => {
+                                    return (total ?? 0) + (num ?? 0);
+                                }, 0),
                         ) }}</NButton>
                     </template>
                     <NFlex vertical>

@@ -14,7 +14,7 @@
 		</NLayout>
 
 		<NModal v-model:show="showAuthModal" :mask-closable="false" :close-on-esc="false">
-			<Auth :onLoggedIn />
+			<Auth v-if="showAuthModal" :onLoggedIn />
 		</NModal>
 
 		<LazyAssetPreview />

@@ -1,6 +1,6 @@
 <template>
-	<NDataTable :bordered="false" :scroll-x="tableWidth" resizable id="DataTable" remote ref="dataTableRef" :columns
-		:data="data?.result ?? []" :loading="Loading.data" :pagination="dataTablePagination" :row-key="(row) => row.id"
+	<NDataTable :bordered="false" :scroll-x="tableWidth" :scroll-y="tableViewportHeight" resizable id="DataTable" remote ref="dataTableRef" :columns
+		:data="data?.result ?? []" :loading="!!Loading?.data" :pagination="dataTablePagination" :row-key="(row) => row.id"
 		v-model:checked-row-keys="checkedRowKeys" @update:sorter="handleSorterChange" :getCsvCell :getCsvHeader
 		:rowProps @scroll="handleScroll" :size="tablesConfig[table.slug]?.size" />
 	<NDropdown show-arrow size="small" placement="right" trigger="manual" :x :y :options="dropdownOptions"
@@ -40,13 +40,37 @@ const columns = defineModel<DataTableColumns>("columns");
 const searchString = defineModel<string>("searchString");
 const data = defineModel<apiResponse<Item[]>>("data");
 
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const Loading = useState<Record<string, boolean>>("Loading", () => ({
+	data: false,
+}));
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const route = useRoute();
 const router = useRouter();
 const config = useRuntimeConfig();
 const { isMobile } = useDevice();
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const sessionID = useSessionCookie();
+const user = useState<User>("user");
+const tablesConfig = computed({
+	get: () => user.value?.config?.tables ?? {},
+	set: (v) => {
+		user.value.config = { ...(user.value.config ?? {}), tables: v };
+		$fetch(
+			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			{
+				method: "PUT",
+				body: user.value,
+				params: {
+					return: false,
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+			},
+		).catch((err) => window.$message.error(err.message));
+	},
+});
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
 
@@ -74,10 +98,84 @@ watch(
 	{ deep: true },
 );
 
+const getTableDimensions = () => {
+	const size = tablesConfig.value[table.value?.slug as string]?.size;
+	if (size === "small") {
+		return { columnHeaderHeight: 39, rowHeight: 46, paginationHeight: 28 };
+	}
+	if (size === "large") {
+		return { columnHeaderHeight: 49, rowHeight: 59, paginationHeight: 28 };
+	}
+	return { columnHeaderHeight: 47, rowHeight: 59, paginationHeight: 28 };
+};
+
+const getTableViewportHeight = () => {
+	if (typeof window === "undefined") return 600;
+
+	const tableCard = document.getElementById("tableCard");
+	const cardHeader = tableCard?.querySelector(
+		".n-card-header",
+	) as HTMLElement | null;
+	const headerExtraHeight = cardHeader?.offsetHeight ?? 0;
+	const reservedTopHeight = 65 + headerExtraHeight + 24;
+	const { columnHeaderHeight, paginationHeight } = getTableDimensions();
+	const availableHeight =
+		window.innerHeight -
+		reservedTopHeight -
+		columnHeaderHeight -
+		paginationHeight -
+		20;
+
+	return Math.max(availableHeight, 260);
+};
+
+const tableViewportHeight = computed(() => getTableViewportHeight());
+
+const getResponsivePageSize = () => {
+	if (typeof window === "undefined") return 15;
+
+	const { rowHeight } = getTableDimensions();
+	const tableCard = document.getElementById("tableCard");
+	const cardHeader = tableCard?.querySelector(
+		".n-card-header",
+	) as HTMLElement | null;
+	const headerExtraHeight = cardHeader?.offsetHeight ?? 0;
+	const reservedTopHeight = 65 + headerExtraHeight + 24;
+	const { columnHeaderHeight, paginationHeight } = getTableDimensions();
+	const availableHeight =
+		window.innerHeight -
+		reservedTopHeight -
+		columnHeaderHeight -
+		paginationHeight -
+		20;
+	const calculatedPageSize = Math.floor(availableHeight / rowHeight);
+
+	return Math.min(120, Math.max(8, calculatedPageSize));
+};
+
+const getResponsivePageSizes = () => {
+	const defaultSize = getResponsivePageSize();
+	return Array.from(
+		new Set([8, 10, 15, defaultSize, defaultSize + 10, 30, 50, 100, 500]),
+	)
+		.sort((a, b) => a - b)
+		.slice(0, 8);
+};
+
+const syncPaginationPageSize = () => {
+	if (route.query.perPage) return;
+	const nextPageSize = getResponsivePageSize();
+	if (pagination.pageSize !== nextPageSize) {
+		pagination.pageSize = nextPageSize;
+	}
+};
+
 const pagination = reactive({
 	page: route.query.page ? Number(route.query.page) : 1,
 	pageCount: 1,
-	pageSize: route.query.perPage ? Number(route.query.perPage) : 15,
+	pageSize: route.query.perPage
+		? Number(route.query.perPage)
+		: getResponsivePageSize(),
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
@@ -95,7 +193,10 @@ const pagination = reactive({
 		const OLD_pageSize = toRaw(pagination.pageSize);
 		pagination.pageSize = pageSize;
 		let { perPage, page, ...Query }: any = route.query;
-		if (pageSize !== 15) {
+		const defaultPageSize = Number(
+			route.query.perPage ?? getResponsivePageSize(),
+		);
+		if (pageSize !== defaultPageSize) {
 			pagination.page = Math.round(
 				OLD_pageSize < pageSize
 					? page / (pageSize / OLD_pageSize)
@@ -117,6 +218,22 @@ const pagination = reactive({
 	},
 });
 
+watch(
+	() => tablesConfig.value[table.value?.slug as string]?.size,
+	() => {
+		if (!route.query.perPage) syncPaginationPageSize();
+	},
+);
+
+onMounted(() => {
+	syncPaginationPageSize();
+	window.addEventListener("resize", syncPaginationPageSize);
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener("resize", syncPaginationPageSize);
+});
+
 const sort = ref<Record<string, "asc" | "desc">>({});
 
 const queryOptions = computed(() =>
@@ -127,9 +244,6 @@ const queryOptions = computed(() =>
 		sort: Object.keys(sort.value).length ? sort.value : "",
 	}),
 );
-
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const sessionID = useSessionCookie();
 
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 	`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
@@ -166,7 +280,7 @@ const dataTablePagination = computed(() => ({
 		_data.value?.options &&
 		(!_data.value.options.perPage ||
 			(_data.value.options.total as number) > _data.value.options.perPage),
-	pageSizes: [15, 30, 60, 100, 500],
+	pageSizes: getResponsivePageSizes(),
 	prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
 	...pagination,
 }));
@@ -413,26 +527,6 @@ function handleSorterChange({
 }
 
 const checkedRowKeys = ref<string[]>([]);
-const user = useState<User>("user");
-const tablesConfig = computed({
-	get: () => user.value?.config?.tables ?? {},
-	set: (v) => {
-		user.value.config = { ...(user.value.config ?? {}), tables: v };
-		$fetch(
-			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
-			{
-				method: "PUT",
-				body: user.value,
-				params: {
-					return: false,
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
-			},
-		).catch((err) => window.$message.error(err.message));
-	},
-});
 
 function handleScroll() {
 	clearRowTouchTimeout();
@@ -477,7 +571,9 @@ async function refreshVisualWidths() {
 		// First load can render table internals lazily; retry for a few frames.
 		for (let attempt = 0; attempt < 8; attempt += 1) {
 			await nextTick();
-			await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+			await new Promise<void>((resolve) =>
+				requestAnimationFrame(() => resolve()),
+			);
 			const measured = applyVisualColumnWidths();
 			if (measured) break;
 		}
@@ -613,9 +709,7 @@ function getVisualColumnWidths(): number[] {
 	if (!headerCells.length) return [];
 
 	const widths = headerCells.map((headerCell, index) => {
-		const column = columns.value?.[index] as
-			| { minWidth?: number }
-			| undefined;
+		const column = columns.value?.[index] as { minWidth?: number } | undefined;
 		const minWidth = typeof column?.minWidth === "number" ? column.minWidth : 0;
 		const headerTitle =
 			headerCell
@@ -645,9 +739,8 @@ function getVisualColumnWidths(): number[] {
 				minLeft = Math.min(minLeft, left);
 				maxRight = Math.max(maxRight, right);
 
-				const buttonContent = button.querySelector<HTMLElement>(
-					".n-button__content",
-				);
+				const buttonContent =
+					button.querySelector<HTMLElement>(".n-button__content");
 				const buttonLabel = buttonContent?.textContent?.trim() ?? "";
 				const labelWidth = buttonLabel ? measureTextWidth(buttonLabel) : 0;
 				const iconPadding = button.querySelector(".n-icon") ? 52 : 32;
@@ -850,32 +943,36 @@ async function setColumns(skipVisualWidths = false) {
 											),
 									},
 									...(checkedRowKeys.value.length ===
-											_data.value?.result?.length ? [{
-										label: () =>
-											h(
-												"span",
+									_data.value?.result?.length
+										? [
 												{
-													onClick: async () => {
-														await deleteItem();
-														checkedRowKeys.value = [];
-													},
+													label: () =>
+														h(
+															"span",
+															{
+																onClick: async () => {
+																	await deleteItem();
+																	checkedRowKeys.value = [];
+																},
+															},
+															t("clearTable"),
+														),
+													key: "clear",
+													icon: () =>
+														h(
+															NIcon,
+															{
+																onClick: async () => {
+																	await deleteItem();
+																	checkedRowKeys.value = [];
+																},
+															},
+															() => h(Icon, { name: "tabler:table-minus" }),
+														),
 												},
-												t("clearTable"),
-											),
-										key: "clear",
-										icon: () =>
-											h(
-												NIcon,
-												{
-													onClick: async () => {
-														await deleteItem();
-														checkedRowKeys.value = [];
-													},
-												},
-												() => h(Icon, { name: "tabler:table-minus" }),
-											),
-									}] : []),
-								]
+											]
+										: []),
+								],
 							},
 							{
 								label: t("columns"),
@@ -981,9 +1078,12 @@ async function setColumns(skipVisualWidths = false) {
 					width: minWidth,
 					key: field.key,
 					sorter: !!_data.value?.result,
-					ellipsis: field.table !== undefined ? false : ({
-						tooltip: true,
-					}),
+					ellipsis:
+						field.table !== undefined
+							? false
+							: {
+									tooltip: true,
+								},
 					resizable: !field.children || !isArrayOfObjects(field.children),
 					sortOrder: sort.value[field.key]
 						? `${sort.value[field.key]}end`
@@ -1089,7 +1189,7 @@ async function setColumns(skipVisualWidths = false) {
 																},
 																{
 																	icon: () =>
-																			h(NIcon, () =>
+																		h(NIcon, () =>
 																			h(Icon, { name: "tabler:dots" }),
 																		),
 																},

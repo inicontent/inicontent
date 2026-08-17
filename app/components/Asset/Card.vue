@@ -10,7 +10,9 @@
 			ref="folderInputRef"
 			type="file"
 			multiple
-			webkitdirectory
+			directory=""
+			webkitdirectory=""
+			mozdirectory=""
 			style="display: none;"
 			@change="onFolderInputChange"
 		/>
@@ -83,7 +85,7 @@
 					</NTooltip>
 				</NButtonGroup>
 				<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema size="small" />
-				<NButtonGroup round>
+				<NButtonGroup v-if="table?.allowedMethods?.includes('c')" round>
 					<NPopover placement="top-start">
 						<template #trigger>
 							<NButton round size="small">
@@ -113,7 +115,14 @@
 							</NButton>
 						</NInputGroup>
 					</NPopover>
-					<NUpload v-if="table?.allowedMethods?.includes('c')" multiple abstract
+					<NButton @click="folderInputRef?.click()" round size="small" :title="t('uploadFolder')">
+						<template #icon>
+							<NIcon>
+								<Icon name="tabler:folder-up" />
+							</NIcon>
+						</template>
+					</NButton>
+					<NUpload multiple abstract
 						:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 						<NPopover trigger="manual" placement="top-end"
@@ -122,8 +131,7 @@
 								<NUploadTrigger :abstract="false">
 									<NButton round size="small"
 										:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'"
-										:title="`${t('uploadFiles')} · ⌥/Ctrl+click: ${t('uploadFolder')}`"
-										@click="handleUploadButtonClick">
+										:title="t('uploadFiles')">
 										<template #icon>
 											<NProgress v-if="compressionIndicator" type="circle" status="warning"
 												:percentage="compressionIndicator" :stroke-width="10">
@@ -178,7 +186,7 @@
 				</template>
 			</AssetGrid>
 			<NPagination v-if="pagination.itemCount && pagination.pageCount > 1" :simple="!!$device.isMobile"
-				:page-sizes="[15, 30, 60, 100, 500]" :show-size-picker="showSizePicker" style="margin-top: 25px;"
+				:page-sizes="getResponsivePageSizes()" :show-size-picker="showSizePicker" style="margin-top: 25px;"
 				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page"
 				:page-size="pagination.pageSize" :item-count="pagination.itemCount" />
 		</NFlex>
@@ -203,6 +211,22 @@ const { where, suffix, targetID } = defineProps<{
 	suffix?: string;
 }>();
 const config = useRuntimeConfig();
+
+const getResponsivePageSize = () => {
+	if (typeof window === "undefined") return 15;
+	const width = window.innerWidth;
+	if (width < 640) return 10;
+	if (width < 1024) return 15;
+	if (width < 1440) return 20;
+	return 30;
+};
+
+const getResponsivePageSizes = () => {
+	if (typeof window === "undefined") return [15, 30, 60, 100, 500];
+	if (window.innerWidth < 640) return [10, 20, 30, 50];
+	if (window.innerWidth < 1024) return [15, 30, 60, 100];
+	return [20, 30, 60, 100, 500];
+};
 
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;
 const HUGE_VIDEO_BYTES = 2 * 1024 * 1024 * 1024;
@@ -607,10 +631,18 @@ const schema: Schema = [
 	},
 ];
 
+const syncPaginationPageSize = () => {
+	if (route.query.perPage) return;
+	const nextPageSize = getResponsivePageSize();
+	if (pagination.pageSize !== nextPageSize) {
+		pagination.pageSize = nextPageSize;
+	}
+};
+
 const pagination = reactive({
 	page: (isAssetRoute && !targetID && route.query.page) ? Number(route.query.page) : 1,
 	pageCount: 1,
-	pageSize: (isAssetRoute && !targetID && route.query.perPage) ? Number(route.query.perPage) : 15,
+	pageSize: (isAssetRoute && !targetID && route.query.perPage) ? Number(route.query.perPage) : getResponsivePageSize(),
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
@@ -627,7 +659,8 @@ const pagination = reactive({
 		pagination.pageSize = pageSize;
 		if (!isAssetRoute || targetID) return;
 		let { perPage, page, ...Query }: any = route.query;
-		if (pageSize !== 15) {
+		const defaultPageSize = Number(route.query.perPage ?? getResponsivePageSize());
+		if (pageSize !== defaultPageSize) {
 			pagination.page = Math.round(
 				OLD_pageSize < pageSize
 					? page / (pageSize / OLD_pageSize)
@@ -644,6 +677,15 @@ const pagination = reactive({
 			});
 		}
 	},
+});
+
+onMounted(() => {
+	syncPaginationPageSize();
+	window.addEventListener("resize", syncPaginationPageSize);
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener("resize", syncPaginationPageSize);
 });
 
 const showSizePicker = ref(false);
@@ -961,16 +1003,6 @@ watch(currentPath, () => {
 const isDragOver = ref(false);
 const folderInputRef = ref<HTMLInputElement>();
 const dragCounter = ref(0);
-
-function handleUploadButtonClick(e: MouseEvent) {
-	// Alt+Click (⌥) or Ctrl+Click → folder picker
-	if (e.altKey || e.ctrlKey) {
-		e.stopPropagation();
-		e.preventDefault();
-		folderInputRef.value?.click();
-	}
-	// Plain click falls through to NUploadTrigger → regular file picker
-}
 
 function onDragEnter(e: DragEvent) {
 	if (!table.value?.allowedMethods?.includes("c")) return;

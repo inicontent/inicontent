@@ -88,11 +88,7 @@
 import type { FormInst, TabsInst } from "naive-ui";
 import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
 
-const emit = defineEmits<{
-	loggedIn: [];
-}>();
-const instance = getCurrentInstance();
-const hasLoggedInListener = () => !!instance?.vnode.props?.onLoggedIn;
+const props = defineProps<{onLoggedIn: () => void}>()
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -225,8 +221,8 @@ async function handleSuccessfulLogin(
 		)
 	).result;
 
-	if (hasLoggedInListener()) {
-		emit("loggedIn");
+	if (!!props.onLoggedIn) {
+		props.onLoggedIn()
 		return;
 	}
 

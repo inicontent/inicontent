@@ -483,7 +483,6 @@ export default {
 		},
 
 		// Email settings
-		emailSettings: "Email Settings",
 		emailConfig: {
 			from_email: "From Email",
 			from_name: "Sender Name",
@@ -494,11 +493,6 @@ export default {
 			smtp_secure: "Secure Connection (TLS)",
 		},
 		smtpPasswordUnchanged: "Leave blank to keep the current password",
-		testEmailRecipient: "Test recipient email",
-		sendTestEmail: "Send test email",
 		emailSendFailed: "The email could not be sent. Check the email settings.",
-
-		// Tables
-		templates: "Templates",
 	},
 } as const;

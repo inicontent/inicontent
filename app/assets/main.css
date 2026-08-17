@@ -574,6 +574,7 @@ a {
 	color: #000;
 	border-radius: 0 16px;
 	padding: 2px 5px 0;
+	z-index: 9;
 }
 
 .previewOverlay {

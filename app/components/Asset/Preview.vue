@@ -21,9 +21,10 @@
 				</video>
 				<NImage v-else-if="isImageAsset(activeAsset)" :src="activeAsset.publicURL" preview-disabled
 					class="assetLightboxMedia" object-fit="contain" :img-props="{ style: imageTransformStyle }" />
-				<div v-else-if="isPdfAsset(activeAsset)" class="assetPdfPanel">
+				<div v-else-if="isPdfAsset(activeAsset)" ref="pdfPanelRef" class="assetPdfPanel" @scroll.passive="updatePdfCurrentPage">
 					<div ref="pdfPagesContainerRef" class="assetPdfPages" />
 					<NText v-if="pdfError" depth="3">{{ pdfError }}</NText>
+					<div v-if="pdfPageCount" class="assetPdfPageBadge">{{ pdfCurrentPage }} / {{ pdfPageCount }}</div>
 				</div>
 				<iframe v-else-if="isHtmlAsset(activeAsset)" :src="activeAsset.publicURL" class="assetLightboxFrame"
 					title="HTML Preview" loading="lazy" referrerpolicy="no-referrer" />
@@ -100,8 +101,10 @@ const {
 const showPreview = computed(() => !!currentPreviewAsset.value);
 const activeAsset = computed(() => currentPreviewAsset.value);
 const pdfPagesContainerRef = ref<HTMLDivElement>();
+const pdfPanelRef = ref<HTMLDivElement>();
 const pdfError = ref("");
 const pdfPageCount = ref(0);
+const pdfCurrentPage = ref(1);
 
 type PdfViewport = {
 	width: number;
@@ -188,27 +191,63 @@ async function cleanupPdfDocument() {
 	pdfDocument = undefined;
 }
 
+function updatePdfCurrentPage() {
+	const panel = pdfPanelRef.value;
+	const container = pdfPagesContainerRef.value;
+	if (!panel || !container || !pdfPageCount.value) return;
+	const canvases = Array.from(
+		container.querySelectorAll<HTMLCanvasElement>(".assetPdfCanvas"),
+	);
+	if (!canvases.length) return;
+	const marker = panel.getBoundingClientRect().top + panel.clientHeight * 0.3;
+	let current = 1;
+	for (const [index, canvas] of canvases.entries()) {
+		if (canvas.getBoundingClientRect().top <= marker) current = index + 1;
+	}
+	pdfCurrentPage.value = current;
+}
+
 async function renderAllPdfPages() {
+	await nextTick();
 	if (!pdfDocument || !pdfPagesContainerRef.value) return;
 	const token = pdfLoadToken;
 	const container = pdfPagesContainerRef.value;
+	const panel = pdfPanelRef.value;
 	container.innerHTML = "";
+
+	const availableWidth = (panel?.clientWidth || container.clientWidth || 800) - 8;
+	const availableHeight = panel?.clientHeight || 0;
+	const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+	const qualityBoost = 1.5;
 
 	for (let pageNum = 1; pageNum <= pdfPageCount.value; pageNum++) {
 		if (token !== pdfLoadToken) return;
 		const page = await pdfDocument.getPage(pageNum);
 		if (token !== pdfLoadToken) return;
-		const viewport = page.getViewport({ scale: 1.5 });
+		const baseViewport = page.getViewport({ scale: 1 });
+		// Fit each page inside the modal viewport instead of stretching it to full width.
+		const widthScale = availableWidth / baseViewport.width;
+		const heightScale = availableHeight
+			? availableHeight / baseViewport.height
+			: widthScale;
+		const fitScale = Math.max(Math.min(widthScale, heightScale), 0.1);
+		const oversample = pixelRatio * qualityBoost;
+		const renderScale = Math.min(fitScale * oversample, fitScale * 4);
+		const viewport = page.getViewport({ scale: renderScale });
 		const canvas = document.createElement("canvas");
 		canvas.className = "assetPdfCanvas";
 		canvas.width = viewport.width;
 		canvas.height = viewport.height;
+		// Display at the fitted size; oversample only adds render resolution, not layout size.
+		canvas.style.width = `${(baseViewport.width * fitScale)}px`;
+		canvas.style.height = `${(baseViewport.height * fitScale)}px`;
 		container.appendChild(canvas);
 		const context = canvas.getContext("2d");
 		if (!context) continue;
 		const renderTask = page.render({ canvasContext: context, viewport, canvas });
 		await renderTask.promise;
 	}
+	updatePdfCurrentPage();
 }
 
 async function initializePdfPreview(asset: Asset) {
@@ -217,11 +256,22 @@ async function initializePdfPreview(asset: Asset) {
 	Loading.value.previewModal = true;
 	pdfError.value = "";
 	pdfPageCount.value = 0;
+	pdfCurrentPage.value = 1;
 
 	try {
 		await cleanupPdfDocument();
 		const library = await ensurePdfJsLoaded();
-		const loadingTask = library.getDocument(asset.publicURL as string);
+		const loadingTask = library.getDocument({
+			url: asset.publicURL as string,
+			// Needed so non-embedded/base-14 fonts get correct glyph widths instead of garbled spacing.
+			cMapUrl: `https://unpkg.com/pdfjs-dist@${library.version}/cmaps/`,
+			cMapPacked: true,
+			standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${library.version}/standard_fonts/`,
+			// Fall back to the system's Arabic/CJK fonts when they aren't embedded in the PDF.
+			useSystemFonts: true,
+			// Draw embedded glyph outlines directly instead of via @font-face+fillText, which breaks Arabic letter joining for some font subsets.
+			disableFontFace: true,
+		});
 		const document = (await loadingTask.promise) as unknown as PdfDocument;
 
 		if (currentLoadToken !== pdfLoadToken) {
@@ -263,6 +313,7 @@ watch(currentPreviewAsset, (asset) => {
 		void cleanupPdfDocument();
 		pdfError.value = "";
 		pdfPageCount.value = 0;
+		pdfCurrentPage.value = 1;
 		Loading.value.previewModal = false;
 		return;
 	}
@@ -274,6 +325,7 @@ watch(currentPreviewAsset, (asset) => {
 	void cleanupPdfDocument();
 	pdfError.value = "";
 	pdfPageCount.value = 0;
+	pdfCurrentPage.value = 1;
 	Loading.value.previewModal = isVideoAsset(asset);
 });
 
@@ -339,15 +391,29 @@ onBeforeUnmount(() => {
 }
 
 .assetPdfPanel {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
 	width: 100%;
+	height: min(72vh, 760px);
 	max-height: min(72vh, 760px);
 	overflow-x: hidden;
 	overflow-y: auto;
 	padding: 4px;
+}
+
+.assetPdfPageBadge {
+	position: sticky;
+	bottom: 8px;
+	align-self: center;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 12px;
+	color: #fff;
+	background: color-mix(in srgb, #000 62%, transparent);
+	pointer-events: none;
 }
 
 .assetPdfPages {
@@ -360,8 +426,6 @@ onBeforeUnmount(() => {
 
 .assetPdfCanvas {
 	max-width: 100%;
-	width: 100%;
-	height: auto;
 	background: #fff;
 	border-radius: 10px;
 	box-shadow: 0 6px 20px color-mix(in srgb, #000 14%, transparent);

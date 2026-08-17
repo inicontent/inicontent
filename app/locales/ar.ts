@@ -448,6 +448,14 @@ export default {
 		sendTestEmail: "إرسال بريد تجريبي",
 		emailSendFailed: "تعذر إرسال البريد الإلكتروني. تحقق من إعدادات البريد.",
 
+		// Database settings
+		settings: "الإعدادات",
+		generalSettings: "الإعدادات العامة",
+		translationSettings: "إعدادات الترجمة",
+		deleteDatabase: "حذف قاعدة البيانات",
+		theFollowingActionIsIrreversible: "الإجراء التالي لا يمكن التراجع عنه",
+		save: "حفظ",
+
 		// Tables
 		templates: "القوالب",
 

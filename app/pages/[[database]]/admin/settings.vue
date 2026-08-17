@@ -1,10 +1,10 @@
 <template>
-	<NGrid cols="12" :x-gap="12" item-responsive responsive="screen">
-		<NGridItem span="12 l:11">
+	<NGrid x-gap="12" cols="12" layout-shift-disabled>
+		<NGridItem :span="!$device.isMobile ? 10 : 12">
 			<NCard :title="t('settings')" hoverable>
 				<template #header-extra>
 					<NFlex>
-						<NTooltop :delay="1500">
+						<NTooltip :delay="1500">
 							<template #trigger>
 								<NPopconfirm :show-icon="false" @positive-click="deleteDatabase">
 									<template #trigger>
@@ -20,7 +20,7 @@
 								</NPopconfirm>
 							</template>
 							{{ t("deleteDatabase") }}
-						</NTooltop>
+						</NTooltip>
 						<NButton @click="() => updateDatabase()" type="primary" secondary round
 							:loading="Loading.updateDatabase">
 							<template #icon>
@@ -63,7 +63,7 @@
 				</NFlex>
 			</NCard>
 		</NGridItem>
-		<NGridItem v-if="!$device.isMobile" span="0 l:1">
+		<NGridItem v-if="!$device.isMobile" span="2">
 			<NAnchor affix listen-to="#container" :top="88" :bound="90" style="z-index: 1;">
 				<NAnchorLink :title="t('generalSettings')" href="#general" />
 				<NAnchorLink :title="t('translationSettings')" href="#translation" />

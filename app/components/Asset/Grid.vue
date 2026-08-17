@@ -46,11 +46,11 @@
 									<slot :asset></slot>
 								</NFlex>
 								<div class="previewOverlay">
-									<div v-if="['pdf', ...imageExtensions, ...videoExtensions].includes(asset.extension)"
+									<div v-if="['pdf', ...imageExtensions].includes(asset.extension)"
 										class="fileType">
 										<LazyAssetIcon :type="asset.type" />
 									</div>
-									<div v-if="isVideoAsset(asset)" class="assetIndicator">
+									<div v-else-if="isVideoAsset(asset)" class="assetIndicator">
 										<NIcon :size="18">
 											<Icon name="tabler:player-play-filled" />
 										</NIcon>
@@ -212,7 +212,6 @@ function isVideoAsset(asset: Asset) {
 
 function isOpenInNewTabAsset(asset: Asset) {
 	if (asset.type === "dir") return false;
-	if (asset.extension === "pdf") return true;
 	if (!officeExtensions.includes(asset.extension)) return false;
 	return !["docx", "xlsx"].includes(asset.extension);
 }

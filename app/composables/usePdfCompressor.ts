@@ -93,7 +93,17 @@ export const usePdfCompressor = () => {
 
 		try {
 			const pdfData = await file.arrayBuffer()
-			const pdfDoc = await pdfjs.getDocument({ data: pdfData }).promise
+			const pdfDoc = await pdfjs.getDocument({
+				data: pdfData,
+				// Needed so non-embedded/base-14 fonts get correct glyph widths instead of garbled spacing.
+				cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+				cMapPacked: true,
+				standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+				// Fall back to the system's Arabic/CJK fonts when they aren't embedded in the PDF.
+				useSystemFonts: true,
+				// Draw embedded glyph outlines directly instead of via @font-face+fillText, which breaks Arabic letter joining for some font subsets.
+				disableFontFace: true,
+			}).promise
 			const totalPages = pdfDoc.numPages
 			const doc = new jsPDF({
 				compress: true,

@@ -388,8 +388,17 @@ async function generatePdfThumb() {
 		});
 
 		const pdf = await Promise.race([
-			pdfjsLib.getDocument(asset.publicURL as string)
-				.promise as Promise<unknown>,
+			pdfjsLib.getDocument({
+				url: asset.publicURL as string,
+				// Needed so non-embedded/base-14 fonts get correct glyph widths instead of garbled spacing.
+				cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
+				cMapPacked: true,
+				standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`,
+				// Fall back to the system's Arabic/CJK fonts when they aren't embedded in the PDF.
+				useSystemFonts: true,
+				// Draw embedded glyph outlines directly instead of via @font-face+fillText, which breaks Arabic letter joining for some font subsets.
+				disableFontFace: true,
+			}).promise as Promise<unknown>,
 			timeoutPromise,
 		]);
 
@@ -405,6 +414,8 @@ async function generatePdfThumb() {
 
 		// Create a smaller square thumbnail (200x200px)
 		const thumbnailSize = 200;
+		// Render at device pixel ratio so text, images and icons stay sharp instead of blurry.
+		const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 		const viewport = (page as any).getViewport({ scale: 1 });
 
 		// Calculate scale to cover the square (like CSS cover) - use MAX instead of MIN
@@ -412,12 +423,14 @@ async function generatePdfThumb() {
 			thumbnailSize / viewport.width,
 			thumbnailSize / viewport.height,
 		);
-		const scaledViewport = (page as any).getViewport({ scale });
+		const scaledViewport = (page as any).getViewport({ scale: scale * pixelRatio });
 
 		const canvas = document.createElement("canvas");
-		// Make the canvas square
-		canvas.width = thumbnailSize;
-		canvas.height = thumbnailSize;
+		// Make the canvas square at full resolution, scaled back down via CSS
+		canvas.width = thumbnailSize * pixelRatio;
+		canvas.height = thumbnailSize * pixelRatio;
+		canvas.style.width = `${thumbnailSize}px`;
+		canvas.style.height = `${thumbnailSize}px`;
 
 		const ctx = canvas.getContext("2d");
 		if (!ctx) {
@@ -426,8 +439,8 @@ async function generatePdfThumb() {
 		}
 
 		// Center the scaled PDF content in the square canvas (crop excess)
-		const offsetX = (thumbnailSize - scaledViewport.width) / 2;
-		const offsetY = (thumbnailSize - scaledViewport.height) / 2;
+		const offsetX = (canvas.width - scaledViewport.width) / 2;
+		const offsetY = (canvas.height - scaledViewport.height) / 2;
 		ctx.translate(offsetX, offsetY);
 
 		await Promise.race([
@@ -439,7 +452,7 @@ async function generatePdfThumb() {
 			timeoutPromise,
 		]);
 
-		const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+		const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
 		pdfThumbs[key] = dataUrl;
 
 		// Cache the generated thumbnail

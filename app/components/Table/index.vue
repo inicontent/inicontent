@@ -15,7 +15,7 @@
 		<NCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
-				<NFlex align="center" id="navbarActions" style="flex-direction: row-reverse;">
+				<NFlex align="center" id="navbarActions" justify="center" style="flex-direction: row-reverse;">
 					<slot name="navbarActions">
 						<NButtonGroup id="navbarExtraButtons">
 							<NTooltip v-if="table.config?.realtime" :delay="1500">
