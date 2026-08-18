@@ -218,7 +218,7 @@ function appendCriterionValue(
 function prepareCriterionForMode(
 	operator: string | undefined,
 	rawValue: any,
-	field?: Field,
+	field: Field,
 	mode: "display" | "fetch",
 ) {
 	const normalizedOperator =
