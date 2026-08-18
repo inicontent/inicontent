@@ -435,6 +435,7 @@ export default {
 		// Email settings
 		emailSettings: "إعدادات البريد الإلكتروني",
 		emailConfig: {
+			use_custom_smtp: "استخدام SMTP مخصص",
 			from_email: "بريد المُرسِل",
 			from_name: "اسم المُرسِل",
 			smtp_host: "خادم SMTP",

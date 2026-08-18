@@ -643,14 +643,14 @@ a {
 }
 
 .rtl .flowCardButtons {
-	left: 0;
+	left: 5px;
 	right: auto;
 }
 
 .flowCardButtons {
 	position: absolute;
-	top: 0;
-	right: 0;
+	top: 5px;
+	right: 5px;
 	z-index: 9;
 	visibility: hidden;
 }

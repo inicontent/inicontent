@@ -44,6 +44,10 @@
 						</NForm>
 					</NCard>
 					<NCard id="email" :title="t('emailSettings')" hoverable>
+						<NFlex align="center" :wrap="false" style="margin-bottom: 12px;">
+							<NSwitch v-model:value="useCustomSmtp" />
+							<span>{{ t("emailConfig.use_custom_smtp") }}</span>
+						</NFlex>
 						<NForm ref="emailRef" :model="emailForm">
 							<FieldS :key="emailFormKey" v-model="emailForm" :schema="emailSchema" />
 						</NForm>
@@ -113,6 +117,8 @@ const emailForm = ref<NonNullable<Database["email"]>>({
 	smtp_secure: databaseCopy.value.email.smtp_secure ?? false,
 	smtp_pass: "",
 })
+// UI-only toggle — not persisted, derived from/collapsed into smtp_host presence
+const useCustomSmtp = ref(!!databaseCopy.value.email.smtp_host)
 const emailFormKey = ref(0)
 const testRecipient = ref(user.value?.email ?? databaseCopy.value.email.from_email ?? "")
 
@@ -195,39 +201,44 @@ const emailSchema = computed<Schema>(() => [
 		width: 2,
 		inputProps: { placeholder: t("emailConfig.from_name") },
 	},
-	{
-		key: "smtp_host",
-		type: "string",
-		label: t("emailConfig.smtp_host"),
-		width: 2,
-		inputProps: { placeholder: t("emailConfig.smtp_host") },
-	},
-	{
-		key: "smtp_port",
-		type: "number",
-		label: t("emailConfig.smtp_port"),
-		width: 2,
-		inputProps: { min: 1, max: 65535 },
-	},
-	{
-		key: "smtp_user",
-		type: "string",
-		label: t("emailConfig.smtp_user"),
-		width: 2,
-		inputProps: { placeholder: t("emailConfig.smtp_user") },
-	},
-	{
-		key: "smtp_pass",
-		type: "password",
-		label: t("emailConfig.smtp_pass"),
-		width: 2,
-		inputProps: { placeholder: t("smtpPasswordUnchanged") },
-	},
-	{
-		key: "smtp_secure",
-		type: "boolean",
-		label: t("emailConfig.smtp_secure"),
-	},
+	...(useCustomSmtp.value
+		? ([
+				{
+					key: "smtp_host",
+					type: "string",
+					label: t("emailConfig.smtp_host"),
+					width: 2,
+					required: true,
+					inputProps: { placeholder: t("emailConfig.smtp_host") },
+				},
+				{
+					key: "smtp_port",
+					type: "number",
+					label: t("emailConfig.smtp_port"),
+					width: 2,
+					inputProps: { min: 1, max: 65535 },
+				},
+				{
+					key: "smtp_user",
+					type: "string",
+					label: t("emailConfig.smtp_user"),
+					width: 2,
+					inputProps: { placeholder: t("emailConfig.smtp_user") },
+				},
+				{
+					key: "smtp_pass",
+					type: "password",
+					label: t("emailConfig.smtp_pass"),
+					width: 2,
+					inputProps: { placeholder: t("smtpPasswordUnchanged") },
+				},
+				{
+					key: "smtp_secure",
+					type: "boolean",
+					label: t("emailConfig.smtp_secure"),
+				},
+			] as Schema)
+		: []),
 ])
 
 const sessionID = useSessionCookie()
@@ -246,6 +257,13 @@ async function updateDatabase(showSuccess = true) {
 
 	const bodyContent = JSON.parse(JSON.stringify(databaseCopy.value)) as Database
 	bodyContent.email = JSON.parse(JSON.stringify(emailForm.value))
+	// Toggling off custom SMTP clears smtp_host so the API falls back to the default Inicontent SMTP
+	if (!useCustomSmtp.value && bodyContent.email) {
+		bodyContent.email.smtp_host = ""
+		bodyContent.email.smtp_user = ""
+		bodyContent.email.smtp_pass = ""
+		bodyContent.email.smtp_secure = false
+	}
 	if (!bodyContent.email?.smtp_pass) delete bodyContent.email?.smtp_pass
 
 	Loading.value.updateDatabase = true

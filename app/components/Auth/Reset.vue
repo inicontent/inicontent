@@ -1,21 +1,19 @@
 <template>
-	<div style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
-		<NCard :title="t('resetPassword')" style="width: min(420px, 100%);" hoverable>
-			<NAlert v-if="!token" type="error" :title="t('invalidResetLink')" />
-			<NForm v-else ref="formRef" :model="form" @submit="submitReset">
-				<FieldS v-model="form" :schema="passwordSchema" />
-				<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.PasswordReset">
-					{{ t("resetPassword") }}
-				</NButton>
-			</NForm>
-			<template #footer>
-				<NButton text type="primary" @click="navigateTo(authPath)">
-					<template #icon><NIcon><Icon name="tabler:arrow-left" /></NIcon></template>
-					{{ t("backToSignIn") }}
-				</NButton>
-			</template>
-		</NCard>
-	</div>
+	<NCard :title="t('resetPassword')" style="max-width: 300px; margin: auto;">
+		<NAlert v-if="!token" type="error" :title="t('invalidResetLink')" />
+		<NForm v-else ref="formRef" :model="form" @submit="submitReset">
+			<FieldS v-model="form" :schema="passwordSchema" />
+			<NButton attr-type="submit" type="primary" block secondary strong :loading="Loading.PasswordReset">
+				{{ t("resetPassword") }}
+			</NButton>
+		</NForm>
+		<template #footer>
+			<NButton text type="primary" @click="navigateTo(authPath)">
+				<template #icon><NIcon><Icon name="tabler:arrow-left" /></NIcon></template>
+				{{ t("backToSignIn") }}
+			</NButton>
+		</template>
+	</NCard>
 </template>
 
 <script lang="ts" setup>

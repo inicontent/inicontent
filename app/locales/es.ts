@@ -416,6 +416,7 @@ export default {
 		// Email settings
 		emailSettings: "Configuración de correo",
 		emailConfig: {
+			use_custom_smtp: "Usar SMTP personalizado",
 			from_email: "Correo del remitente",
 			from_name: "Nombre del remitente",
 			smtp_host: "Host SMTP",

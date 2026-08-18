@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	if (currentTableInPath === "undefined") currentTableInPath = undefined
 
-	if (!currentTableInPath && to.path.replace(/\/$/, "").endsWith("/auth"))
+	if (!currentTableInPath && to.path.replace(/\/$/, "").includes("/auth"))
 		currentTableInPath = "users"
 
 	if (

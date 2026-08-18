@@ -484,6 +484,7 @@ export default {
 
 		// Email settings
 		emailConfig: {
+			use_custom_smtp: "Use Custom SMTP",
 			from_email: "From Email",
 			from_name: "Sender Name",
 			smtp_host: "SMTP Host",

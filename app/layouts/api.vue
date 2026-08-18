@@ -12,8 +12,8 @@
                 padding: $device.isMobile
                     ? '24px 12px'
                     : Language === 'ar'
-                        ? '24px 88px 24px 24px'
-                        : '24px 24px 24px 88px',
+                        ? '0 88px 24px 24px'
+                        : '0 24px 24px 88px',
             }" :native-scrollbar="false">
                 <div v-if="isMenuOpen" @mouseover="() => (isMenuOpen = false)"
                     style="width: 100%; height: 100%; right: 0; top: 0; position: absolute; background-color: #0000006e; z-index: 99; cursor: pointer;">
