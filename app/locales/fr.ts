@@ -434,12 +434,8 @@ export default {
 		emailSendFailed: "L'e-mail n'a pas pu être envoyé. Vérifiez les paramètres.",
 
 		// Database settings
-		settings: "Paramètres",
-		generalSettings: "Paramètres Généraux",
 		translationSettings: "Paramètres de Traduction",
 		deleteDatabase: "Supprimer la Base de Données",
-		theFollowingActionIsIrreversible: "L'action suivante est irréversible",
-		save: "Enregistrer",
 
 		// Tables
 		templates: "Modèles",

@@ -431,12 +431,8 @@ export default {
 		emailSendFailed: "No se pudo enviar el correo. Comprueba la configuración.",
 
 		// Database settings
-		settings: "Configuración",
-		generalSettings: "Configuración General",
 		translationSettings: "Configuración de Traducción",
 		deleteDatabase: "Eliminar Base de Datos",
-		theFollowingActionIsIrreversible: "La siguiente acción es irreversible",
-		save: "Guardar",
 
 		// Tables
 		templates: "Plantillas",
