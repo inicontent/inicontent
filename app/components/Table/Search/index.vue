@@ -31,7 +31,7 @@
 							`convert_to_${condition === "and" ? "or" : "and"}_group`,
 						) }}
 					</NTooltip>
-					<NButton round type="error" secondary @click="delete modelValue[condition]" circle size="small">
+					<NButton round type="error" secondary @click="() => removeCondition(condition)" circle size="small">
 						<template #icon>
 							<NIcon>
 								<Icon name="tabler:trash" />
@@ -77,5 +77,11 @@ function toggleCondition(oldCondition: "and" | "or") {
 	modelValue.value[oldCondition === "and" ? "or" : "and"] =
 		modelValue.value[oldCondition]
 	delete modelValue.value[oldCondition]
+}
+
+function removeCondition(condition: "and" | "or") {
+	if (Object.keys(modelValue.value).length === 1)
+		modelValue.value[condition] = [[null, "=", null]]
+	else delete modelValue.value[condition]
 }
 </script>

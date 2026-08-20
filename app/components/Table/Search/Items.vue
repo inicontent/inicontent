@@ -105,12 +105,18 @@ function normalizeSearchItemValue(item: searchTypeValueItem) {
 	return value
 }
 
+function getSearchSubType(field: Field) {
+	const resolvedType = field.subType ?? field.type
+	if (["radio", "checkbox"].includes(resolvedType as string)) return "select"
+	// long text fields are searched through a single line input
+	if (resolvedType === "textarea") return undefined
+	return field.subType
+}
+
 function getFieldFromItem(item: searchTypeValueItem) {
 	return {
 		...item[3],
-		subType: ["radio", "checkbox"].includes(item[3].subType)
-			? "select"
-			: item[3].subType,
+		subType: getSearchSubType(item[3]),
 		required: false,
 		labelProps: {
 			showLabel: false,

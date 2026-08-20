@@ -1,7 +1,7 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options="options" remote
-			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="Loading[`options_${field.key}`]"
+			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="loading"
 			:multiple="!!field.isArray" :consistent-menu-width="false" max-tag-count="responsive"
 			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
@@ -23,41 +23,39 @@
 
 <script lang="ts" setup>
 import type { pageInfo } from "inibase";
-import { isArrayOfObjects, isObject, isValidID } from "inibase/utils";
+import { isObject, isValidID } from "inibase/utils";
 import Inison from "inison";
 import type { FormItemRule } from "naive-ui";
 import { debounce } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<Item | Item[]>();
-const options = useState<tableOption[] | undefined>(
-	`options_${field.id || field.key}`,
-);
+const options = ref<tableOption[] | undefined>();
+const loading = ref(false);
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
-onUnmounted(() => {
-	options.value = undefined;
-});
 watch(
 	modelValue,
 	(value) => {
-		if (value && !options.value)
-			options.value = ([] as Item[]).concat(value).map(singleOption);
+		if (!value || options.value) return;
+		const items = ([] as Item[]).concat(value).filter(isObject);
+		if (items.length) options.value = items.map(singleOption);
 	},
 	{ immediate: true },
 );
 
-const selectValue = computed<null | string | string[]>(() =>
-	modelValue.value
-		? field.isArray && Array.isArray(modelValue.value)
-			? isArrayOfObjects(modelValue.value)
-				? modelValue.value.map(({ id }) => id as string)
-				: modelValue.value
-			: isObject(modelValue.value)
-				? ((modelValue.value as Item).id as string)
-				: modelValue.value
-		: null,
-);
+const selectValue = computed<null | string | string[]>(() => {
+	const value = modelValue.value as unknown;
+	if (value === undefined || value === null || value === "") return null;
+	const toID = (entry: unknown) =>
+		(isObject(entry) ? (entry as Item).id : entry) as string;
+	if (field.isArray)
+		// the search form stores selected ids as a comma joined string
+		return (Array.isArray(value) ? value : String(value).split(","))
+			.map(toID)
+			.filter(Boolean);
+	return toID(Array.isArray(value) ? value[0] : value) ?? null;
+});
 
 const rule: FormItemRule = {
 	trigger: ["blur", "change"],
@@ -71,7 +69,6 @@ const rule: FormItemRule = {
 };
 
 const config = useRuntimeConfig();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 type tableOption = {
 	label: string;
@@ -123,7 +120,7 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 const sessionID = useSessionCookie();
 
 async function loadOptions(searchValue?: string | number) {
-	Loading.value[`options_${field.key}`] = true;
+	loading.value = true;
 	const searchOrObject =
 		searchValue &&
 			(typeof searchValue !== "string" || searchValue.trim().length) &&
@@ -167,7 +164,7 @@ async function loadOptions(searchValue?: string | number) {
 	if (_where) {
 		if (!where.value || where.value !== _where) where.value = _where;
 		else {
-			Loading.value[`options_${field.key}`] = false;
+			loading.value = false;
 			return;
 		}
 	} else where.value = undefined;
@@ -185,7 +182,9 @@ async function loadOptions(searchValue?: string | number) {
 			cache: "no-cache",
 			credentials: "include",
 		},
-	);
+	).finally(() => {
+		loading.value = false;
+	});
 	pagination.value = request.options;
 
 	if (modelValue.value) {
@@ -199,14 +198,12 @@ async function loadOptions(searchValue?: string | number) {
 				.filter(({ value }) => !selectValue.value?.includes(value)) ?? []),
 		];
 	} else options.value = request.result?.map(singleOption) ?? [];
-	Loading.value[`options_${field.key}`] = false;
 }
 
 async function handleScroll(e: Event) {
 	const currentTarget = e.currentTarget as HTMLElement;
-	const loadingKey = `options_${field.key}`;
 	if (
-		Loading.value[loadingKey] ||
+		loading.value ||
 		!pagination.value ||
 		!pagination.value.page ||
 		!pagination.value.totalPages
@@ -217,7 +214,7 @@ async function handleScroll(e: Event) {
 		currentTarget.scrollHeight - 4 &&
 		pagination.value.page < pagination.value.totalPages
 	) {
-		Loading.value[loadingKey] = true;
+		loading.value = true;
 		const request = await $fetch<apiResponse<tableOption[]>>(
 			`${config.public.apiBase}${database.value.slug}/${field.table}`,
 			{
@@ -232,11 +229,12 @@ async function handleScroll(e: Event) {
 				cache: "no-cache",
 				credentials: "include",
 			},
-		);
+		).finally(() => {
+			loading.value = false;
+		});
 		if (request.result) request.result = request.result.map(singleOption);
 		pagination.value = request.options;
 		if (options.value && request.result) options.value.push(...request.result);
-		Loading.value[loadingKey] = false;
 	}
 }
 
@@ -247,24 +245,26 @@ if (
 			modelValue.value.length &&
 			modelValue.value.every((value) => typeof value === "string")))
 ) {
-	Loading.value[`options_${field.key}`] = true;
-	await useLazyFetch<apiResponse<Item[]>>(
-		`${config.public.apiBase}${database.value.slug}/${field.table}`,
-		{
-			cache: "no-cache",
-			query: {
-				where: Inison.stringify({
-					id: `[]${([] as string[]).concat(modelValue.value as string | string[]).join(",")}`,
-				}),
-				[`${database.value.slug}_sid`]: sessionID.value,
+	const ids = ([] as string[])
+		.concat(modelValue.value as unknown as string | string[])
+		.join(",");
+	onMounted(async () => {
+		loading.value = true;
+		const request = await $fetch<apiResponse<Item[]>>(
+			`${config.public.apiBase}${database.value.slug}/${field.table}`,
+			{
+				cache: "no-cache",
+				params: {
+					where: Inison.stringify({ id: `[]${ids}` }),
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
 			},
-			onResponse: ({ response }) => {
-				options.value = response._data?.result.map(singleOption);
-				Loading.value[`options_${field.key}`] = false;
-			},
-			credentials: "include",
-		},
-	);
+		).finally(() => {
+			loading.value = false;
+		});
+		options.value = request.result?.map(singleOption) ?? [];
+	});
 }
 
 if (
