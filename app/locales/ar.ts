@@ -258,6 +258,7 @@ export default {
 		newItem: "عنصر جديد",
 		schedules: "الجدولات",
 		tableSchedules: "جدولات الجدول",
+		runNow: "تشغيل الآن",
 		tableSlug: "إسم الجدول",
 		clickToToggleDate: "إضغط لتغيير التاريخ",
 

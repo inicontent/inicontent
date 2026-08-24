@@ -108,7 +108,7 @@
 <script lang="ts" setup>
 import type { DataTableColumns, SelectOption } from "naive-ui"
 import Inison from "inison"
-import { Icon, NButton, NButtonGroup, NIcon, NTag } from "#components"
+import { Icon, NButton, NButtonGroup, NIcon, NPopconfirm, NTag } from "#components"
 
 const config = useRuntimeConfig()
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
@@ -478,9 +478,34 @@ async function saveSchedule() {
 	}
 }
 
-async function removeSchedule(schedule: Schedules) {
-	if (!window.confirm(t("theFollowingActionIsIrreversible"))) return
+async function runScheduleNow(schedule: Schedules) {
+	loading.value = true
+	try {
+		const response = await $fetch<apiResponse<boolean>>(
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
+			{
+				method: "POST",
+				params: getRequestParams(),
+				credentials: "include",
+			},
+		)
 
+		if (response.result) {
+			window.$message.success(response.message)
+			await loadSchedules()
+		} else window.$message.error(response.message)
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null
+				? (error as { data?: { message?: string }; message?: string })
+				: undefined
+		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+	} finally {
+		loading.value = false
+	}
+}
+
+async function removeSchedule(schedule: Schedules) {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
@@ -561,9 +586,25 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 	{
 		title: t("actions"),
 		key: "actions",
-		width: 120,
+		width: 160,
 		render: (schedule) =>
 			h(NButtonGroup, { size: "small" }, () => [
+				h(
+					NPopconfirm,
+					{ onPositiveClick: () => runScheduleNow(schedule) },
+					{
+						trigger: () =>
+							h(
+								NButton,
+								{ secondary: true, type: "info", title: t("runNow") },
+								{
+									icon: () =>
+										h(NIcon, null, () => h(Icon, { name: "tabler:player-play" })),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
+					},
+				),
 				h(
 					NButton,
 					{ secondary: true, type: "primary", onClick: () => openEditModal(schedule) },
@@ -573,11 +614,19 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 					},
 				),
 				h(
-					NButton,
-					{ secondary: true, type: "error", onClick: () => removeSchedule(schedule) },
+					NPopconfirm,
+					{ onPositiveClick: () => removeSchedule(schedule) },
 					{
-						icon: () =>
-							h(NIcon, null, () => h(Icon, { name: "tabler:trash" })),
+						trigger: () =>
+							h(
+								NButton,
+								{ secondary: true, type: "error" },
+								{
+									icon: () =>
+										h(NIcon, null, () => h(Icon, { name: "tabler:trash" })),
+								},
+							),
+						default: () => t("theFollowingActionIsIrreversible"),
 					},
 				),
 			]),

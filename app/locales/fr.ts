@@ -259,6 +259,7 @@ export default {
 		newItem: "Nouvel élément",
 		schedules: "Planifications",
 		tableSchedules: "Planifications de table",
+		runNow: "Exécuter maintenant",
 		tableSlug: "Identifiant de table",
 		clickToToggleDate: "Cliquez pour changer la date",
 

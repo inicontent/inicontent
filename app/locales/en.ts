@@ -134,6 +134,7 @@ export default {
 		schedules: "Schedules",
 		tableSchedules: "Table schedules",
 		addSchedule: "Add schedule",
+		runNow: "Run now",
 		editSchedule: "Edit schedule",
 		cronExpression: "Cron expression",
 		payloadTemplate: "Payload template",

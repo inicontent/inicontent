@@ -256,6 +256,7 @@ export default {
 		newItem: "Nuevo elemento",
 		schedules: "Programaciones",
 		tableSchedules: "Programaciones de tabla",
+		runNow: "Ejecutar ahora",
 		tableSlug: "Identificador de tabla",
 		clickToToggleDate: "Haz clic para cambiar la fecha",
 
