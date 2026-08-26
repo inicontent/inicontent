@@ -32,160 +32,158 @@
 								</NButton>
 							</NButtonGroup>
 							<NScrollbar x-scrollable>
-								<template v-if="currentFlowCard === `${currentFlow}-${index}`">
-									<VueDraggable v-model="element.value" group="rules" itemKey="id" handle=".inputHandle"
-										class="flowCardRulesEdit">
-										<template v-for="(rule, ruleIndex) in element.value">
-											<NInputGroup :key="rule.id" class="flowCardRulesGroupInput">
-												<template v-if="rule.value[0] === 'set'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="success"
-															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
-															secondary style="width: 47px;">
-															{{ t('set') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small" style="height: fit-content;"
-														:options="generateFlowCascaderOptions(true, true)"
-														check-strategy="child" expand-trigger="click" show-path
-														separator="." filterable v-model:value="rule.value[1]" />
-													<template v-if="isDateFlowField(rule.value[1])">
-														<NSelect size="small"
-															:style="{ borderRadius: !isRelativeDateValue(rule.value[2]) ? '0!important' : (Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important') }"
-															style="overflow: hidden;"
-															:consistent-menu-width="false"
-															filterable
-															:options="dateFlowValueOptions"
-															:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
-															@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
-														<NDatePicker v-if="!isRelativeDateValue(rule.value[2])"
-															size="small"
-															:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-															style="overflow: hidden; width: 180px;"
-															clearable
-															:type="getDateFlowPickerType(rule.value[1])"
-															:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[1])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
-															:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
-															@update:value="(value) => rule.value[2] = value" />
-													</template>
-													<NSelect v-else
-														size="small"
-														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+								<VueDraggable v-if="currentFlowCard === `${currentFlow}-${index}`" v-model="element.value" group="rules" itemKey="id" handle=".inputHandle"
+									class="flowCardRulesEdit">
+									<template v-for="(rule, ruleIndex) in element.value" :key="rule.id">
+										<NInputGroup class="flowCardRulesGroupInput">
+											<template v-if="rule.value[0] === 'set'">
+												<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+													<NButton class="inputHandle" size="small" type="success"
+														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+														secondary style="width: 47px;">
+														{{ t('set') }}
+													</NButton>
+												</NDropdown>
+												<NCascader size="small" style="height: fit-content;"
+													:options="generateFlowCascaderOptions(true, true)"
+													check-strategy="child" expand-trigger="click" show-path
+													separator="." filterable v-model:value="rule.value[1]" />
+												<template v-if="isDateFlowField(rule.value[1])">
+													<NSelect size="small"
+														:style="{ borderRadius: !isRelativeDateValue(rule.value[2]) ? '0!important' : (Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important') }"
 														style="overflow: hidden;"
 														:consistent-menu-width="false"
-														filterable tag
-														:options="generateFlowSelectOptions(rule.value[1], false, true)"
-														:value="String(rule.value[2])"
-														@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
+														filterable
+														:options="dateFlowValueOptions"
+														:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
+														@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
+													<NDatePicker v-if="!isRelativeDateValue(rule.value[2])"
+														size="small"
+														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+														style="overflow: hidden; width: 180px;"
+														clearable
+														:type="getDateFlowPickerType(rule.value[1])"
+														:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[1])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
+														:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
+														@update:value="(value) => rule.value[2] = value" />
 												</template>
-												<template v-else-if="rule.value[0] === 'error'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="error" secondary
-															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
-															style="width: 96px;">
-															{{ t('throwError') }}
-														</NButton>
-													</NDropdown>
+												<NSelect v-else
+													size="small"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+													style="overflow: hidden;"
+													:consistent-menu-width="false"
+													filterable tag
+													:options="generateFlowSelectOptions(rule.value[1], false, true)"
+													:value="String(rule.value[2])"
+													@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
+											</template>
+											<template v-else-if="rule.value[0] === 'error'">
+												<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+													<NButton class="inputHandle" size="small" type="error" secondary
+														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+														style="width: 96px;">
+														{{ t('throwError') }}
+													</NButton>
+												</NDropdown>
+												<NSelect size="small"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+													style="overflow: hidden;" :consistent-menu-width="false"
+													filterable tag
+													:options="[{ label: t('accessDenied'), value: 'accessDenied' }]"
+													v-model:value="rule.value[1]" />
+											</template>
+											<template v-else-if="rule.value[0] === 'email'">
+												<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+													<NButton class="inputHandle" size="small" type="info" secondary
+														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+														style="width: 70px;">
+														{{ t('email') }}
+													</NButton>
+												</NDropdown>
+												<NCascader size="small" style="height: fit-content;"
+													:options="generateFlowCascaderOptions(false, false, true)"
+													check-strategy="child" expand-trigger="click" show-path
+													separator="." filterable v-model:value="rule.value[1]" />
+												<NSelect size="small"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+													style="overflow: hidden;" :consistent-menu-width="false"
+													filterable tag :options="templateNames"
+													v-model:value="rule.value[2]" />
+											</template>
+											<template v-else-if="rule.value[0] === 'unset'">
+												<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+													<NButton class="inputHandle" size="small" type="warning"
+														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
+														secondary style="width: 96px;">
+														{{ t('unset') }}
+													</NButton>
+												</NDropdown>
+												<NCascader size="small"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+													style="overflow: hidden;height: fit-content;"
+													:options="generateFlowCascaderOptions()" check-strategy="parent"
+													expand-trigger="click" show-path separator="." filterable
+													v-model:value="rule.value[1]" multiple :max-tag-count="1" />
+											</template>
+											<template v-else>
+												<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
+													<NButton class="inputHandle" size="small" type="info" secondary
+														style="width: 37px;"
+														:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }">
+														{{ t('if') }}
+													</NButton>
+												</NDropdown>
+												<NCascader size="small"
+													style="height: fit-content;max-width: 156px;"
+													:options="[...generateFlowCascaderOptions(true, true, true), { label: '@method', value: '@method' }]"
+													check-strategy="child" expand-trigger="click" show-path
+													separator="." filterable v-model:value="rule.value[0]" />
+												<NSelect size="small" style="width: 136px;"
+													:consistent-menu-width="false" filterable
+													:render-tag="({ option }) => option.value"
+													:options="checkFieldType(formatValue(rule.value[0], undefined, 'type', 'string'), ['number', 'date']) ? comparisonOperatorOptions().filter(({ value }) => !['*', '!*'].includes(value)) : comparisonOperatorOptions().filter(({ value }) => !['>', '>=', '<', '<=', ...(rule[0] === '@method' ? ['*', '!*'] : [])].includes(value))"
+													v-model:value="rule.value[1]" />
+												<template v-if="isDateFlowField(rule.value[0])">
 													<NSelect size="small"
+														:consistent-menu-width="false"
+														filterable
+														:options="dateFlowValueOptions"
+														:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
+														@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
+													<NDatePicker size="small"
 														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-														style="overflow: hidden;" :consistent-menu-width="false"
-														filterable tag
-														:options="[{ label: t('accessDenied'), value: 'accessDenied' }]"
-														v-model:value="rule.value[1]" />
+														style="overflow: hidden; width: 180px;"
+														clearable
+														:type="getDateFlowPickerType(rule.value[0])"
+														:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[0])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
+														:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
+														@update:value="(value) => rule.value[2] = value" />
 												</template>
-												<template v-else-if="rule.value[0] === 'email'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="info" secondary
-															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
-															style="width: 70px;">
-															{{ t('email') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small" style="height: fit-content;"
-														:options="generateFlowCascaderOptions(false, false, true)"
-														check-strategy="child" expand-trigger="click" show-path
-														separator="." filterable v-model:value="rule.value[1]" />
-													<NSelect size="small"
-														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-														style="overflow: hidden;" :consistent-menu-width="false"
-														filterable tag :options="templateNames"
-														v-model:value="rule.value[2]" />
+												<NSelect v-else size="small" style="overflow: hidden;"
+													:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
+													:consistent-menu-width="false" filterable tag
+													:options="generateFlowSelectOptions(rule.value[0], false, true)"
+													:multiple="['[]', '![]'].includes(rule.value[1] ?? '')"
+													max-tag-count="responsive"
+													:value="((['[]', '![]'].includes(rule.value[1] ?? '') ? rule.value[2] : rule.value[2]) as string)"
+													@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
+											</template>
+										</NInputGroup>
+									</template>
+									<template #footer>
+										<NDropdown show-arrow :options="addRuleDropdownOptions"
+											@select="(value) => pushRuleToFlow(element.value, value)">
+											<NButton style="margin: auto" round dashed
+												@click="pushRuleToFlow(element.value, 'if')">
+												<template #icon>
+													<NIcon>
+														<Icon name="tabler:plus" />
+													</NIcon>
 												</template>
-												<template v-else-if="rule.value[0] === 'unset'">
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="warning"
-															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }"
-															secondary style="width: 96px;">
-															{{ t('unset') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small"
-														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-														style="overflow: hidden;height: fit-content;"
-														:options="generateFlowCascaderOptions()" check-strategy="parent"
-														expand-trigger="click" show-path separator="." filterable
-														v-model:value="rule.value[1]" multiple :max-tag-count="1" />
-												</template>
-												<template v-else>
-													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
-														<NButton class="inputHandle" size="small" type="info" secondary
-															style="width: 37px;"
-															:style="{ borderRadius: Language === 'ar' ? '0 50px 50px 0!important' : '50px 0 0 50px!important' }">
-															{{ t('if') }}
-														</NButton>
-													</NDropdown>
-													<NCascader size="small"
-														style="height: fit-content;max-width: 156px;"
-														:options="[...generateFlowCascaderOptions(true, true, true), { label: '@method', value: '@method' }]"
-														check-strategy="child" expand-trigger="click" show-path
-														separator="." filterable v-model:value="rule.value[0]" />
-													<NSelect size="small" style="width: 136px;"
-														:consistent-menu-width="false" filterable
-														:render-tag="({ option }) => option.value"
-														:options="checkFieldType(formatValue(rule.value[0], undefined, 'type', 'string'), ['number', 'date']) ? comparisonOperatorOptions().filter(({ value }) => !['*', '!*'].includes(value)) : comparisonOperatorOptions().filter(({ value }) => !['>', '>=', '<', '<=', ...(rule[0] === '@method' ? ['*', '!*'] : [])].includes(value))"
-														v-model:value="rule.value[1]" />
-													<template v-if="isDateFlowField(rule.value[0])">
-														<NSelect size="small"
-															:consistent-menu-width="false"
-															filterable
-															:options="dateFlowValueOptions"
-															:value="isRelativeDateValue(rule.value[2]) ? rule.value[2] : '__custom__'"
-															@update:value="(value) => rule.value[2] = value === '__custom__' ? null : value" />
-														<NDatePicker size="small"
-															:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-															style="overflow: hidden; width: 180px;"
-															clearable
-															:type="getDateFlowPickerType(rule.value[0])"
-															:format="['datetime', 'datetimerange'].includes(getDateFlowPickerType(rule.value[0])) ? 'dd-MM-yyyy HH:mm:ss' : 'dd-MM-yyyy'"
-															:value="typeof rule.value[2] === 'number' ? rule.value[2] : null"
-															@update:value="(value) => rule.value[2] = value" />
-													</template>
-													<NSelect v-else size="small" style="overflow: hidden;"
-														:style="{ borderRadius: Language === 'ar' ? '50px 0 0 50px!important' : '0 50px 50px 0!important' }"
-														:consistent-menu-width="false" filterable tag
-														:options="generateFlowSelectOptions(rule.value[0], false, true)"
-														:multiple="['[]', '![]'].includes(rule.value[1] ?? '')"
-														max-tag-count="responsive"
-														:value="((['[]', '![]'].includes(rule.value[1] ?? '') ? rule.value[2] : rule.value[2]) as string)"
-														@update:value="(value) => rule.value[2] = value === 'null' ? null : value" />
-												</template>
-											</NInputGroup>
-										</template>
-										<template #footer>
-											<NDropdown show-arrow :options="addRuleDropdownOptions"
-												@select="(value) => pushRuleToFlow(element.value, value)">
-												<NButton style="margin: auto" round dashed
-													@click="pushRuleToFlow(element.value, 'if')">
-													<template #icon>
-														<NIcon>
-															<Icon name="tabler:plus" />
-														</NIcon>
-													</template>
-												</NButton>
-											</NDropdown>
-										</template>
-									</VueDraggable>
-								</template>
+											</NButton>
+										</NDropdown>
+									</template>
+								</VueDraggable>
 								<NEmpty v-else-if="!element.value.length" />
 								<NFlex v-else vertical style="padding: 20px 22px;">
 									<template v-for="{ value: [firstValue, secondValue, thirdValue] } of element.value">
