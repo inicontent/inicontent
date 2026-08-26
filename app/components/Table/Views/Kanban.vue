@@ -26,10 +26,10 @@
 						</template>
 					</NTag>
 					<NScrollbar style="max-height: 350px;">
-						<Draggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }"
+						<VueDraggable v-model="column.items" :group="{ name: 'items', pull: true, put: true }"
 							item-key="id" ghost-class="ghost" :sort="false" @move="({ to, from }: any) => from !== to"
 							@change="(e: any) => onItemDrop(e, column)">
-							<template #item="{ element, index }">
+							<template v-for="(element, index) in column.items">
 								<NCard size="small" style="border-radius: 8px;margin-bottom: 10px;" hoverable>
 									<component v-if="props.slots.itemActions" :is="props.slots.itemActions(element)" />
 									<component v-else-if="props.slots.itemExtraActions"
@@ -55,7 +55,7 @@
 									<div v-else v-html="renderLabel(table, element).replaceAll('\n', '<br />')"></div>
 								</NCard>
 							</template>
-						</Draggable>
+						</VueDraggable>
 						<template v-if="column.items.length === 0 && column.loading">
 							<NSkeleton :height="calculateHeight" style="border-radius: 8px;margin-bottom: 10px;" />
 							<NSkeleton :height="calculateHeight" style="border-radius: 8px;" />
@@ -73,7 +73,7 @@ import type { pageInfo } from "inibase"
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
-import Draggable from "vuedraggable"
+import { VueDraggable } from "vue-draggable-plus"
 
 const props = defineProps<{
 	slots: any

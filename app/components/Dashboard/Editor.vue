@@ -29,13 +29,13 @@
 				</NButton>
 			</template>
 
-			<draggable
-				:list="model.widgets"
+			<VueDraggable
+				:model-value="model.widgets as any[]"
 				item-key="id"
 				handle=".drag-handle"
 				:animation="200"
 			>
-				<template #item="{ element: widget, index }">
+				<template v-for="(widget,index) in model.widgets">
 					<NCard
 						size="small"
 						:style="{ marginBottom: '12px' }"
@@ -87,7 +87,7 @@
 						</NFlex>
 					</NCard>
 				</template>
-			</draggable>
+			</VueDraggable>
 
 			<NEmpty v-if="!model.widgets?.length" :description="t('noWidgets')" />
 		</NCard>
@@ -120,7 +120,7 @@
 </template>
 
 <script lang="ts" setup>
-import draggable from "vuedraggable";
+import { VueDraggable } from "vue-draggable-plus";
 
 const props = defineProps<{
 	dashboard: Dashboard;

@@ -2,8 +2,8 @@
 	<div>
 		<NTabs type="segment" animated v-model:value="currentFlow" @update:value="handleFlowTabChange">
 			<NTabPane v-for="flowName of flowNames" :name="flowName" :tab="t(flowName)">
-				<Draggable v-model="tableCopy[flowName]" group="flows" itemKey="id" handle=".handle" class="masonry">
-					<template #item="{ element, index }">
+				<VueDraggable v-model="tableCopy[flowName]" group="flows" itemKey="id" handle=".handle" class="masonry">
+					<template v-for="(element, index) in tableCopy[flowName]">
 						<NCard class="flowCard" hoverable content-style="padding: 0">
 							<NButton class="handle" secondary type="primary" size="small">
 								{{ index + 1 }}
@@ -33,9 +33,9 @@
 							</NButtonGroup>
 							<NScrollbar x-scrollable>
 								<template v-if="currentFlowCard === `${currentFlow}-${index}`">
-									<Draggable v-model="element.value" group="rules" itemKey="id" handle=".inputHandle"
+									<VueDraggable v-model="element.value" group="rules" itemKey="id" handle=".inputHandle"
 										class="flowCardRulesEdit">
-										<template #item="{ element: rule, index: ruleIndex }">
+										<template v-for="(rule, ruleIndex) in element.value">
 											<NInputGroup :key="rule.id" class="flowCardRulesGroupInput">
 												<template v-if="rule.value[0] === 'set'">
 													<NDropdown v-bind="ruleDropdownProps(element.value, ruleIndex)">
@@ -184,7 +184,7 @@
 												</NButton>
 											</NDropdown>
 										</template>
-									</Draggable>
+									</VueDraggable>
 								</template>
 								<NEmpty v-else-if="!element.value.length" />
 								<NFlex v-else vertical style="padding: 20px 22px;">
@@ -320,7 +320,7 @@
 							{{ t('newCard') }}
 						</NPopover>
 					</template>
-				</Draggable>
+				</VueDraggable>
 			</NTabPane>
 			<NTabPane :name="saveFlowTabName">
 				<template #tab>
@@ -347,7 +347,7 @@ import {
 	isObject
 } from "inibase/utils"
 import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui"
-import Draggable from "vuedraggable"
+import { VueDraggable } from "vue-draggable-plus"
 import { Icon, NIcon } from "#components"
 
 onMounted(() => {

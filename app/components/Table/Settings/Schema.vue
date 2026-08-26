@@ -1,9 +1,9 @@
 <template>
 	<NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
 		v-model:expanded-names="expandedNames">
-		<Draggable :list="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
+		<VueDraggable :model-value="schema as any[]" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
 			:move="onMoveCallback">
-			<template #item="{ element, index }: { element: Field, index: number }">
+			<template v-for="(element, index) in schema">
 				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
 					:disabled="isDisabled(element.key)"
 					:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'">
@@ -216,14 +216,14 @@
 						v-model="element.children" v-model:expanded-names="expandedChildNames" />
 				</NCollapseItem>
 			</template>
-		</Draggable>
+		</VueDraggable>
 	</NCollapse>
 </template>
 
 <script lang="ts" setup>
 import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
 import type { DataTableColumns, SelectOption } from "naive-ui";
-import Draggable from "vuedraggable";
+import { VueDraggable } from "vue-draggable-plus";
 import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components";
 
 const widthOptions = [
