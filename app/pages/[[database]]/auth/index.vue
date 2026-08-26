@@ -1,5 +1,7 @@
 <template>
-	<Auth />
+	<div class="centerCard">
+		<Auth />
+	</div>
 </template>
 
 <script lang="ts" setup>

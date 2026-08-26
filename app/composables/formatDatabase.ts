@@ -2,10 +2,11 @@ import { flattenSchema } from "inibase/utils"
 
 const hiddenTableSlugs = new Set(["passkey_credentials", "passkey_challenges"])
 
-export default function () {
-	const database = useState<Database>("database")
-	const tables = database.value.tables
-	if (!tables) return
+export default function (database?: Database) {
+	const databaseState = useState<Database>("database")
+
+	const tables = database?.tables ?? databaseState.value?.tables
+	if (!tables?.length) return
 
 	const findTable = (slug: string) => tables.find((t) => t.slug === slug)
 
@@ -95,5 +96,6 @@ export default function () {
 		return table
 	}
 
-	database.value.tables = tables.map(formatTable)
+	if (database) database.tables = tables.map(formatTable)
+	else databaseState.value.tables = tables.map(formatTable)
 }

@@ -675,6 +675,13 @@ a {
 	flex-direction: row !important;
 }
 
+.centerCard {
+	height: calc(100vh - 64px - 48px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 @media (max-width: 768px) {
 	#tableCard>.n-card-header {
 		flex-direction: column;

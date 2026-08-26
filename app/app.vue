@@ -36,6 +36,7 @@ watch(Theme, () => {
 	if (Theme.value !== osThemeRef.value) {
 		isManual.value = true
 	}
+	if (Theme.value) syncThemeToAllDatabases(Theme.value)
 })
 
 watch(osThemeRef, (newOsTheme) => {

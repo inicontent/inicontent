@@ -161,7 +161,7 @@ const databaseSchema: Schema = [
 				type: "string",
 			},
 		],
-		onCreate: { id: `temp-${randomID()}` },
+		onCreate: () => ({ id: `temp-${randomID()}` }),
 		inputProps: (index: number) =>
 			[0, 1, 2].includes(index) ? { disabled: true } : {},
 		required: false,

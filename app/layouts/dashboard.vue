@@ -7,7 +7,7 @@
 				</NLayoutHeader>
 			</NScrollbar>
 			<NLayoutContent id="container" position="absolute"
-				content-style="padding: 24px;height: 100%;justify-content: center;align-content: center"
+				content-style="padding: 24px;height: fit-content"
 				:native-scrollbar="false">
 				<slot></slot>
 			</NLayoutContent>

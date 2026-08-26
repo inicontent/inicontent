@@ -1,5 +1,5 @@
 <template>
-	<NCard :title="t('resetPassword')" style="max-width: 300px; margin: auto;">
+	<NCard :title="t('resetPassword')" style="max-width: 300px;">
 		<NAlert v-if="!token" type="error" :title="t('invalidResetLink')" />
 		<NForm v-else ref="formRef" :model="form" @submit="submitReset">
 			<FieldS v-model="form" :schema="passwordSchema" />

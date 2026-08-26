@@ -61,6 +61,18 @@ export function syncCookiesFromDatabase(databaseSlug?: string) {
 	}
 }
 
+export function syncThemeToAllDatabases(theme: "dark" | "light") {
+	if (import.meta.server) return;
+	const cookies = document.cookie.split(";");
+	for (const cookie of cookies) {
+		const [name] = cookie.split("=");
+		const trimmed = name.trim();
+		if (trimmed.endsWith("_theme") && trimmed !== "theme") {
+			document.cookie = `${trimmed}=${theme};sameSite=true`;
+		}
+	}
+}
+
 export function syncCookiesToDatabase(databaseSlug?: string) {
 	const resolvedDatabaseSlug = resolveDatabaseSlug(databaseSlug);
 

@@ -7,9 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed } from "vue"
 import type { DataTableColumns } from "naive-ui"
-import { NTable, NText } from "naive-ui"
+import { NTable, NText } from "#components"
 
 interface SchemaDocRow {
     id: string
