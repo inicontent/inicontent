@@ -10,7 +10,7 @@
 	}" v-model="modelValue" />
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
 		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
-	).length" display-directive="show" arrow-placement="right" :trigger-areas="['main', 'arrow']"
+	).length" display-directive="if" arrow-placement="right" :trigger-areas="['main', 'arrow']"
 		:default-expanded-names="field.expand ? String(field.id) : undefined" v-model:expanded-names="parentExpanded"
 		accordion>
 		<template #arrow>
@@ -18,7 +18,7 @@
 				<Icon name="tabler:chevron-left" v-if="!!modelValue?.length" />
 			</NIcon>
 		</template>
-		<NCollapseItem style="margin: 0 0 20px;" display-directive="show" :name="String(field.id)"
+		<NCollapseItem style="margin: 0 0 20px;" display-directive="if" :name="String(field.id)"
 			:disabled="!modelValue?.length">
 			<template #header>
 				<NDropdown size="small" :placement="Language === 'ar' ? 'left' : 'right'" show-arrow trigger="hover"
@@ -41,9 +41,9 @@
 					</NButtonGroup>
 				</NFlex>
 			</template>
-			<NCollapse display-directive="show" accordion v-model:expanded-names="expandedNames"
+			<NCollapse display-directive="if" accordion v-model:expanded-names="expandedNames"
 				:trigger-areas="['main', 'arrow']">
-				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="show"
+				<NCollapseItem v-if="modelValue" v-for="(_item, index) of modelValue" display-directive="if"
 					:name="`${field.id}.${index}`">
 					<template #header>
 						{{ getCollapseItemTitle(field, (_item as Item), index) }}
