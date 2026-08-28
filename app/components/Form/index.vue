@@ -9,6 +9,7 @@
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils";
 import type { FormInst } from "naive-ui";
+import { debounce } from "~/composables";
 
 const props = defineProps<{
 	table?: string;
@@ -259,9 +260,39 @@ async function fetchSchemaAndData() {
 		console.error("Error fetching schema:", error);
 		window.$message.error(t("errorFetchingSchema"));
 	} finally {
+		oldModelValue.value = JSON.parse(JSON.stringify(modelValue.value));
 		Loading.value.SCHEMA = false;
 	}
 }
+
+const oldModelValue = ref();
+
+// Debounced version of fetchSchemaAndData
+const debouncedFetchSchemaAndData = debounce(async () => {
+	await fetchSchemaAndData();
+}, 1000);
+
+// Debounce the change check itself so a fast typist doesn't pay the cost
+// of deep-diffing the whole form object on every keystroke.
+// Dynamic schemas (render/onCreate/onDelete/... functions) can change
+// their options based on the current field values, so only these need
+// to keep re-fetching on edit. Static schemas fetch once on mount.
+const debouncedCheckForChanges = debounce((v: Item) => {
+	if (
+		hasFunctionsProperties(schema.value) &&
+		JSON.stringify(oldModelValue.value) !== JSON.stringify(v)
+	)
+		debouncedFetchSchemaAndData();
+}, 300);
+
+// Trigger schema fetch on input changes with debounce
+watch(
+	modelValue,
+	(v) => {
+		debouncedCheckForChanges(v);
+	},
+	{ deep: true, immediate: true },
+);
 
 onMounted(async () => {
 	await fetchSchemaAndData();
