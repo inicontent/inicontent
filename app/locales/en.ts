@@ -19,6 +19,9 @@ export default {
 		passwordsDoNotMatch: "Passwords do not match.",
 		invalidResetLink: "This password reset link is invalid or expired.",
 		backToSignIn: "Back to sign in",
+		quickSettings: "Quick settings",
+		makeItPrivate: "Make it private",
+		read: "Read",
 
 		// Field types that differ from default
 		fields: {
