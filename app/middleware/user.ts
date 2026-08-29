@@ -6,6 +6,10 @@ export default defineNuxtRouteMiddleware(async () => {
 	const sessionID = useSessionCookie();
 
 	if (!user.value) {
+		// No session cookie yet → anonymous visitor. Skip the auth round-trip;
+		// hitting /auth/current with no session just returns null anyway.
+		if (!sessionID.value) return;
+
 		user.value = (
 			await $fetch<apiResponse<User>>(
 				`${config.public.apiBase}${database.value.slug}/auth/current`,

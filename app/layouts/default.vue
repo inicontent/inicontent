@@ -14,66 +14,86 @@ import {
 	dateArDZ,
 	dateEnUS,
 	enUS,
-	unstableAvatarGroupRtl,
-	unstableButtonGroupRtl,
-	unstableButtonRtl,
-	unstableCardRtl,
-	unstableCheckboxRtl,
-	unstableCollapseRtl,
-	unstableDataTableRtl,
-	unstableDialogRtl,
-	unstableDrawerRtl,
-	unstableFlexRtl,
-	unstableInputNumberRtl,
-	unstableInputRtl,
-	unstableListRtl,
-	unstableMessageRtl,
-	unstableNotificationRtl,
-	unstablePageHeaderRtl,
-	unstablePaginationRtl,
-	unstableRadioRtl,
-	unstableScrollbarRtl,
-	unstableSelectRtl,
-	unstableStepsRtl,
-	unstableTableRtl,
-	unstableTagRtl,
-	unstableAlertRtl,
 } from "naive-ui"
 
 import "~/assets/main.css"
 
 import { hexToRGB } from "~/composables"
 
-const rtlStyles: any = [
-	unstableListRtl,
-	unstablePageHeaderRtl,
-	unstableButtonGroupRtl,
-	unstableButtonRtl,
-	unstableCardRtl,
-	unstableScrollbarRtl,
-	unstableMessageRtl,
-	unstableCollapseRtl,
-	unstableDrawerRtl,
-	unstableInputNumberRtl,
-	unstableCheckboxRtl,
-	unstableRadioRtl,
-	unstableTagRtl,
-	unstableTableRtl,
-	unstableInputRtl,
-	unstableAvatarGroupRtl,
-	unstableFlexRtl,
-	unstableSelectRtl,
-	unstableDataTableRtl,
-	unstableDialogRtl,
-	unstablePaginationRtl,
-	unstableNotificationRtl,
-	unstableStepsRtl,
-	unstableAlertRtl
-]
-
 const Language = useCookie<LanguagesType>("language", { sameSite: true })
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
+
+// The unstable*Rtl styles are only meaningful for Arabic/rtl layouts. They used
+// to be eagerly imported on every boot, pulling ~24 naive-ui style modules into
+// the shared entry chunk that English/global sites never use. They are now
+// loaded on demand (a single chunk, only when the language is "ar").
+const rtlStyles = ref<any[]>([])
+
+async function ensureRtlStyles() {
+	if (rtlStyles.value.length) return rtlStyles.value
+	const {
+		unstableListRtl,
+		unstablePageHeaderRtl,
+		unstableButtonGroupRtl,
+		unstableButtonRtl,
+		unstableCardRtl,
+		unstableScrollbarRtl,
+		unstableMessageRtl,
+		unstableCollapseRtl,
+		unstableDrawerRtl,
+		unstableInputNumberRtl,
+		unstableCheckboxRtl,
+		unstableRadioRtl,
+		unstableTagRtl,
+		unstableTableRtl,
+		unstableInputRtl,
+		unstableAvatarGroupRtl,
+		unstableFlexRtl,
+		unstableSelectRtl,
+		unstableDataTableRtl,
+		unstableDialogRtl,
+		unstablePaginationRtl,
+		unstableNotificationRtl,
+		unstableStepsRtl,
+		unstableAlertRtl,
+	} = await import("naive-ui")
+	rtlStyles.value = [
+		unstableListRtl,
+		unstablePageHeaderRtl,
+		unstableButtonGroupRtl,
+		unstableButtonRtl,
+		unstableCardRtl,
+		unstableScrollbarRtl,
+		unstableMessageRtl,
+		unstableCollapseRtl,
+		unstableDrawerRtl,
+		unstableInputNumberRtl,
+		unstableCheckboxRtl,
+		unstableRadioRtl,
+		unstableTagRtl,
+		unstableTableRtl,
+		unstableInputRtl,
+		unstableAvatarGroupRtl,
+		unstableFlexRtl,
+		unstableSelectRtl,
+		unstableDataTableRtl,
+		unstableDialogRtl,
+		unstablePaginationRtl,
+		unstableNotificationRtl,
+		unstableStepsRtl,
+		unstableAlertRtl,
+	]
+	return rtlStyles.value
+}
+
+watch(
+	computed(() => Language.value === "ar"),
+	async (isArabic) => {
+		if (isArabic) void ensureRtlStyles()
+	},
+	{ immediate: true },
+)
 
 const Locales = {
 	ar: arDZ,
@@ -86,7 +106,10 @@ const dateLocales = {
 
 const configProviderProps = computed<ConfigProviderProps>(() => ({
 	dir: Language.value === "ar" ? "rtl" : "ltr",
-	rtl: Language.value === "ar" ? rtlStyles : undefined,
+	rtl:
+		Language.value === "ar" && rtlStyles.value.length
+			? rtlStyles.value
+			: undefined,
 	theme: Theme.value === "dark" ? darkTheme : undefined,
 	themeOverrides: {
 		common: {
