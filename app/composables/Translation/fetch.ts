@@ -5,42 +5,58 @@ export default async function () {
 	const Language = useCookie<keyof TranslationsType>("language", {
 		sameSite: true,
 	});
-	const route = useRoute();
 	const translationsState = useState<TranslationsType>("translations");
-	const unfoundTranslationsState = useState<TranslationsType>(
-		"unfoundTranslations",
-	);
 
 	const database = useState<Database>("database");
 	const sessionID = useSessionCookie();
 
-	if (Language.value && unfoundTranslationsState.value) {
-		const fetchResult = (
+	if (!Language.value || !database.value) return;
+
+	const locale = Language.value;
+
+	let fetchResult: Item[] = [];
+	try {
+		const result = (
 			await $fetch<apiResponse<Item[]>>(
 				`${config.public.apiBase}${
-					route.params?.database || "inicontent"
-				}/translation`,
+					database.value.slug
+				}/translations`,
 				{
 					params: {
 						where: Inison.stringify({
-							original: `[]${Object.keys(unfoundTranslationsState.value).join(",")}`,
-							locale: Language.value,
-							[`${database.value.slug}_sid`]: sessionID.value,
+							locale,
+							original: "!="
 						}),
+						[`${database.value.slug}_sid`]: sessionID.value,
+						options: Inison.stringify({ perPage: 500 }),
 						credentials: "include",
 					},
 				},
 			)
 		).result;
-		if (fetchResult)
-			for (const translation of fetchResult) {
-				if (!translationsState.value[Language.value])
-					// @ts-ignore
-					translationsState.value[Language.value] = {};
-				// @ts-ignore
-				// Canonical field is `translation`; fall back to legacy `translated` for older API responses.
-				translationsState.value[Language.value][translation.original] =
-					translation.translation ?? translation.translated;
-			}
+		fetchResult = result ?? [];
+	} catch (e) {
+		console.error("[Translation] fetch global translations error", e);
 	}
+
+	// Merge only global UI translations (records without a table/item/field)
+	// into the translation system so `t()` picks them up.
+	const merged: Record<string, string> = {};
+	for (const translation of fetchResult) {
+		if (translation.table || translation.item || translation.field) continue;
+		const original = translation.original;
+		const value = translation.translation ?? translation.translated;
+		if (!original || typeof value !== "string") continue;
+		merged[original] = value;
+	}
+
+	if (!Object.keys(merged).length) return;
+
+	if (!translationsState.value)
+		translationsState.value = {} as TranslationsType;
+	if (!translationsState.value[locale]) translationsState.value[locale] = {};
+	translationsState.value[locale] = {
+		...translationsState.value[locale],
+		...merged,
+	} as SingleLanguageTranslations;
 }

@@ -133,7 +133,7 @@ const data = ref<apiResponse<Item[]>>();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
-// Initialize realtime sync
+// ── When the current language isn't the primary language, disable inline table edit feature ──
 const { isConnected, isConnecting } = useRealtimeSync(table, data, database);
 
 watch(searchString, (v) => {
@@ -241,7 +241,8 @@ function renderItemButtons(row: Item) {
 	return h(NButtonGroup, { vertical: isMobile }, () =>
 		[
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
-			database.value?.secondaryLanguages?.length
+			database.value?.secondaryLanguages?.length &&
+				table.value?.slug !== "translations"
 				? h(
 						NTooltip,
 						{ delay: 1500 },

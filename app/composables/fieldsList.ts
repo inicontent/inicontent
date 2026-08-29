@@ -66,6 +66,11 @@ export default function fieldsList(): fieldListOptionType[] {
 					key: "mention",
 					icon: renderIcon("message"),
 				},
+				{
+					label: t("fields.locale"),
+					key: "locale",
+					icon: renderIcon("world"),
+				},
 			],
 		},
 		{

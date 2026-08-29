@@ -7,11 +7,12 @@
 </template>
 
 <script lang="ts" setup>
-import { isArrayOfObjects } from "inibase/utils";
+import { flattenSchema, isArrayOfObjects } from "inibase/utils";
 import type { FormInst } from "naive-ui";
 import { debounce } from "~/composables";
 
 const props = defineProps<{
+	// biome-ignore lint/correctness/noVueDuplicateKeys: false positive with translation POST body's `table` key
 	table?: string;
 	onBeforeCreate?: (data?: Item) => any;
 	onAfterCreate?: (data?: Item) => any;
@@ -410,6 +411,11 @@ async function CREATE() {
 			if (!data.result || !data.result.id)
 				return window.$message.error(data.message);
 
+			// When creating an item in a secondary language, also post the
+			// entered values as translations for that language.
+			if (Language.value && Language.value !== database.value?.primaryLanguage)
+				await postTranslationsForNewItem(bodyContent, String(data.result.id));
+
 			window.$message.success(data.message);
 			await refreshNuxtData(
 				`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
@@ -423,5 +429,101 @@ async function CREATE() {
 		}
 		window.$message.error(t("inputsAreInvalid"));
 	});
+}
+
+// ── Post translations when creating an item in a secondary language ──────────
+
+const notTranslatableKeys = new Set([
+	"id",
+	"createdAt",
+	"createdBy",
+	"updatedAt",
+	"updatedBy",
+	"password",
+	"email",
+	"color",
+	"icon",
+	"link",
+	"role",
+]);
+
+const extraTranslatableKeys = new Set([
+	"url",
+	"table",
+	"asset",
+	"array-table",
+	"array-asset",
+]);
+
+const translatableTypes = new Set(["string", "text", "textarea", "html"]);
+
+function isArrayField(field: Field): boolean {
+	const type = Array.isArray(field.type) ? field.type[0] : field.type;
+	return (
+		field.isArray === true ||
+		type === "array" ||
+		(type === "multiple" && field.subType !== "select")
+	);
+}
+
+function isTranslatableField(field: Field): boolean {
+	const type = Array.isArray(field.type) ? field.type[0] : field.type;
+	const subType = field.subType;
+	const resolved = (subType ?? type) as string;
+	if (notTranslatableKeys.has(resolved)) return false;
+	if (["ids", "id"].includes(field.key)) return false;
+	if (translatableTypes.has(resolved)) return true;
+	if (extraTranslatableKeys.has(resolved)) return true;
+	if (isArrayField(field)) return true;
+	return false;
+}
+
+function normalizeValue(value: unknown): string {
+	if (value === null || value === undefined) return "";
+	if (Array.isArray(value) || typeof value === "object")
+		return JSON.stringify(value);
+	return String(value);
+}
+
+async function postTranslationsForNewItem(bodyContent: Item, newItemId: string) {
+	if (!table.value?.schema) return;
+	const fields = flattenSchema(table.value.schema, true).filter(
+		(field) => !field.key.includes(".") && isTranslatableField(field),
+	);
+	const ops: Promise<any>[] = [];
+
+	for (const field of fields) {
+		const raw = (bodyContent as any)[field.key];
+		const value = normalizeValue(raw);
+		if (!value.trim()) continue;
+		ops.push(
+			$fetch(
+				`${config.public.apiBase}${database.value.slug}/translations`,
+				{
+					method: "POST",
+					body: {
+						original: value,
+						translation: value,
+						locale: Language.value,
+						table: table.value.slug,
+						field: field.key,
+						item: newItemId,
+					},
+					params: {
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
+					credentials: "include",
+				},
+			),
+		);
+	}
+
+	if (ops.length) {
+		try {
+			await Promise.all(ops);
+		} catch (e) {
+			console.error("[Form] failed to post translations", e);
+		}
+	}
 }
 </script>

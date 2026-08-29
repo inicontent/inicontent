@@ -84,194 +84,208 @@
 </template>
 
 <script setup lang="ts">
-import { isValidID } from "inibase/utils"
-import { Icon, NIcon, NTag, NText } from "#components"
+import { isValidID } from "inibase/utils";
+import { Icon, NIcon, NTag, NText } from "#components";
 
-const config = useRuntimeConfig()
-const route = useRoute()
-const user = useState<User | undefined>("user")
-const database = useState<Database>("database")
+const config = useRuntimeConfig();
+const route = useRoute();
+const user = useState<User | undefined>("user");
+const database = useState<Database>("database");
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
-const redirectTo = useCookie("redirectTo", { sameSite: true })
+const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
+const redirectTo = useCookie("redirectTo", { sameSite: true });
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
-    primaryColor: "#FF9800",
-    primaryColorHover: "#F7A42A",
-    primaryColorPressed: "#E19421",
-    primaryColorSuppl: "#CB7900",
-}))
+	primaryColor: "#FF9800",
+	primaryColorHover: "#F7A42A",
+	primaryColorPressed: "#E19421",
+	primaryColorSuppl: "#CB7900",
+}));
 
 const showBreadcrumb = computed(
-    () =>
-        database.value?.slug &&
-        !["index", "auth", "database-auth"].includes(
-            String(route.matched[0]?.name),
-        ),
-)
+	() =>
+		database.value?.slug &&
+		!["index", "auth", "database-auth"].includes(
+			String(route.matched[0]?.name),
+		),
+);
 
 function breadCrumbItemLink(index: number) {
-    const breadcrumbSegments = breadcrumbArray.value.slice(0, index + 1)
-    if (hideDatabaseInBreadcrumb.value && databaseParam.value)
-        return `/${databaseParam.value}/${breadcrumbSegments.join("/")}`
-    return `/${breadcrumbSegments.join("/")}`
+	const breadcrumbSegments = breadcrumbArray.value.slice(0, index + 1);
+	if (hideDatabaseInBreadcrumb.value && databaseParam.value)
+		return `/${databaseParam.value}/${breadcrumbSegments.join("/")}`;
+	return `/${breadcrumbSegments.join("/")}`;
 }
-const routeSegments = computed(() => route.path.split("/").filter(Boolean))
+const routeSegments = computed(() => route.path.split("/").filter(Boolean));
 const databaseParam = computed(() => {
-    const param = route.params.database
-    return typeof param === "string" ? param : undefined
-})
+	const param = route.params.database;
+	return typeof param === "string" ? param : undefined;
+});
 const hideDatabaseInBreadcrumb = computed(
-    () =>
-        !!databaseParam.value
-        && routeSegments.value[0] === databaseParam.value
-        && routeSegments.value[1] === "admin",
-)
+	() =>
+		!!databaseParam.value &&
+		routeSegments.value[0] === databaseParam.value &&
+		routeSegments.value[1] === "admin",
+);
 const breadcrumbArray = computed(() =>
-    hideDatabaseInBreadcrumb.value
-        ? routeSegments.value.slice(1)
-        : routeSegments.value,
-)
-const table = useState<Table>("table")
-const currentItem = useState<Item>("currentItem")
-const currentDashboard = useState<Dashboard | null>("currentDashboard")
-const itemLabel = computed(() => renderLabel(table.value, currentItem.value))
+	hideDatabaseInBreadcrumb.value
+		? routeSegments.value.slice(1)
+		: routeSegments.value,
+);
+const table = useState<Table>("table");
+const currentItem = useState<Item>("currentItem");
+const currentDashboard = useState<Dashboard | null>("currentDashboard");
+const itemLabel = computed(() => renderLabel(table.value, currentItem.value));
 
 function breadCrumbItemLabel(index: number) {
-    const childRoute = breadcrumbArray.value[index]
-    if (isValidID(childRoute)) {
-        if (currentDashboard.value?.name && route.path.includes('/dashboards/'))
-            return currentDashboard.value.name
-        if (currentItem.value)
-            return itemLabel.value
-    }
-    if(childRoute === "admin") return t("adminPanel")
-    return t(childRoute)
+	const childRoute = breadcrumbArray.value[index];
+	if (isValidID(childRoute)) {
+		if (currentDashboard.value?.name && route.path.includes("/dashboards/"))
+			return currentDashboard.value.name;
+		if (currentItem.value) return itemLabel.value;
+	}
+	if (childRoute === "admin") return t("adminPanel");
+	return t(childRoute);
 }
 const userDropdownOptions = computed(() => [
-    {
-        label: t("settings"),
-        key: "settings",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
-        show: user.value?.role === config.public.idOne,
-    },
-    {
-        label: t("billing"),
-        key: "billing",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
-        show:
-            !!user.value?.id &&
-            (database.value?.slug === "inicontent" || user.value?.role === config.public.idOne),
-        disabled: route.path.includes("/admin/billing"),
-    },
-    {
-        label: t("toggleTheme"),
-        key: "theme",
-        icon: () =>
-            h(NIcon, () =>
-                h(Icon, {
-                    name: Theme.value === "light" ? "tabler:moon" : "tabler:sun",
-                }),
-            ),
-    },
-    {
-        label: t("profile"),
-        key: "edit",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
-        show:
-            !!user.value?.id &&
-            database.value?.tables
-                ?.find(({ slug }) => slug === "users")
-                ?.allowedMethods?.includes("u"),
-    },
-    {
-        label: t("logout"),
-        key: "logout",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:logout" })),
-        show: !!user.value?.id,
-    },
-    {
-        label: t("auth"),
-        key: "auth",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:login" })),
-        show: !user.value?.id,
-        disabled: (route.name as string | undefined)?.endsWith("-auth"),
-    },
-    {
-        label: `${t("clearCache")} (${humanFileSize(
-            cacheStats.value.size,
-        )})`,
-        key: "clearCache",
-        icon: () => h(NIcon, () => h(Icon, { name: "tabler:wash-machine" })),
-        show: !!user.value?.id && cacheStats.value.size > 0,
-    },
-])
+	{
+		label: t("apiDocumentation"),
+		key: "api",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:book" })),
+		show: !!user.value?.id,
+	},
+	{
+		label: t("settings"),
+		key: "settings",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
+		show: user.value?.role === config.public.idOne,
+	},
+	{
+		label: t("billing"),
+		key: "billing",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
+		show:
+			!!user.value?.id &&
+			(database.value?.slug === "inicontent" ||
+				user.value?.role === config.public.idOne),
+		disabled: route.path.includes("/admin/billing"),
+	},
+	{
+		label: t("toggleTheme"),
+		key: "theme",
+		icon: () =>
+			h(NIcon, () =>
+				h(Icon, {
+					name: Theme.value === "light" ? "tabler:moon" : "tabler:sun",
+				}),
+			),
+	},
+	{
+		label: t("profile"),
+		key: "edit",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
+		show:
+			!!user.value?.id &&
+			database.value?.tables
+				?.find(({ slug }) => slug === "users")
+				?.allowedMethods?.includes("u"),
+	},
+	{
+		label: t("logout"),
+		key: "logout",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:logout" })),
+		show: !!user.value?.id,
+	},
+	{
+		label: t("auth"),
+		key: "auth",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:login" })),
+		show: !user.value?.id,
+		disabled: (route.name as string | undefined)?.endsWith("-auth"),
+	},
+	{
+		label: `${t("clearCache")} (${humanFileSize(cacheStats.value.size)})`,
+		key: "clearCache",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:wash-machine" })),
+		show: !!user.value?.id && cacheStats.value.size > 0,
+	},
+]);
 
 const sessionID = useSessionCookie();
 
 async function onSelectUserDropdown(v: string) {
-    switch (v) {
-        case "edit":
-            navigateTo(
-                `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${(user.value as User).id
-                }/edit`,
-            )
-            break
-        case "billing":
-            navigateTo(
-                database.value?.slug === "inicontent"
-                    ? "https://inicontent.com/admin/billing"
-                    : `https://inicontent.com/${database.value.slug}/admin/billing`,
-            { external: true })
-            break
-        case "settings":
-            navigateTo(
-                `${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
-            )
-            break
-        case "theme":
-            Theme.value = Theme.value === "dark" ? "light" : "dark"
-            break
-        case "logout":
-            await $fetch(
-                `${config.public.apiBase}${database.value?.slug ?? "inicontent"
-                }/auth/signout`,
-                {
-                    credentials: "include", params: {
-                        locale: Language.value,
-                        [`${database.value.slug}_sid`]: sessionID.value,
-                    },
-                },
-            )
-            redirectTo.value = undefined
-            user.value = undefined
-            await navigateTo(
-                `${route.params.database ? `/${route.params.database}` : ""}/auth`,
-            )
-            break
-        case "clearCache":
-            await clearAllCache()
-            cacheStats.value = await getCacheStats()
-            break
-    }
+	switch (v) {
+		case "api":
+			navigateTo(
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/api`,
+			);
+			break;
+		case "edit":
+			navigateTo(
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
+					(user.value as User).id
+				}/edit`,
+			);
+			break;
+		case "billing":
+			navigateTo(
+				database.value?.slug === "inicontent"
+					? "https://inicontent.com/admin/billing"
+					: `https://inicontent.com/${database.value.slug}/admin/billing`,
+				{ external: true },
+			);
+			break;
+		case "settings":
+			navigateTo(
+				`${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
+			);
+			break;
+		case "theme":
+			Theme.value = Theme.value === "dark" ? "light" : "dark";
+			break;
+		case "logout":
+			await $fetch(
+				`${config.public.apiBase}${
+					database.value?.slug ?? "inicontent"
+				}/auth/signout`,
+				{
+					credentials: "include",
+					params: {
+						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
+				},
+			);
+			redirectTo.value = undefined;
+			user.value = undefined;
+			await navigateTo(
+				`${route.params.database ? `/${route.params.database}` : ""}/auth`,
+			);
+			break;
+		case "clearCache":
+			await clearAllCache();
+			cacheStats.value = await getCacheStats();
+			break;
+	}
 }
-const cacheStats = ref<{ total?: number; expired?: number; size: number }>({ size: 0 })
+const cacheStats = ref<{ total?: number; expired?: number; size: number }>({
+	size: 0,
+});
 onMounted(async () => {
-    cacheStats.value = await getCacheStats()
-})
+	cacheStats.value = await getCacheStats();
+});
 
 const languagesDropdownOptions = computed(() => {
-    const primary = database.value?.primaryLanguage
-    const secondary = database.value?.secondaryLanguages ?? []
-    const languages = [primary, ...secondary].filter(
-        (language): language is LanguagesType => !!language,
-    )
+	const primary = database.value?.primaryLanguage;
+	const secondary = database.value?.secondaryLanguages ?? [];
+	const languages = [primary, ...secondary].filter(
+		(language): language is LanguagesType => !!language,
+	);
 
-    return [...new Set(languages)].map((language) => ({
-        label: t(`languages.${language}`),
-        key: language,
-    }))
-})
-
+	return [...new Set(languages)].map((language) => ({
+		label: t(`languages.${language}`),
+		key: language,
+	}));
+});
 </script>

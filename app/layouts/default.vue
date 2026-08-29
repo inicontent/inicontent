@@ -148,7 +148,11 @@ onMounted(() => {
 			.querySelector(".printable-direct-parent")
 			?.classList.remove("printable-parent")
 	}
+
+	fetchTranslation()
 })
+
+watch(Language, fetchTranslation)
 
 useHead({
 	bodyAttrs: {
@@ -159,6 +163,4 @@ useHead({
 	},
 })
 
-// onMounted(fetchTranslation);
-// watch(Language, fetchTranslation);
 </script>

@@ -60,6 +60,7 @@ const currentValue = computed({
 	set: (newValue) => emit("update:modelValue", newValue),
 })
 
+// ── When the current language isn't the primary language, disable inline table edit feature ──
 const isEditable = computed(
 	() => !isArrayOfObjects(fieldRef.value.children),
 )

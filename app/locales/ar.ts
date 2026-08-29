@@ -795,6 +795,7 @@ export default {
 
 		// Translation drawer
 		translateItem: "ترجمة العنصر",
+		original: "النص الأصلي",
 		noSecondaryLanguages: "لا توجد لغات ثانوية مُعدَّة لهذه قاعدة البيانات.",
 		noTranslatableFields: "لا توجد حقول نصية قابلة للترجمة في هذا الجدول.",
 		translationPlaceholder: "أدخل الترجمة…",

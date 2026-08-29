@@ -122,7 +122,7 @@ const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 					...(usersTable?.columns?.map((column) => `madeBy.${column}`) ?? []),
 				],
 			}),
-			locale: Language.value,
+			locale: Language,
 			[`${database.value.slug}_sid`]: sessionID.value,
 		},
 		immediate: false,
@@ -147,6 +147,12 @@ watch(
 	},
 	{ immediate: true },
 )
+
+// Refetch logs when the current language changes (log messages are
+// locale-dependent), but only once they've been loaded at least once
+watch(Language, () => {
+	if (!firstTime) execute()
+})
 
 function handleCollapseChange({
 	name,

@@ -11,6 +11,7 @@
         </NScrollbar>
         <ColumnTable v-else-if="detectedFieldType === 'table'" :value :field />
         <ColumnTags v-else-if="['tags', 'select', 'radio', 'checkbox'].includes(detectedFieldType)" :value :field />
+        <ColumnLocale v-else-if="detectedFieldType === 'locale'" :value />
         <ColumnColor v-else-if="detectedFieldType === 'color'" :value />
         <ColumnUrl v-else-if="detectedFieldType === 'url'" :value />
         <ColumnEmail v-else-if="detectedFieldType === 'email'" :value />

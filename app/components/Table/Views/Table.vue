@@ -252,7 +252,7 @@ const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
 		query: {
 			options: queryOptions,
 			where: searchString,
-			locale: Language.value,
+			locale: Language,
 			[`${database.value.slug}_sid`]: sessionID.value,
 		},
 		onRequest() {
@@ -1098,7 +1098,7 @@ async function setColumns(skipVisualWidths = false) {
 										"createdBy",
 										"updatedAt",
 										"updatedBy",
-									].includes(field.key)
+									].includes(field.key) && Language.value === database.value?.primaryLanguage
 								? h(LazyColumnEdit, {
 										editKey: `${row.id ?? "row"}-${field.key}`,
 										itemLabel: renderLabel(table.value, row),

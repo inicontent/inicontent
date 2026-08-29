@@ -755,6 +755,7 @@ export default {
 
 		// Translation drawer
 		translateItem: "Traduire l'élément",
+		original: "Original",
 		noSecondaryLanguages: "Aucune langue secondaire n'est configurée pour cette base de données.",
 		noTranslatableFields: "Aucun champ texte traduisible trouvé dans cette table.",
 		translationPlaceholder: "Saisir la traduction…",

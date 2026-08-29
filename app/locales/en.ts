@@ -1,24 +1,24 @@
 export default {
 	en: {
-		selectAll: "Select all",
-		clearAll: "Clear all",
-		optional: "Optional",
-		rightClickToEdit: "Right click to edit",
-		pressAndHoldToEdit: "Press and hold to edit",
-		uploadingImportFile: "Uploading import file",
-		an_import_job_is_running_in_background: "An import is running",
-		an_import_job_is_done: "Import completed",
-		an_import_job_failed: "Import failed",
+		// Confirmation messages
+		areYouSure: "Are you sure?",
+		folderNameRequired: "Folder name is required",
+
+		// HTTP Methods
+		get: "Read",
+		post: "Create",
+		put: "Update",
+
+		// API
+		apiDocumentation: "API Documentation",
+
+		// Admin
+		auth: "Authentication",
 		importedRows: "Imported {count} rows",
 		forgotPassword: "Forgot password?",
-		sendResetLink: "Send reset link",
-		resetPassword: "Reset password",
-		newPassword: "New password",
-		confirmPassword: "Confirm password",
 		passwordMinimumLength: "Password must be at least 8 characters.",
 		passwordsDoNotMatch: "Passwords do not match.",
 		invalidResetLink: "This password reset link is invalid or expired.",
-		backToSignIn: "Back to sign in",
 
 		// Field types that differ from default
 		fields: {
@@ -27,13 +27,9 @@ export default {
 			dateTime: "Date & time",
 			dateRange: "Date range",
 			dateTimeRange: "Date & time range",
-			month: "Month",
 			monthRange: "Month range",
-			year: "Year",
 			yearRange: "Year range",
-			quarter: "Quarter",
 			quarterRange: "Quarter range",
-			week: "Week",
 		},
 
 		apiDocs: {
@@ -46,6 +42,19 @@ export default {
 			sessionAuthLinkPrefix: "Need a session id? Read",
 			viewAuthDocs: "the auth docs",
 			schemaTitle: "Schema fields",
+			endpointPath: "Endpoint",
+			queryParams: "Query parameters",
+			requestExample: "Request",
+			responseExample: "Response",
+			responseFormat: "Response format",
+			statusCode: "Status code",
+			localeParam: "locale — preferred language code (e.g. en, ar, fr, es)",
+			pageParam: "page — page number for pagination (default: 1)",
+			limitParam: "limit — number of items per page (default: 25)",
+			isSignedInParam:
+				"isSignedIn — set to true to check if the session is valid",
+			searchParam: "search — search query encoded in Inison format",
+			columnsParam: "columns — comma-separated list of fields to return",
 			assetsUploadTitle: "Uploading assets",
 			assetsUploadIntro:
 				"Send a POST request to /assets or /assets/<folder> with one or more objects that describe the files you plan to upload.",
@@ -62,24 +71,65 @@ export default {
 			tableNotFoundDescription:
 				"Double-check the slug or pick another table from the list.",
 			backToTables: "Back to API tables",
+			tableEndpoints: {
+				title: "Table endpoints",
+				listTitle: "List items",
+				listDescription:
+					"List all items in the {table} table with pagination and filtering.",
+				singleTitle: "Get single item",
+				singleDescription:
+					"Get a single item by its ID from the {table} table.",
+				createTitle: "Create item",
+				createDescription: "Create a new item in the {table} table.",
+				updateTitle: "Update item",
+				updateDescription:
+					"Update an existing item in the {table} table by its ID.",
+				deleteTitle: "Delete item",
+				deleteDescription: "Delete an item from the {table} table by its ID.",
+				schemaTitle: "Get table schema",
+				schemaDescription:
+					"Returns the schema definition for the {table} table.",
+				logsTitle: "Activity logs",
+				logsDescription: "Returns recent activity logs for the {table} table.",
+			},
 			auth: {
 				title: "Authentication endpoints",
 				description:
 					"Use the following endpoints to create sessions and populate the {param} parameter.",
 				signinDescription:
-					"Authenticate an existing user. POST creates a new session, PUT refreshes the current one.",
+					"Authenticate an existing user by providing username and password. Returns a session id that must be sent on subsequent requests.",
+				signinEndpoint: "/auth/signin",
 				usernameField: "username — unique identifier for the account",
 				passwordField:
 					"password — plain text password that will be hashed on the server",
 				signupDescription:
 					"Create a new user. The payload follows the users table schema shown below.",
+				signupEndpoint: "/auth/signup",
 				currentDescription:
 					"Returns the full user object for the session associated with your {param} token.",
+				currentEndpoint: "/auth/current",
 				signoutDescription:
 					"Invalidates the active session and clears the related cookie.",
+				signoutEndpoint: "/auth/signout",
+				resetRequestDescription:
+					"Request a password reset email. Sends a token to the registered email address.",
+				resetRequestEndpoint: "/auth/reset",
+				resetRequestEmailField: "email — the registered email address",
+				resetCompleteDescription:
+					"Set a new password using the token received via the password reset email.",
+				resetCompleteEndpoint: "/auth/reset",
+				resetTokenField: "token — the reset token from the email link",
+				resetPasswordField: "password — new password (minimum 8 characters)",
 				signupSchemaTitle: "Users schema",
 				cookieHint:
 					"Successful signin stores the session id inside the {param} cookie. You can also send it manually if needed.",
+			},
+			publicApi: {
+				title: "Public API",
+				description:
+					"Read-only access to tables that have been made publicly visible. No authentication required.",
+				collectionEndpoint: "List items",
+				singleEndpoint: "Get single item",
 			},
 		},
 
@@ -126,12 +176,8 @@ export default {
 		chatPlaceholderShort: "Type a message...",
 		applyChanges: "Apply changes",
 		skipAiHelp: "Skip AI help",
-		applied: "Applied",
 		publishData: "Publish data",
-		published: "Published",
 		translateData: "Translate",
-		translated: "Translated",
-		schedules: "Schedules",
 		tableSchedules: "Table schedules",
 		addSchedule: "Add schedule",
 		runNow: "Run now",
@@ -141,17 +187,17 @@ export default {
 		nextRunAt: "Next run",
 		lastRunAt: "Last run",
 		lastError: "Last error",
-		active: "Active",
-		inactive: "Inactive",
-		preset: "Preset",
 		creationCronNotice:
 			"Create rows automatically on a fixed schedule using a saved JSON or Inison payload.",
-		friendlyScheduleHint: "Choose a simple preset, then optionally skip specific weekdays.",
+		friendlyScheduleHint:
+			"Choose a simple preset, then optionally skip specific weekdays.",
 		excludeDays: "Exclude days",
-		excludeDaysHelp: "Checked days will be skipped even if the cron expression matches them.",
+		excludeDaysHelp:
+			"Checked days will be skipped even if the cron expression matches them.",
 		excludedDays: "Excluded days",
 		noExcludedDays: "None",
-		payloadHelp: "Use a JSON object or an Inison-stringified object for the row you want to create.",
+		payloadHelp:
+			"Use a JSON object or an Inison-stringified object for the row you want to create.",
 		payloadTemplateVariablesHelp:
 			"Templates: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
 		previewResolvedPayload: "Preview resolved payload",
@@ -162,60 +208,25 @@ export default {
 		presetDescriptionHourly: "Runs once every hour.",
 		presetDescriptionDaily: "Runs once every day at midnight UTC.",
 		presetDescriptionWeekly: "Runs every Monday at midnight UTC.",
-		presetDescriptionMonthly: "Runs on the first day of each month at midnight UTC.",
-		presetDescriptionCustom: "Use your own cron expression for advanced schedules.",
+		presetDescriptionMonthly:
+			"Runs on the first day of each month at midnight UTC.",
+		presetDescriptionCustom:
+			"Use your own cron expression for advanced schedules.",
 		scheduleSummaryNoExcluded: "This schedule will run on all matching days.",
 		scheduleSummaryWithExcluded: "This schedule will skip: {days}.",
-		sunday: "Sunday",
-		monday: "Monday",
-		tuesday: "Tuesday",
-		wednesday: "Wednesday",
-		thursday: "Thursday",
-		friday: "Friday",
-		saturday: "Saturday",
-		hourly: "Hourly",
-		daily: "Daily",
-		weekly: "Weekly",
-		monthly: "Monthly",
-		custom: "Custom",
 		tableDemo: "Table preview",
-		close: "Close",
-		billing: "Billing",
 
 		billingUi: {
 			title: "Billing & Subscription",
 			subtitle: "Manage your plan, invoices, and payment settings.",
-			tabs: {
-				subscription: "Subscription",
-				invoices: "Invoices",
-				settings: "Settings",
-			},
 			noSubscriptionTitle: "No active subscription",
 			noSubscriptionBody:
 				"Choose a plan to enable billing and unlock storage features.",
 			choosePlanTitle: "Choose your plan",
 			currentPlanTitle: "Current plan",
-			planType: "Plan Type",
-			planTypes: {
-				base: "Base",
-				enterprise: "Enterprise",
-			},
-			status: "Status",
 			statusLabels: {
-				active: "Active",
-				canceled: "Canceled",
 				past_due: "Past due",
-				paid: "Paid",
-				open: "Open",
-				void: "Void",
-				uncollectible: "Uncollectible",
-				unknown: "Unknown",
 			},
-			databaseStorage: "Database Storage",
-			assetStorage: "Asset Storage",
-			changePlan: "Change Plan",
-			hidePlanPicker: "Hide Plan Picker",
-			cancelSubscription: "Cancel Subscription",
 			upgradePlanTitle: "Upgrade or change plan",
 			storageUsageTitle: "Storage usage",
 			storageLimitExceededTitle: "Storage limit exceeded",
@@ -225,15 +236,11 @@ export default {
 			paymentSettingsTitle: "Payment settings",
 			paymentMethodTitle: "Payment Method",
 			paymentMethodSubtitle: "Manage your payment method on PayPal",
-			managePayment: "Manage Payment",
 			billingEmailTitle: "Billing Email",
-			updateEmail: "Update Email",
 			autoRenewalTitle: "Auto-renewal",
 			autoRenewalMessage:
 				"{{status}} - Your subscription will {{action}} at the end of the billing period.",
 			autoRenew: {
-				enabled: "Enabled",
-				disabled: "Disabled",
 				renew: "automatically renew",
 				notRenew: "not renew",
 				enable: "Enable Auto-renewal",
@@ -245,27 +252,12 @@ export default {
 			cancelModalKeep: "Keep Subscription",
 			cancelModalConfirm: "Yes, Cancel",
 			invoiceId: "Transaction ID",
-			period: "Period",
-			description: "Description",
-			date: "Date",
-			amount: "Amount",
-			invoice: "Invoice",
 			downloadPdf: "Download PDF",
 			checkoutSuccess: {
 				processingPayment: "Processing your payment...",
-				paymentFailed: "Payment Failed",
-				returnToBilling: "Return to Billing",
 				subscriptionActivated: "Subscription Activated!",
 				thankYou: "Thank you for choosing Inicontent.",
-				goToDashboard: "Go to Dashboard",
-				viewBillingDetails: "View Billing Details",
-				subscriptionStatus: "Subscription Status",
-				active: "Active",
 				orderId: "Order ID",
-				databaseStorage: "Database Storage",
-				assetStorage: "Asset Storage",
-				validUntil: "Valid Until",
-				nextSteps: "Next Steps",
 				firstProject: "You can now create your first project.",
 				confirmationEmail:
 					"A confirmation email has been sent to your PayPal email address. To get started, head to your dashboard and create your first CMS database.",
@@ -279,16 +271,12 @@ export default {
 				title: "Checkout Canceled",
 				description:
 					"Your subscription was not completed. No charges were made.",
-				returnToBilling: "Return to Billing",
-				backToHome: "Back to Home",
 				supportMessage:
 					"If you encountered any issues during checkout, please contact our support team:",
 			},
 			credit: {
 				balance: "Credit Balance",
 				balanceSubtitle: "Your account credit used for monthly charges.",
-				addCredit: "Add Credit",
-				requestBankTransfer: "Request Bank Transfer",
 				topupTitle: "Add Account Credit",
 				topupDescription:
 					"Add credit via PayPal. Your credit will be used to pay monthly charges automatically.",
@@ -306,23 +294,18 @@ export default {
 					"Your PayPal payment was canceled. No charges were made.",
 				processingTopup: "Processing your payment…",
 				orderId: "Order ID",
-				amountAdded: "Amount Added",
-				newBalance: "New Balance",
 				requestTitle: "Request Bank Transfer Credit",
 				requestDescription:
 					"Submit a bank transfer request. An admin will verify and apply the credit to your account.",
 				note: "Transfer Reference / Note",
 				notePlaceholder: "Enter bank transfer reference or additional notes",
 				noteRequired: "Please provide a transfer reference or note",
-				submitRequest: "Submit Request",
 				requestSubmitted:
 					"Your credit request has been submitted. An admin will review it shortly.",
 				requestFailed: "Failed to submit credit request. Please try again.",
 				pendingRequests: "Pending Credit Requests",
 				noPendingRequests: "No pending credit requests",
 				refreshRequests: "Refresh",
-				approve: "Approve",
-				reject: "Reject",
 				requestUser: "User",
 				requestAmount: "Amount",
 				requestNote: "Note",
@@ -354,12 +337,6 @@ export default {
 			subtitle: "Simple, transparent pricing with no hidden fees.",
 			databaseStorageLabel: "Database Storage (GB)",
 			assetStorageLabel: "Asset Storage (GB)",
-			basePlan: "Base Plan",
-			additionalStorage: "Additional Storage",
-			totalMonthly: "Total Monthly",
-			subscribeNow: "Subscribe Now",
-			upgradePlan: "Upgrade Plan",
-			requestQuote: "Request Quote",
 			currentUsage: "Current Storage Usage",
 			usageWarning:
 				"You are exceeding your storage quota. Consider upgrading your plan.",
@@ -391,11 +368,8 @@ export default {
 		},
 
 		// JSON Field
-		format: "Format",
-		invalidJSON: "Invalid JSON",
 
 		// Dashboards
-		databases: "Databases",
 		createDatabase: "Create database",
 		basicInformation: "Basic information",
 		basicInformationDescription: "Set database details and default locale.",
@@ -408,14 +382,10 @@ export default {
 			fr: "French",
 			es: "Spanish",
 		},
-		dashboards: "Dashboards",
-		dashboard: "Dashboard",
 		dashboardName: "Dashboard name",
 		dashboardSettings: "Dashboard settings",
 		editDashboard: "Edit dashboard",
 		createDashboard: "Create dashboard",
-		widgets: "Widgets",
-		widget: "Widget",
 		addWidget: "Add widget",
 		editWidget: "Edit widget",
 		widgetTitle: "Widget title",
@@ -426,7 +396,6 @@ export default {
 			one: "{count} widget",
 			other: "{count} widgets",
 		},
-		counter: "Counter",
 		line: "Line chart",
 		bar: "Bar chart",
 		pie: "Pie chart",
@@ -439,11 +408,6 @@ export default {
 		selectTable: "Select table",
 		selectField: "Select field",
 		selectType: "Select type",
-		operation: "Operation",
-		count: "Count",
-		sum: "Sum",
-		max: "Max",
-		min: "Min",
 		groupBy: "Group by",
 		dateField: "Date field",
 		dateRange: "Date range",
@@ -452,41 +416,41 @@ export default {
 		last90Days: "Last 90 days",
 		lastYear: "Last year",
 		allTime: "All time",
-		limit: "Limit",
-		size: "Size",
-		small: "Small",
-		medium: "Medium",
-		large: "Large",
 		noData: "No data",
 
 		// Translation drawer
 		translateItem: "Translate item",
-		noSecondaryLanguages: "No secondary languages are configured for this database.",
+		original: "Original",
+		noSecondaryLanguages:
+			"No secondary languages are configured for this database.",
 		noTranslatableFields: "No translatable text fields found in this table.",
 		translationPlaceholder: "Enter translation…",
 		translationsSaved: "Translations saved",
 
 		passkey: {
 			securityTitle: "Passkey Security",
-			description: "Register a passkey to sign in using your device verification.",
+			description:
+				"Register a passkey to sign in using your device verification.",
 			register: "Register passkey",
 			enrollmentTitle: "Set up a passkey",
-			enrollmentPrompt: "Would you like to set up a passkey for faster, more secure sign-in on this device?",
+			enrollmentPrompt:
+				"Would you like to set up a passkey for faster, more secure sign-in on this device?",
 			notNow: "Not now",
 			notSupported: "This browser does not support passkeys.",
 			hint: "You can use Face ID, Touch ID, or a security key after registration.",
 			registeredSuccessfully: "Passkey registered successfully.",
 			registrationFailed: "Passkey registration failed.",
 			signin: "Sign in with passkey",
-			signinHintUsername: "Enter your username or email, then continue with passkey.",
-			signinHintDevice: "Use your device verification (Face ID, Touch ID, or security key).",
+			signinHintUsername:
+				"Enter your username or email, then continue with passkey.",
+			signinHintDevice:
+				"Use your device verification (Face ID, Touch ID, or security key).",
 			signinFailed: "Passkey sign-in failed.",
 		},
 
 		// Email settings
 		emailConfig: {
 			use_custom_smtp: "Use Custom SMTP",
-			from_email: "From Email",
 			from_name: "Sender Name",
 			smtp_host: "SMTP Host",
 			smtp_port: "SMTP Port",
