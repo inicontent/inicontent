@@ -7,6 +7,31 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 - [Tabler Icons](https://github.com/tabler/tabler-icons) for intuitive and attractive icons.  
 - [Tiptap](https://github.com/ueberdosis/tiptap) for a powerful Rich Text Editor.
 
+## Ecosystem
+
+- **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
+  build on. It ships `CONTEXT.md`, the AI-agent build context: authentication, the REST API,
+  the query language, table schemas & flows, and custom-route registration.
+- **[`inicontent/api`](https://github.com/inicontent/api)** — the Nitro server behind
+  `https://api.inicontent.com/`: REST CRUD per table, authentication, assets, and the built-in
+  AI-assistant endpoints (`{db}/ai`, `{db}/ai/tables`, …).
+
+## REST API & authentication (short version)
+
+Every database gets a public REST API at `https://api.inicontent.com/{databaseSlug}`:
+
+- `PUT {db}/auth/signin` with `{ "username": ..., "password": ... }` → returns a `sessionID`;
+  pass it on every request as the `{db}_sid` query param.
+- Table data: `GET/POST/PUT/DELETE {db}/{table}` — list pagination/projection live in the
+  Inison-stringified `options` query param and filters in `where`.
+- Structure: `GET/POST/PUT/DELETE inicontent/databases/{db}[/{table}]` for metadata, schemas,
+  flows (`onRequest`/`onResponse`), and table CRUD.
+- AI assistant: `POST {db}/ai` (router), then `POST/PUT {db}/ai/tables`, `{db}/ai/data`,
+  `{db}/ai/pages` … to design schemas, roles and demo data.
+
+See the `CONTEXT.md` shipped with `inicontent/starter` for the full reference (query language,
+schema field types, flows, routing).
+
 ## Usage
 
 There are two ways to use this project:
@@ -63,10 +88,10 @@ If you require extensive customization, you can clone the repository and modify 
 
 ## Setup
 
-Install the dependencies to get started:  
+Install the dependencies to get started (any package manager works — npm, pnpm, yarn, or bun):  
 
 ```bash
-<npm|pnpm|yarn|bun> install
+npm install
 ```
 
 ## Development
