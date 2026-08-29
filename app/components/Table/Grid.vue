@@ -52,11 +52,12 @@
 								</NInput>
 								<NTooltip :delay="600">
 									<template #trigger>
-										<NButton secondary :type="showQuickSettings ? 'primary' : 'default'"
+										<NButton :type="showQuickSettings ? 'primary' : 'default'"
 											@click="toggleQuickSettings">
 											<template #icon>
 												<NIcon>
-													<Icon name="tabler:dots" />
+													<Icon v-if="showQuickSettings" name="tabler:settings-off" />
+													<Icon v-else name="tabler:settings" />
 												</NIcon>
 											</template>
 										</NButton>
@@ -77,10 +78,10 @@
 									{{ t('makeItPrivate') }}
 								</NCheckbox>
 								<template v-if="!quickSettingsPrivate">
-									<NFlex v-for="role of modelValue.roles" :key="role.id" align="center"
+									<NFlex :reverse="Language === 'ar'" v-for="role of modelValue.roles" :key="role.id" align="center"
 										justify="space-between" :wrap="false">
-										<NTag round :bordered="false">{{ role.name }}</NTag>
-										<NCheckboxGroup v-model:value="rolePermissions[role.id]">
+										<NText strong>{{ t(role.name) }} :</NText>
+										<NCheckboxGroup v-model:value="rolePermissions[role.id]" :disabled="role.id === config.public.idOne">
 											<NCheckbox value="c" :label="t('create')" />
 											<NCheckbox value="r" :label="t('read')" />
 											<NCheckbox value="u" :label="t('update')" />
@@ -109,7 +110,6 @@ const showPopover = ref(false)
 const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const user = useState<User>("user")
-const Hover = ref<Record<string, boolean>>({})
 const newTableSlug = ref()
 const route = useRoute()
 
@@ -137,9 +137,10 @@ const rolePermissions = reactive<Record<string, CrudPermission[]>>({})
 
 function toggleQuickSettings() {
 	showQuickSettings.value = !showQuickSettings.value
-	if (showQuickSettings.value)
+	if (showQuickSettings.value){
 		for (const { id } of modelValue.value.roles ?? [])
-			if (!rolePermissions[id]) rolePermissions[id] = ["c", "r", "u", "d"]
+			rolePermissions[id] = ["c", "r", "u", "d"]
+	} else resetQuickSettings()
 }
 
 function resetQuickSettings() {
@@ -152,10 +153,17 @@ function resetQuickSettings() {
 function generateQuickSettingsFlows(): FlowType[] {
 	if (quickSettingsPrivate.value) return [[["error", "accessDenied"]]]
 
+	// if no change made to role permissions, no need to create flows
+	if (Object.values(rolePermissions).filter(permissions => permissions.length === 4).length === modelValue.value.roles?.length)
+		return []
+
 	const flows: FlowType[] = []
 	for (const { id } of modelValue.value.roles ?? []) {
+		// skip flows for admin
+		if (id === config.public.idOne) continue;
+
 		const allowedPermissions = rolePermissions[id]
-		if (!allowedPermissions) continue
+		if (!allowedPermissions || allowedPermissions.length === 4) continue
 		const deniedMethods = (
 			Object.keys(permissionMethods) as CrudPermission[]
 		)
@@ -173,13 +181,16 @@ function generateQuickSettingsFlows(): FlowType[] {
 
 const createTable = async () => {
 	if (newTableSlug.value) {
-		const bodyContent: string = toRaw(newTableSlug.value)
 		Loading.value.Table = true
+		
+		const bodyContent: string = toRaw(newTableSlug.value)
+		const quickSettingsFlows = generateQuickSettingsFlows()
 
 		const data = await $fetch<apiResponse<Table>>(
 			`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
+				body: quickSettingsFlows.length ? { onRequest: quickSettingsFlows } : undefined,
 				params: {
 					locale: Language.value,
 					[`${database.value.slug}_sid`]: sessionID.value,
@@ -189,31 +200,12 @@ const createTable = async () => {
 		)
 
 		if (data.result) {
-			let createdTable = data.result
-			const quickSettingsFlows = generateQuickSettingsFlows()
-
-			if (quickSettingsFlows.length) {
-				const flowsData = await $fetch<apiResponse<Table>>(
-					`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/${createdTable.slug}`,
-					{
-						method: "PUT",
-						body: { onRequest: quickSettingsFlows },
-						params: {
-							locale: Language.value,
-							[`${database.value.slug}_sid`]: sessionID.value,
-						},
-						credentials: "include",
-					},
-				).catch(() => null)
-				if (flowsData?.result) createdTable = flowsData.result
-			}
-
-			modelValue.value.tables?.push(createdTable)
+			modelValue.value.tables?.push(data.result)
 			window.$message.success(data.message)
 			newTableSlug.value = null
 			showPopover.value = false
-			resetQuickSettings()
 		} else window.$message.error(data.message ?? t("error"))
+	
 		Loading.value.Table = false
 	} else window.$message.error(t("inputsAreInvalid"))
 }

@@ -286,7 +286,7 @@ const menuOptions = computed(() => {
 		database.value.tables
 			.filter(
 				({ slug, allowedMethods, show }) =>
-					["users", "sessions", "assets", "pages", "blocks", "templates"].includes(slug) &&
+					["users", "sessions", "assets", "translations", "pages", "blocks", "templates"].includes(slug) &&
 					!!allowedMethods &&
 					allowedMethods.trim() !== "" &&
 					show !== false,

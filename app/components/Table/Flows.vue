@@ -205,7 +205,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ formatDateFlowValue(value, secondValue) }}
+														{{ formatFlowValue(value, secondValue) }}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -287,7 +287,7 @@
 													<NTag
 														v-for="value of ([] as string[]).concat(thirdValue as string | string[])"
 														:bordered="false" round>
-														{{ value === null ? '@null' : formatDateFlowValue(value, firstValue) }}
+														{{ value === null ? '@null' : formatFlowValue(value, firstValue) }}
 													</NTag>
 												</NFlex>
 											</NFlex>
@@ -659,7 +659,7 @@ function formatValue(
 		parentKey &&
 		(parentKey === "@user.4" ||
 			(table.value.slug === "users" && parentKey.endsWith(".4"))) &&
-		isNumber(value)
+		value
 	)
 		return (
 			database.value.roles?.find(({ id }) => String(id) === String(value))
@@ -687,7 +687,7 @@ function formatValue(
 
 			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`
 
-			return (item as any)[property] ?? defaultValue
+			return item[property] ?? defaultValue
 		}
 	}
 	return value || defaultValue
@@ -727,7 +727,7 @@ function isRelativeDateValue(value: unknown) {
 	)
 }
 
-function formatDateFlowValue(value: unknown, parentKey?: string | null) {
+function formatFlowValue(value: unknown, parentKey?: string | null) {
 	const field = getFlowField(parentKey ?? null)
 	if (field?.type !== "date") return formatValue(value as any, parentKey ?? undefined)
 
