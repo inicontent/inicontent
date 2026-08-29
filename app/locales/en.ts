@@ -19,6 +19,7 @@ export default {
 		passwordMinimumLength: "Password must be at least 8 characters.",
 		passwordsDoNotMatch: "Passwords do not match.",
 		invalidResetLink: "This password reset link is invalid or expired.",
+		backToSignIn: "Back to sign in",
 
 		// Field types that differ from default
 		fields: {

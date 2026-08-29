@@ -204,6 +204,9 @@ export default {
 		totalDatabaseSize: "Taille totale de la base de données",
 		showAll: "Tout afficher",
 		roles: "Rôles",
+		quickSettings: "Réglages rapides",
+		makeItPrivate: "Rendre privée",
+		read: "Lire",
 		primaryLanguage: "Langue principale",
 		secondaryLanguages: "Langues secondaires",
 		languages: {
