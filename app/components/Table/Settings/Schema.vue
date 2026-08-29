@@ -1,8 +1,8 @@
 <template>
-	<NCollapse style="margin-top: 15px;" accordion :trigger-areas="['main', 'arrow']"
-		v-model:expanded-names="expandedNames">
+	<NCollapse style="margin-top: 15px;" :class="{ 'reorder-enabled': reorderEnabled }" accordion
+		:trigger-areas="['main', 'arrow']" v-model:expanded-names="expandedNames">
 		<VueDraggable :model-value="schema as any[]" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
-			:move="onMoveCallback">
+			:disabled="!reorderEnabled" :move="onMoveCallback">
 			<template v-for="(element, index) in schema">
 				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
 					:disabled="isDisabled(element.key)"
@@ -213,7 +213,8 @@
 
 					<LazyTableSettingsSchema
 						v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
-						v-model="element.children" v-model:expanded-names="expandedChildNames" />
+						v-model="element.children" v-model:expanded-names="expandedChildNames"
+						:reorder-enabled="reorderEnabled" />
 				</NCollapseItem>
 			</template>
 		</VueDraggable>
@@ -286,6 +287,7 @@ const disabledKeysSet = computed<Set<string>>(() => {
 });
 const expandedNames = defineModel<(string | number)[]>("expandedNames");
 const expandedChildNames = ref<(string | number)[]>();
+const { reorderEnabled = false } = defineProps<{ reorderEnabled?: boolean }>();
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return;
 	if (!schema.value[index].children)
@@ -571,7 +573,7 @@ function onKeyInput(element: Field, v: string) {
 </script>
 
 <style scoped>
-.n-collapse-item:not(.n-collapse-item--disabled) :deep(.n-collapse-item__header-main) {
+.reorder-enabled .n-collapse-item:not(.n-collapse-item--disabled) :deep(.n-collapse-item__header-main) {
 	cursor: move !important;
 }
 
