@@ -260,6 +260,9 @@ export default {
 		tableSchedules: "جدولات الجدول",
 		runNow: "تشغيل الآن",
 		tableSlug: "إسم الجدول",
+		quickSettings: "إعدادات سريعة",
+		makeItPrivate: "اجعله خاصًا",
+		read: "قراءة",
 		clickToToggleDate: "إضغط لتغيير التاريخ",
 
 		// Table settings

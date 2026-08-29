@@ -40,23 +40,56 @@
 								</NFlex>
 							</NCard>
 						</template>
-						<NInputGroup>
-							<NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
-								:placeholder="t('tableSlug')">
-								<template #suffix>
-									<NIcon>
-										<Icon name="tabler:letter-case" />
-									</NIcon>
+						<NFlex vertical>
+							<NInputGroup>
+								<NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
+									:placeholder="t('tableSlug')">
+									<template #suffix>
+										<NIcon>
+											<Icon name="tabler:letter-case" />
+										</NIcon>
+									</template>
+								</NInput>
+								<NTooltip :delay="600">
+									<template #trigger>
+										<NButton secondary :type="showQuickSettings ? 'primary' : 'default'"
+											@click="toggleQuickSettings">
+											<template #icon>
+												<NIcon>
+													<Icon name="tabler:dots" />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t('quickSettings') }}
+								</NTooltip>
+								<NButton @click="createTable" :loading="Loading.Table">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:chevron-right" />
+										</NIcon>
+									</template>
+								</NButton>
+							</NInputGroup>
+							<template v-if="showQuickSettings">
+								<NDivider style="margin: 0" />
+								<NCheckbox v-model:checked="quickSettingsPrivate">
+									{{ t('makeItPrivate') }}
+								</NCheckbox>
+								<template v-if="!quickSettingsPrivate">
+									<NFlex v-for="role of modelValue.roles" :key="role.id" align="center"
+										justify="space-between" :wrap="false">
+										<NTag round :bordered="false">{{ role.name }}</NTag>
+										<NCheckboxGroup v-model:value="rolePermissions[role.id]">
+											<NCheckbox value="c" :label="t('create')" />
+											<NCheckbox value="r" :label="t('read')" />
+											<NCheckbox value="u" :label="t('update')" />
+											<NCheckbox value="d" :label="t('delete')" />
+										</NCheckboxGroup>
+									</NFlex>
 								</template>
-							</NInput>
-							<NButton @click="createTable" :loading="Loading.Table">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:chevron-right" />
-									</NIcon>
-								</template>
-							</NButton>
-						</NInputGroup>
+							</template>
+						</NFlex>
 					</NPopover>
 				</template>
 				{{ t('newTable') }}
@@ -90,6 +123,54 @@ const Language = useCookie<LanguagesType>("language", { sameSite: true })
 
 const sessionID = useSessionCookie()
 
+type CrudPermission = "c" | "r" | "u" | "d"
+const permissionMethods: Record<CrudPermission, string> = {
+	c: "POST",
+	r: "GET",
+	u: "PUT",
+	d: "DELETE",
+}
+
+const showQuickSettings = ref(false)
+const quickSettingsPrivate = ref(false)
+const rolePermissions = reactive<Record<string, CrudPermission[]>>({})
+
+function toggleQuickSettings() {
+	showQuickSettings.value = !showQuickSettings.value
+	if (showQuickSettings.value)
+		for (const { id } of modelValue.value.roles ?? [])
+			if (!rolePermissions[id]) rolePermissions[id] = ["c", "r", "u", "d"]
+}
+
+function resetQuickSettings() {
+	showQuickSettings.value = false
+	quickSettingsPrivate.value = false
+	for (const id of Object.keys(rolePermissions)) delete rolePermissions[id]
+}
+
+// "@user.4" is the user role field, role ids come from database.roles
+function generateQuickSettingsFlows(): FlowType[] {
+	if (quickSettingsPrivate.value) return [[["error", "accessDenied"]]]
+
+	const flows: FlowType[] = []
+	for (const { id } of modelValue.value.roles ?? []) {
+		const allowedPermissions = rolePermissions[id]
+		if (!allowedPermissions) continue
+		const deniedMethods = (
+			Object.keys(permissionMethods) as CrudPermission[]
+		)
+			.filter((permission) => !allowedPermissions.includes(permission))
+			.map((permission) => permissionMethods[permission])
+		if (!deniedMethods.length) continue
+		const flow: FlowType = [["@user.4", "=", id]]
+		if (deniedMethods.length < Object.keys(permissionMethods).length)
+			flow.push(["@method", "[]", deniedMethods])
+		flow.push(["error", "accessDenied"])
+		flows.push(flow)
+	}
+	return flows
+}
+
 const createTable = async () => {
 	if (newTableSlug.value) {
 		const bodyContent: string = toRaw(newTableSlug.value)
@@ -108,10 +189,30 @@ const createTable = async () => {
 		)
 
 		if (data.result) {
-			modelValue.value.tables?.push(data.result)
+			let createdTable = data.result
+			const quickSettingsFlows = generateQuickSettingsFlows()
+
+			if (quickSettingsFlows.length) {
+				const flowsData = await $fetch<apiResponse<Table>>(
+					`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/${createdTable.slug}`,
+					{
+						method: "PUT",
+						body: { onRequest: quickSettingsFlows },
+						params: {
+							locale: Language.value,
+							[`${database.value.slug}_sid`]: sessionID.value,
+						},
+						credentials: "include",
+					},
+				).catch(() => null)
+				if (flowsData?.result) createdTable = flowsData.result
+			}
+
+			modelValue.value.tables?.push(createdTable)
 			window.$message.success(data.message)
 			newTableSlug.value = null
 			showPopover.value = false
+			resetQuickSettings()
 		} else window.$message.error(data.message ?? t("error"))
 		Loading.value.Table = false
 	} else window.$message.error(t("inputsAreInvalid"))
