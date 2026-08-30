@@ -84,21 +84,36 @@
 					</NCard>
 					<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
 						<template #header-extra>
-							<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
-								@select="pushToSchema">
-								<NButton secondary type="primary" round @click="pushToSchema('string')">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:plus" />
-										</NIcon>
+							<NButtonGroup>
+								<NTooltip :delay="1500">
+									<template #trigger>
+										<NButton :type="reorderEnabled ? 'primary' : 'default'" secondary round
+											@click="reorderEnabled = !reorderEnabled">
+											<template #icon>
+												<NIcon>
+													<Icon name="tabler:arrows-move" />
+												</NIcon>
+											</template>
+										</NButton>
 									</template>
-								</NButton>
-							</NDropdown>
+									{{ t('reorderFields') }}
+								</NTooltip>
+								<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
+									@select="pushToSchema">
+									<NButton secondary type="primary" round @click="pushToSchema('string')">
+										<template #icon>
+											<NIcon>
+												<Icon name="tabler:plus" />
+											</NIcon>
+										</template>
+									</NButton>
+								</NDropdown>
+							</NButtonGroup>
 						</template>
 						<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
 						<NForm size="small">
 							<LazyTableSettingsSchema v-model="tableCopy.schema"
-								v-model:expanded-names="expandedNames" />
+								v-model:expanded-names="expandedNames" :reorder-enabled="reorderEnabled" />
 						</NForm>
 					</NCard>
 				</NFlex>
@@ -133,6 +148,7 @@ onMounted(() => {
 });
 
 const expandedNames = ref<string[]>();
+const reorderEnabled = ref(false);
 function pushToSchema(type: string) {
 	const newField = {
 		id: `temp-${randomID()}`,
