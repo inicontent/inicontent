@@ -38,7 +38,7 @@
 								</NDropdown>
 							</NButtonGroup>
 
-							<NButtonGroup v-if="!isDisabled(element.key)">
+							<NButtonGroup v-if="!isDisabled(element.key) && !$device.isMobile">
 								<NTooltip :delay="1500">
 									<template #trigger>
 										<NButton round secondary size="small"
@@ -57,7 +57,7 @@
 									<template #trigger>
 										<NPopselect v-model:value="element.width" :options="widthOptions" size="small">
 											<NButton round strong secondary size="small" type="info">
-												<template v-if="!$device.isMobile" #icon>
+												<template #icon>
 													<NIcon>
 														<Icon name="tabler:arrow-autofit-width" />
 													</NIcon>
@@ -76,6 +76,17 @@
 									</template>
 								</NButton>
 							</NButtonGroup>
+							<NDropdown v-else-if="!isDisabled(element.key)" trigger="click"
+								:options="fieldActionOptions(element)"
+								@select="(action) => onFieldAction(action as string, element, index)">
+								<NButton round secondary size="small">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:dots-vertical" />
+										</NIcon>
+									</template>
+								</NButton>
+							</NDropdown>
 						</NFlex>
 					</template>
 
@@ -249,6 +260,35 @@ const widthOptions = [
 		value: 5,
 	},
 ];
+
+// Mobile: collapse the required/width/delete button group into a single dropdown
+function fieldActionOptions(element: Field) {
+	return [
+		{
+			label: element.required ? `${t("required")} ✓` : t("required"),
+			key: "required",
+		},
+		{
+			label: t("width"),
+			key: "width",
+			children: widthOptions.map((option) => ({
+				label: option.value === (element.width ?? 1) ? `${option.label} ✓` : option.label,
+				key: `width-${option.value}`,
+			})),
+		},
+		{
+			label: t("delete"),
+			key: "delete",
+		},
+	];
+}
+
+function onFieldAction(action: string, element: Field, index: number) {
+	if (action === "required") element.required = !element.required;
+	else if (action === "delete") schema.value.splice(index, 1);
+	else if (action.startsWith("width-"))
+		element.width = Number(action.slice("width-".length));
+}
 
 function onMoveCallback(evt: {
 	draggedContext: { index: number; futureIndex: number };
