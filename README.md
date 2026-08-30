@@ -12,7 +12,7 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 - **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
   build on. It ships `CONTEXT.md`, the AI-agent build context: authentication, the REST API,
   the query language, table schemas & flows, and custom-route registration.
-- **[`inicontent/api`](https://github.com/inicontent/api)** — the Nitro server behind
+- **`inicontent/api (private)`** — the server behind
   `https://api.inicontent.com/`: REST CRUD per table, authentication, assets, and the built-in
   AI-assistant endpoints (`{db}/ai`, `{db}/ai/tables`, …).
 
