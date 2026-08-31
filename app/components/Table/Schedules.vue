@@ -1,6 +1,10 @@
 <template>
 	<div>
-		<NCard :title="t('tableSchedules')" :bordered="false" style="background-color: transparent;" embedded content-style="padding: 0">
+		<NCard
+		 :class="`table_${table.slug}`" id="tableCard" 
+		 :title="t('tableSchedules')" 
+		 :header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0"
+		 :bordered="false" style="background-color: transparent;" embedded>
 			<template #header-extra>
 				<NButtonGroup>
 					<NTooltip :delay="1500">
@@ -14,7 +18,7 @@
 							</NButton>
 							</template>
 							{{ t("refresh") }}
-					 </NTooltip>
+					</NTooltip>
 					<NPopconfirm @positive-click="runAllActiveSchedules">
 						<template #trigger>
 							<NTooltip :delay="1500">
@@ -44,6 +48,7 @@
 			</template>	
 			<NDataTable
 				remote
+				:scroll-x="1800"
 				:columns="columns"
 				:data="schedules"
 				:loading="loading"
@@ -662,6 +667,7 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 		title: t("actions"),
 		key: "actions",
 		width: 160,
+		fixed: "right",
 		render: (schedule) =>
 			h(NButtonGroup, { size: "small" }, () => [
 				h(
