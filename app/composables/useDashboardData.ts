@@ -18,7 +18,7 @@ export function useDashboardData(
 ): WidgetDataResult {
 	const config = useRuntimeConfig();
 	const sessionID = useSessionCookie();
-	const Language = useCookie<LanguagesType>("language", { sameSite: true });
+	const Language = useLanguageCookie();
 	const database = useState<Database>("database");
 
 	const value = ref<number | null>(null);

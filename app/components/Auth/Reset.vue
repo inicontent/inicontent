@@ -23,7 +23,7 @@ const config = useRuntimeConfig();
 const route = useRoute();
 const database = useState<Database>("database");
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const formRef = ref<FormInst | null>(null);
 const form = ref({ password: "", confirmPassword: "" });
 const token = computed(() =>

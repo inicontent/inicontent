@@ -1,17 +1,13 @@
 <template>
-	<NModal :show="showPreview" class="assetLightbox" :auto-focus="false" :mask-closable="true"
-		:close-on-esc="true" @mask-click="closePreview" @close="closePreview" @esc="closePreview">
-		<NCard v-if="activeAsset" embedded :bordered="false" class="assetLightboxCard" role="dialog"
-			:title="`${activeAsset.name}${activeAsset.extension ? `.${activeAsset.extension}` : ''}`">
+	<NModal v-if="activeAsset" :show="showPreview" :auto-focus="false" :mask-closable="true"
+		:close-on-esc="true" @mask-click="closePreview" @close="closePreview" @esc="closePreview"
+		preset="card" 
+		style="width: min(90vw, 1080px);max-width: 1080px;"
+		:segmented="{ content: true, footer: true }"
+		:show-mask="false"
+		:title="`${activeAsset.name}${activeAsset.extension ? `.${activeAsset.extension}` : ''}`">
 			<template #header-extra>
-				<div class="assetLightboxHeaderExtra">
-					<NText depth="3">{{ previewAssetIndex + 1 }} / {{ previewAssetList.length }}</NText>
-					<button class="assetLightboxClose" type="button" aria-label="Close preview" @click="closePreview">
-						<NIcon :size="18">
-							<Icon name="tabler:x" />
-						</NIcon>
-					</button>
-				</div>
+				<NText depth="3" style="margin:0 10px">{{ previewAssetIndex + 1 }} / {{ previewAssetList.length }}</NText>
 			</template>
 			<div class="assetLightboxBody">
 				<video v-if="isVideoAsset(activeAsset)" :key="activeAsset.id" controls autoplay playsinline
@@ -38,43 +34,42 @@
 					</button>
 				</div>
 			</div>
-			<div v-if="isPdfAsset(activeAsset)" class="assetPdfControls" aria-label="PDF controls">
-				<button class="assetLightboxControl" type="button" @click="openAssetInNewTab(activeAsset)">
-					<NIcon :size="18">
-						<Icon name="tabler:external-link" />
-					</NIcon>
-				</button>
-			</div>
-			<div v-if="isImageAsset(activeAsset)" class="assetLightboxControls" aria-label="Image rotation controls">
-				<button class="assetLightboxControl" type="button" @click="rotatePreviewImageLeft">
-					<NIcon :size="18">
-						<Icon name="tabler:rotate-2" />
-					</NIcon>
-				</button>
-				<button class="assetLightboxControl" type="button" @click="resetPreviewImageRotation">
-					<NIcon :size="18">
-						<Icon name="tabler:reload" />
-					</NIcon>
-				</button>
-				<button class="assetLightboxControl" type="button" @click="rotatePreviewImageRight">
-					<NIcon :size="18">
-						<Icon name="tabler:rotate-clockwise-2" />
-					</NIcon>
-				</button>
-			</div>
-			<button class="assetLightboxNav assetLightboxPrev" type="button" @click="showPrevByLanguage"
-				:disabled="previewAssetList.length <= 1">
+			<template #footer>
+				<NFlex v-if="isPdfAsset(activeAsset)" justify="center" aria-label="PDF controls">
+					<NButton circle tertiary size="large" @click="openAssetInNewTab(activeAsset)">
+						<NIcon :size="18">
+							<Icon name="tabler:external-link" />
+						</NIcon>
+					</NButton>
+				</NFlex>
+				<NFlex v-if="isImageAsset(activeAsset)" justify="center" align="center" aria-label="Image rotation controls">
+					<NButton circle tertiary @click="rotatePreviewImageLeft">
+						<NIcon :size="18">
+							<Icon name="tabler:rotate-2" />
+						</NIcon>
+					</NButton>
+					<NButton circle tertiary size="large" @click="resetPreviewImageRotation">
+						<NIcon :size="18">
+							<Icon name="tabler:reload" />
+						</NIcon>
+					</NButton>
+					<NButton circle tertiary @click="rotatePreviewImageRight">
+						<NIcon :size="18">
+							<Icon name="tabler:rotate-clockwise-2" />
+						</NIcon>
+					</NButton>
+				</NFlex>
+			</template>
+			<NButton v-if="previewAssetList.length > 1"  circle tertiary size="large" class="assetLightboxNav assetLightboxPrev" @click="showPrevByLanguage">
 				<NIcon :size="22">
 					<Icon :name="Language === 'ar' ? 'tabler:chevron-right' : 'tabler:chevron-left'" />
 				</NIcon>
-			</button>
-			<button class="assetLightboxNav assetLightboxNext" type="button" @click="showNextByLanguage"
-				:disabled="previewAssetList.length <= 1">
+			</NButton>
+			<NButton v-if="previewAssetList.length > 1" circle tertiary size="large" class="assetLightboxNav assetLightboxNext" type="button" @click="showNextByLanguage">
 				<NIcon :size="22">
 					<Icon :name="Language === 'ar' ? 'tabler:chevron-left' : 'tabler:chevron-right'" />
 				</NIcon>
-			</button>
-		</NCard>
+			</NButton>
 	</NModal>
 </template>
 
@@ -83,7 +78,7 @@ import { Icon, NIcon } from "#components";
 import { imageExtensions, videoExtensions } from "~/composables";
 import { useAssetPreview } from "~/composables/useAssetPreview";
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const {
 	currentPreviewAsset,
@@ -340,32 +335,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.assetLightboxCard {
-	position: relative;
-	width: min(90vw, 1080px);
-	max-width: 1080px;
-	margin: 0 auto;
-}
-
-.assetLightboxHeaderExtra {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.assetLightboxClose {
-	border: 0;
-	width: 34px;
-	height: 34px;
-	border-radius: 999px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	color: var(--n-text-color);
-	background: color-mix(in srgb, var(--n-color) 76%, #000 24%);
-}
-
 .assetLightboxBody {
 	position: relative;
 	display: flex;
@@ -494,15 +463,10 @@ onBeforeUnmount(() => {
 	transform: translateY(-50%);
 	z-index: 3;
 	border: 0;
-	width: 44px;
-	height: 44px;
-	border-radius: 999px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	color: var(--n-text-color);
-	background: color-mix(in srgb, var(--n-color) 68%, #000 32%);
 }
 
 .assetLightboxNav:disabled {
@@ -516,14 +480,5 @@ onBeforeUnmount(() => {
 
 .assetLightboxNext {
 	right: 14px;
-}
-
-.assetLightbox :deep(.n-modal) {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	min-height: 100vh;
-	z-index: 9999999999 !important;
 }
 </style>

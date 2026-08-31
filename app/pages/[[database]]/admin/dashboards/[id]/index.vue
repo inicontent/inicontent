@@ -69,7 +69,7 @@ const routeBase = computed(() =>
 	route.params.database ? `/${route.params.database}` : "",
 );
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 
 const dashboard = ref<Dashboard | null>(null);

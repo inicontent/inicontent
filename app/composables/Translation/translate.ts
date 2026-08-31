@@ -210,7 +210,7 @@ export default function (
 	if (typeof key !== "string") return String(key);
 
 	const translationsState = useState<TranslationsType>("translations");
-	const Language = useCookie<LanguagesType>("language", { sameSite: true });
+	const Language = useLanguageCookie();
 
 	if (!hasProperty(translationsState.value ?? {}, `${Language.value}.${key}`)) {
 		const unfoundTranslationsState = useState<TranslationsType>(

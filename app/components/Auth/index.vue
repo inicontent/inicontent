@@ -95,7 +95,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const { beginPasskeySignIn, isPasskeySupported, registerCurrentUserPasskey } =
 	usePasskeyAuth();
 
-const redirectTo = useCookie("redirectTo", { sameSite: true });
+const redirectTo = useRedirectToCookie(database.value.slug);
 
 const SigninFormRef = ref<FormInst | null>(null);
 const ResetRequestFormRef = ref<FormInst | null>(null);
@@ -146,7 +146,7 @@ const ResetRequestColumns: Schema = [
 	},
 ];
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 function onAfterSignup(data?: Item) {
 	SigninForm.value.username = data?.username || "";
 	tabsValue.value = "signin";

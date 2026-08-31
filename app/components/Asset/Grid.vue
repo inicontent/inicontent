@@ -75,6 +75,14 @@
 		<NDropdown v-if="table?.allowedMethods?.includes('u') || table?.allowedMethods?.includes('d')"
 			placement="bottom-start" trigger="manual" :x="x" :y="y" :show="showDropdown" :options="dropdownOptions"
 			@clickoutside="dropdownOnClickOutside" @select="(key: string) => dropdownOnSelect(key)" />
+		<NPopconfirm v-if="confirmDeleteAsset" v-model:show="confirmDeleteShow"
+			placement="top-start" :show-icon="false" @positive-click="onConfirmDeleteAsset"
+			@update:show="onConfirmDeleteShowChange">
+			<template #trigger>
+				<span :style="{ position: 'fixed', left: `${x}px`, top: `${y}px`, width: '0', height: '0' }" />
+			</template>
+			{{ deleteConfirmMessage }}
+		</NPopconfirm>
 	</template>
 	<NEmpty v-else />
 </template>
@@ -92,7 +100,7 @@ const { isAssetRoute, table, selectedAssetIds } = defineProps<{
 	selectedAssetIds?: Asset["id"][];
 }>();
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 
 const modelValue = defineModel<Asset[]>();
 const config = useRuntimeConfig();
@@ -162,11 +170,19 @@ const dropdownOptions = computed(() => [
 	},
 ]);
 
+const showDrawer = ref(false);
+const showDropdown = ref(false);
+const x = ref(0);
+const y = ref(0);
+const confirmDeleteAsset = ref<Asset | null>(null);
+const confirmDeleteShow = ref(false);
+
 function dropdownOnSelect(key: string) {
 	switch (key) {
 		case "delete":
-			deleteAsset(CurrentAsset.value as Asset);
 			showDropdown.value = false;
+			confirmDeleteAsset.value = CurrentAsset.value ?? null;
+			confirmDeleteShow.value = true;
 			break;
 		case "info":
 			showDrawer.value = true;
@@ -177,13 +193,29 @@ function dropdownOnSelect(key: string) {
 	}
 }
 
-const showDrawer = ref(false);
-const showDropdown = ref(false);
-const x = ref(0);
-const y = ref(0);
+const deleteConfirmMessage = computed(() => {
+	const asset = confirmDeleteAsset.value;
+	if (asset?.type === "dir")
+		return t("deleteFolderConfirm", { name: asset.name });
+	return t("deleteAssetConfirm");
+});
+
+async function onConfirmDeleteAsset() {
+	const asset = confirmDeleteAsset.value;
+	confirmDeleteAsset.value = null;
+	confirmDeleteShow.value = false;
+	if (asset) await deleteAsset(asset);
+}
+
+function onConfirmDeleteShowChange(show: boolean) {
+	if (!show) confirmDeleteAsset.value = null;
+}
+
 async function handleContextMenu(e: MouseEvent, asset: Asset) {
 	e.preventDefault();
 	showDropdown.value = false;
+	confirmDeleteAsset.value = null;
+	confirmDeleteShow.value = false;
 	await nextTick();
 	CurrentAsset.value = asset;
 	showDropdown.value = true;

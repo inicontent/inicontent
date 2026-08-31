@@ -83,6 +83,11 @@ export default {
 		// Confirmation messages
 		theFollowingActionIsIrreversible: "Esta acción es irreversible",
 		areYouSure: "¿Estás seguro?",
+		deleteSelectedAssetsConfirm:
+			"¿Eliminar {count} elemento(s) seleccionado(s)? Esta acción es irreversible.",
+		deleteAssetConfirm: "¿Eliminar este archivo? Esta acción es irreversible.",
+		deleteFolderConfirm:
+			"¿Eliminar la carpeta «{name}» y todo su contenido? Esta acción es irreversible.",
 		savedSuccessfully: "Guardado exitosamente",
 		updatedSuccessfully: "Actualizado exitosamente",
 		createdSuccessfully: "Creado exitosamente",

@@ -1,195 +1,191 @@
 <template>
-	<div
-		style="position: relative;"
-		@dragenter.prevent="onDragEnter"
-		@dragover.prevent="onDragOver"
-		@drop.prevent="onDrop"
-		@dragleave="onDragLeave"
-	>
-		<input
-			ref="folderInputRef"
-			type="file"
-			multiple
-			directory=""
-			webkitdirectory=""
-			mozdirectory=""
-			style="display: none;"
-			@change="onFolderInputChange"
-		/>
+	<div style="position: relative;" @dragenter.prevent="onDragEnter" @dragover.prevent="onDragOver"
+		@drop.prevent="onDrop" @dragleave="onDragLeave">
+		<input ref="folderInputRef" type="file" multiple directory="" webkitdirectory="" mozdirectory=""
+			style="display: none;" @change="onFolderInputChange" />
 		<Transition name="drop-fade">
-			<div
-				v-if="isDragOver"
-				style="position: absolute; inset: 0; z-index: 100; background: rgba(24, 160, 88, 0.1); border: 2px dashed #18a058; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; pointer-events: none;"
-			>
+			<div v-if="isDragOver"
+				style="position: absolute; inset: 0; z-index: 100; background: rgba(24, 160, 88, 0.1); border: 2px dashed #18a058; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; pointer-events: none;">
 				<NIcon size="56" color="#18a058">
 					<Icon name="tabler:cloud-upload" />
 				</NIcon>
 				<span style="color: #18a058; font-size: 16px; font-weight: 500;">{{ t("dropFilesHere") }}</span>
 			</div>
 		</Transition>
-		<NCard id="assetsContainer" style="height: fit-content;" :bordered="!targetID">
-		<template #header>
-			<span v-if="isAssetRoute">{{ t("assets") }}</span>
-			<NBreadcrumb v-else>
-				<NBreadcrumbItem @click="currentPath = ''">
-					{{ t("assets") }}
-				</NBreadcrumbItem>
-				<NBreadcrumbItem v-for="(singlePath, index) in currentPath?.split('/').slice(1)"
-					@click="currentPath = `${currentPath.split('/').slice(0, index + 2).join('/')}`">
-					{{ singlePath }}
-				</NBreadcrumbItem>
-			</NBreadcrumb>
-		</template>
-		<template #header-extra>
-			<NFlex wrap>
-				<NButtonGroup v-if="selectedAssetIds.length" round>
-					<NTooltip>
-						<template #trigger>
-							<NButton size="small" round secondary type="info" :title="allSelectableSelected ? t('clearAll') : t('selectAll')"
-								@click="toggleSelectAllFromGroup">
-								<template #icon>
-									<NIcon>
-										<Icon :name="allSelectableSelected ? 'tabler:square-minus' : 'tabler:square-check'" />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						{{ allSelectableSelected ? t("clearAll") : t("selectAll") }}
-					</NTooltip>
-					<NTooltip>
-						<template #trigger>
-							<NButton size="small" round secondary type="warning" :loading="bulkDownloadLoading"
-								:title="`${t('download')} ZIP${bulkDownloadLoading ? ` ${bulkZipProgress}%` : ''}`"
-								@click="downloadSelectedAsZip">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:file-zip" />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						{{ bulkDownloadLoading ? `${t("download")} ZIP ${bulkZipProgress}%` : `${t("download")} ZIP` }}
-					</NTooltip>
-					<NTooltip>
-						<template #trigger>
-							<NButton size="small" round secondary type="error" :loading="bulkDeleteLoading" :title="t('delete')"
-								@click="deleteSelectedAssets">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:trash" />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						{{ t("delete") }}
-					</NTooltip>
-				</NButtonGroup>
-				<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema size="small" />
-				<NButtonGroup v-if="table?.allowedMethods?.includes('c')" round>
-					<NPopover placement="top-start">
-						<template #trigger>
-							<NButton round size="small">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:folder-plus" />
-									</NIcon>
-								</template>
-							</NButton>
-						</template>
-						<NInputGroup>
-							<NInput v-model:value="folder"
-								@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
-								:placeholder="t('folderName')" size="small">
-								<template #suffix>
-									<NIcon>
-										<Icon name="tabler:letter-case" />
-									</NIcon>
-								</template>
-							</NInput>
-							<NButton @click="createFolder" size="small" type="primary">
-								<template #icon>
-									<NIcon>
-										<Icon name="tabler:arrow-right" />
-									</NIcon>
-								</template>
-							</NButton>
-						</NInputGroup>
-					</NPopover>
-					<NButton @click="folderInputRef?.click()" round size="small" :title="t('uploadFolder')">
-						<template #icon>
-							<NIcon>
-								<Icon name="tabler:folder-up" />
-							</NIcon>
-						</template>
-					</NButton>
-					<NUpload multiple abstract
-						:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
-						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
-						<NPopover trigger="manual" placement="top-end"
-							:show="UploadProgress > 0" scrollable style="max-height: 160px">
+		<NCard :header-style="{ paddingRight: 0, paddingLeft: 0 }" embedded
+		 id="assetsContainer" style="height: fit-content;background-color: transparent;" content-style="padding: 0" :bordered="false">
+			<template #header>
+				<span v-if="isAssetRoute">{{ t("assets") }}</span>
+				<NBreadcrumb v-else>
+					<NBreadcrumbItem @click="currentPath = ''">
+						{{ t("assets") }}
+					</NBreadcrumbItem>
+					<NBreadcrumbItem v-for="(singlePath, index) in currentPath?.split('/').slice(1)"
+						@click="currentPath = `${currentPath.split('/').slice(0, index + 2).join('/')}`">
+						{{ singlePath }}
+					</NBreadcrumbItem>
+				</NBreadcrumb>
+			</template>
+			<template #header-extra>
+				<NFlex wrap>
+					<NButtonGroup v-if="selectedAssetIds.length" round>
+						<NTooltip>
 							<template #trigger>
-								<NUploadTrigger :abstract="false">
-									<NButton round size="small"
-										:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'"
-										:title="t('uploadFiles')">
-										<template #icon>
-											<NProgress v-if="compressionIndicator" type="circle" status="warning"
-												:percentage="compressionIndicator" :stroke-width="10">
-												<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
-													<template #trigger>
-														<Icon @click.stop="skipCompression" :size="10"
-															name="tabler:player-track-next-filled" />
-													</template>
-													{{ t("skipCompression") }}
-												</NTooltip>
-											</NProgress>
-											<NIcon v-else-if="!UploadProgress">
-												<Icon name="tabler:upload" />
-											</NIcon>
-											<NIcon v-else-if="UploadProgress === 10000">
-												<Icon name="tabler:check" />
-											</NIcon>
-											<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
-												:size="16" />
-											<NProgress v-else type="circle" :show-indicator="false"
-												:status="UploadProgress === 100 ? 'success' : 'warning'"
-												:percentage="UploadProgress" :stroke-width="20" />
-										</template>
-									</NButton>
-								</NUploadTrigger>
+								<NButton size="small" round secondary type="info"
+									:title="allSelectableSelected ? t('clearAll') : t('selectAll')"
+									@click="toggleSelectAllFromGroup">
+									<template #icon>
+										<NIcon>
+											<Icon
+												:name="allSelectableSelected ? 'tabler:square-minus' : 'tabler:square-check'" />
+										</NIcon>
+									</template>
+								</NButton>
 							</template>
-							<NFlex v-if="UploadProgress === 1001" vertical style="gap: 6px; padding: 2px 0; min-width: 160px;">
-								<NText style="font-size: 12px;">
-									{{ folderUploadProgress.total > 0
-										? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
-										: folderUploadProgress.current }}
-								</NText>
-								<NProgress v-if="folderUploadProgress.total > 0" type="line"
-									:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
-									:show-indicator="false" />
-							</NFlex>
-							<NUploadFileList v-else />
+							{{ allSelectableSelected ? t("clearAll") : t("selectAll") }}
+						</NTooltip>
+						<NTooltip>
+							<template #trigger>
+								<NButton size="small" round secondary type="warning" :loading="bulkDownloadLoading"
+									:title="`${t('download')} ZIP${bulkDownloadLoading ? ` ${bulkZipProgress}%` : ''}`"
+									@click="downloadSelectedAsZip">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:file-zip" />
+										</NIcon>
+									</template>
+								</NButton>
+							</template>
+							{{ bulkDownloadLoading ? `${t("download")} ZIP ${bulkZipProgress}%` : `${t("download")} ZIP`
+							}}
+						</NTooltip>
+						<NPopconfirm :show-icon="false" @positive-click="deleteSelectedAssets">
+							<template #trigger>
+								<NTooltip>
+									<template #trigger>
+										<NButton size="small" round secondary type="error"
+											:loading="bulkDeleteLoading" :title="t('delete')">
+											<template #icon>
+												<NIcon>
+													<Icon name="tabler:trash" />
+												</NIcon>
+											</template>
+										</NButton>
+									</template>
+									{{ t("delete") }}
+								</NTooltip>
+							</template>
+							{{ t("deleteSelectedAssetsConfirm", { count: selectedAssetIds.length }) }}
+						</NPopconfirm>
+					</NButtonGroup>
+					<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema
+						size="small" />
+					<NButtonGroup v-if="table?.allowedMethods?.includes('c')" round>
+						<NPopover placement="top-start">
+							<template #trigger>
+								<NButton round size="small">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:folder-plus" />
+										</NIcon>
+									</template>
+								</NButton>
+							</template>
+							<NInputGroup>
+								<NInput v-model:value="folder"
+									@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
+									:placeholder="t('folderName')" size="small">
+									<template #suffix>
+										<NIcon>
+											<Icon name="tabler:letter-case" />
+										</NIcon>
+									</template>
+								</NInput>
+								<NButton @click="createFolder" size="small" type="primary">
+									<template #icon>
+										<NIcon>
+											<Icon name="tabler:arrow-right" />
+										</NIcon>
+									</template>
+								</NButton>
+							</NInputGroup>
 						</NPopover>
-					</NUpload>
-				</NButtonGroup>
+						<NButton @click="folderInputRef?.click()" round size="small" :title="t('uploadFolder')">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:folder-up" />
+								</NIcon>
+							</template>
+						</NButton>
+						<NUpload multiple abstract
+							:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+							@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
+							<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
+								style="max-height: 160px">
+								<template #trigger>
+									<NUploadTrigger :abstract="false">
+										<NButton round size="small"
+											:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'"
+											:title="t('uploadFiles')">
+											<template #icon>
+												<NProgress v-if="compressionIndicator" type="circle" status="warning"
+													:percentage="compressionIndicator" :stroke-width="10">
+													<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
+														<template #trigger>
+															<Icon @click.stop="skipCompression" :size="10"
+																name="tabler:player-track-next-filled" />
+														</template>
+														{{ t("skipCompression") }}
+													</NTooltip>
+												</NProgress>
+												<NIcon v-else-if="!UploadProgress">
+													<Icon name="tabler:upload" />
+												</NIcon>
+												<NIcon v-else-if="UploadProgress === 10000">
+													<Icon name="tabler:check" />
+												</NIcon>
+												<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+													:size="16" />
+												<NProgress v-else type="circle" :show-indicator="false"
+													:status="UploadProgress === 100 ? 'success' : 'warning'"
+													:percentage="UploadProgress" :stroke-width="20" />
+											</template>
+										</NButton>
+									</NUploadTrigger>
+								</template>
+								<NFlex v-if="UploadProgress === 1001" vertical
+									style="gap: 6px; padding: 2px 0; min-width: 160px;">
+									<NText style="font-size: 12px;">
+										{{ folderUploadProgress.total > 0
+											? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
+											: folderUploadProgress.current }}
+									</NText>
+									<NProgress v-if="folderUploadProgress.total > 0" type="line"
+										:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
+										:show-indicator="false" />
+								</NFlex>
+								<NUploadFileList v-else />
+							</NPopover>
+						</NUpload>
+					</NButtonGroup>
+				</NFlex>
+			</template>
+			<NCard>
+			<NFlex vertical align="center">
+				<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
+					:selected-asset-ids="selectedAssetIds" v-model:path="currentPath">
+					<template v-slot="slotProps">
+						<NCheckbox :checked="selectedAssetIdsSet.has(slotProps.asset.id)"
+							@update:checked="() => toggleAssetSelection(slotProps.asset.id)" />
+						<slot v-bind="slotProps"></slot>
+					</template>
+				</AssetGrid>
+				<NPagination v-if="pagination.itemCount && pagination.pageCount > 1" :simple="!!$device.isMobile"
+					:page-sizes="getResponsivePageSizes()" :show-size-picker="showSizePicker" style="margin-top: 25px;"
+					@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page"
+					:page-size="pagination.pageSize" :item-count="pagination.itemCount" />
 			</NFlex>
-		</template>
-		<NFlex vertical align="center">
-			<AssetGrid v-model="assets" :isAssetRoute :table :targetID="!targetID ? 'assetsContainer' : targetID"
-				:selected-asset-ids="selectedAssetIds" v-model:path="currentPath">
-				<template v-slot="slotProps">
-					<NCheckbox
-						:checked="selectedAssetIdsSet.has(slotProps.asset.id)"
-						@update:checked="() => toggleAssetSelection(slotProps.asset.id)"
-						/>
-					<slot v-bind="slotProps"></slot>
-				</template>
-			</AssetGrid>
-			<NPagination v-if="pagination.itemCount && pagination.pageCount > 1" :simple="!!$device.isMobile"
-				:page-sizes="getResponsivePageSizes()" :show-size-picker="showSizePicker" style="margin-top: 25px;"
-				@update:page-size="onUpdatePageSize" @update:page="onUpdatePage" :page="pagination.page"
-				:page-size="pagination.pageSize" :item-count="pagination.itemCount" />
-		</NFlex>
+			</NCard>
 		</NCard>
 	</div>
 </template>
@@ -329,7 +325,7 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result;
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const isRTL = computed(() => Language.value === "ar");
 
 const assets = ref<Asset[]>();
@@ -341,15 +337,23 @@ const folderUploadProgress = reactive({ current: 0, total: 0 });
 
 const selectedAssetIdsSet = computed(() => new Set(selectedAssetIds.value));
 const selectedAssets = computed(() =>
-	(assets.value ?? []).filter((asset) => selectedAssetIdsSet.value.has(asset.id)),
+	(assets.value ?? []).filter((asset) =>
+		selectedAssetIdsSet.value.has(asset.id),
+	),
 );
 const allSelectableSelected = computed(
-	() => !!(assets.value ?? []).length && selectedAssetIds.value.length === (assets.value ?? []).length,
+	() =>
+		!!(assets.value ?? []).length &&
+		selectedAssetIds.value.length === (assets.value ?? []).length,
 );
 
 function toggleAssetSelection(id: Asset["id"]) {
-	if (!selectedAssetIdsSet.value.has(id)) selectedAssetIds.value = [...selectedAssetIds.value, id];
-	else selectedAssetIds.value = selectedAssetIds.value.filter((selectedId) => selectedId !== id);
+	if (!selectedAssetIdsSet.value.has(id))
+		selectedAssetIds.value = [...selectedAssetIds.value, id];
+	else
+		selectedAssetIds.value = selectedAssetIds.value.filter(
+			(selectedId) => selectedId !== id,
+		);
 }
 
 function toggleSelectAllAssets(checked: boolean) {
@@ -370,7 +374,9 @@ function toggleSelectAllFromGroup() {
 
 watch(assets, (value) => {
 	const currentIds = new Set((value ?? []).map((asset) => asset.id));
-	selectedAssetIds.value = selectedAssetIds.value.filter((id) => currentIds.has(id));
+	selectedAssetIds.value = selectedAssetIds.value.filter((id) =>
+		currentIds.has(id),
+	);
 });
 
 async function runWithConcurrency<T>(
@@ -395,11 +401,6 @@ async function runWithConcurrency<T>(
 
 async function deleteSelectedAssets() {
 	if (!selectedAssets.value.length || bulkDeleteLoading.value) return;
-	if (
-		import.meta.client &&
-		!window.confirm(`${t("delete")} (${selectedAssets.value.length})?`)
-	)
-		return;
 
 	bulkDeleteLoading.value = true;
 	const deletedIds: Asset["id"][] = [];
@@ -430,12 +431,18 @@ async function deleteSelectedAssets() {
 
 		if (deletedIds.length) {
 			const deletedSet = new Set(deletedIds);
-			assets.value = (assets.value ?? []).filter((asset) => !deletedSet.has(asset.id));
-			selectedAssetIds.value = selectedAssetIds.value.filter((id) => !deletedSet.has(id));
-			if (database.value.size) database.value.size = Math.max(0, database.value.size - deletedSize);
+			assets.value = (assets.value ?? []).filter(
+				(asset) => !deletedSet.has(asset.id),
+			);
+			selectedAssetIds.value = selectedAssetIds.value.filter(
+				(id) => !deletedSet.has(id),
+			);
+			if (database.value.size)
+				database.value.size = Math.max(0, database.value.size - deletedSize);
 		}
 
-		if (deletedIds.length) window.$message.success(`${deletedIds.length} ${t("success")}`);
+		if (deletedIds.length)
+			window.$message.success(`${deletedIds.length} ${t("success")}`);
 		if (failedCount) window.$message.error(`${failedCount} ${t("error")}`);
 	} catch (error) {
 		console.error("Failed to delete selected assets", error);
@@ -448,11 +455,16 @@ async function deleteSelectedAssets() {
 function getZipSafeName(asset: Asset, usedNames: Map<string, number>) {
 	const extension = asset.extension ? `.${asset.extension}` : "";
 	const rawName = `${asset.name}${extension}`;
-	const sanitized = rawName.replace(/[\\/:*?"<>|]+/g, "_").trim() || `asset-${asset.id}${extension}`;
+	const sanitized =
+		rawName.replace(/[\\/:*?"<>|]+/g, "_").trim() ||
+		`asset-${asset.id}${extension}`;
 	const currentCount = usedNames.get(sanitized) ?? 0;
 	usedNames.set(sanitized, currentCount + 1);
 	if (!currentCount) return sanitized;
-	const nameWithoutExt = sanitized.slice(0, sanitized.length - extension.length);
+	const nameWithoutExt = sanitized.slice(
+		0,
+		sanitized.length - extension.length,
+	);
 	return `${nameWithoutExt}-${currentCount + 1}${extension}`;
 }
 
@@ -489,19 +501,31 @@ async function collectZipFiles(
 	for (const asset of assetsToProcess) {
 		if (asset.type === "dir") {
 			const subApiPath = `${apiBasePath}/${asset.name}`;
-			const subZipPath = zipBasePath ? `${zipBasePath}/${asset.name}` : asset.name;
+			const subZipPath = zipBasePath
+				? `${zipBasePath}/${asset.name}`
+				: asset.name;
 			const subAssets = await fetchAllAssetsInPath(subApiPath);
-			result.push(...(await collectZipFiles(subAssets, subApiPath, subZipPath)));
+			result.push(
+				...(await collectZipFiles(subAssets, subApiPath, subZipPath)),
+			);
 		} else if (asset.publicURL) {
 			const fileName = getZipSafeName(asset, usedNames);
-			result.push({ asset, zipPath: zipBasePath ? `${zipBasePath}/${fileName}` : fileName });
+			result.push({
+				asset,
+				zipPath: zipBasePath ? `${zipBasePath}/${fileName}` : fileName,
+			});
 		}
 	}
 	return result;
 }
 
 async function downloadSelectedAsZip() {
-	if (!import.meta.client || !selectedAssets.value.length || bulkDownloadLoading.value) return;
+	if (
+		!import.meta.client ||
+		!selectedAssets.value.length ||
+		bulkDownloadLoading.value
+	)
+		return;
 
 	bulkDownloadLoading.value = true;
 	bulkZipProgress.value = 0;
@@ -538,7 +562,10 @@ async function downloadSelectedAsZip() {
 				compression: "STORE",
 			},
 			(metadata) => {
-				bulkZipProgress.value = Math.max(80, Math.round(80 + metadata.percent * 0.2));
+				bulkZipProgress.value = Math.max(
+					80,
+					Math.round(80 + metadata.percent * 0.2),
+				);
 			},
 		);
 
@@ -640,9 +667,15 @@ const syncPaginationPageSize = () => {
 };
 
 const pagination = reactive({
-	page: (isAssetRoute && !targetID && route.query.page) ? Number(route.query.page) : 1,
+	page:
+		isAssetRoute && !targetID && route.query.page
+			? Number(route.query.page)
+			: 1,
 	pageCount: 1,
-	pageSize: (isAssetRoute && !targetID && route.query.perPage) ? Number(route.query.perPage) : getResponsivePageSize(),
+	pageSize:
+		isAssetRoute && !targetID && route.query.perPage
+			? Number(route.query.perPage)
+			: getResponsivePageSize(),
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
@@ -659,7 +692,9 @@ const pagination = reactive({
 		pagination.pageSize = pageSize;
 		if (!isAssetRoute || targetID) return;
 		let { perPage, page, ...Query }: any = route.query;
-		const defaultPageSize = Number(route.query.perPage ?? getResponsivePageSize());
+		const defaultPageSize = Number(
+			route.query.perPage ?? getResponsivePageSize(),
+		);
 		if (pageSize !== defaultPageSize) {
 			pagination.page = Math.round(
 				OLD_pageSize < pageSize
@@ -727,7 +762,8 @@ const queryOptions = computed(() =>
 );
 
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
-	() => `${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
+	() =>
+		`${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
 	{
 		onRequest: () => {
 			Loading.value.AssetData = true;
@@ -792,7 +828,9 @@ function onUpdateFileList(fileList: Required<UploadFileInfo>[]) {
 	}
 
 	// Cap at 99 so the circle never shows "100% success" before the check animation
-	const avg = nonFinished.reduce((sum, f) => sum + (f.percentage ?? 0), 0) / nonFinished.length;
+	const avg =
+		nonFinished.reduce((sum, f) => sum + (f.percentage ?? 0), 0) /
+		nonFinished.length;
 	UploadProgress.value = Math.max(1, Math.min(99, Math.round(avg)));
 }
 
@@ -1043,8 +1081,7 @@ async function readAllDirectoryEntries(
 async function uploadFileToPath(file: File, targetPath: string) {
 	const isVideo = file.type?.startsWith("video/") ?? false;
 	const isPdf =
-		file.type === "application/pdf" ||
-		file.name.toLowerCase().endsWith(".pdf");
+		file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
 	let fileToUpload: File = file;
 
@@ -1245,7 +1282,6 @@ async function onFolderInputChange(e: Event) {
 		await refresh();
 	}
 }
-
 </script>
 
 <style scoped>
@@ -1253,6 +1289,7 @@ async function onFolderInputChange(e: Event) {
 .drop-fade-leave-active {
 	transition: opacity 0.15s ease;
 }
+
 .drop-fade-enter-from,
 .drop-fade-leave-to {
 	opacity: 0;

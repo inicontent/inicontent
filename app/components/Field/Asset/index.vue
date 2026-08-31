@@ -33,7 +33,7 @@
 			</NFlex>
 		</NUpload>
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
-			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ padding: 0 }">
+			<NDrawerContent id="assetsModal" :nativeScrollbar="false" :bodyContentStyle="{ paddingTop: 0, paddingBottom: 0 }">
 				<AssetCard targetID="assetsModal" :where="assetWhere" :suffix="field.suffix">
 					<template v-slot="{ asset }">
 						<template v-if="asset.type !== 'dir'">
@@ -67,7 +67,7 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 
 const config = useRuntimeConfig();
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;

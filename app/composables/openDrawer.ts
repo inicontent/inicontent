@@ -23,7 +23,7 @@ async function loadDrawer(index: number) {
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		const config = useRuntimeConfig();
 		const database = useState<Database>("database");
-		const Language = useCookie<LanguagesType>("language", { sameSite: true });
+		const Language = useLanguageCookie();
 		const currentItem = useState<Item>("currentItem");
 
 		drawer.show = false;

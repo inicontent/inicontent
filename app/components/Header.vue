@@ -92,9 +92,9 @@ const route = useRoute();
 const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
-const redirectTo = useCookie("redirectTo", { sameSite: true });
+const Language = useLanguageCookie();
+const Theme = useCookie<"dark" | "light">("theme");
+const redirectTo = useRedirectToCookie(database.value?.slug);
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",

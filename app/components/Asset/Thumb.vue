@@ -132,7 +132,7 @@ const emit = defineEmits<{
 	(e: "click", event: MouseEvent): void;
 }>();
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 
 const formatDate = (date: string | Date | number) => {
 	const d = new Date(date);

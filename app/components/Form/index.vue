@@ -127,7 +127,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	return mergedSchema;
 }
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const PostSchemaResp = useState<
 	Record<string, apiResponse<{ schema: Schema; data: Item }>>
 >("PostSchema", () => ({}));

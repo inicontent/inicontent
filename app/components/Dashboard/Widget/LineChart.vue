@@ -25,7 +25,7 @@ const { timeSeries, loading, refresh } = useDashboardData(
 	dateRangeRef,
 );
 
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true });
+const Theme = useCookie<"dark" | "light">("theme");
 
 const chartOption = computed(() => ({
 	tooltip: {

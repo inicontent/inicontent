@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 
@@ -98,9 +98,7 @@ defineSlots<{
 }>();
 
 const Drawers = useState<DrawerRef>("drawers", () => []);
-const defaultWidth = useCookie<number | string>("width", {
-	sameSite: true,
-});
+const defaultWidth = useCookie<number | string>("width");
 const formRefs = ref<FormRef[]>([]);
 
 const screenHalf = window.screen.width / 2;

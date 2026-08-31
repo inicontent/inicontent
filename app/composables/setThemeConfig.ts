@@ -16,7 +16,7 @@ function adjustColor(hex: string, factor: number) {
 export default function () {
 	const database = useState<Database>("database")
 	const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
-	const Language = useCookie<LanguagesType>("language", { sameSite: true })
+	const Language = useLanguageCookie()
 	const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
 
 	const mainColor =

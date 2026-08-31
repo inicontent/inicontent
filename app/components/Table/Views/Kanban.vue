@@ -199,7 +199,7 @@ const calculateHeight = computed(() => {
 	return `${Math.min(calculatedHeight, maxHeight)}px`
 })
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 
 const onItemDrop = async (evt: any, targetColumn: columnType) => {
 	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return

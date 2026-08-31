@@ -27,7 +27,7 @@ const databaseSlug = computed(() =>
 	(route.params.database as string) || database.value?.slug || "",
 );
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 
 const dashboard = ref<Dashboard | null>(null);

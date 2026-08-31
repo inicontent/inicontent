@@ -20,7 +20,7 @@ import "~/assets/main.css"
 
 import { hexToRGB } from "~/composables"
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
 
@@ -178,6 +178,20 @@ onMounted(() => {
 watch(Language, fetchTranslation)
 
 useHead({
+	meta: [
+		{
+			name: "theme-color",
+			content: computed(() => ThemeConfig.value.primaryColor),
+		},
+	],
+	htmlAttrs: {
+		// Let the browser render its own chrome (scrollbars, form controls,
+		// native widgets) in the matching color scheme so it follows the
+		// database primary color on desktop, mobile, android, mac & windows.
+		style: computed(() =>
+			`color-scheme: ${Theme.value === "dark" ? "dark" : "light"}`,
+		),
+	},
 	bodyAttrs: {
 		style: computed(
 			() =>

@@ -93,7 +93,7 @@ const user = useState<User>("user");
 const route = useRoute();
 const database = useState<Database>("database");
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 
 const dashboards = ref<Dashboard[]>([]);

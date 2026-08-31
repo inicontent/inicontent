@@ -1,7 +1,7 @@
 const syncedCookieKeys = ["language", "theme", "sid", "redirectTo"] as const;
-// Only sid must be isolated per database. Other keys stay mirrored to the
-// global cookie so components that read useCookie("language") still work.
-const globalOnlyKeys = new Set(["language", "theme", "redirectTo"]);
+// Only theme is shared globally across all databases. language, sid and
+// redirectTo are scoped per database so each database keeps its own value.
+const globalOnlyKeys = new Set(["theme"]);
 
 function isSet(value: string | null | undefined) {
 	return value !== null && value !== undefined && value !== "";
@@ -36,6 +36,19 @@ export function useSessionCookie(databaseSlug?: string) {
 	});
 }
 
+export function useLanguageCookie(databaseSlug?: string) {
+	return useCookie<LanguagesType | null>(
+		scopedCookieName("language", databaseSlug),
+		{ sameSite: true },
+	);
+}
+
+export function useRedirectToCookie(databaseSlug?: string) {
+	return useCookie<string | null>(scopedCookieName("redirectTo", databaseSlug), {
+		sameSite: true,
+	});
+}
+
 export function syncCookiesFromDatabase(databaseSlug?: string) {
 	const resolvedDatabaseSlug = resolveDatabaseSlug(databaseSlug);
 
@@ -44,7 +57,7 @@ export function syncCookiesFromDatabase(databaseSlug?: string) {
 		const scopedCookie = useCookie<string | null>(
 			scopedCookieName(key, resolvedDatabaseSlug),
 			{
-			sameSite: true,
+				sameSite: true,
 			},
 		);
 
@@ -63,13 +76,22 @@ export function syncCookiesFromDatabase(databaseSlug?: string) {
 
 export function syncThemeToAllDatabases(theme: "dark" | "light") {
 	if (import.meta.server) return;
+	// Theme cookies must always be stored on the root path. A document.cookie
+	// write without an explicit Path defaults to the current URL directory
+	// (e.g. /clinic/admin), duplicating them alongside the root-path cookies
+	// that useCookie() writes. Delete plus rewrite keeps every path in sync.
 	const cookies = document.cookie.split(";");
 	for (const cookie of cookies) {
 		const [name] = cookie.split("=");
 		const trimmed = name.trim();
-		if (trimmed.endsWith("_theme") && trimmed !== "theme") {
-			document.cookie = `${trimmed}=${theme};sameSite=true`;
+		if (!trimmed.endsWith("_theme") || trimmed === "theme") continue;
+		// Best-effort removal of any duplicate persisted on the current
+		// directory path by the old path-relative writes.
+		const dir = location.pathname.replace(/\/[^/]*$/, "") || "/";
+		if (dir !== "/") {
+			document.cookie = `${trimmed}=;path=${dir};max-age=0`;
 		}
+		document.cookie = `${trimmed}=${theme};path=/;SameSite=Strict`;
 	}
 }
 
@@ -81,7 +103,7 @@ export function syncCookiesToDatabase(databaseSlug?: string) {
 		const scopedCookie = useCookie<string | null>(
 			scopedCookieName(key, resolvedDatabaseSlug),
 			{
-			sameSite: true,
+				sameSite: true,
 			},
 		);
 

@@ -27,7 +27,7 @@
 import type { MenuOption } from "naive-ui";
 import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components";
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 
 onBeforeUpdate(() => {
 	clearNuxtState("isMenuOpen");
@@ -286,7 +286,7 @@ const menuOptions = computed(() => {
 		database.value.tables
 			.filter(
 				({ slug, allowedMethods, show }) =>
-					["users", "sessions", "assets", "translations", "pages", "blocks", "templates"].includes(slug) &&
+					["users", "sessions", "assets", "translations", "pages", "blocks" ,"templates"].includes(slug) &&
 					!!allowedMethods &&
 					allowedMethods.trim() !== "" &&
 					show !== false,
@@ -294,9 +294,10 @@ const menuOptions = computed(() => {
 			.map(renderSingleItem) ?? [];
 
 	const options: MenuOption[] = [...primaryTableOptions];
-
+	
 	if (hasDashboardsTable.value) {
-		options.push(renderDashboardItem());
+			options.push({ key: "divider-1", type: "divider" });
+			options.push(renderDashboardItem());
 	}
 
 	if (secondaryTableOptions.length) {

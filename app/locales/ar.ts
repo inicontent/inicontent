@@ -82,6 +82,11 @@ export default {
 		// Confirmation messages
 		theFollowingActionIsIrreversible: "الإجراء التالي لا رجعة فيه",
 		areYouSure: "هل أنت متأكد؟",
+		deleteSelectedAssetsConfirm:
+			"حذف {count} عنصر محدد؟ لا يمكن التراجع عن هذا الإجراء.",
+		deleteAssetConfirm: "حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.",
+		deleteFolderConfirm:
+			'حذف مجلد "{name}" وكل ما بداخله؟ لا يمكن التراجع عن هذا الإجراء.',
 		deletedSuccessfully: "تم الحذف بنجاح",
 		savedSuccessfully: "تم الحفظ بنجاح",
 		updatedSuccessfully: "تم التحديث بنجاح",

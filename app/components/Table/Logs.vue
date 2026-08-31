@@ -97,7 +97,7 @@ const isOpen = ref(open)
 
 const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 const database = useState<Database>("database")
 
 const usersTable = database.value.tables?.find(({ slug }) => slug === "users")

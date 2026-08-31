@@ -12,7 +12,9 @@
 		/>
 		<input ref="importFileInputRef" type="file" accept=".csv,.json,text/csv,application/json"
 			hidden @change="handleImportFileSelected" />
-		<NCard :title="t(table.slug) ?? '--'" :class="`table_${table.slug}`" id="tableCard"
+		<NCard :title="t(table.slug) ?? '--'"
+			:class="`table_${table.slug}`" id="tableCard" 
+			style="background-color: transparent;"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
 				<NFlex id="navbarActions" align="center" justify="center" :size="isSlotSet('navbarExtraActions') ? 'medium' : 0" style="flex-direction: row-reverse;">
@@ -186,7 +188,7 @@ if (tablesConfig.value[table.value.slug]?.view)
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 const importFileInputRef = ref<HTMLInputElement>();
 const importUploadProgress = ref(0);

@@ -67,7 +67,7 @@ const config = useRuntimeConfig()
 const assetURLs = ref()
 const database = useState<Database>("database")
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 
 const sessionID = useSessionCookie()
 

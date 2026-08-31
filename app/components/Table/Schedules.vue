@@ -111,7 +111,7 @@ import Inison from "inison"
 import { Icon, NButton, NButtonGroup, NIcon, NPopconfirm, NTag } from "#components"
 
 const config = useRuntimeConfig()
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 const sessionID = useSessionCookie()
 
 const database = useState<Database>("database")

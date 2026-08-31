@@ -2,9 +2,7 @@ import Inison from "inison";
 
 export default async function () {
 	const config = useRuntimeConfig();
-	const Language = useCookie<keyof TranslationsType>("language", {
-		sameSite: true,
-	});
+	const Language = useLanguageCookie();
 	const translationsState = useState<TranslationsType>("translations");
 
 	const database = useState<Database>("database");

@@ -3,6 +3,12 @@ export default {
 		// Confirmation messages
 		areYouSure: "Are you sure?",
 		folderNameRequired: "Folder name is required",
+		deleteSelectedAssetsConfirm:
+			"Delete {count} selected item(s)? This action cannot be undone.",
+		deleteAssetConfirm: "Delete this asset?",
+		deleteFolderConfirm:
+			'Delete folder "{name}" and everything inside it? This action cannot be undone.',
+		theFollowingActionIsIrreversible: "The following action is irreversible",
 
 		// HTTP Methods
 		get: "Read",

@@ -133,7 +133,7 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig();
 const database = useState<Database>("database");
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 
 const model = ref<Dashboard>({ ...props.dashboard, widgets: [...(props.dashboard.widgets ?? [])] });

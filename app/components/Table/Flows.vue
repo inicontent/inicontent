@@ -376,7 +376,7 @@ onMounted(() => {
 	}).catch(() => {})
 })
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 
 const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))

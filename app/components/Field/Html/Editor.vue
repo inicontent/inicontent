@@ -364,7 +364,7 @@ function renderHeadingOption({ value }: { value: number }) {
 	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`)
 }
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true })
+const Language = useLanguageCookie()
 
 const headingOptions = [
 	{

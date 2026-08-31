@@ -5,7 +5,7 @@
 	}" v-model="modelValue" />
 	<LazyField v-else-if="!isArrayOfObjects(field.children)" :field="{
 		...field,
-		subType: field.children === 'table' ? 'array-table' : 'tags',
+		subType: field.children === 'table' ? 'array-table' : (field.options?.length ? 'select' : 'tags'),
 		isArray: true,
 	}" v-model="modelValue" />
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
@@ -128,7 +128,7 @@ import {
 	NButtonGroup
 } from "#components";
 
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 
 const { field } = defineProps<{ field: Field }>();
 

@@ -185,7 +185,7 @@ const tableCopy = ref<
 	displayAs: table.value.displayAs || "table",
 	schema: table.value.schema || [],
 });
-const Language = useCookie<LanguagesType>("language", { sameSite: true });
+const Language = useLanguageCookie();
 function sanitizeSchema(schema: Schema): Schema {
 	return schema
 		.filter((field) => field.type !== "custom") // Remove custom fields
