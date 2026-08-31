@@ -88,14 +88,12 @@
 import type { FormInst, TabsInst } from "naive-ui";
 import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
 
-const props = defineProps<{onLoggedIn: () => void}>()
+const props = defineProps<{onLoggedIn?: () => void}>()
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const { beginPasskeySignIn, isPasskeySupported, registerCurrentUserPasskey } =
 	usePasskeyAuth();
-
-const redirectTo = useRedirectToCookie(database.value.slug);
 
 const SigninFormRef = ref<FormInst | null>(null);
 const ResetRequestFormRef = ref<FormInst | null>(null);
@@ -103,6 +101,7 @@ const route = useRoute();
 const tabsInstRef = ref<TabsInst | null>(null);
 const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
 const database = useState<Database>("database");
+const redirectTo = useRedirectToCookie(database.value.slug);
 const table = useState<Table>("table");
 const user = useState<User>("user");
 const SignupForm = useState(() => ({
@@ -221,7 +220,7 @@ async function handleSuccessfulLogin(
 		)
 	).result;
 
-	if (!!props.onLoggedIn) {
+	if (!!props?.onLoggedIn) {
 		props.onLoggedIn()
 		return;
 	}

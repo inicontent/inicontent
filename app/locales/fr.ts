@@ -268,6 +268,10 @@ export default {
 		schedules: "Planifications",
 		tableSchedules: "Planifications de table",
 		runNow: "Exécuter maintenant",
+		runAllActiveSchedules: "Exécuter toutes les planifications actives",
+		noActiveSchedules: "Aucune planification active à exécuter",
+		allActiveSchedulesRan: "Toutes les planifications actives ont été exécutées",
+		someSchedulesFailed: "{count} planification(s) ont échoué",
 		tableSlug: "Identifiant de table",
 		clickToToggleDate: "Cliquez pour changer la date",
 
@@ -468,9 +472,6 @@ export default {
 		active: "Actif",
 		inactive: "Inactif",
 		preset: "Préréglage",
-		creationCronNotice:
-			"Créez automatiquement des lignes selon une planification fixe à partir d'une charge utile JSON ou Inison enregistrée.",
-		friendlyScheduleHint: "Choisissez un préréglage simple puis excluez au besoin certains jours.",
 		excludeDays: "Jours exclus",
 		excludeDaysHelp: "Les jours cochés seront ignorés même si l'expression cron correspond.",
 		excludedDays: "Jours exclus",

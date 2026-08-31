@@ -1,32 +1,47 @@
 <template>
 	<div>
-		<NFlex justify="space-between" align="center" style="margin-bottom: 16px; gap: 12px;">
-			<div>
-				<h1 style="margin: 0 0 4px;">{{ t("tableSchedules") }}</h1>
-				<NText depth="3">{{ t("creationCronNotice") }}</NText>
-			</div>
-			<NButton type="primary" secondary round :loading="loading" @click="openCreateModal">
-				<template #icon>
-					<NIcon>
-						<Icon name="tabler:plus" />
-					</NIcon>
-				</template>
-				{{ t("addSchedule") }}
-			</NButton>
-		</NFlex>
-
-		<NCard>
-			<NFlex justify="space-between" align="center" style="margin-bottom: 12px; gap: 12px;">
-				<NText depth="3">{{ t("friendlyScheduleHint") }}</NText>
-				<NButton size="small" quaternary @click="loadSchedules">
-					<template #icon>
-						<NIcon>
-							<Icon name="tabler:refresh" />
-						</NIcon>
-					</template>
-					{{ t("refresh") }}
-				</NButton>
-			</NFlex>
+		<NCard :title="t('tableSchedules')" :bordered="false" style="background-color: transparent;" embedded content-style="padding: 0">
+			<template #header-extra>
+				<NButtonGroup>
+					<NTooltip :delay="1500">
+						<template #trigger>
+							<NButton secondary @click="loadSchedules">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:refresh" />
+									</NIcon>
+								</template>
+							</NButton>
+							</template>
+							{{ t("refresh") }}
+					 </NTooltip>
+					<NPopconfirm @positive-click="runAllActiveSchedules">
+						<template #trigger>
+							<NTooltip :delay="1500">
+								<template #trigger>
+									<NButton type="success" secondary round :loading="loading">
+										<template #icon>
+											<NIcon>
+												<Icon name="tabler:player-play" />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ t("runAllActiveSchedules") }}
+							</NTooltip>
+						</template>
+						{{ t("theFollowingActionIsIrreversible") }}
+					</NPopconfirm>
+					<NButton type="primary" secondary round :loading="loading" @click="openCreateModal">
+						<template #icon>
+							<NIcon>
+								<Icon name="tabler:plus" />
+							</NIcon>
+						</template>
+						{{ t("addSchedule") }}
+					</NButton>
+				</NButtonGroup>
+			</template>	
 			<NDataTable
 				remote
 				:columns="columns"
@@ -220,6 +235,7 @@ const tablePagination = computed(() => ({
 		pagination.page = 1
 		await loadSchedules()
 	},
+	prefix: ({ itemCount }: { itemCount?: number }) => itemCount
 }))
 
 watch(
@@ -505,6 +521,65 @@ async function runScheduleNow(schedule: Schedules) {
 	}
 }
 
+async function runAllActiveSchedules() {
+	loading.value = true
+	let errors = 0
+
+	try {
+		const response = await $fetch<apiResponse<Schedules[]>>(
+			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`,
+			{
+				params: {
+					...getRequestParams(),
+					where: Inison.stringify({ isActive: true }),
+					options: Inison.stringify({ page: 1, perPage: 1000, columns: ["id"] }),
+				},
+				credentials: "include",
+			},
+		)
+
+		const activeSchedules = response.result ?? []
+
+		if (!activeSchedules.length) {
+			window.$message.info(t("noActiveSchedules"))
+			return
+		}
+
+		for (const schedule of activeSchedules) {
+			try {
+				const runResponse = await $fetch<apiResponse<boolean>>(
+					`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
+					{
+						method: "POST",
+						params: getRequestParams(),
+						credentials: "include",
+					},
+				)
+
+				if (!runResponse.result) errors++
+			} catch {
+				errors++
+			}
+		}
+
+		if (errors === 0) {
+			window.$message.success(t("allActiveSchedulesRan"))
+		} else {
+			window.$message.warning(t("someSchedulesFailed", { count: errors }))
+		}
+
+		await loadSchedules()
+	} catch (error: unknown) {
+		const errorMessage =
+			typeof error === "object" && error !== null
+				? (error as { data?: { message?: string }; message?: string })
+				: undefined
+		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+	} finally {
+		loading.value = false
+	}
+}
+
 async function removeSchedule(schedule: Schedules) {
 	loading.value = true
 	try {
@@ -596,7 +671,7 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 						trigger: () =>
 							h(
 								NButton,
-								{ secondary: true, type: "info", title: t("runNow") },
+								{ secondary: true, type: "success", title: t("runNow") },
 								{
 									icon: () =>
 										h(NIcon, null, () => h(Icon, { name: "tabler:player-play" })),

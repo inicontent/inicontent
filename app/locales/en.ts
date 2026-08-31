@@ -188,16 +188,16 @@ export default {
 		tableSchedules: "Table schedules",
 		addSchedule: "Add schedule",
 		runNow: "Run now",
+		runAllActive: "Run all active",
+		noActiveSchedules: "No active schedules to run",
+		allActiveSchedulesRan: "All active schedules executed successfully",
+		someSchedulesFailed: "{count} schedule(s) failed to execute",
 		editSchedule: "Edit schedule",
 		cronExpression: "Cron expression",
 		payloadTemplate: "Payload template",
 		nextRunAt: "Next run",
 		lastRunAt: "Last run",
 		lastError: "Last error",
-		creationCronNotice:
-			"Create rows automatically on a fixed schedule using a saved JSON or Inison payload.",
-		friendlyScheduleHint:
-			"Choose a simple preset, then optionally skip specific weekdays.",
 		excludeDays: "Exclude days",
 		excludeDaysHelp:
 			"Checked days will be skipped even if the cron expression matches them.",

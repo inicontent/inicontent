@@ -265,6 +265,10 @@ export default {
 		schedules: "Programaciones",
 		tableSchedules: "Programaciones de tabla",
 		runNow: "Ejecutar ahora",
+		runAllActiveSchedules: "Ejecutar todas las programaciones activas",
+		noActiveSchedules: "No hay programaciones activas para ejecutar",
+		allActiveSchedulesRan: "Todas las programaciones activas se ejecutaron correctamente",
+		someSchedulesFailed: "{count} programación(es) fallaron",
 		tableSlug: "Identificador de tabla",
 		clickToToggleDate: "Haz clic para cambiar la fecha",
 
@@ -465,9 +469,6 @@ export default {
 		active: "Activo",
 		inactive: "Inactivo",
 		preset: "Preajuste",
-		creationCronNotice:
-			"Crea filas automáticamente con una programación fija usando una carga JSON o Inison guardada.",
-		friendlyScheduleHint: "Elige un ajuste simple y luego excluye los días que quieras saltar.",
 		excludeDays: "Excluir días",
 		excludeDaysHelp: "Los días marcados se omitirán aunque la expresión cron coincida.",
 		excludedDays: "Días excluidos",

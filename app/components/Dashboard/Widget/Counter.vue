@@ -1,6 +1,6 @@
 <template>
 	<NSpin :show="loading">
-		<NTooltip :delay="500">
+		<NTooltip :delay="1500">
 			<template #trigger>
 				<NStatistic :value="displayValue">
 					<template #prefix>
