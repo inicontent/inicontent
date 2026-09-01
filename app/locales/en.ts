@@ -27,6 +27,13 @@ export default {
 		invalidResetLink: "This password reset link is invalid or expired.",
 		backToSignIn: "Back to sign in",
 
+		// Copy / paste schema fields
+		copyFields: "Copy fields",
+		pasteFields: "Paste fields from clipboard",
+		noFieldsInClipboard: "No fields found in the clipboard",
+		noFieldsToCopy: "There are no fields to copy",
+		cutSuccessfully: "Cut successfully",
+
 		// Field types that differ from default
 		fields: {
 			html: "Rich Editor",

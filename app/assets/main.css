@@ -622,6 +622,10 @@ a {
 	position: relative;
 }
 
+.n-color-picker .n-color-picker__fill {
+	overflow: hidden;
+}
+
 @media only screen and (min-width: 869px) and (max-width: 1200px) {
 	.masonry {
 		columns: 2;

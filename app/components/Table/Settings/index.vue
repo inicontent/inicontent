@@ -1,7 +1,7 @@
 <template>
 	<NGrid x-gap="12" cols="12" layout-shift-disabled>
 		<NGridItem :span="!$device.isMobile ? 10 : 12">
-			<NCard :title="t('tableSettings')" hoverable>
+			<NCard :title="t('tableSettings')" style="background-color: transparent;" :bordered="false" embedded>
 				<template #header-extra>
 					<NButtonGroup>
 						<NTooltip :delay="1500">
@@ -34,88 +34,92 @@
 						</NButton>
 					</NButtonGroup>
 				</template>
-				<NFlex vertical>
-					<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
-						<NForm ref="settingsFormRef" :model="tableCopy">
-							<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
-							<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
-								<NCascader multiple clearable filterable expand-trigger="hover" check-strategy="child"
-									:cascard="false" v-model:value="tableCopy.defaultSearchableColumns"
-									:options="searchInSelectOptions" />
-							</NFormItem>
-							<template v-if="tableCopy.displayAs === 'table'">
-								<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
-									<NCascader multiple clearable filterable expand-trigger="hover"
-										check-strategy="child" :cascard="false"
-										v-model:value="tableCopy.defaultTableColumns"
+				<NFlex vertical :size="24">
+					<NSpin :show="!!Loading.updateTable">
+						<NCard :title="t('generalSettings')" id="generalSettings" hoverable>
+							<NForm ref="settingsFormRef" :model="tableCopy">
+								<FieldS v-model="tableCopy" :schema="generalSettingsSchema.slice(0, 3)" />
+								<NFormItem path="defaultSearchableColumns" :label="t('defaultSearchableColumns')">
+									<NCascader multiple clearable filterable expand-trigger="hover" check-strategy="child"
+										:cascard="false" v-model:value="tableCopy.defaultSearchableColumns"
 										:options="searchInSelectOptions" />
 								</NFormItem>
-								<NFormItem path="localLabel" :label="t('tableItemLabel')">
-									<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
-										:render-tag="renderSingleLabel">
-										<template #input="{ submit, deactivate }">
-											<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
-												:options="searchInSelectOptions" @update:value="submit($event)"
-												@update:show="(value) => value === undefined ? '' : deactivate()" />
-										</template>
-										<template #trigger="{ activate, disabled }">
-											<NButton size="small" tertiary round
-												@click="activate(), focusSingleLabelSelect()" :disabled>
+								<template v-if="tableCopy.displayAs === 'table'">
+									<NFormItem path="defaultTableColumns" :label="t('defaultTableColumns')">
+										<NCascader multiple clearable filterable expand-trigger="hover"
+											check-strategy="child" :cascard="false"
+											v-model:value="tableCopy.defaultTableColumns"
+											:options="searchInSelectOptions" />
+									</NFormItem>
+									<NFormItem path="localLabel" :label="t('tableItemLabel')">
+										<NDynamicTags v-model:value="tableCopy.localLabel" :onCreate="onAppendToLabel"
+											:render-tag="renderSingleLabel">
+											<template #input="{ submit, deactivate }">
+												<NSelect ref="singleLabelSelect" size="small" clearable filterable show tag
+													:options="searchInSelectOptions" @update:value="submit($event)"
+													@update:show="(value) => value === undefined ? '' : deactivate()" />
+											</template>
+											<template #trigger="{ activate, disabled }">
+												<NButton size="small" tertiary round
+													@click="activate(), focusSingleLabelSelect()" :disabled>
+													<template #icon>
+														<NIcon>
+															<Icon name="tabler:plus" />
+														</NIcon>
+													</template>
+												</NButton>
+											</template>
+										</NDynamicTags>
+									</NFormItem>
+								</template>
+								<template v-else>
+									<NFormItem path="groupBy" :label="t('groupBy')">
+										<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
+											:cascard="false" v-model:value="tableCopy.groupBy"
+											:options="groupBySelectOptions" />
+									</NFormItem>
+									<FieldMention :field="labelField" v-model="tableCopy.label" />
+								</template>
+								<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
+							</NForm>
+						</NCard>
+					</NSpin>
+					<NSpin :show="!!Loading.updateTable">
+						<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
+							<template #header-extra>
+								<NButtonGroup>
+									<NTooltip :delay="1500">
+										<template #trigger>
+											<NButton :type="reorderEnabled ? 'primary' : 'default'" secondary round
+												@click="reorderEnabled = !reorderEnabled">
 												<template #icon>
 													<NIcon>
-														<Icon name="tabler:plus" />
+														<Icon name="tabler:arrows-move" />
 													</NIcon>
 												</template>
 											</NButton>
 										</template>
-									</NDynamicTags>
-								</NFormItem>
-							</template>
-							<template v-else>
-								<NFormItem path="groupBy" :label="t('groupBy')">
-									<NCascader clearable filterable expand-trigger="hover" check-strategy="child"
-										:cascard="false" v-model:value="tableCopy.groupBy"
-										:options="groupBySelectOptions" />
-								</NFormItem>
-								<FieldMention :field="labelField" v-model="tableCopy.label" />
-							</template>
-							<FieldS v-model="tableCopy.config" :schema="generalSettingsSchema.slice(3)" />
-						</NForm>
-					</NCard>
-					<NCard :title="t('schemaSettings')" id="schemaSettings" hoverable>
-						<template #header-extra>
-							<NButtonGroup>
-								<NTooltip :delay="1500">
-									<template #trigger>
-										<NButton :type="reorderEnabled ? 'primary' : 'default'" secondary round
-											@click="reorderEnabled = !reorderEnabled">
+										{{ t('reorderFields') }}
+									</NTooltip>
+									<NDropdown :options="addFieldDropdownOptions" style="max-height: 200px" scrollable
+										@select="onAddFieldSelect">
+										<NButton secondary type="primary" round @click="pushToSchema('string')">
 											<template #icon>
 												<NIcon>
-													<Icon name="tabler:arrows-move" />
+													<Icon name="tabler:plus" />
 												</NIcon>
 											</template>
 										</NButton>
-									</template>
-									{{ t('reorderFields') }}
-								</NTooltip>
-								<NDropdown :options="fieldsList()" style="max-height: 200px" scrollable
-									@select="pushToSchema">
-									<NButton secondary type="primary" round @click="pushToSchema('string')">
-										<template #icon>
-											<NIcon>
-												<Icon name="tabler:plus" />
-											</NIcon>
-										</template>
-									</NButton>
-								</NDropdown>
-							</NButtonGroup>
-						</template>
-						<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
-						<NForm size="small">
-							<LazyTableSettingsSchema v-model="tableCopy.schema"
-								v-model:expanded-names="expandedNames" :reorder-enabled="reorderEnabled" />
-						</NForm>
-					</NCard>
+									</NDropdown>
+								</NButtonGroup>
+							</template>
+							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
+							<NForm size="small">
+								<LazyTableSettingsSchema v-model="tableCopy.schema"
+									v-model:expanded-names="expandedNames" :reorder-enabled="reorderEnabled" />
+							</NForm>
+						</NCard>
+					</NSpin>
 				</NFlex>
 			</NCard>
 		</NGridItem>
@@ -131,7 +135,7 @@
 <script lang="ts" setup>
 import { flattenSchema, isArrayOfObjects, isNumber } from "inibase/utils";
 import type { FormInst } from "naive-ui";
-import { Icon, NTag } from "#components";
+import { Icon, NIcon, NTag } from "#components";
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -165,6 +169,45 @@ function pushToSchema(type: string) {
 	expandedNames.value = [newField.id];
 	setTimeout(
 		() => document.getElementById(`element-${newField.id}`)?.scrollIntoView(),
+		300,
+	);
+}
+
+// Show a "Paste from clipboard" entry on top of the add-field dropdown. The
+// clipboard is the system clipboard, so it may contain fields copied from
+// another table/browser tab.
+const addFieldDropdownOptions = computed(() => [
+	{
+		label: () => t("pasteFields"),
+		key: "paste-from-clipboard",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:clipboard" })),
+	},
+	{ type: "divider", key: "divider-paste" },
+	...fieldsList(),
+]);
+
+function onAddFieldSelect(key: string) {
+	if (key === "paste-from-clipboard") {
+		void pasteFieldsFromClipboard();
+		return;
+	}
+	pushToSchema(key);
+}
+
+async function pasteFieldsFromClipboard() {
+	if (!tableCopy.value.schema) tableCopy.value.schema = [];
+	const schema = tableCopy.value.schema;
+	// Append before the trailing system fields, matching pushToSchema behavior.
+	const index =
+		schema[0]?.key === "id" ? Math.max(0, schema.length - 2) : schema.length;
+	const inserted = await pasteSchemaFields(schema, index);
+	if (!inserted.length) {
+		window.$message.warning(t("noFieldsInClipboard"));
+		return;
+	}
+	expandedNames.value = [inserted[0].id as string];
+	setTimeout(
+		() => document.getElementById(`element-${inserted[0].id}`)?.scrollIntoView(),
 		300,
 	);
 }

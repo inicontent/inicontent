@@ -1,12 +1,14 @@
 <template>
 	<NCollapse style="margin-top: 15px;" :class="{ 'reorder-enabled': reorderEnabled }" accordion
 		:trigger-areas="['main', 'arrow']" v-model:expanded-names="expandedNames">
-		<VueDraggable :model-value="schema as any[]" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
+		<VueDraggable v-model="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
 			:disabled="!reorderEnabled" :move="onMoveCallback">
 			<template v-for="(element, index) in schema">
 				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
+					:class="{ 'field-selected': selectedFieldIds.has(element.id as string | number) }"
 					:disabled="isDisabled(element.key)"
-					:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'">
+					:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'"
+					@click.capture="(e) => onFieldClick(e, element)">
 					<template #header-extra>
 						<NFlex>
 							<NButtonGroup>
@@ -259,6 +261,10 @@ const widthOptions = [
 		label: "1/5",
 		value: 5,
 	},
+	{
+		label: "1/6",
+		value: 6,
+	},
 ];
 
 // Mobile: collapse the required/width/delete button group into a single dropdown
@@ -288,6 +294,103 @@ function onFieldAction(action: string, element: Field, index: number) {
 	else if (action === "delete") schema.value.splice(index, 1);
 	else if (action.startsWith("width-"))
 		element.width = Number(action.slice("width-".length));
+}
+
+// ── Copy / cut / paste fields ─────────────────────────────────────────────────
+
+const interactiveSelector = [
+	"button",
+	"input",
+	"textarea",
+	"select",
+	"a[href]",
+	'[contenteditable="true"]',
+	"[role='button']",
+	".n-input",
+	".n-select",
+	".n-input-number",
+	".n-cascader",
+	".n-switch",
+	".n-checkbox",
+	".n-radio",
+	".n-color-picker",
+	".n-data-table",
+	".n-popover",
+	".n-dropdown",
+].join(",");
+
+function shouldIgnoreFieldTarget(target: HTMLElement | null) {
+	if (!target) return true;
+	return Boolean(target.closest(interactiveSelector));
+}
+
+// Fields currently selected via ctrl/meta click
+const selectedFieldIds = ref<Set<string | number>>(new Set());
+
+function onFieldClick(e: MouseEvent, element: Field) {
+	if (e.ctrlKey || e.metaKey) {
+		if (shouldIgnoreFieldTarget(e.target as HTMLElement)) return;
+		e.preventDefault();
+		e.stopPropagation();
+		toggleFieldSelection(element.id as string | number);
+		return;
+	}
+	if (selectedFieldIds.value.size) selectedFieldIds.value = new Set();
+}
+
+function toggleFieldSelection(id: string | number) {
+	const next = new Set(selectedFieldIds.value);
+	if (next.has(id)) next.delete(id);
+	else next.add(id);
+	selectedFieldIds.value = next;
+}
+
+const selectedFields = computed<Field[]>(() =>
+	schema.value.filter(({ id }) => selectedFieldIds.value.has(id as string | number)),
+);
+
+// Add a global keydown handler so that ctrl/cmd+c and ctrl/cmd+x copy/cut the
+// currently selected fields. We bail out when focus is inside an editable or
+// interactive control so the browser's native copy/cut keeps working there.
+function onSchemaKeydown(e: KeyboardEvent) {
+	if (
+		!(e.ctrlKey || e.metaKey) ||
+		!["c", "C", "x", "X"].includes(e.key) ||
+		!selectedFieldIds.value.size
+	)
+		return;
+
+	const target = e.target as HTMLElement | null;
+	if (target?.closest(interactiveSelector)) return;
+
+	e.preventDefault();
+	void copySelectedFields(e.key.toLowerCase() === "x");
+}
+
+onMounted(() => document.addEventListener("keydown", onSchemaKeydown));
+onBeforeUnmount(() =>
+	document.removeEventListener("keydown", onSchemaKeydown),
+);
+
+async function copySelectedFields(cut = false) {
+	const fields = selectedFields.value;
+	const copyable = fields.filter((element) => !isDisabled(element.key));
+	if (!copyable.length) {
+		window.$message.warning(t("noFieldsToCopy"));
+		if (cut) selectedFieldIds.value = new Set();
+		return;
+	}
+	await copySchemaFields(copyable);
+	if (cut) {
+		schema.value = schema.value.filter(
+			({ id }) => !selectedFieldIds.value.has(id as string | number),
+		);
+		window.$message.success(t("cutSuccessfully"));
+	} else {
+		window.$message.success(t("copiedSuccessfully"));
+	}
+	// Clear the selection outline after copy/cut
+	selectedFieldIds.value = new Set();
 }
 
 function onMoveCallback(evt: {
@@ -615,6 +718,13 @@ function onKeyInput(element: Field, v: string) {
 <style scoped>
 .reorder-enabled .n-collapse-item:not(.n-collapse-item--disabled) :deep(.n-collapse-item__header-main) {
 	cursor: move !important;
+}
+
+.field-selected {
+	border-radius: 12px;
+	outline: 2px solid rgb(var(--primaryColor));
+	background-color: rgb(var(--primaryColor), 0.08);
+	outline-offset: 2px;
 }
 
 .formItemFlex :deep(.n-form-item-blank) {
