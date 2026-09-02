@@ -22,8 +22,12 @@ const modelValue = defineModel<string>()
 
 // Accept real URLs (isURL already covers http(s), tel:, mailto:, #anchor) as
 // well as site-relative paths (e.g. "/about") — isURL alone rejects those.
+// A relative path must start with "/" and contain no whitespace/control
+// characters (still allows non-ASCII slugs, e.g. "/منتجات").
+const relativePathPattern = /^\/[^\s\x00-\x1f]*$/
 const isURLOrRelativePath = (input: unknown) =>
-	typeof input === "string" && (input.startsWith("/") || isURL(input))
+	typeof input === "string" &&
+	(relativePathPattern.test(input) || isURL(input))
 
 const rule: FormItemRule = {
 	trigger: ["blur", "input"],
