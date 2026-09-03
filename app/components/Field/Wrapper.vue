@@ -1,6 +1,6 @@
 <template>
-	<NFormItem :label="field.label ?? t(field.key)" :rule :path="String(field.id)" :style="{ flex: fieldFlex }"
-		v-bind="field.labelProps">
+	<NFormItem :id="field.id" :label="field.label ?? t(field.key)" :rule :path="String(field.id)"
+		:style="{ flex: fieldFlex }" v-bind="field.labelProps">
 		<slot></slot>
 		<template #label>
 			<NFlex v-if="field.description" align="center" :size="0">
