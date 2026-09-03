@@ -7,6 +7,14 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 - [Tabler Icons](https://github.com/tabler/tabler-icons) for intuitive and attractive icons.  
 - [Tiptap](https://github.com/ueberdosis/tiptap) for a powerful Rich Text Editor.
 
+## Features
+
+- **Multi-database admin** - manage one or many databases from a single `/admin` interface.
+- **Rich text editing** via [Tiptap](https://github.com/ueberdosis/tiptap).
+- **Sleek UI** built with [Naive UI](https://github.com/tusen-ai/naive-ui) and [Tabler Icons](https://github.com/tabler/tabler-icons).
+- **PWA-ready** out of the box.
+- **Drop-in as a Nuxt Layer**, or clone and customize directly.
+
 ## Ecosystem
 
 - **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
@@ -60,31 +68,35 @@ export default defineNuxtConfig({
 ```
 
 ```sh
-// .env
+# .env
 database=DATABASE_SLUG
 ```
 
-This method keeps your project clean and allows for easy updates to the CMS.
+**Database configuration:**
+- The CMS is a multi-database manager by default.
+- When no `database` is set in `.env`, `/admin` lists all available databases; users navigate to a specific database's admin panel at `/admin/<dbName>`.
+- When `database` is set, `/admin` shows that database's tables directly, without the name in the path.
 
----
+This method keeps your project clean and makes updates to the CMS easy.
 
 ### 2. Advanced Method: Clone and Edit the Repository
 
-If you require extensive customization, you can clone the repository and modify it directly.
+If you need extensive customization, clone the repository and modify it directly.
+```bash
+git clone https://github.com/inicontent/inicontent.git
+cd inicontent
+pnpm install
+```
 
-**Steps:**
-1. Clone the repository:  
-   ```bash
-   git clone https://github.com/inicontent/inicontent.git
-   cd inicontent
-   ```
-2. Install dependencies:  
-   ```bash
-   npm install
-   ```
-3. Start editing and customize the project to meet your needs.
+## Environment Variables
 
----
+| Variable   | Required | Default                       | Description                                    |
+|------------|----------|--------------------------------|------------------------------------------------|
+| `database` | No       | `inicontent`                  | Database slug the admin panel targets directly. |
+| `apiBase`  | No       | `https://api.inicontent.com/` | Base URL for the Inicontent API.                |
+| `idOne`    | No       | (built-in default)            | Public identifier used by the API client.       |
+
+Copy these into a local `.env` file as needed; none are required to start the dev server.
 
 ## Setup
 
@@ -104,7 +116,7 @@ npm run dev
 
 ## Production
 
-To build the application for production:
+Build the application for production:
 
 ```bash
 npm run build
@@ -115,3 +127,16 @@ Preview the production build locally:
 ```bash
 npm run preview
 ```
+
+## Linting
+
+This project uses [Biome](https://biomejs.dev/) for linting and formatting:
+
+```bash
+pnpm lint    # check
+pnpm format  # check and write
+```
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, branch/commit conventions, and the PR process.
