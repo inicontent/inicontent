@@ -711,8 +711,9 @@ a {
     overflow: hidden;
 }
 
-td[data-col-key="actions"] {
+td[data-col-key=actions] {
 	padding: 0 !important;
+	text-align: center !important;
 }
 
 @media (max-width: 768px) {
