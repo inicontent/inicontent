@@ -24,6 +24,8 @@ export function useRealtimeSync(
 	const isConnected = ref(false);
 	const isConnecting = ref(false);
 
+	const config = useRuntimeConfig();
+
 	/**
 	 * Connect to realtime updates via WebSocket
 	 */
@@ -44,9 +46,17 @@ export function useRealtimeSync(
 		isConnecting.value = true;
 
 		try {
-			const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-			const host = window.location.host;
-			websocket.value = new WebSocket(`${protocol}//${host}/realtime`);
+			const apiBase = config.public.apiBase;
+			let wsUrl: string;
+			if (apiBase.startsWith("http")) {
+				const url = new URL(apiBase);
+				const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+				wsUrl = `${wsProtocol}//${url.host}/realtime`;
+			} else {
+				const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+				wsUrl = `${wsProtocol}//${window.location.host}/realtime`;
+			}
+			websocket.value = new WebSocket(wsUrl);
 
 			websocket.value.onopen = () => {
 				isConnected.value = true;
@@ -204,6 +214,7 @@ export function useRealtimeSync(
 				disconnect();
 			}
 		},
+		{ immediate: true },
 	);
 
 	/**
