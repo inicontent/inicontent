@@ -1,5 +1,5 @@
 <template>
-	<NCollapse :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
+	<NCollapse v-if="hasLogs" :default-expanded-names="isOpen ? ['logs'] : []" @item-header-click="handleCollapseChange">
 		<NCollapseItem name="logs">
 			<template #header>
 				<NH4 style="margin: 0">{{ t('latestActivities') }}</NH4>
@@ -109,6 +109,7 @@ onBeforeRouteLeave(() => {
 })
 
 const sessionID = useSessionCookie()
+const hasLogs = ref(true)
 
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${config.public.apiBase}${database.value.slug}/${table.value.slug}/logs`,
@@ -129,8 +130,9 @@ const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(
 		onRequest() {
 			Loading.value.logs = true
 		},
-		onResponse() {
+		onResponse: ({ response: { _data } }) => {
 			Loading.value.logs = false
+			hasLogs.value = !!_data?.result?.length
 		},
 		credentials: "include",
 	},

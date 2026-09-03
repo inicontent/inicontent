@@ -548,6 +548,8 @@ export default {
 		translated: "تمت الترجمة",
 		tableDemo: "معاينة الجدول",
 		billing: "الفوترة",
+		reorderFlows: "إعادة ترتيب التدفقات",
+		reorderFields: "إعادة ترتيب الحقول",
 
 		billingUi: {
 			title: "الفوترة والاشتراك",

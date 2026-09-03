@@ -1,7 +1,9 @@
 <template>
 	<NGrid x-gap="12" cols="12" layout-shift-disabled>
 		<NGridItem :span="!$device.isMobile ? 10 : 12">
-			<NCard :title="t('settings')" hoverable>
+			<NCard
+			:title="t('settings')" style="background-color: transparent;" 
+			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false" embedded>
 				<template #header-extra>
 					<NFlex>
 						<NTooltip :delay="1500">

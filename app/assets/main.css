@@ -591,18 +591,22 @@ a {
 	--n-border-radius: 0 !important;
 }
 
-.handle,
-.inputHandle {
+.flowCardGhost {
+	opacity: 0.5;
+}
+
+.flowCard,
+.flowCardRulesGroupInput {
 	cursor: move;
 }
 
-.rtl .handle {
+.rtl .flowCardIndex {
 	left: auto;
 	right: 0;
 	border-radius: 0 15px;
 }
 
-.handle {
+.flowCardIndex {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -638,6 +642,16 @@ a {
 	}
 }
 
+.flowCard {
+    min-height: 100px;
+}
+
+.flowCard>.n-card-content {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 .flowCard:hover .flowCardButtons {
 	visibility: visible;
 }
@@ -671,6 +685,16 @@ a {
 	padding: 20px 22px;
 }
 
+.flowCardRulesEdit .flowCardRules {
+	display: flex;
+	flex-flow: column;
+	gap: 8px 12px;
+}
+
+.flowAddCard {
+	width: 100%;
+}
+
 .rtl .flowCardRulesGroupInput {
 	flex-direction: row !important;
 }
@@ -680,6 +704,15 @@ a {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+#DataTable > .n-data-table-wrapper {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+td[data-col-key="actions"] {
+	padding: 0 !important;
 }
 
 @media (max-width: 768px) {

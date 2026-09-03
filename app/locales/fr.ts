@@ -508,6 +508,8 @@ export default {
 		weekly: "Hebdomadaire",
 		monthly: "Mensuel",
 		custom: "Personnalisé",
+		reorderFlows: "Réorganiser les flux",
+		reorderFields: "Réorganiser les champs",
 
 		billingUi: {
 			title: "Facturation et abonnement",

@@ -102,6 +102,8 @@ export default {
 		filterSavedSuccessfully: "Filtro guardado exitosamente",
 		filterDeletedSuccessfully: "Filtro eliminado exitosamente",
 		filterLoaded: "Filtro cargado",
+		reorderFlows: "Reordenar flujos",
+		reorderFields: "Reordenar campos",
 
 		// Methods
 		get: "Mostrar",

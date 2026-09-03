@@ -1,7 +1,9 @@
 <template>
 	<NGrid x-gap="12" cols="12" layout-shift-disabled>
 		<NGridItem :span="!$device.isMobile ? 10 : 12">
-			<NCard :title="t('tableSettings')" style="background-color: transparent;" :bordered="false" embedded>
+			<NCard 
+			:title="t('tableSettings')" style="background-color: transparent;"
+			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false" embedded>
 				<template #header-extra>
 					<NButtonGroup>
 						<NTooltip :delay="1500">
@@ -90,7 +92,7 @@
 								<NButtonGroup>
 									<NTooltip :delay="1500">
 										<template #trigger>
-											<NButton :type="reorderEnabled ? 'primary' : 'default'" secondary round
+											<NButton :type="reorderEnabled ? 'success' : 'default'" secondary round
 												@click="reorderEnabled = !reorderEnabled">
 												<template #icon>
 													<NIcon>

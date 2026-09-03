@@ -3,11 +3,11 @@
 		<section class="api-table-doc-page__hero">
 			<NFlex wrap justify="space-between" align="center" :size="24">
 				<NFlex align="center" :size="16">
-					<NIconWrapper :size="64">
-						<LazyTableIcon :table="currentTable" />
+					<NIconWrapper :size="64" :border-radius="50">
+						<LazyTableIcon size="34" :table="currentTable" />
 					</NIconWrapper>
 					<div>
-						<NH2 style="margin: 0">{{ tableTitle }}</NH2>
+						<NH2 style="margin: 0">{{ t(currentTable.slug) }}</NH2>
 						<NText depth="3">{{ t('table') }} &middot; {{ currentTable.slug }}</NText>
 					</div>
 				</NFlex>
@@ -165,12 +165,6 @@ const currentTable = computed(() =>
 	database.value?.tables?.find(
 		(tableItem) => tableItem.slug === tableSlug.value,
 	),
-);
-
-const tableTitle = computed(() =>
-	currentTable.value
-		? t(currentTable.value.label ?? currentTable.value.slug)
-		: "",
 );
 
 const methodMeta = {
