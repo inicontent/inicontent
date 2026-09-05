@@ -290,18 +290,23 @@ function renderItemButtons(row: Item) {
 
 							e.preventDefault();
 
-							// If a page component exists for this table's item route, bail out and let
-							try {
-								// Use project-root relative path so glob works in dev and production builds
-								const pages = Object.keys(import.meta.glob('/pages/admin/tables/**/[id]/index.vue'));
-								const slug = table.value?.slug;
-								if (slug && pages.some(p => p.includes(`/tables/${slug}/[id]/index.vue`)))
-									return navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
-									);
-							} catch (e) {
-								// ignore and continue with drawer behavior
-							}
+							// If a dedicated item-view page is registered for this table, navigate to it
+							// instead of opening the generic drawer. Routes are resolved from the live
+							// Vue Router instance (merged across all Nuxt layers) rather than a filesystem
+							// glob, since a glob scoped to this component's own file only sees pages inside
+							// this package and misses pages contributed by a consuming project/layer.
+							const slug = table.value?.slug;
+							const hasCustomViewPage =
+								!!slug &&
+								router
+									.getRoutes()
+									.some((r) => r.name === `admin-tables-${slug}-id`);
+
+							if (hasCustomViewPage)
+								return navigateTo(
+									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${slug}/${row.id}`,
+								);
+
 							openDrawer(table.value?.slug as string, row.id, {}, "view");
 						},
 						secondary: true,
