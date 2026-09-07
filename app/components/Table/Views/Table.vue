@@ -541,6 +541,7 @@ const textWidthCache = new Map<string, number>();
 let refreshVisualWidthsTask: Promise<void> | null = null;
 let tableWidthResizeObserver: ResizeObserver | null = null;
 let tableObserverStartTimer: ReturnType<typeof setTimeout> | null = null;
+let isWidthsUnmounted = false;
 
 function invalidateVisualWidthCache() {
 	visualWidthVersion.value += 1;
@@ -568,17 +569,27 @@ async function refreshVisualWidths() {
 	refreshVisualWidthsTask = (async () => {
 		invalidateVisualWidthCache();
 
+		// Bail out as soon as the component is unmounted. Continuing the
+		// async measurement loop after teardown mutates reactive `columns`
+		// and races NDataTable's own DOM patch (leaving Vue with a null
+		// parent). Detached-table safety is handled inside
+		// getVisualColumnWidths(), which bails on a table that is no longer
+		// connected.
+		if (isWidthsUnmounted) return;
+
 		// First load can render table internals lazily; retry for a few frames.
 		for (let attempt = 0; attempt < 8; attempt += 1) {
 			await nextTick();
 			await new Promise<void>((resolve) =>
 				requestAnimationFrame(() => resolve()),
 			);
+			if (isWidthsUnmounted) return;
 			const measured = applyVisualColumnWidths();
 			if (measured) break;
 		}
 
 		await nextTick();
+		if (isWidthsUnmounted) return;
 		updateTableWidthFromColumns();
 	})().finally(() => {
 		refreshVisualWidthsTask = null;
@@ -596,6 +607,8 @@ async function ensureVisualWidthsReady(maxAttempts = 8) {
 	for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
 		await refreshVisualWidths();
 
+		if (isWidthsUnmounted) return;
+
 		if (!_data.value?.result?.length || !columns.value?.length) return;
 
 		if (getVisualColumnWidths().length) {
@@ -605,6 +618,12 @@ async function ensureVisualWidthsReady(maxAttempts = 8) {
 
 		await new Promise<void>((resolve) => setTimeout(resolve, 80));
 	}
+}
+
+function isTableElementConnected(): boolean {
+	if (typeof document === "undefined") return false;
+	const tableElement = document.getElementById("DataTable");
+	return !!tableElement?.isConnected;
 }
 
 function stopTableWidthObservers() {
@@ -631,6 +650,7 @@ function startTableWidthObservers() {
 	}
 
 	tableWidthResizeObserver = new ResizeObserver(() => {
+		if (isWidthsUnmounted || !isTableElementConnected()) return;
 		void ensureVisualWidthsReady(3);
 	});
 	tableWidthResizeObserver.observe(tableElement);
@@ -685,7 +705,7 @@ function getVisualColumnWidths(): number[] {
 	if (typeof document === "undefined" || !resultRows?.length) return [];
 
 	const tableElement = document.getElementById("DataTable");
-	if (!tableElement) return [];
+	if (!tableElement || !tableElement.isConnected) return [];
 
 	const sizeKey = tablesConfig.value[table.value.slug]?.size ?? "default";
 	const columnSignature = (columns.value ?? [])
@@ -829,7 +849,13 @@ function applyVisualColumnWidths(): boolean {
 	const measuredWidths = getVisualColumnWidths();
 	if (!measuredWidths.length) return false;
 
-	columns.value = columns.value.map((column, index) => {
+	// Only reassign columns when at least one width actually changed.
+	// Unconditionally replacing `columns` (even with an identical array) makes
+	// NDataTable rebuild its columns/body every measurement pass. When that
+	// happens while the table is also re-rendering changed data on a page
+	// change, two DOM patches race and Vue can hit a null parent.
+	let changed = false;
+	const nextColumns = columns.value.map((column, index) => {
 		if (
 			column.type === "selection" ||
 			("key" in column && column.key === "actions")
@@ -845,11 +871,14 @@ function applyVisualColumnWidths(): boolean {
 
 		if (column.width === targetWidth) return column;
 
+		changed = true;
 		return {
 			...column,
 			width: targetWidth,
 		};
 	}) as DataTableColumns;
+
+	if (changed) columns.value = nextColumns;
 
 	return true;
 }
@@ -1225,6 +1254,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+	isWidthsUnmounted = true;
 	stopTableWidthObservers();
 });
 </script>

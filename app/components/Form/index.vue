@@ -74,7 +74,14 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 			(_item, index) =>
 				!customItemsIndex.includes(index) && _item.id === item.id,
 		);
-		if (!existingItem) continue;
+
+		// Fields that only exist in the updated schema (e.g. fields the server
+		// adds after a role change) have no counterpart to merge with — keep
+		// them as-is instead of dropping them from the rendered form.
+		if (!existingItem) {
+			mergedSchema.push(item);
+			continue;
+		}
 
 		if (
 			item.children &&
@@ -502,14 +509,14 @@ async function postTranslationsForNewItem(bodyContent: Item, newItemId: string) 
 				{
 					method: "POST",
 					body: {
-						original: value,
 						translation: value,
 						locale: Language.value,
-						table: table.value.slug,
-						field: field.key,
+						table: table.value.id,
+						field: field.id,
 						item: newItemId,
 					},
 					params: {
+						locale: Language.value,
 						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",

@@ -2,12 +2,6 @@
 	<NDrawer :show="show" @update:show="emit('update:show', $event)" :width="drawerWidth"
 		@update:width="drawerWidth = $event" resizable :placement="Language === 'ar' ? 'left' : 'right'">
 		<NDrawerContent :title="t('translateItem')" closable :native-scrollbar="false">
-			<template #header-extra>
-				<NTag v-if="item?.id" round size="small" :bordered="false" type="default">
-					{{ itemLabel }}
-				</NTag>
-			</template>
-
 			<template #footer>
 				<NFlex justify="end" style="width:100%">
 					<NButton round secondary type="primary" :loading="saving" :disabled="!hasChanges || saving"
@@ -285,6 +279,7 @@ async function fetchItemTranslations() {
 							item: props.item.id,
 						}),
 						options: Inison.stringify({ perPage: 500 }),
+						locale: Language.value,
 						[`${database.value.slug}_sid`]: sessionID.value,
 					},
 					credentials: "include",
@@ -341,7 +336,7 @@ async function saveTranslations() {
 	saving.value = true;
 
 	const baseUrl = `${config.public.apiBase}${database.value.slug}/translations`;
-	const sid = { [`${database.value.slug}_sid`]: sessionID.value };
+	const sidLang = { locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value };
 	const itemId = String(props.item.id);
 
 	// Group changes so we send as few requests as possible: every new
@@ -384,7 +379,7 @@ async function saveTranslations() {
 		const createOps = $fetch(baseUrl, {
 			method: "POST",
 			body: toCreate.length === 1 ? toCreate[0] : toCreate,
-			params: sid,
+			params: sidLang,
 			credentials: "include",
 		});
 		operations.push(
@@ -413,7 +408,7 @@ async function saveTranslations() {
 			operations.push(
 				$fetch(`${baseUrl}/${toDelete[0]}`, {
 					method: "DELETE",
-					params: sid,
+					params: sidLang,
 					credentials: "include",
 				}),
 			);
@@ -422,7 +417,7 @@ async function saveTranslations() {
 				$fetch(baseUrl, {
 					method: "DELETE",
 					body: toDelete,
-					params: sid,
+					params: sidLang,
 					credentials: "include",
 				}),
 			);
@@ -435,7 +430,7 @@ async function saveTranslations() {
 				$fetch(`${baseUrl}/${toUpdate[0].id}`, {
 					method: "PUT",
 					body: { translation: toUpdate[0].translation },
-					params: sid,
+					params: sidLang,
 					credentials: "include",
 				}),
 			);
@@ -444,7 +439,7 @@ async function saveTranslations() {
 				$fetch(baseUrl, {
 					method: "PUT",
 					body: toUpdate,
-					params: sid,
+					params: sidLang,
 					credentials: "include",
 				}),
 			);

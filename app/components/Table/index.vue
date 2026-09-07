@@ -511,17 +511,26 @@ async function jobNotification() {
 	const job = currentJob.value;
 	if (!job) return;
 
-	if (!notificationRef.value)
-		notificationRef.value = window.$notification.info({
+	if (!notificationRef.value) {
+		// NOTE: don't pass `onClose` here — with naive-ui 2.45 + Vue 3.5,
+		// mergeProps turns it into an array ([userOnClose, handleClose]),
+		// so the notification's close button throws
+		// "TypeError: props.onClose is not a function" when clicked.
+		// Use onAfterLeave instead (it isn't merged the same way).
+		const notification = window.$notification.info({
 			title: t(`an_${job}_job_is_running_in_background`),
 			duration: 0,
-			onClose() {
+			onAfterLeave: () => {
 				clearJobTimer();
-				notificationRef.value = undefined;
+				// Only clear the ref if it still points at the notification
+				// that actually left (e.g. don't clobber a newer notification).
+				if (notificationRef.value === notification)
+					notificationRef.value = undefined;
 			},
 			meta: () => h(NTime),
 		});
-	else
+		notificationRef.value = notification;
+	} else
 		notificationRef.value.title = t(
 			`an_${job}_job_is_running_in_background`,
 		);

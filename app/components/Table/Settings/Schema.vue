@@ -1,236 +1,271 @@
 <template>
 	<NCollapse style="margin-top: 15px;" :class="{ 'reorder-enabled': reorderEnabled }" accordion
 		:trigger-areas="['main', 'arrow']" v-model:expanded-names="expandedNames">
-		<VueDraggable v-model="schema" item-key="id" ghost-class="ghost" handle=".n-collapse-item__header"
-			:disabled="!reorderEnabled" :move="onMoveCallback">
-			<template v-for="(element, index) in schema">
-				<NCollapseItem :name="element.id" :id="`element-${element.id}`" class="element"
-					:class="{ 'field-selected': selectedFieldIds.has(element.id as string | number) }"
-					:disabled="isDisabled(element.key)"
-					:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'"
-					@click.capture="(e) => onFieldClick(e, element)">
-					<template #header-extra>
-						<NFlex>
-							<NButtonGroup>
-								<NDropdown
-									v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)"
-									:options="fieldTypeOptions" style="max-height: 200px;" scrollable
-									@select="(type) => pushToChildrenSchema(type, index)">
-									<NButton :disabled="!element.key" secondary round size="small"
-										@click="pushToChildrenSchema('string', index)">
-										<template #icon>
-											<NIcon>
-												<Icon name="tabler:plus" />
-											</NIcon>
-										</template>
-									</NButton>
-								</NDropdown>
-								<NDropdown :disabled="isDisabled(element.key)" :options="fieldTypeOptions"
-									style="max-height: 200px" trigger="click" scrollable
-									@select="(type) => schema[index] = changeFieldType(element, type)">
-									<NButton round strong secondary size="small" type="primary"
-										:disabled="isDisabled(element.key)">
-										<template #icon>
-											<component :is="getFieldCached(element).icon" />
-										</template>
-										<template v-if="!$device.isMobile" #default>
-											{{ getFieldCached(element).label }}
-										</template>
-									</NButton>
-								</NDropdown>
-							</NButtonGroup>
-
-							<NButtonGroup v-if="!isDisabled(element.key) && !$device.isMobile">
-								<NTooltip :delay="1500">
-									<template #trigger>
-										<NButton round secondary size="small"
-											:type="element.required ? 'error' : 'tertiary'"
-											@click="element.required = !element.required">
-											<template #icon>
-												<NIcon>
-													<Icon name="tabler:asterisk" />
-												</NIcon>
-											</template>
-										</NButton>
-									</template>
-									{{ t('required') }}
-								</NTooltip>
-								<NTooltip :delay="1500">
-									<template #trigger>
-										<NPopselect v-model:value="element.width" :options="widthOptions" size="small">
-											<NButton round strong secondary size="small" type="info">
-												<template #icon>
-													<NIcon>
-														<Icon name="tabler:arrow-autofit-width" />
-													</NIcon>
-												</template>
-												1/{{ element.width ?? 1 }}
-											</NButton>
-										</NPopselect>
-									</template>
-									{{ t('width') }}
-								</NTooltip>
-								<NButton round secondary size="small" type="error" @click="schema.splice(index, 1)">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:trash" />
-										</NIcon>
-									</template>
-								</NButton>
-							</NButtonGroup>
-							<NDropdown v-else-if="!isDisabled(element.key)" trigger="click"
-								:options="fieldActionOptions(element)"
-								@select="(action) => onFieldAction(action as string, element, index)">
-								<NButton round secondary size="small">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:dots-vertical" />
-										</NIcon>
-									</template>
-								</NButton>
-							</NDropdown>
-						</NFlex>
+		<NCollapseItem name="0" :id="`element-0`" disabled :title="t('id')" class="element" :style="slicedSchema.length > 0 ? 'padding-bottom: 16px;border-bottom: 1px solid var(--n-divider-color);margin-bottom: 16px;' : ''">
+			<template #header-extra>
+				<NButton round strong secondary size="small" type="primary" disabled>
+					<template #icon>
+						<Icon name="tabler:id" />
 					</template>
-
-					<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
-						<template #feedback>
-							{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }} ({{ element.id }})
-						</template>
-						<NInput :value="getDisplayKey(element)" @update:value="(v) => onKeyInput(element, v)" />
-					</NFormItem>
-
-					<NFormItem
-						v-if="element.table === 'assets' || !element.children || !isArrayOfObjects(element.children)"
-						:label="t('fieldDescription')">
-						<NInput v-model:value="element.description" />
-					</NFormItem>
-
-					<template v-if="element.table === 'assets'">
-						<NFormItem :label="t('allowedFiles')">
-							<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
-								v-model:value="element.accept" />
-						</NFormItem>
-						<NFormItem :label="t('urlSuffix')">
-							<NInput v-model:value="element.suffix" />
-							<template #feedback>
-								{{ t('ie') }}: <strong>/@2/customFolder</strong>
-							</template>
-						</NFormItem>
-						<NFormItem :label="t('optimizeAssets')" label-placement="left">
-							<NSwitch v-model:value="element.optimize" :default-value="true" style="margin-top: 4px;" />
-							<template #label>
-								{{ t('optimizeAssets') }}
-								<NTooltip>
-									<template #trigger>
-										<NIcon style="margin-left: 5px; vertical-align: middle;">
-											<Icon name="tabler:info-circle" />
-										</NIcon>
-									</template>
-									{{ t('optimizeAssetsDescription') }}
-								</NTooltip>
-							</template>
-						</NFormItem>
+					<template v-if="!$device.isMobile" #default>
+						{{ t('id') }}
 					</template>
-					<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
-						<NFormItem :label="t('options')" class="formItemFlex">
-							<template v-if="isArrayOfArrays(element.options)">
-								<NDataTable :columns="labelsColoringColumns(element)" :data="element.options" />
-								<NButton type="primary" secondary style="width:100%"
-									@click="(element.options as [string, string][]).push(['', ''])">
+				</NButton>
+			</template>
+		</NCollapseItem>
+		<VueDraggable v-model="slicedSchema" item-key="id" ghost-class="ghost" :disabled="!reorderEnabled">
+			<NCollapseItem v-for="(element, index) in slicedSchema" :name="element.id" :id="`element-${element.id}`" class="element"
+				:class="{ 'field-selected': selectedFieldIds.has(element.id as string | number)}"
+				:disabled="isDisabled(element.key)"
+				:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'"
+				@click.capture="(e) => onFieldClick(e, element)">
+				<template #header-extra>
+					<NFlex>
+						<NButtonGroup>
+							<NDropdown
+								v-if="['array', 'object'].includes(element.type as string) && isArrayOfObjects(element.children)"
+								:options="fieldTypeOptions" style="max-height: 200px;" scrollable
+								@select="(type) => pushToChildrenSchema(type, index)">
+								<NButton :disabled="!element.key" secondary round size="small"
+									@click="pushToChildrenSchema('string', index)">
 									<template #icon>
 										<NIcon>
 											<Icon name="tabler:plus" />
 										</NIcon>
 									</template>
-									{{ t('add') }}
 								</NButton>
-							</template>
-							<NSelect v-else
-								:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
-								@update:value="(value: string[]) => handleOptionsUpdate(element, value)" filterable
-								multiple tag :show-arrow="false" :show="false" />
-						</NFormItem>
-						<NFormItem :label="t('labelsColoring')" label-placement="left">
-							<NSwitch :value="isArrayOfArrays(element.options)"
-								@update:value="(value) => toggleLabelsColoring(element, value)" />
-						</NFormItem>
-						<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
-							label-placement="left">
-							<NSwitch v-model:value="element.custom" />
-						</NFormItem>
-					</template>
-					<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
-						<NFormItem :label="t('expandByDefault')" label-placement="left">
-							<NSwitch v-model:value="element.expand" />
-						</NFormItem>
-					</template>
-					<template v-else-if="Array.isArray(element.type) && !element.subType">
-						<NFormItem :label="t('valuesType')">
-							<NSelect v-model:value="element.type" filterable multiple :min="1"
-								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
-						</NFormItem>
-					</template>
-					<template v-else-if="element.subType === 'tags'">
-						<NFormItem :label="t('valuesType')">
-							<NSelect v-model:value="(element.children as any)" filterable multiple
-								:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
-						</NFormItem>
-					</template>
-					<template
-						v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
-						<NFormItem :label="t('tableName')">
-							<NSelect filterable v-model:value="element.table" :options="tableSelectOptions" />
-						</NFormItem>
-						<NFormItem :label="t('extendWhere')">
-							<NInput v-model:value="(element.where as string)" />
-							<template #feedback>
-								{{ t('useInison') }} / {{ t('ie') }}:
-								{<strong>subCategory</strong>:<strong>null</strong>}
-							</template>
-						</NFormItem>
-					</template>
+							</NDropdown>
+							<NDropdown :disabled="isDisabled(element.key)" :options="fieldTypeOptions"
+								style="max-height: 200px" trigger="click" scrollable
+								@select="(type) => slicedSchema[index] = changeFieldType(element, type)">
+								<NButton round strong secondary size="small" type="primary"
+									:disabled="isDisabled(element.key)">
+									<template #icon>
+										<component :is="getFieldCached(element).icon" />
+									</template>
+									<template v-if="!$device.isMobile" #default>
+										{{ getFieldCached(element).label }}
+									</template>
+								</NButton>
+							</NDropdown>
+						</NButtonGroup>
 
-					<template v-if="!Array.isArray(element.type) && element.type === 'array'">
-						<NGrid :x-gap="12" :y-gap="12" cols="1 500:2">
-							<NGridItem>
-								<NFormItem :label="t('minimumItems')">
-									<NInputNumber :value="element.min"
-										@update:value="(value) => { if (value) element.min = value; else delete element.min }" />
-								</NFormItem>
-							</NGridItem>
-							<NGridItem>
-								<NFormItem :label="t('maximumItems')">
-									<NInputNumber :value="element.max"
-										@update:value="(value) => { if (value) element.max = value; else delete element.max }" />
-								</NFormItem>
-							</NGridItem>
-						</NGrid>
-					</template>
+						<NButtonGroup v-if="!isDisabled(element.key) && !$device.isMobile">
+							<NTooltip :delay="1500">
+								<template #trigger>
+									<NButton round secondary size="small"
+										:type="element.required ? 'error' : 'tertiary'"
+										@click="element.required = !element.required">
+										<template #icon>
+											<NIcon>
+												<Icon name="tabler:asterisk" />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ t('required') }}
+							</NTooltip>
+							<NTooltip :delay="1500">
+								<template #trigger>
+									<NPopselect v-model:value="element.width" :options="widthOptions" size="small">
+										<NButton round strong secondary size="small" type="info">
+											<template #icon>
+												<NIcon>
+													<Icon name="tabler:arrow-autofit-width" />
+												</NIcon>
+											</template>
+											1/{{ element.width ?? 1 }}
+										</NButton>
+									</NPopselect>
+								</template>
+								{{ t('width') }}
+							</NTooltip>
+							<NButton round secondary size="small" type="error" @click="slicedSchema.splice(index, 1)">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:trash" />
+									</NIcon>
+								</template>
+							</NButton>
+						</NButtonGroup>
+						<NDropdown v-else-if="!isDisabled(element.key)" trigger="click"
+							:options="fieldActionOptions(element)"
+							@select="(action) => onFieldAction(action as string, element, index)">
+							<NButton round secondary size="small">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:dots-vertical" />
+									</NIcon>
+								</template>
+							</NButton>
+						</NDropdown>
+					</NFlex>
+				</template>
 
-					<NFormItem :label="t('unique')" label-placement="left"
-						v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
-						<NSwitch :value="element.unique ? true : false"
-							@update:value="(value) => element.unique = value" :checked-value="true"
-							:unchecked-value="false" />
+				<NFormItem :label="t('fieldName')" style="margin-bottom:20px">
+					<template #feedback>
+						{{ `#${getPath(table.schema ?? [], element.id, true) ?? '--'}` }} ({{ element.id }})
+					</template>
+					<NInput :value="getDisplayKey(element)" @update:value="(v) => onKeyInput(element, v)" />
+				</NFormItem>
+
+				<NFormItem
+					v-if="element.table === 'assets' || !element.children || !isArrayOfObjects(element.children)"
+					:label="t('fieldDescription')">
+					<NInput v-model:value="element.description" />
+				</NFormItem>
+
+				<template v-if="element.table === 'assets'">
+					<NFormItem :label="t('allowedFiles')">
+						<NSelect multiple :render-label="selectRenderLabelWithIcon" :options="fileTypeSelectOptions"
+							v-model:value="element.accept" />
 					</NFormItem>
-					<NFormItem v-if="element.unique" :label="t('uniqueGroup')">
-						<NSelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
-							@update:value="(value) => element.unique = value" :options="uniqueGroupOptions" tag
-							filterable clearable />
+					<NFormItem :label="t('urlSuffix')">
+						<NInput v-model:value="element.suffix" />
+						<template #feedback>
+							{{ t('ie') }}: <strong>/@2/customFolder</strong>
+						</template>
 					</NFormItem>
-
-					<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
-						:label="t('regex')">
-						<NInput v-model:value="element.regex" />
+					<NFormItem :label="t('optimizeAssets')" label-placement="left">
+						<NSwitch v-model:value="element.optimize" :default-value="true" style="margin-top: 4px;" />
+						<template #label>
+							{{ t('optimizeAssets') }}
+							<NTooltip>
+								<template #trigger>
+									<NIcon style="margin-left: 5px; vertical-align: middle;">
+										<Icon name="tabler:info-circle" />
+									</NIcon>
+								</template>
+								{{ t('optimizeAssetsDescription') }}
+							</NTooltip>
+						</template>
 					</NFormItem>
+				</template>
+				<template v-else-if="element.subType && ['select', 'radio', 'checkbox'].includes(element.subType)">
+					<NFormItem :label="t('options')" class="formItemFlex">
+						<template v-if="isArrayOfArrays(element.options)">
+							<NDataTable :columns="labelsColoringColumns(element)" :data="element.options" />
+							<NButton type="primary" secondary style="width:100%"
+								@click="(element.options as [string, string][]).push(['', ''])">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:plus" />
+									</NIcon>
+								</template>
+								{{ t('add') }}
+							</NButton>
+						</template>
+						<NSelect v-else
+							:value="element.options ? (element.options.every(option => typeof option !== 'object') ? element.options : element.options.map(({ value }: any) => value)) : []"
+							@update:value="(value: string[]) => handleOptionsUpdate(element, value)" filterable
+							multiple tag :show-arrow="false" :show="false" />
+					</NFormItem>
+					<NFormItem :label="t('labelsColoring')" label-placement="left">
+						<NSwitch :value="isArrayOfArrays(element.options)"
+							@update:value="(value) => toggleLabelsColoring(element, value)" />
+					</NFormItem>
+					<NFormItem v-if="element.subType === 'select'" :label="t('allowCustomValues')"
+						label-placement="left">
+						<NSwitch v-model:value="element.custom" />
+					</NFormItem>
+				</template>
+				<template v-else-if="!Array.isArray(element.type) && element.type === 'object'">
+					<NFormItem :label="t('expandByDefault')" label-placement="left">
+						<NSwitch v-model:value="element.expand" />
+					</NFormItem>
+				</template>
+				<template v-else-if="Array.isArray(element.type) && !element.subType">
+					<NFormItem :label="t('valuesType')">
+						<NSelect v-model:value="element.type" filterable multiple :min="1"
+							:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
+					</NFormItem>
+				</template>
+				<template v-else-if="element.subType === 'tags'">
+					<NFormItem :label="t('valuesType')">
+						<NSelect v-model:value="(element.children as any)" filterable multiple
+							:render-label="selectRenderLabelWithIcon" :options="valuesTypeSelectOptions" />
+					</NFormItem>
+				</template>
+				<template
+					v-else-if="!Array.isArray(element.type) && ((element.type === 'array' && element.children === 'table') || element.type === 'table')">
+					<NFormItem :label="t('tableName')">
+						<NSelect filterable v-model:value="element.table" :options="tableSelectOptions" />
+					</NFormItem>
+					<NFormItem :label="t('extendWhere')">
+						<NInput v-model:value="(element.where as string)" />
+						<template #feedback>
+							{{ t('useInison') }} / {{ t('ie') }}:
+							{<strong>subCategory</strong>:<strong>null</strong>}
+						</template>
+					</NFormItem>
+				</template>
 
-					<LazyTableSettingsSchema
-						v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
-						v-model="element.children" v-model:expanded-names="expandedChildNames"
-						:reorder-enabled="reorderEnabled" />
-				</NCollapseItem>
-			</template>
+				<template v-if="!Array.isArray(element.type) && element.type === 'array'">
+					<NGrid :x-gap="12" :y-gap="12" cols="1 500:2">
+						<NGridItem>
+							<NFormItem :label="t('minimumItems')">
+								<NInputNumber :value="element.min"
+									@update:value="(value) => { if (value) element.min = value; else delete element.min }" />
+							</NFormItem>
+						</NGridItem>
+						<NGridItem>
+							<NFormItem :label="t('maximumItems')">
+								<NInputNumber :value="element.max"
+									@update:value="(value) => { if (value) element.max = value; else delete element.max }" />
+							</NFormItem>
+						</NGridItem>
+					</NGrid>
+				</template>
+
+				<NFormItem :label="t('unique')" label-placement="left"
+					v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
+					<NSwitch :value="element.unique ? true : false"
+						@update:value="(value) => element.unique = value" :checked-value="true"
+						:unchecked-value="false" />
+				</NFormItem>
+				<NFormItem v-if="element.unique" :label="t('uniqueGroup')">
+					<NSelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
+						@update:value="(value) => element.unique = value" :options="uniqueGroupOptions" tag
+						filterable clearable />
+				</NFormItem>
+
+				<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+					:label="t('regex')">
+					<NInput v-model:value="element.regex" />
+				</NFormItem>
+
+				<LazyTableSettingsSchema
+					v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
+					v-model="element.children" v-model:expanded-names="expandedChildNames"
+					:reorder-enabled="reorderEnabled" />
+			</NCollapseItem>
 		</VueDraggable>
+
+		<NCollapseItem name="-1" :id="`element--1`" disabled :title="t('createdAt')">
+			<template #header-extra>
+				<NButton round strong secondary size="small" type="primary" disabled>
+					<template #icon>
+						<Icon name="tabler:calendar" />
+					</template>
+					<template v-if="!$device.isMobile" #default>
+						{{ t('createdAt') }}
+					</template>
+				</NButton>
+			</template>
+		</NCollapseItem>
+
+		<NCollapseItem name="-2" :id="`element--2`" disabled :title="t('updatedAt')">
+			<template #header-extra>
+				<NButton round strong secondary size="small" type="primary" disabled>
+					<template #icon>
+						<Icon name="tabler:calendar" />
+					</template>
+					<template v-if="!$device.isMobile" #default>
+						{{ t('updatedAt') }}
+					</template>
+				</NButton>
+			</template>
+		</NCollapseItem>
 	</NCollapse>
 </template>
 
@@ -393,18 +428,6 @@ async function copySelectedFields(cut = false) {
 	selectedFieldIds.value = new Set();
 }
 
-function onMoveCallback(evt: {
-	draggedContext: { index: number; futureIndex: number };
-}) {
-	const disabledIndexes = schema.value
-		.map(({ id }, index) => ([0, -1, -2].includes(id as number) ? index : -3))
-		.filter((index) => index !== -3);
-	return (
-		!disabledIndexes.includes(evt.draggedContext.index) &&
-		!disabledIndexes.includes(evt.draggedContext.futureIndex)
-	);
-}
-
 function isDisabled(key?: string) {
 	if (!key) return false;
 	return disabledKeysSet.value.has(key);
@@ -461,6 +484,14 @@ async function pushToChildrenSchema(type: string, index: number) {
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
 });
+const slicedSchema = ref(schema.value.slice(1, -2));
+watch(() => slicedSchema.value, (newVal) => {
+	schema.value = [schema.value[0] as Field, ...newVal, schema.value.at(-2)!, schema.value.at(-1)!];
+}, { deep: true });
+watch(() => schema.value, (newVal) => {
+	if(newVal.length - 3 !== slicedSchema.value.length)
+		slicedSchema.value = newVal.slice(1, -2);
+}, { deep: true });
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
@@ -468,6 +499,7 @@ function changeFieldType(
 	{ id, key, required, children, width }: any,
 	newType: string,
 ): any {
+	console.log(newType)
 	switch (newType) {
 		case "object":
 		case "array":
@@ -477,6 +509,14 @@ function changeFieldType(
 				type: newType,
 				required,
 				children: Array.isArray(children) ? children : [],
+			};
+		case "multiple":
+			return {
+				id,
+				key,
+				type: ["string","number"],
+				width,
+				required,
 			};
 		default:
 			return {

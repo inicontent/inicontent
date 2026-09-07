@@ -57,6 +57,11 @@ export default function fieldsList(): fieldListOptionType[] {
 					icon: renderIcon("palette"),
 				},
 				{
+					label: t("fields.icon"),
+					key: "icon",
+					icon: renderIcon("icons"),
+				},
+				{
 					label: t("fields.role"),
 					key: "role",
 					icon: renderIcon("shield-lock"),

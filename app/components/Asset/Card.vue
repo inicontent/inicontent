@@ -12,8 +12,8 @@
 				<span style="color: #18a058; font-size: 16px; font-weight: 500;">{{ t("dropFilesHere") }}</span>
 			</div>
 		</Transition>
-		<NCard :header-style="{ paddingRight: 0, paddingLeft: 0 }" embedded
-		 id="assetsContainer" style="height: fit-content;background-color: transparent;" content-style="padding: 0" :bordered="false">
+		<NCard :header-style="isAssetRoute ? { paddingRight: 0, paddingLeft: 0 } : undefined" embedded
+		 id="assetsContainer" style="height: fit-content;background-color: transparent;" :content-style="isAssetRoute ? 'padding: 0' : undefined" :bordered="false">
 			<template #header>
 				<span v-if="isAssetRoute">{{ t("assets") }}</span>
 				<NBreadcrumb v-else>
@@ -295,7 +295,7 @@ const notifyPdfSize = (size: number) => {
 
 const route = useRoute();
 const router = useRouter();
-const isAssetRoute = !!(route.params.path || route.params.path === "");
+const isAssetRoute = route.path.includes("/tables/assets");
 
 const table = useState<Table>("table");
 const currentItem = useState<Item>("currentItem");
@@ -668,18 +668,18 @@ const syncPaginationPageSize = () => {
 
 const pagination = reactive({
 	page:
-		isAssetRoute && !targetID && route.query.page
+		isAssetRoute && route.query.page
 			? Number(route.query.page)
 			: 1,
 	pageCount: 1,
 	pageSize:
-		isAssetRoute && !targetID && route.query.perPage
+		isAssetRoute && route.query.perPage
 			? Number(route.query.perPage)
 			: getResponsivePageSize(),
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
-		if (!isAssetRoute || targetID) return;
+		if (!isAssetRoute) return;
 		let { page, ...Query }: any = route.query;
 		Query = {
 			...Query,
@@ -690,7 +690,7 @@ const pagination = reactive({
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = toRaw(pagination.pageSize);
 		pagination.pageSize = pageSize;
-		if (!isAssetRoute || targetID) return;
+		if (!isAssetRoute) return;
 		let { perPage, page, ...Query }: any = route.query;
 		const defaultPageSize = Number(
 			route.query.perPage ?? getResponsivePageSize(),
@@ -728,7 +728,7 @@ async function onUpdatePage(currentPage: number) {
 	pagination.page = currentPage;
 	let Query = route.query;
 	if (currentPage !== 1) Query = { ...Query, page: currentPage as any };
-	if (isAssetRoute && !targetID)
+	if (isAssetRoute)
 		router.push({ query: (({ page, ...rest }) => rest)(Query) });
 	return refresh();
 }
@@ -749,7 +749,7 @@ async function onUpdatePageSize(currentPageSize: number) {
 			page: pagination.page,
 		};
 	}
-	if (isAssetRoute && !targetID)
+	if (isAssetRoute)
 		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
 	return refresh();
 }
