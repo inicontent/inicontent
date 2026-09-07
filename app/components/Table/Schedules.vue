@@ -567,11 +567,10 @@ async function runAllActiveSchedules() {
 			}
 		}
 
-		if (errors === 0) {
+		if (errors === 0)
 			window.$message.success(t("allActiveSchedulesRan"))
-		} else {
+		else
 			window.$message.warning(t("someSchedulesFailed", { count: errors }))
-		}
 
 		await loadSchedules()
 	} catch (error: unknown) {

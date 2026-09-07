@@ -39,7 +39,7 @@
 		"echarts": "^6.0.0",
 		"html2canvas": "^1.4.1",
 		"idb": "^8.0.3",
-		"inibase": "^1.5.7",
+		"inibase": "latest",
 		"inidot": "latest",
 		"inison": "^2.0.1",
 		"jspdf": "^4.2.1",
