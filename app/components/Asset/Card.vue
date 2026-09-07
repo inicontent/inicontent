@@ -596,6 +596,11 @@ const searchArray = ref<searchType>(
 		: { and: [[null, "=", null]] },
 );
 
+watch(Language, () => {
+	searchString.value = "";
+	searchArray.value = { and: [[null, "=", null]] };
+});
+
 watch(searchString, (v) => {
 	const { search, page, ...Query }: any = route.query;
 

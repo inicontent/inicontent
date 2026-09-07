@@ -182,11 +182,11 @@ onBeforeRouteLeave(() => {
 	Drawers.value = [];
 });
 
-onBeforeRouteUpdate((_to, _from, next) => {
+onBeforeRouteUpdate((_to, _from) => {
 	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show);
 	if (openDrawerIndex !== -1) {
 		onUpdateShow(openDrawerIndex, false);
-		next(false); // Prevent navigation until all drawers are closed
-	} else next(); // Allow navigation without altering the query in the URL
+		return false; // Prevent navigation until all drawers are closed
+	} else return; // Allow navigation without altering the query in the URL
 });
 </script>

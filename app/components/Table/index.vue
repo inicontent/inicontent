@@ -6,7 +6,7 @@
 			</template>
 		</LazyFormDrawer>
 		<LazyTableTranslateDrawer
-			v-if="database.secondaryLanguages?.length"
+			v-if="database?.secondaryLanguages?.length"
 			v-model:show="translateDrawerShow"
 			:item="translateDrawerItem"
 		/>
@@ -192,6 +192,11 @@ const Language = useLanguageCookie();
 const sessionID = useSessionCookie();
 const importFileInputRef = ref<HTMLInputElement>();
 const importUploadProgress = ref(0);
+
+watch(Language, () => {
+	searchString.value = "";
+	searchArray.value = { and: [[null, "=", null]] };
+});
 
 async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;
