@@ -40,6 +40,7 @@ export default defineNuxtConfig({
 			name: "Inicontent",
 			short_name: "inic",
 			theme_color: "#ff9800",
+			display: "standalone",
 			icons: [
 				{
 					src: "/pwa-192x192.png",
@@ -64,6 +65,71 @@ export default defineNuxtConfig({
 					sizes: "512x512",
 					type: "image/png",
 					purpose: "maskable",
+				},
+			],
+		},
+		registerType: "prompt",
+		workbox: {
+			navigateFallback: "/",
+			runtimeCaching: [
+				{
+					// Database metadata, dashboard definitions and other
+					// rarely-changing configuration. Serve from cache instantly,
+					// revalidate in the background.
+					urlPattern: ({ url, request }) =>
+						url.hostname.endsWith("inicontent.com") &&
+						request.method === "GET" &&
+						/\/databases\/|\/translations$|\/schema$/i.test(url.pathname),
+					handler: "StaleWhileRevalidate",
+					options: {
+						cacheName: "inicontent-config-cache",
+						expiration: {
+							maxEntries: 200,
+							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+						},
+						cacheableResponse: {
+							statuses: [0, 200],
+						},
+					},
+				},
+				{
+					// All other API reads (table data, items, searches). Try the
+					// network first, fall back to cache when offline.
+					urlPattern: ({ url, request }) =>
+						url.hostname.endsWith("inicontent.com") &&
+						request.method === "GET",
+					handler: "NetworkFirst",
+					options: {
+						cacheName: "inicontent-api-cache",
+						networkTimeoutSeconds: 3,
+						expiration: {
+							maxEntries: 500,
+							maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+						},
+						cacheableResponse: {
+							statuses: [0, 200],
+						},
+					},
+				},
+				{
+					// Runtime-cache static assets (in case a build asset isn't
+					// precached). Cache-first, so they load fast offline.
+					urlPattern: ({ request }) =>
+						request.destination === "style" ||
+						request.destination === "script" ||
+						request.destination === "font" ||
+						request.destination === "image",
+					handler: "CacheFirst",
+					options: {
+						cacheName: "inicontent-static-cache",
+						expiration: {
+							maxEntries: 500,
+							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+						},
+						cacheableResponse: {
+							statuses: [0, 200],
+						},
+					},
 				},
 			],
 		},

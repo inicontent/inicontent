@@ -60,14 +60,8 @@
 									</NText>
 								</NCard>
 
-								<!-- Translation input -->
-								<NInput v-if="isArrayField(field) || isTextareaField(field)"
-									v-model:value="draft[locale][field.id]" type="textarea"
-									:placeholder="t('translationPlaceholder')" :autosize="{ minRows: 2, maxRows: 8 }"
-									clearable @input="markChanged(locale, field.id)" />
-								<NInput v-else v-model:value="draft[locale][field.id]" type="text"
-									:placeholder="t('translationPlaceholder')" clearable
-									@input="markChanged(locale, field.id)" />
+								<!-- Translation input (rendered by field type) -->
+								<LazyField :field="field" v-model="draft[locale][field.id]" />
 							</div>
 						</NFlex>
 					</NTabPane>
@@ -80,15 +74,20 @@
 <script setup lang="ts">
 import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
+import {
+	isArrayLikeField,
+	isEmptyTranslationValue,
+	isTranslatableField,
+	normalizeTranslationValue,
+	parseTranslationValue,
+} from "~/composables/translationValue";
 
 const props = defineProps<{
 	show: boolean;
 	item: Item | null;
 }>();
 
-const emit = defineEmits<{
-	(e: "update:show", v: boolean): void;
-}>();
+const emit = defineEmits<(e: "update:show", v: boolean) => void>();
 
 const config = useRuntimeConfig();
 const Language = useLanguageCookie();
@@ -109,60 +108,12 @@ const secondaryLanguages = computed(
 
 const activeLocale = ref<LanguagesType>(secondaryLanguages.value[0]);
 
-const translatableTypes = new Set(["string", "text", "textarea", "html"]);
-
-const notTranslatable = new Set([
-	"password",
-	"email",
-	"color",
-	"icon",
-	"link",
-	"role",
-]);
-
-// additional field types we also want to translate as a single unit
-const extraTranslatable = new Set([
-	"url",
-	"table",
-	"asset",
-	"array-table",
-	"array-asset",
-]);
-
-function isArrayField(field: Field): boolean {
-	const type = Array.isArray(field.type) ? field.type[0] : field.type;
-	return (
-		field.isArray === true ||
-		type === "array" ||
-		(type === "multiple" && field.subType !== "select")
-	);
-}
-
 const translatableFields = computed(() => {
 	if (!table.value?.schema) return [];
-	return flattenSchema(table.value.schema, true).filter((field) => {
-		// skip nested children of array-of-objects (handled as a single unit)
-		if (field.key.includes(".")) return false;
-		const type = Array.isArray(field.type) ? field.type[0] : field.type;
-		const subType = field.subType;
-		const resolved = (subType ?? type) as string;
-		if (notTranslatable.has(resolved)) return false;
-		if (field.key === "id") return false;
-
-		// scalar string-like fields and extra types
-		if (translatableTypes.has(resolved)) return true;
-		if (extraTranslatable.has(resolved)) return true;
-
-		// array of primitives / values (tags, multiple select, checkbox)
-		if (isArrayField(field)) return true;
-
-		return false;
-	});
+	return flattenSchema(table.value.schema, true).filter(
+		(field) => !field.key.includes(".") && isTranslatableField(field),
+	);
 });
-
-function isTextareaField(field: Field): boolean {
-	return field.subType === "textarea" || field.type === "textarea";
-}
 
 function getItemValue(fieldKey: string): unknown {
 	const isMainLanguage = Language.value === database.value?.primaryLanguage;
@@ -192,13 +143,17 @@ const itemLabel = computed(() =>
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-// draft[locale][fieldKey] = current input value
-const draft = ref<Record<string, Record<string, string>>>({});
+// draft[locale][fieldId] = current typed input value (string, item, array, …)
+const draft = ref<Record<string, Record<string | number, unknown>>>({});
 
-// existingMap[locale][fieldKey] = existing translation record id
+// baseline[locale][fieldId] = the loaded value before the user edited it, used
+// to detect changes (covers in-place array mutations from repeater/tag fields).
+const baseline = ref<Record<string, Record<string | number, unknown>>>({});
+
+// existingMap[locale][fieldId] = existing translation record id
 const existingMap = ref<Record<string, Record<string, string>>>({});
 
-// changedKeys[locale][fieldKey] = true when user edited
+// changedKeys[locale][fieldId] = true when the user edited the value
 const changedKeys = ref<Record<string, Record<string, boolean>>>({});
 
 const loading = ref(false);
@@ -209,7 +164,7 @@ const originalSaving = ref(false);
 const editingOriginal = ref<Record<string, boolean>>({});
 
 // originalDraft[fieldKey] = in-progress edit of original value
-const originalDraft = ref<Record<string, string>>({});
+const originalDraft = ref<Record<string, unknown>>({});
 
 // original item data in the primary language, fetched only when the current
 // language is not the primary language
@@ -221,24 +176,40 @@ const hasChanges = computed(() =>
 	),
 );
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Change tracking ───────────────────────────────────────────────────────────
 
-function getTranslationEntry(locale: string, fieldKey: string) {
-	return {
-		value: draft.value[locale]?.[fieldKey] ?? "",
-		existingId: existingMap.value[locale]?.[fieldKey],
-	};
+function snapshotValues(
+	source: Record<string, Record<string | number, unknown>>,
+): Record<string, Record<string | number, unknown>> {
+	return JSON.parse(JSON.stringify(source)) as typeof draft.value;
 }
 
-function markChanged(locale: string, fieldKey: string) {
-	if (!changedKeys.value[locale]) changedKeys.value[locale] = {};
-	changedKeys.value[locale][fieldKey] = true;
+function updateChangedFlags() {
+	for (const lang of secondaryLanguages.value) {
+		if (!changedKeys.value[lang]) changedKeys.value[lang] = {};
+		for (const field of translatableFields.value) {
+			changedKeys.value[lang][field.id] =
+				JSON.stringify(draft.value[lang]?.[field.id]) !==
+				JSON.stringify(baseline.value[lang]?.[field.id]);
+		}
+	}
+}
+
+watch(draft, updateChangedFlags, { deep: true });
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getTranslationEntry(locale: string, fieldId: string | number) {
+	return {
+		value: draft.value[locale]?.[fieldId] ?? "",
+		existingId: existingMap.value[locale]?.[String(fieldId)],
+	};
 }
 
 function toggleEditOriginal(field: Field) {
 	const fieldKey = field.key;
 	if (!editingOriginal.value[fieldKey]) {
-		originalDraft.value[fieldKey] = displayOriginal(fieldKey);
+		originalDraft.value[fieldKey] = deepClone(getItemValue(fieldKey));
 		editingOriginal.value[fieldKey] = true;
 	} else {
 		editingOriginal.value[fieldKey] = false;
@@ -248,16 +219,17 @@ function toggleEditOriginal(field: Field) {
 function initDraft() {
 	const langs = secondaryLanguages.value;
 	const fields = translatableFields.value;
-	const newDraft: Record<string, Record<string, string>> = {};
+	const newDraft: Record<string, Record<string | number, unknown>> = {};
 	const newChanged: Record<string, Record<string, boolean>> = {};
 	for (const lang of langs) {
 		newDraft[lang] = {};
 		newChanged[lang] = {};
 		for (const field of fields) {
-			newDraft[lang][String(field.id)] = "";
+			newDraft[lang][field.id] = isArrayLikeField(field) ? [] : "";
 		}
 	}
 	draft.value = newDraft;
+	baseline.value = snapshotValues(newDraft);
 	changedKeys.value = newChanged;
 	existingMap.value = {};
 	editingOriginal.value = {};
@@ -287,17 +259,29 @@ async function fetchItemTranslations() {
 			)
 		).result;
 
+		const fieldById = new Map(
+			translatableFields.value.map((field) => [String(field.id), field]),
+		);
+
 		if (result)
 			for (const record of result) {
 				const fieldId: string = record.field;
 				if (!record.locale || !fieldId) continue;
+				const field = fieldById.get(fieldId);
+				if (!field) continue;
 				if (!existingMap.value[record.locale])
 					existingMap.value[record.locale] = {};
 				existingMap.value[record.locale][fieldId] = String(record.id);
 				if (!draft.value[record.locale]) draft.value[record.locale] = {};
-				draft.value[record.locale][fieldId] =
-					record.translation ?? record.translated ?? "";
+				draft.value[record.locale][fieldId] = parseTranslationValue(
+					field,
+					record.translation ?? record.translated ?? "",
+				);
 			}
+
+		// Snapshot the loaded state so change detection has a baseline.
+		baseline.value = snapshotValues(draft.value);
+		updateChangedFlags();
 	} catch (e) {
 		console.error("[TranslateDrawer] fetch item translations error", e);
 	}
@@ -336,7 +320,10 @@ async function saveTranslations() {
 	saving.value = true;
 
 	const baseUrl = `${config.public.apiBase}${database.value.slug}/translations`;
-	const sidLang = { locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value };
+	const sidLang = {
+		locale: Language.value,
+		[`${database.value.slug}_sid`]: sessionID.value,
+	};
 	const itemId = String(props.item.id);
 
 	// Group changes so we send as few requests as possible: every new
@@ -352,15 +339,17 @@ async function saveTranslations() {
 			const fieldId = String(field.id);
 			if (!changedKeys.value[locale]?.[fieldId]) continue;
 
-			const translationValue = draft.value[locale]?.[fieldId] ?? "";
+			const rawValue = draft.value[locale]?.[field.id];
+			const translationValue = normalizeTranslationValue(field, rawValue);
+			const empty = isEmptyTranslationValue(rawValue);
 			const existingId = existingMap.value[locale]?.[fieldId];
 
 			// Clearing an existing translation removes its record entirely.
-			if (existingId && !translationValue.trim()) {
+			if (existingId && empty) {
 				toDelete.push(existingId);
 			} else if (existingId) {
 				toUpdate.push({ id: existingId, translation: translationValue });
-			} else if (translationValue.trim()) {
+			} else if (!empty) {
 				toCreate.push({
 					translation: translationValue,
 					locale,
@@ -450,6 +439,7 @@ async function saveTranslations() {
 		await Promise.allSettled(operations);
 		window.$message.success(t("translationsSaved"));
 		changedKeys.value = {};
+		baseline.value = snapshotValues(draft.value);
 	} catch (e: any) {
 		window.$message.error(e?.message ?? t("error"));
 	} finally {
@@ -461,19 +451,26 @@ async function saveTranslations() {
 
 async function saveOriginal(field: Field) {
 	const fieldKey = field.key;
-	const newOriginal = originalDraft.value[fieldKey]?.trim() ?? "";
-	const oldOriginal = displayOriginal(fieldKey);
+	const newOriginal = originalDraft.value[fieldKey];
+	const oldOriginal = getItemValue(fieldKey);
 	editingOriginal.value[fieldKey] = false;
 
-	if (newOriginal === oldOriginal) return;
-	if (!props.item?.id) return;
+	if (
+		JSON.stringify(newOriginal ?? null) ===
+			JSON.stringify(oldOriginal ?? null) ||
+		!props.item?.id
+	)
+		return;
+
+	const bodyValue: unknown =
+		newOriginal === undefined || newOriginal === null ? "" : newOriginal;
 
 	// Update the local item so subsequent display reflects the change; when the
 	// current language is not the primary one, update the fetched
 	// main-language item instead
 	if (mainLanguageItem.value)
-		(mainLanguageItem.value as any)[fieldKey] = newOriginal;
-	else if (props.item) (props.item as any)[fieldKey] = newOriginal;
+		(mainLanguageItem.value as any)[fieldKey] = bodyValue;
+	else if (props.item) (props.item as any)[fieldKey] = bodyValue;
 
 	// Update the source item's field value to stay in sync
 	originalSaving.value = true;
@@ -482,7 +479,7 @@ async function saveOriginal(field: Field) {
 			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${props.item.id}`,
 			{
 				method: "PUT",
-				body: { [fieldKey]: newOriginal },
+				body: { [fieldKey]: bodyValue },
 				params: {
 					locale: database.value?.primaryLanguage,
 					[`${database.value.slug}_sid`]: sessionID.value,

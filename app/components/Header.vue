@@ -30,56 +30,57 @@
             </NBreadcrumb>
         </template>
         <template #extra>
-            <NButtonGroup>
-                <NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
-                    <template #trigger>
-                        <NButton round size="small">{{ humanFileSize(
-                            database?.tables
-                                ?.map(({ size }) => size)
-                                .reduce((total, num) => {
-                                    return (total ?? 0) + (num ?? 0);
-                                }, 0),
-                        ) }}</NButton>
-                    </template>
-                    <NFlex vertical>
-                        <NTag v-for="table in database.tables" round
-                            style="width:fit-content;padding-inline-start: 0; margin: auto;" :bordered="false">
-                            <NTag style="width:fit-content;margin-inline-end: 8px;" :bordered="false" type="primary"
-                                round strong>
-                                <template #avatar>
-                                    <LazyTableIcon :table="table" />
-                                </template>
-                                {{ t(table.slug) }}
-                            </NTag>
-                            {{ humanFileSize(table?.size) }}
-                        </NTag>
-                    </NFlex>
-                </NPopover>
-                <NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-                    <NButton round size="small">
-                        <template #icon>
-                            <NIcon>
-                                <Icon name="tabler:user" />
-                            </NIcon>
-                        </template>
-                        <template v-if="user">
-                            <NText strong>{{ user.username.charAt(0).toUpperCase() +
-                                user.username.slice(1) }}</NText>
-                        </template>
-                    </NButton>
-                </NDropdown>
-                <NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
-                    @select="(v) => Language = v">
-                    <NButton round size="small">
-                        <template #icon>
-                            <NIcon>
-                                <Icon name="tabler:language" />
-                            </NIcon>
-                        </template>
-                    </NButton>
-                </NDropdown>
-            </NButtonGroup>
-        </template>
+			<NButtonGroup>
+				<LazyOfflineSyncStatus show-pwa />
+				<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
+						<template #trigger>
+							<NButton round size="small">{{ humanFileSize(
+								database?.tables
+									?.map(({ size }) => size)
+									.reduce((total, num) => {
+										return (total ?? 0) + (num ?? 0);
+									}, 0),
+							) }}</NButton>
+						</template>
+						<NFlex vertical>
+							<NTag v-for="table in database.tables" round
+								style="width:fit-content;padding-inline-start: 0; margin: auto;" :bordered="false">
+								<NTag style="width:fit-content;margin-inline-end: 8px;" :bordered="false" type="primary"
+									round strong>
+									<template #avatar>
+										<LazyTableIcon :table="table" />
+									</template>
+									{{ t(table.slug) }}
+								</NTag>
+								{{ humanFileSize(table?.size) }}
+							</NTag>
+						</NFlex>
+					</NPopover>
+					<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+						<NButton round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:user" />
+								</NIcon>
+							</template>
+							<template v-if="user">
+								<NText strong>{{ user.username.charAt(0).toUpperCase() +
+									user.username.slice(1) }}</NText>
+							</template>
+						</NButton>
+					</NDropdown>
+					<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
+						@select="(v) => Language = v">
+						<NButton round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:language" />
+								</NIcon>
+							</template>
+						</NButton>
+					</NDropdown>
+				</NButtonGroup>
+			</template>
     </NPageHeader>
 </template>
 

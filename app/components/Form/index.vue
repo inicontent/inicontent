@@ -10,6 +10,7 @@
 import { flattenSchema, isArrayOfObjects } from "inibase/utils";
 import type { FormInst } from "naive-ui";
 import { debounce } from "~/composables";
+import { normalizeTranslationValue } from "~/composables/translationValue";
 
 const props = defineProps<{
 	// biome-ignore lint/correctness/noVueDuplicateKeys: false positive with translation POST body's `table` key
@@ -60,7 +61,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	const customItemsIndex = existing
 		.map((item, index) =>
 			item.id === undefined ||
-				(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
+			(typeof item.id === "string" && (item.id as string).startsWith("temp-"))
 				? index
 				: -1,
 		)
@@ -177,14 +178,14 @@ async function fetchSchemaAndData() {
 	try {
 		const currentPOSTSchemaResp =
 			PostSchemaResp.value[
-			props.table ?? table.value?.slug ?? route.params.table
+				props.table ?? table.value?.slug ?? route.params.table
 			];
 
 		if (
 			currentPOSTSchemaResp &&
 			(Object.keys(bodyContent).length === 0 ||
 				JSON.stringify(bodyContent) ===
-				JSON.stringify(currentPOSTSchemaResp?.result.data))
+					JSON.stringify(currentPOSTSchemaResp?.result.data))
 		)
 			response = currentPOSTSchemaResp as apiResponse<{
 				schema: Schema;
@@ -324,29 +325,48 @@ async function UPDATE() {
 				modelValue.value = props.onBeforeUpdate(bodyContent);
 
 			Loading.value.UPDATE = true;
-			const data = await $fetch<apiResponse<Item | boolean>>(
-				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
-				}/${bodyContent?.id}`,
-				{
-					method: "PUT",
-					body: bodyContent,
-					params: {
-						return: false,
-						locale: Language.value,
-						[`${database.value.slug}_sid`]: sessionID.value,
+			const data = await useOfflineFetch()
+				.request(
+					`${config.public.apiBase}${database.value.slug}/${
+						props.table ?? table.value?.slug ?? route.params.table
+					}/${bodyContent?.id}`,
+					{
+						method: "PUT",
+						body: bodyContent,
+						params: {
+							return: false,
+							locale: Language.value,
+							[`${database.value.slug}_sid`]: sessionID.value,
+						},
+						credentials: "include",
+						offline: {
+							database: database.value.slug,
+							table:
+								props.table ?? table.value?.slug ?? route.params.table ?? "",
+						},
 					},
-					credentials: "include",
-				},
-			);
+				)
+				.catch(() => {
+					window.$message.error(t("updateFailed"));
+					return null;
+				});
 			Loading.value.UPDATE = false;
 
+			if (isOfflineQueuedResult(data)) {
+				window.$message.warning(t("queuedOfflineToast"));
+				useOfflineSync().refreshCounts();
+				return;
+			}
+
 			if (
-				(typeof data.result === "boolean" && data.result === true) ||
-				(typeof data.result !== "boolean" && data.result?.id)
+				(typeof (data as any)?.result === "boolean" &&
+					(data as any).result === true) ||
+				(typeof (data as any)?.result !== "boolean" &&
+					(data as any)?.result?.id)
 			) {
-				window.$message.success(data.message);
+				window.$message.success((data as any).message);
 				if (props.onAfterUpdate) return props.onAfterUpdate(bodyContent);
-			} else window.$message.error(data.message);
+			} else window.$message.error((data as any).message);
 		} else window.$message.error(t("inputsAreInvalid"));
 	});
 }
@@ -359,34 +379,50 @@ async function DELETE() {
 	if (props.onBeforeDelete) props.onBeforeDelete(bodyContent);
 
 	Loading.value.DELETE = true;
-	const data = await $fetch<apiResponse<Item>>(
-		`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table
-		}/${bodyContent?.id}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
-				[`${database.value.slug}_sid`]: sessionID.value,
+	const data = await useOfflineFetch()
+		.request(
+			`${config.public.apiBase}${database.value.slug}/${
+				props.table ?? table.value?.slug ?? route.params.table
+			}/${bodyContent?.id}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+				offline: {
+					database: database.value.slug,
+					table: props.table ?? table.value?.slug ?? route.params.table ?? "",
+				},
 			},
-			credentials: "include",
-		},
-	);
+		)
+		.catch(() => {
+			window.$message.error(t("deleteFailed"));
+			return null;
+		});
 	Loading.value.DELETE = false;
 
-	if (data.result) {
-		window.$message.success(data.message);
+	if (isOfflineQueuedResult(data)) {
+		window.$message.warning(t("queuedOfflineToast"));
+		useOfflineSync().refreshCounts();
+		return;
+	}
+
+	if ((data as any)?.result) {
+		window.$message.success((data as any).message);
 		await refreshNuxtData(
 			`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 		);
 
-		if (props.onAfterDelete) return props.onAfterDelete(data.result);
+		if (props.onAfterDelete) return props.onAfterDelete((data as any).result);
 
 		await navigateTo(
 			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
 		);
 		return;
 	}
-	window.$message.error(data.message);
+	window.$message.error((data as any)?.message);
 }
 
 // Submit form data
@@ -401,22 +437,40 @@ async function CREATE() {
 				modelValue.value = props.onBeforeCreate(bodyContent);
 
 			Loading.value.CREATE = true;
-			const data = await $fetch<apiResponse>(
-				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
-				{
-					method: "POST",
-					body: bodyContent,
-					params: {
-						locale: Language.value,
-						[`${database.value.slug}_sid`]: sessionID.value,
+			const data = await useOfflineFetch()
+				.request(
+					`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+					{
+						method: "POST",
+						body: bodyContent,
+						params: {
+							locale: Language.value,
+							[`${database.value.slug}_sid`]: sessionID.value,
+						},
+						credentials: "include",
+						offline: {
+							database: database.value.slug,
+							table:
+								props.table ?? table.value?.slug ?? route.params.table ?? "",
+						},
 					},
-					credentials: "include",
-				},
-			);
+				)
+				.catch(() => {
+					window.$message.error(t("createFailed"));
+					return null;
+				});
 			Loading.value.CREATE = false;
 
-			if (!data.result || !data.result.id)
-				return window.$message.error(data.message);
+			if (isOfflineQueuedResult(data)) {
+				window.$message.warning(t("queuedOfflineToast"));
+				useOfflineSync().refreshCounts();
+				return navigateTo(
+					`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
+				);
+			}
+
+			if (!(data as any)?.result || !(data as any)?.result.id)
+				return window.$message.error((data as any)?.message);
 
 			// When creating an item in a secondary language, also post the
 			// entered values as translations for that language.
@@ -485,14 +539,16 @@ function isTranslatableField(field: Field): boolean {
 	return false;
 }
 
-function normalizeValue(value: unknown): string {
-	if (value === null || value === undefined) return "";
-	if (Array.isArray(value) || typeof value === "object")
-		return JSON.stringify(value);
-	return String(value);
+function normalizeValue(field: Field, value: unknown): string {
+	// References are stored as their id(s) and arrays with Inison, matching the
+	// translation drawer so both writers produce identical records.
+	return normalizeTranslationValue(field, value);
 }
 
-async function postTranslationsForNewItem(bodyContent: Item, newItemId: string) {
+async function postTranslationsForNewItem(
+	bodyContent: Item,
+	newItemId: string,
+) {
 	if (!table.value?.schema) return;
 	const fields = flattenSchema(table.value.schema, true).filter(
 		(field) => !field.key.includes(".") && isTranslatableField(field),
@@ -501,27 +557,24 @@ async function postTranslationsForNewItem(bodyContent: Item, newItemId: string) 
 
 	for (const field of fields) {
 		const raw = (bodyContent as any)[field.key];
-		const value = normalizeValue(raw);
-		if (!value.trim()) continue;
+		const value = normalizeValue(field, raw);
+		if (!value) continue;
 		ops.push(
-			$fetch(
-				`${config.public.apiBase}${database.value.slug}/translations`,
-				{
-					method: "POST",
-					body: {
-						translation: value,
-						locale: Language.value,
-						table: table.value.id,
-						field: field.id,
-						item: newItemId,
-					},
-					params: {
-						locale: Language.value,
-						[`${database.value.slug}_sid`]: sessionID.value,
-					},
-					credentials: "include",
+			$fetch(`${config.public.apiBase}${database.value.slug}/translations`, {
+				method: "POST",
+				body: {
+					translation: value,
+					locale: Language.value,
+					table: table.value.id,
+					field: field.id,
+					item: newItemId,
 				},
-			),
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+			}),
 		);
 	}
 

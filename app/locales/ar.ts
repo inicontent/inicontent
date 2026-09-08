@@ -833,5 +833,33 @@ export default {
 			signinHintDevice: "استخدم التحقق من جهازك (Face ID أو Touch ID أو مفتاح أمان).",
 			signinFailed: "فشل تسجيل الدخول بمفتاح المرور.",
 		},
+
+		// Offline / sync
+		online: "متصل",
+		offline: "غير متصل",
+		onlineTooltip: "متصل بالخادم",
+		offlineTooltip:
+			"أنت غير متصل. يمكنك مواصلة العرض والتحرير — تُحفظ التغييرات محليًا وتُزامن عند إعادة الاتصال.",
+		syncingPending: "جارٍ المزامنة…",
+		pendingChanges: "{count} تغيير معلق",
+		syncNow: "زامن الآن",
+		conflictsPending: "{count} تعارض بحاجة إلى حل",
+		updateAvailable: "يتوفر تحديث",
+		installApp: "تثبيت التطبيق",
+		resolveConflicts: "حل التعارضات",
+		noConflicts: "لا توجد تعارضات لحلها",
+		discardAll: "تجاهل الكل",
+		localVersion: "نسختك",
+		serverVersion: "نسخة الخادم",
+		keepLocal: "الاحتفاظ بنسختي",
+		keepServer: "الاحتفاظ بنسخة الخادم",
+		changeQueuedForSync: "تمت إضافة التغيير إلى قائمة المزامنة",
+		localChangeDiscarded: "تم تجاهل التغيير المحلي",
+		allLocalChangesDiscarded: "تم تجاهل جميع التغييرات المحلية",
+		queuedOfflineToast:
+			"أنت غير متصل — تم حفظ تغييرك محليًا وسيتم مزامنته عند عودتك للاتصال.",
+		createFailed: "تعذر إنشاء العنصر.",
+		updateFailed: "تعذر تحديث العنصر.",
+		deleteFailed: "تعذر حذف العنصر.",
 	},
 } as const;

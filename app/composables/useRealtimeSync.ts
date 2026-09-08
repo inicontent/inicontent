@@ -38,8 +38,8 @@ export function useRealtimeSync(
 			return;
 		}
 
-		// Don't connect on server
-		if (process.server) {
+		// Don't connect on server (import.meta.server is statically replaced at build time)
+		if (import.meta.server) {
 			return;
 		}
 

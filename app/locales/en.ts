@@ -474,5 +474,33 @@ export default {
 		},
 		smtpPasswordUnchanged: "Leave blank to keep the current password",
 		emailSendFailed: "The email could not be sent. Check the email settings.",
+
+		// Offline / sync
+		online: "Online",
+		offline: "Offline",
+		onlineTooltip: "Connected to the server",
+		offlineTooltip:
+			"You are offline. You can keep viewing and editing — changes are saved locally and synced when you reconnect.",
+		syncingPending: "Syncing…",
+		pendingChanges: "{count} pending change(s)",
+		syncNow: "Sync now",
+		conflictsPending: "{count} conflict(s) to resolve",
+		updateAvailable: "Update available",
+		installApp: "Install app",
+		resolveConflicts: "Resolve conflicts",
+		noConflicts: "No conflicts to resolve",
+		discardAll: "Discard all",
+		localVersion: "Your version",
+		serverVersion: "Server version",
+		keepLocal: "Keep mine",
+		keepServer: "Keep server",
+		changeQueuedForSync: "Change queued for sync",
+		localChangeDiscarded: "Local change discarded",
+		allLocalChangesDiscarded: "All local changes discarded",
+		queuedOfflineToast:
+			"You're offline — your change was saved locally and will sync when you're back online.",
+		createFailed: "Could not create the item.",
+		updateFailed: "Could not update the item.",
+		deleteFailed: "Could not delete the item.",
 	},
 } as const;

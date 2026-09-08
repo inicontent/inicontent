@@ -794,5 +794,33 @@ export default {
                         signinHintDevice: "Utilisez la vérification de votre appareil (Face ID, Touch ID ou clé de sécurité).",
                         signinFailed: "Échec de la connexion avec la clé d'accès.",
                 },
+
+		// Offline / sync
+		online: "En ligne",
+		offline: "Hors ligne",
+		onlineTooltip: "Connecté au serveur",
+		offlineTooltip:
+			"Vous êtes hors ligne. Vous pouvez continuer à consulter et modifier — les modifications sont enregistrées localement et synchronisées à la reconnexion.",
+		syncingPending: "Synchronisation…",
+		pendingChanges: "{count} modification(s) en attente",
+		syncNow: "Synchroniser",
+		conflictsPending: "{count} conflit(s) à résoudre",
+		updateAvailable: "Mise à jour disponible",
+		installApp: "Installer l'application",
+		resolveConflicts: "Résoudre les conflits",
+		noConflicts: "Aucun conflit à résoudre",
+		discardAll: "Tout annuler",
+		localVersion: "Votre version",
+		serverVersion: "Version du serveur",
+		keepLocal: "Garder la mienne",
+		keepServer: "Garder celle du serveur",
+		changeQueuedForSync: "Modification ajoutée à la file de synchronisation",
+		localChangeDiscarded: "Modification locale annulée",
+		allLocalChangesDiscarded: "Toutes les modifications locales ont été annulées",
+		queuedOfflineToast:
+			"Vous êtes hors ligne — votre modification a été enregistrée localement et sera synchronisée à la reconnexion.",
+		createFailed: "Impossible de créer l'élément.",
+		updateFailed: "Impossible de mettre à jour l'élément.",
+		deleteFailed: "Impossible de supprimer l'élément.",
         },
 } as const;

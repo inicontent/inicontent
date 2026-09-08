@@ -61,6 +61,20 @@ watch(
 	{ immediate: true },
 )
 
+// Initialize the offline queue tracker on boot so pending counts start
+// loading even before the Header (which hosts the SyncStatus badge) mounts.
+// Deferred to an idle callback so opening IndexedDB can never compete with
+// the first page's route-middleware fetch or initial render.
+onMounted(() => {
+	const runInit = () => useOfflineSync().initSync();
+	if ("requestIdleCallback" in window) {
+		// @ts-expect-error requestIdleCallback types not present
+		window.requestIdleCallback(runInit, { timeout: 3000 });
+	} else {
+		setTimeout(runInit, 500);
+	}
+})
+
 useHead({
 	bodyAttrs: {
 		class: computed(() =>

@@ -201,20 +201,37 @@ watch(Language, () => {
 async function deleteItem(id?: string | number | (string | number)[]) {
 	if (!data.value) return;
 	Loading.value.data = true;
-	const deleteResponse = await $fetch<apiResponse>(
-		`${config.public.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
-		{
-			method: "DELETE",
-			query: {
-				where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
-				locale: Language.value,
-				[`${database.value.slug}_sid`]: sessionID.value,
+	const deleteResponse = await useOfflineFetch()
+		.request(
+			`${config.public.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
+			{
+				method: "DELETE",
+				query: {
+					where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+				offline: {
+					database: database.value.slug,
+					table: table.value?.slug ?? "",
+				},
 			},
-			credentials: "include",
-		},
-	);
-	if (deleteResponse.result) window.$message.success(deleteResponse.message);
-	else window.$message.error(deleteResponse.message);
+		)
+		.catch((err) => {
+			window.$message.error(err.message);
+			return null;
+		});
+	if (isOfflineQueuedResult(deleteResponse)) {
+		window.$message.warning(t("queuedOfflineToast"));
+		useOfflineSync().refreshCounts();
+		Loading.value.data = false;
+		return;
+	}
+	if ((deleteResponse as any)?.result)
+		window.$message.success((deleteResponse as any).message);
+	else window.$message.error((deleteResponse as any)?.message);
+	Loading.value.data = false;
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
 			`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,

@@ -1,7 +1,7 @@
 <template>
 	<NCollapse style="margin-top: 15px;" :class="{ 'reorder-enabled': reorderEnabled }" accordion
 		:trigger-areas="['main', 'arrow']" v-model:expanded-names="expandedNames">
-		<NCollapseItem name="0" :id="`element-0`" disabled :title="t('id')" class="element" :style="slicedSchema.length > 0 ? 'padding-bottom: 16px;border-bottom: 1px solid var(--n-divider-color);margin-bottom: 16px;' : ''">
+		<NCollapseItem v-if="!skipDefaultFields" name="0" :id="`element-0`" disabled :title="t('id')" class="element" :style="slicedSchema.length > 0 ? 'padding-bottom: 16px;border-bottom: 1px solid var(--n-divider-color);margin-bottom: 16px;' : ''">
 			<template #header-extra>
 				<NButton round strong secondary size="small" type="primary" disabled>
 					<template #icon>
@@ -18,7 +18,7 @@
 				:class="{ 'field-selected': selectedFieldIds.has(element.id as string | number)}"
 				:disabled="isDisabled(element.key)"
 				:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'"
-				@click.capture="(e) => onFieldClick(e, element)">
+				@click.capture="(e: MouseEvent) => onFieldClick(e, element)">
 				<template #header-extra>
 					<NFlex>
 						<NButtonGroup>
@@ -237,11 +237,11 @@
 				<LazyTableSettingsSchema
 					v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
 					v-model="element.children" v-model:expanded-names="expandedChildNames"
-					:reorder-enabled="reorderEnabled" />
+					:reorder-enabled="reorderEnabled" skip-default-fields />
 			</NCollapseItem>
 		</VueDraggable>
 
-		<NCollapseItem name="-1" :id="`element--1`" disabled :title="t('createdAt')">
+		<NCollapseItem v-if="!skipDefaultFields" name="-1" :id="`element--1`" disabled :title="t('createdAt')">
 			<template #header-extra>
 				<NButton round strong secondary size="small" type="primary" disabled>
 					<template #icon>
@@ -254,7 +254,7 @@
 			</template>
 		</NCollapseItem>
 
-		<NCollapseItem name="-2" :id="`element--2`" disabled :title="t('updatedAt')">
+		<NCollapseItem v-if="!skipDefaultFields" name="-2" :id="`element--2`" disabled :title="t('updatedAt')">
 			<template #header-extra>
 				<NButton round strong secondary size="small" type="primary" disabled>
 					<template #icon>
@@ -453,7 +453,7 @@ const disabledKeysSet = computed<Set<string>>(() => {
 });
 const expandedNames = defineModel<(string | number)[]>("expandedNames");
 const expandedChildNames = ref<(string | number)[]>();
-const { reorderEnabled = false } = defineProps<{ reorderEnabled?: boolean }>();
+const { reorderEnabled = false, skipDefaultFields } = defineProps<{ reorderEnabled?: boolean, skipDefaultFields?: boolean }>();
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return;
 	if (!schema.value[index].children)
@@ -484,11 +484,22 @@ async function pushToChildrenSchema(type: string, index: number) {
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
 });
-const slicedSchema = ref(schema.value.slice(1, -2));
+const slicedSchema = ref(skipDefaultFields ? schema.value : schema.value.slice(1, -2));
 watch(() => slicedSchema.value, (newVal) => {
+	if (skipDefaultFields) {
+		schema.value = newVal
+		return;
+	}
+
 	schema.value = [schema.value[0] as Field, ...newVal, schema.value.at(-2)!, schema.value.at(-1)!];
 }, { deep: true });
 watch(() => schema.value, (newVal) => {
+	if (skipDefaultFields) {
+		if (newVal.length === slicedSchema.value.length)
+			slicedSchema.value = newVal;
+		return;
+	}
+
 	if(newVal.length - 3 !== slicedSchema.value.length)
 		slicedSchema.value = newVal.slice(1, -2);
 }, { deep: true });

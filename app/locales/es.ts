@@ -791,5 +791,33 @@ export default {
                         signinHintDevice: "Usa la verificación de tu dispositivo (Face ID, Touch ID o llave de seguridad).",
                         signinFailed: "Error al iniciar sesión con llave de acceso.",
                 },
+
+		// Offline / sync
+		online: "En línea",
+		offline: "Sin conexión",
+		onlineTooltip: "Conectado al servidor",
+		offlineTooltip:
+			"Estás sin conexión. Puedes seguir viendo y editando — los cambios se guardan localmente y se sincronizan cuando vuelvas a conectarte.",
+		syncingPending: "Sincronizando…",
+		pendingChanges: "{count} cambio(s) pendiente(s)",
+		syncNow: "Sincronizar ahora",
+		conflictsPending: "{count} conflicto(s) por resolver",
+		updateAvailable: "Actualización disponible",
+		installApp: "Instalar aplicación",
+		resolveConflicts: "Resolver conflictos",
+		noConflicts: "No hay conflictos que resolver",
+		discardAll: "Descartar todo",
+		localVersion: "Tu versión",
+		serverVersion: "Versión del servidor",
+		keepLocal: "Conservar la mía",
+		keepServer: "Conservar la del servidor",
+		changeQueuedForSync: "Cambio añadido a la cola de sincronización",
+		localChangeDiscarded: "Cambio local descartado",
+		allLocalChangesDiscarded: "Se descartaron todos los cambios locales",
+		queuedOfflineToast:
+			"Estás sin conexión — tu cambio se guardó localmente y se sincronizará cuando vuelvas a estar en línea.",
+		createFailed: "No se pudo crear el elemento.",
+		updateFailed: "No se pudo actualizar el elemento.",
+		deleteFailed: "No se pudo eliminar el elemento.",
         },
 } as const;

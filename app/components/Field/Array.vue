@@ -9,7 +9,7 @@
 		isArray: true,
 	}" v-model="modelValue" />
 	<NCollapse v-else-if="field.isTable === false || field.children.filter(
-		(f: any) => f.type === 'array' && isArrayOfObjects(f.children),
+		(f: any) => (f.type === 'array' && isArrayOfObjects(f.children)) || (f.width && f.width > 1),
 	).length" display-directive="if" arrow-placement="right" :trigger-areas="['main', 'arrow']"
 		:default-expanded-names="field.expand ? String(field.id) : undefined" v-model:expanded-names="parentExpanded"
 		accordion>
