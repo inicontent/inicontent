@@ -1,3 +1,9 @@
+// The SPA app shell is served by the node server at "/" (there is no static
+// index.html in .output/public), so workbox's navigateFallback has nothing to
+// serve from its precache when the device is offline. Precache it explicitly
+// with a build-unique revision so the shell is re-fetched on every SW update.
+const appShellRevision = Date.now().toString(36);
+
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
@@ -14,7 +20,7 @@ export default defineNuxtConfig({
 	},
 	icon: {
 		// Serve icons from your Nuxt app endpoint, not Iconify API
-		provider: 'server',
+		provider: "server",
 	},
 	fonts: {
 		experimental: {
@@ -22,7 +28,7 @@ export default defineNuxtConfig({
 		},
 		defaults: {
 			subsets: ["latin", "arabic"],
-		}
+		},
 	},
 	tiptap: {
 		prefix: "Tiptap",
@@ -71,6 +77,14 @@ export default defineNuxtConfig({
 		registerType: "prompt",
 		workbox: {
 			navigateFallback: "/",
+			// Let the newly-installed SW control the current page immediately so a
+			// single online visit populates the runtime caches (without this, the
+			// first visit isn't intercepted and offline wouldn't work until a second).
+			clientsClaim: true,
+			// The SPA shell isn't a static file, so add it to the precache
+			// manifest manually (see appShellRevision above) — otherwise offline
+			// navigation has nothing to serve and the app can never load.
+			additionalManifestEntries: [{ url: "/", revision: appShellRevision }],
 			runtimeCaching: [
 				{
 					// Database metadata, dashboard definitions and other
@@ -96,8 +110,7 @@ export default defineNuxtConfig({
 					// All other API reads (table data, items, searches). Try the
 					// network first, fall back to cache when offline.
 					urlPattern: ({ url, request }) =>
-						url.hostname.endsWith("inicontent.com") &&
-						request.method === "GET",
+						url.hostname.endsWith("inicontent.com") && request.method === "GET",
 					handler: "NetworkFirst",
 					options: {
 						cacheName: "inicontent-api-cache",

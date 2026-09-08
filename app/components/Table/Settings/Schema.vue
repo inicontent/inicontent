@@ -484,9 +484,9 @@ async function pushToChildrenSchema(type: string, index: number) {
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
 });
-const slicedSchema = ref(skipDefaultFields ? schema.value : schema.value.slice(1, -2));
+const slicedSchema = ref(skipDefaultFields || schema.value?.[0]?.id !== 0 ? schema.value : schema.value.slice(1, -2));
 watch(() => slicedSchema.value, (newVal) => {
-	if (skipDefaultFields) {
+	if (skipDefaultFields || schema.value?.[0]?.id !== 0) {
 		schema.value = newVal
 		return;
 	}
@@ -494,7 +494,7 @@ watch(() => slicedSchema.value, (newVal) => {
 	schema.value = [schema.value[0] as Field, ...newVal, schema.value.at(-2)!, schema.value.at(-1)!];
 }, { deep: true });
 watch(() => schema.value, (newVal) => {
-	if (skipDefaultFields) {
+	if (skipDefaultFields || newVal?.[0]?.id !== 0) {
 		if (newVal.length === slicedSchema.value.length)
 			slicedSchema.value = newVal;
 		return;

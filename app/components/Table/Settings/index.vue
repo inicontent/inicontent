@@ -115,7 +115,6 @@
 									</NDropdown>
 								</NButtonGroup>
 							</template>
-							<NEmpty v-if="!tableCopy.schema || tableCopy.schema.length === 0" />
 							<NForm size="small">
 								<LazyTableSettingsSchema v-model="tableCopy.schema"
 									v-model:expanded-names="expandedNames" :reorder-enabled="reorderEnabled" />
