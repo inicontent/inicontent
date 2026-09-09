@@ -48,6 +48,11 @@ export function isReferenceField(field: Field): boolean {
 	);
 }
 
+/** True for array reference fields (array refs / asset folders). */
+export function isReferenceArrayField(field: Field): boolean {
+	return isArrayLikeField(field) && !!field.table;
+}
+
 /** Whether a field should be translated at all (mirrors the drawer rules). */
 export function isTranslatableField(field: Field): boolean {
 	const resolved = fieldTypeOf(field);
@@ -88,13 +93,16 @@ export function normalizeTranslationValue(
 ): string {
 	if (isEmptyTranslationValue(value)) return "";
 
+	// Reference arrays (array refs / asset folders) → Inison list of ids.
+	if (isReferenceArrayField(field)) {
+		const ids = (Array.isArray(value) ? value : [value])
+			.map((entry) => extractReferenceId(entry))
+			.filter((id) => id.length > 0);
+		return Inison.stringify(ids);
+	}
+
+	// Single table/asset reference → its id.
 	if (isReferenceField(field)) {
-		if (isArrayLikeField(field)) {
-			const ids = (Array.isArray(value) ? value : [value])
-				.map((entry) => extractReferenceId(entry))
-				.filter((id) => id.length > 0);
-			return Inison.stringify(ids);
-		}
 		return extractReferenceId(value);
 	}
 
@@ -120,6 +128,18 @@ function tryParseStored(value: string): unknown {
 	return trimmed;
 }
 
+/** Reduce a stored reference value (plain id, legacy object/array, …) to its id string. */
+function resolveReferenceId(value: string): string {
+	const trimmed = value.trim();
+	if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+		const parsed = tryParseStored(trimmed);
+		if (Array.isArray(parsed))
+			return parsed.length ? extractReferenceId(parsed[0]) : "";
+		return extractReferenceId(parsed);
+	}
+	return extractReferenceId(trimmed);
+}
+
 /**
  * Convert a stored translation string back into the typed value expected by the
  * field component (id string(s), array, or scalar string).
@@ -139,16 +159,10 @@ export function parseTranslationValue(
 		return Array.isArray(parsed) ? parsed : [parsed];
 	}
 
-	// table/asset single: legacy records can hold a serialized object — reduce
-	// them to the id form the drawer now writes.
+	// Single reference field: the drawer stores plain ids; legacy records can
+	// hold a serialized object — reduce either form to the id string.
 	if (field && isReferenceField(field)) {
-		if (value.startsWith("{") || value.startsWith("[")) {
-			const parsed = tryParseStored(value);
-			if (Array.isArray(parsed))
-				return parsed.length ? extractReferenceId(parsed[0]) : "";
-			if (isObject(parsed)) return extractReferenceId(parsed);
-		}
-		return value;
+		return resolveReferenceId(value);
 	}
 
 	return stored;

@@ -34,14 +34,69 @@ const options = ref<tableOption[] | undefined>();
 const loading = ref(false);
 const database = useState<Database>("database");
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
+
+// Id-only model values (translated / stored table refs) are resolved through
+// the shared cache which batches all ids of the current page into a single
+// request per referenced table. Object values never trigger a fetch.
+const referenced = useReferencedItems(field.table);
+
 watch(
 	modelValue,
 	(value) => {
-		if (!value || options.value) return;
-		const items = ([] as Item[]).concat(value).filter(isObject);
-		if (items.length) options.value = items.map(singleOption);
+		if (!value) return;
+		const entries = ([] as unknown[])
+			.concat(value)
+			.filter((entry) => entry !== undefined && entry !== null);
+		const objectItems = entries.filter(isObject) as Item[];
+		const idEntries = entries
+			.filter((entry) => !isObject(entry))
+			.map((entry) => String(entry).trim())
+			.filter(Boolean);
+
+		if (idEntries.length) referenced.register(idEntries);
+
+		// Resolved entries become select options: id-strings via the cache,
+		// objects as-is.
+		const resolvedOptions = [
+			...idEntries
+				.map((id) => referenced.items.value[id])
+				.filter((item): item is Item => Boolean(item?.id))
+				.map(singleOption),
+			...objectItems.map(singleOption),
+		];
+		if (!resolvedOptions.length) return;
+		if (!options.value) {
+			options.value = resolvedOptions;
+			return;
+		}
+		const known = new Set(options.value.map(({ value }) => value));
+		const fresh = resolvedOptions.filter(({ value }) => !known.has(value));
+		if (fresh.length) options.value = [...options.value, ...fresh];
 	},
 	{ immediate: true },
+);
+
+// Rebuild id options once the batched fetch populates the cache.
+watch(
+	() => referenced.items.value,
+	() => {
+		const value = modelValue.value;
+		if (!value) return;
+		const idEntries = ([] as unknown[])
+			.concat(value)
+			.filter((entry) => !isObject(entry))
+			.map((entry) => String(entry).trim())
+			.filter(Boolean);
+		if (!idEntries.length) return;
+		const idOptions = idEntries
+			.map((id) => referenced.items.value[id])
+			.filter((item): item is Item => Boolean(item?.id))
+			.map(singleOption);
+		if (!idOptions.length) return;
+		const known = new Set((options.value ?? []).map(({ value }) => value));
+		const fresh = idOptions.filter(({ value }) => !known.has(value));
+		if (fresh.length) options.value = [...(options.value ?? []), ...fresh];
+	},
 );
 
 const selectValue = computed<null | string | string[]>(() => {
@@ -106,8 +161,8 @@ async function onUpdateSelectValue(
 
 const searchIn = table?.defaultSearchableColumns
 	? table.defaultSearchableColumns.map((columnID) =>
-		getPath(table.schema ?? [], columnID),
-	)
+			getPath(table.schema ?? [], columnID),
+		)
 	: field.searchIn;
 
 const pagination = ref<pageInfo>();
@@ -123,14 +178,14 @@ async function loadOptions(searchValue?: string | number) {
 	loading.value = true;
 	const searchOrObject =
 		searchValue &&
-			(typeof searchValue !== "string" || searchValue.trim().length) &&
-			searchIn
+		(typeof searchValue !== "string" || searchValue.trim().length) &&
+		searchIn
 			? (searchIn.reduce((result, searchKey) => {
-				Object.assign(result, {
-					[searchKey]: `*%${searchValue}%`,
-				});
-				return result;
-			}, {}) ?? false)
+					Object.assign(result, {
+						[searchKey]: `*%${searchValue}%`,
+					});
+					return result;
+				}, {}) ?? false)
 			: false;
 
 	let _where = "";
@@ -139,8 +194,8 @@ async function loadOptions(searchValue?: string | number) {
 			_where = Inison.stringify({
 				...((typeof field.where === "string"
 					? Inison.unstringify(
-						renderLabel({ ...(table as Table), label: field.where }),
-					)
+							renderLabel({ ...(table as Table), label: field.where }),
+						)
 					: field.where) as any),
 				or: searchOrObject,
 			});
@@ -149,9 +204,9 @@ async function loadOptions(searchValue?: string | number) {
 				typeof field.where === "string"
 					? renderLabel({ ...(table as Table), label: field.where })
 					: renderLabel({
-						...(table as Table),
-						label: Inison.stringify(field.where),
-					});
+							...(table as Table),
+							label: Inison.stringify(field.where),
+						});
 	} else if (searchOrObject)
 		_where = Inison.stringify({
 			or: searchOrObject,
@@ -211,7 +266,7 @@ async function handleScroll(e: Event) {
 		return;
 	if (
 		currentTarget.scrollTop + currentTarget.clientHeight >=
-		currentTarget.scrollHeight - 4 &&
+			currentTarget.scrollHeight - 4 &&
 		pagination.value.page < pagination.value.totalPages
 	) {
 		loading.value = true;
@@ -236,35 +291,6 @@ async function handleScroll(e: Event) {
 		pagination.value = request.options;
 		if (options.value && request.result) options.value.push(...request.result);
 	}
-}
-
-if (
-	modelValue.value &&
-	(typeof modelValue.value === "string" ||
-		(Array.isArray(modelValue.value) &&
-			modelValue.value.length &&
-			modelValue.value.every((value) => typeof value === "string")))
-) {
-	const ids = ([] as string[])
-		.concat(modelValue.value as unknown as string | string[])
-		.join(",");
-	onMounted(async () => {
-		loading.value = true;
-		const request = await $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${database.value.slug}/${field.table}`,
-			{
-				cache: "no-cache",
-				params: {
-					where: Inison.stringify({ id: `[]${ids}` }),
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
-			},
-		).finally(() => {
-			loading.value = false;
-		});
-		options.value = request.result?.map(singleOption) ?? [];
-	});
 }
 
 if (

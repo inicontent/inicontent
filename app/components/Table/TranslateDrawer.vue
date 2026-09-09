@@ -55,13 +55,13 @@
 									<LazyField v-if="editingOriginal[field.key]"
 										:field="{ ...field, inputProps: { onBlur: () => saveOriginal(field), 'on:keydown.enter.prevent': () => saveOriginal(field), 'on:keydown.esc': () => toggleEditOriginal(field) } }"
 										v-model="originalDraft[field.key]" />
-									<NText v-else depth="3" style="white-space: pre-wrap; word-break: break-word">
-										{{ displayOriginal(field.key) || "—" }}
-									</NText>
+									<LazyColumn v-else-if="!isEmptyTranslationValue(getItemValue(field.key))"
+										:field="field" :value="getItemValue(field.key)" :item-label="itemLabel" />
+									<NText v-else depth="3">—</NText>
 								</NCard>
 
 								<!-- Translation input (rendered by field type) -->
-								<LazyField :field="field" v-model="draft[locale][field.id]" />
+								<LazyField :field="{...field,labelProps: { showLabel: false }}" v-model="draft[locale][field.id]" />
 							</div>
 						</NFlex>
 					</NTabPane>
@@ -123,18 +123,6 @@ function getItemValue(fieldKey: string): unknown {
 			: props.item;
 	if (!source) return undefined;
 	return (source as any)[fieldKey];
-}
-
-function displayOriginal(fieldKey: string): string {
-	const value = getItemValue(fieldKey);
-	return stringifyValue(value);
-}
-
-function stringifyValue(value: unknown): string {
-	if (value === null || value === undefined) return "";
-	if (Array.isArray(value)) return JSON.stringify(value);
-	if (typeof value === "object") return JSON.stringify(value);
-	return String(value);
 }
 
 const itemLabel = computed(() =>
@@ -265,7 +253,7 @@ async function fetchItemTranslations() {
 
 		if (result)
 			for (const record of result) {
-				const fieldId: string = record.field;
+				const fieldId = String(record.field);
 				if (!record.locale || !fieldId) continue;
 				const field = fieldById.get(fieldId);
 				if (!field) continue;
@@ -498,6 +486,20 @@ async function saveOriginal(field: Field) {
 		originalSaving.value = false;
 	}
 }
+
+// ── Ctrl+S / ⌘+S to save ──────────────────────────────────────────────────────
+
+function onKeydown(event: KeyboardEvent) {
+	// `code` is layout-independent so the shortcut works on any keyboard layout
+	if ((event.ctrlKey || event.metaKey) && event.code === "KeyS") {
+		event.preventDefault();
+		if (!props.show || saving.value || !hasChanges.value) return;
+		saveTranslations();
+	}
+}
+
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
 // ── Watch for open ────────────────────────────────────────────────────────────
 
