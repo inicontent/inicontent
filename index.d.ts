@@ -45,7 +45,8 @@ declare global {
 		| "array-asset"
 		| "array-table"
 		| "locale"
-		| "custom";
+		| "custom"
+		| "emailTemplate";
 	type DB_FieldType = dbFieldType;
 	type Field = Omit<dbField, "type" | "children"> & {
 		type: CMS_FieldType | DB_FieldType | DB_FieldType[];

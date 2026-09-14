@@ -4,9 +4,17 @@
 			<NFlex inline align="center" size="small" :style="`margin-${(Language === 'ar' ? 'right' : 'left')}: 5px`">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
+				<NButton v-if="acceptsImages" circle secondary size="tiny" :title="t('scanDocument')"
+					@click="showScanner = true">
+					<template #icon>
+						<NIcon>
+							<Icon name="tabler:scan" />
+						</NIcon>
+					</template>
+				</NButton>
 			</NFlex>
 		</template>
-		<NUpload directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
+		<NUpload ref="uploadRef" directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
 			:action="`${config.public.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			:fileList @update:file-list="setModelValue" :custom-request @remove="handleRemoveUpload"
@@ -30,6 +38,14 @@
 			<NFlex v-else align="center" size="small">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
+				<NButton v-if="acceptsImages" circle secondary size="tiny" :title="t('scanDocument')"
+					@click="showScanner = true">
+					<template #icon>
+						<NIcon>
+							<Icon name="tabler:scan" />
+						</NIcon>
+					</template>
+				</NButton>
 			</NFlex>
 		</NUpload>
 		<NDrawer v-model:show="showAssetsModal" defaultHeight="50%" placement="bottom" resizable>
@@ -45,6 +61,9 @@
 				</AssetCard>
 			</NDrawerContent>
 		</NDrawer>
+
+		<LazyAssetScanner v-model:show="showScanner" :allowOCR="false"
+			@scanned="(blob) => uploadScannedDocument(blob)" />
 	</FieldWrapper>
 </template>
 
@@ -57,8 +76,8 @@ import type {
 } from "naive-ui";
 import { Icon, LazyAssetThumb } from "#components";
 import { getFileNameAndExtension } from "~/composables";
-import renderLabel from "~/composables/renderLabel";
 import { useOptimizeFile } from "~/composables/optimizeFile";
+import renderLabel from "~/composables/renderLabel";
 import { useAssetUploader } from "~/composables/useAssetUploader";
 import { usePdfCompressor } from "~/composables/usePdfCompressor";
 import { useVideoCompressor } from "~/composables/useVideoCompressor";
@@ -128,9 +147,9 @@ async function handleRemoveUpload({
 		try {
 			const path = field.suffix
 				? renderLabel(
-					{ ...table.value, label: field.suffix },
-					currentItem.value,
-				)
+						{ ...table.value, label: field.suffix },
+						currentItem.value,
+					)
 				: "";
 			await $fetch(
 				`${config.public.apiBase}${database.value.slug}/assets${path}/${assetId}`,
@@ -210,6 +229,33 @@ const rule: FormItemRule = {
 
 const database = useState<Database>("database");
 const showAssetsModal = ref(false);
+const showScanner = ref(false);
+const uploadRef = ref<{ submit?: (options?: { fileId?: string }) => void }>();
+
+const acceptsImages = computed(
+	() => !field.accept || field.accept.includes("image"),
+);
+
+function uploadScannedDocument(blob: Blob) {
+	const fileName = `scan-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+	const file = new File([blob], fileName, { type: "image/png" });
+
+	const newFile: UploadFileInfo = {
+		id: `scan-${Date.now()}`,
+		name: fileName,
+		file,
+		status: "pending",
+		type: "image/png",
+	};
+
+	// Prepend to the controlled list so NUpload renders it, then submit it
+	fileList.value = [newFile, ...(fileList.value ?? [])];
+	showScanner.value = false;
+
+	nextTick(() => {
+		uploadRef.value?.submit?.();
+	});
+}
 
 const acceptedFileType = computed(() => {
 	if (!field.accept) return undefined;
@@ -307,8 +353,8 @@ function handleSelectAsset(asset?: Asset) {
 		if (modelValue.value && Array.isArray(modelValue.value)) {
 			const index = isArrayOfObjects(modelValue.value)
 				? (modelValue.value as Asset[]).findIndex(
-					(value) => value.id === asset.id,
-				)
+						(value) => value.id === asset.id,
+					)
 				: (modelValue.value as string[]).indexOf(asset.publicURL);
 			if (index > -1) modelValue.value.splice(index, 1);
 			else modelValue.value.push(value);
@@ -326,19 +372,19 @@ function getFileList() {
 	return ([] as (Asset | string)[]).concat(modelValue.value).map((asset) =>
 		typeof asset === "string"
 			? {
-				id: asset,
-				name: asset.split("/").pop(),
-				status: "finished",
-				url: asset,
-				type: field.accept?.includes("image") ? "image/jpeg" : undefined,
-			}
+					id: asset,
+					name: asset.split("/").pop(),
+					status: "finished",
+					url: asset,
+					type: field.accept?.includes("image") ? "image/jpeg" : undefined,
+				}
 			: {
-				id: asset.id,
-				name: asset.name || asset.id,
-				status: "finished",
-				url: (asset as Asset).publicURL,
-				type: asset.type,
-			},
+					id: asset.id,
+					name: asset.name || asset.id,
+					status: "finished",
+					url: (asset as Asset).publicURL,
+					type: asset.type,
+				},
 	) as UploadFileInfo[];
 }
 
@@ -358,17 +404,17 @@ async function setModelValue(value?: UploadFileInfo[]) {
 						!asset.file
 							? field.isArray
 								? (modelValue.value as Asset[]).find(
-									(item) => item.id === asset.id,
-								)
+										(item) => item.id === asset.id,
+									)
 								: modelValue.value
 							: {
-								id: fileIdObject.value[asset.id],
-								name: asset.name,
-								type: asset.type,
-								publicURL: asset.url,
-								size: asset.file?.size ?? 0,
-								createdAt: asset.file?.lastModified ?? 0,
-							},
+									id: fileIdObject.value[asset.id],
+									name: asset.name,
+									type: asset.type,
+									publicURL: asset.url,
+									size: asset.file?.size ?? 0,
+									createdAt: asset.file?.lastModified ?? 0,
+								},
 					) as Asset[];
 				if (finalFileList.length) {
 					modelValue.value = field.isArray ? finalFileList : finalFileList[0];
@@ -550,13 +596,13 @@ async function customRequest({
 const table = useState<Table>("table");
 const currentItem = useState<Item>("currentItem");
 
-function renderIcon(
-	file: UploadFileInfo
-) {
-	const asset = Array.isArray(modelValue.value) ? (modelValue.value as Asset[]).find((item) => item.id === file.id) : modelValue.value as Asset
+function renderIcon(file: UploadFileInfo) {
+	const asset = Array.isArray(modelValue.value)
+		? (modelValue.value as Asset[]).find((item) => item.id === file.id)
+		: (modelValue.value as Asset);
 	if (!asset) return;
 	return h(LazyAssetThumb, {
-		asset
+		asset,
 	});
 }
 

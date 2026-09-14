@@ -3,6 +3,28 @@
 		@drop.prevent="onDrop" @dragleave="onDragLeave">
 		<input ref="folderInputRef" type="file" multiple directory="" webkitdirectory="" mozdirectory=""
 			style="display: none;" @change="onFolderInputChange" />
+
+		<LazyAssetScanner v-model:show="showScanner" :allowOCR="false"
+			@scanned="(blob) => uploadScannedDocument(blob)" />
+		<NModal v-model:show="showFolderInput" preset="card" :title="t('createFolder')"
+			style="width: min(420px, 95vw);"
+			@update:show="(show) => { if (!show) cancelFolderCreation(); }">
+			<NInput ref="folderInputElRef" v-model:value="folder" size="small"
+				@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
+				:placeholder="t('folderName')">
+				<template #suffix>
+					<NIcon>
+						<Icon name="tabler:letter-case" />
+					</NIcon>
+				</template>
+			</NInput>
+			<template #footer>
+				<NFlex justify="end">
+					<NButton secondary @click="cancelFolderCreation">{{ t("cancel") }}</NButton>
+					<NButton type="primary" @click="createFolder">{{ t("create") }}</NButton>
+				</NFlex>
+			</template>
+		</NModal>
 		<Transition name="drop-fade">
 			<div v-if="isDragOver"
 				style="position: absolute; inset: 0; z-index: 100; background: rgba(24, 160, 88, 0.1); border: 2px dashed #18a058; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; pointer-events: none;">
@@ -80,94 +102,55 @@
 					</NButtonGroup>
 					<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema
 						size="small" />
-					<NButtonGroup v-if="table?.allowedMethods?.includes('c')" round>
-						<NPopover placement="top-start">
+					<NUpload v-if="table?.allowedMethods?.includes('c')" ref="uploadRef" multiple abstract
+						:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
+						<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
+							style="max-height: 160px">
 							<template #trigger>
-								<NButton round size="small">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:folder-plus" />
-										</NIcon>
-									</template>
-								</NButton>
+								<NDropdown placement="bottom-end" trigger="click" size="small"
+									:options="uploadDropdownOptions" @select="onUploadDropdownSelect">
+									<NButton round size="small" :title="t('uploadFiles')">
+										<template #icon>
+											<NProgress v-if="compressionIndicator" type="circle" status="warning"
+												:percentage="compressionIndicator" :stroke-width="10">
+												<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
+													<template #trigger>
+														<Icon @click.stop="skipCompression" :size="10"
+															name="tabler:player-track-next-filled" />
+													</template>
+													{{ t("skipCompression") }}
+												</NTooltip>
+											</NProgress>
+											<NIcon v-else-if="!UploadProgress">
+												<Icon name="tabler:upload" />
+											</NIcon>
+											<NIcon v-else-if="UploadProgress === 10000">
+												<Icon name="tabler:check" />
+											</NIcon>
+											<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+												:size="16" />
+											<NProgress v-else type="circle" :show-indicator="false"
+												:status="UploadProgress === 100 ? 'success' : 'warning'"
+												:percentage="UploadProgress" :stroke-width="20" />
+										</template>
+									</NButton>
+								</NDropdown>
 							</template>
-							<NInputGroup>
-								<NInput v-model:value="folder"
-									@keydown="({ key }: KeyboardEvent) => { if (key === 'Enter') createFolder(); }"
-									:placeholder="t('folderName')" size="small">
-									<template #suffix>
-										<NIcon>
-											<Icon name="tabler:letter-case" />
-										</NIcon>
-									</template>
-								</NInput>
-								<NButton @click="createFolder" size="small" type="primary">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:arrow-right" />
-										</NIcon>
-									</template>
-								</NButton>
-							</NInputGroup>
+							<NFlex v-if="UploadProgress === 1001" vertical
+								style="gap: 6px; padding: 2px 0; min-width: 160px;">
+								<NText style="font-size: 12px;">
+									{{ folderUploadProgress.total > 0
+										? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
+										: folderUploadProgress.current }}
+								</NText>
+								<NProgress v-if="folderUploadProgress.total > 0" type="line"
+									:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
+									:show-indicator="false" />
+							</NFlex>
+							<NUploadFileList v-else />
 						</NPopover>
-						<NButton @click="folderInputRef?.click()" round size="small" :title="t('uploadFolder')">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:folder-up" />
-								</NIcon>
-							</template>
-						</NButton>
-						<NUpload multiple abstract
-							:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
-							@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
-							<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
-								style="max-height: 160px">
-								<template #trigger>
-									<NUploadTrigger :abstract="false">
-										<NButton round size="small"
-											:style="isRTL ? 'border-radius: 28px 0 0 28px;' : 'border-radius: 0 28px 28px 0;'"
-											:title="t('uploadFiles')">
-											<template #icon>
-												<NProgress v-if="compressionIndicator" type="circle" status="warning"
-													:percentage="compressionIndicator" :stroke-width="10">
-													<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
-														<template #trigger>
-															<Icon @click.stop="skipCompression" :size="10"
-																name="tabler:player-track-next-filled" />
-														</template>
-														{{ t("skipCompression") }}
-													</NTooltip>
-												</NProgress>
-												<NIcon v-else-if="!UploadProgress">
-													<Icon name="tabler:upload" />
-												</NIcon>
-												<NIcon v-else-if="UploadProgress === 10000">
-													<Icon name="tabler:check" />
-												</NIcon>
-												<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
-													:size="16" />
-												<NProgress v-else type="circle" :show-indicator="false"
-													:status="UploadProgress === 100 ? 'success' : 'warning'"
-													:percentage="UploadProgress" :stroke-width="20" />
-											</template>
-										</NButton>
-									</NUploadTrigger>
-								</template>
-								<NFlex v-if="UploadProgress === 1001" vertical
-									style="gap: 6px; padding: 2px 0; min-width: 160px;">
-									<NText style="font-size: 12px;">
-										{{ folderUploadProgress.total > 0
-											? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
-											: folderUploadProgress.current }}
-									</NText>
-									<NProgress v-if="folderUploadProgress.total > 0" type="line"
-										:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
-										:show-indicator="false" />
-								</NFlex>
-								<NUploadFileList v-else />
-							</NPopover>
-						</NUpload>
-					</NButtonGroup>
+					</NUpload>
 				</NFlex>
 			</template>
 			<NCard>
@@ -193,10 +176,16 @@
 
 <script lang="ts" setup>
 import Inison from "inison";
-import type { UploadCustomRequestOptions, UploadFileInfo } from "naive-ui";
+import type {
+	InputInst,
+	UploadCustomRequestOptions,
+	UploadFileInfo,
+	UploadInst,
+} from "naive-ui";
+import { Icon, NIcon } from "#components";
 import { getFileNameAndExtension } from "~/composables";
-import { generateSearchArray } from "~/composables/search";
 import { useOptimizeFile } from "~/composables/optimizeFile";
+import { generateSearchArray } from "~/composables/search";
 import { useAssetUploader } from "~/composables/useAssetUploader";
 import { usePdfCompressor } from "~/composables/usePdfCompressor";
 import { useVideoCompressor } from "~/composables/useVideoCompressor";
@@ -302,9 +291,10 @@ const currentItem = useState<Item>("currentItem");
 const assetsTable = ref<Table>(table.value);
 
 const currentPath = ref<string>(
-	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${route.params.path
-		? `/${([] as string[]).concat(route.params.path).join("/")}`
-		: ""
+	`${suffix ? renderLabel({ ...assetsTable.value, label: suffix }, currentItem.value) : ""}${
+		route.params.path
+			? `/${([] as string[]).concat(route.params.path).join("/")}`
+			: ""
 	}`,
 );
 
@@ -326,10 +316,10 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	).result;
 
 const Language = useLanguageCookie();
-const isRTL = computed(() => Language.value === "ar");
 
 const assets = ref<Asset[]>();
 const selectedAssetIds = ref<Asset["id"][]>([]);
+const showScanner = ref(false);
 const bulkDeleteLoading = ref(false);
 const bulkDownloadLoading = ref(false);
 const bulkZipProgress = ref(0);
@@ -672,10 +662,7 @@ const syncPaginationPageSize = () => {
 };
 
 const pagination = reactive({
-	page:
-		isAssetRoute && route.query.page
-			? Number(route.query.page)
-			: 1,
+	page: isAssetRoute && route.query.page ? Number(route.query.page) : 1,
 	pageCount: 1,
 	pageSize:
 		isAssetRoute && route.query.perPage
@@ -740,22 +727,19 @@ async function onUpdatePage(currentPage: number) {
 async function onUpdatePageSize(currentPageSize: number) {
 	const OLD_pageSize = toRaw(pagination.pageSize);
 	pagination.pageSize = currentPageSize;
-	let Query: { page?: number; perPage?: number } = route.query;
-	if (pagination.pageSize !== 15) {
-		const newPage = Math.round(
-			OLD_pageSize < pagination.pageSize
-				? pagination.page / (pagination.pageSize / OLD_pageSize)
-				: pagination.page * (pagination.pageSize / OLD_pageSize),
-		);
-		pagination.page = Number.isNaN(newPage) ? 1 : newPage;
-		Query = {
-			...Query,
-			perPage: pagination.pageSize,
-			page: pagination.page,
-		};
-	}
+	const newPage = Math.round(
+		OLD_pageSize < pagination.pageSize
+			? pagination.page / (pagination.pageSize / OLD_pageSize)
+			: pagination.page * (pagination.pageSize / OLD_pageSize),
+	);
+	pagination.page = Number.isNaN(newPage) ? 1 : newPage;
+	const Query = {
+		...route.query,
+		perPage: pagination.pageSize,
+		page: pagination.page,
+	};
 	if (isAssetRoute)
-		router.push({ query: (({ page, perPage, ...rest }) => rest)(Query) });
+		router.push({ query: Query });
 	return refresh();
 }
 
@@ -780,10 +764,7 @@ const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 
 			assets.value = _data.result;
 
-			showSizePicker.value =
-				_data.options &&
-				(!_data.options.perPage ||
-					(_data.options.total as number) > _data.options.perPage);
+			showSizePicker.value = !!_data.options?.total;
 
 			pagination.pageCount = _data.options.totalPages ?? 0;
 			pagination.itemCount = _data.options.total ?? 0;
@@ -989,17 +970,18 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 		return false;
 	}
 	const data = await $fetch<apiResponse<Asset>>(
-		`${config.public.apiBase}${database.value.slug
-		}/assets${currentPath.value}/${file.name}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
-				[`${database.value.slug}_sid`]: sessionID.value,
+			`${config.public.apiBase}${
+				database.value.slug
+			}/assets${currentPath.value}/${file.name}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		},
-	),
+		),
 		singleAsset = assets.value?.find((asset) => asset.name === file.name);
 	if (data.result) {
 		if (assets.value)
@@ -1012,7 +994,82 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 	return false;
 }
 
+async function uploadScannedDocument(blob: Blob) {
+	const fileName = `scan-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+	const file = new File([blob], fileName, { type: "image/png" });
+
+	if (uploadCompleteTimer !== undefined) {
+		clearTimeout(uploadCompleteTimer);
+		uploadCompleteTimer = undefined;
+	}
+
+	try {
+		await uploadFileToPath(file, currentPath.value);
+		UploadProgress.value = 10000;
+		await new Promise<void>((resolve) => setTimeout(resolve, 3000));
+		UploadProgress.value = 0;
+		window.$message?.success(t("success"));
+	} catch (err) {
+		console.error("Scan upload failed:", err);
+		window.$message?.error(t("error"));
+		UploadProgress.value = 0;
+	} finally {
+		await refresh();
+	}
+}
+
 const folder = ref();
+const showFolderInput = ref(false);
+const folderInputElRef = ref<InputInst>();
+const uploadRef = ref<UploadInst>();
+
+const uploadDropdownOptions = computed(() => [
+	{
+		label: t("uploadFiles"),
+		key: "uploadFiles",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:upload" })),
+	},
+	{
+		label: t("uploadFolder"),
+		key: "uploadFolder",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:folder-up" })),
+	},
+	{
+		label: t("createFolder"),
+		key: "createFolder",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:folder-plus" })),
+	},
+	{
+		label: t("scanDocument"),
+		key: "scanDocument",
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:scan" })),
+	},
+]);
+
+function onUploadDropdownSelect(key: string) {
+	switch (key) {
+		case "uploadFiles":
+			uploadRef.value?.openOpenFileDialog();
+			break;
+		case "uploadFolder":
+			folderInputRef.value?.click();
+			break;
+		case "createFolder":
+			folder.value = "";
+			showFolderInput.value = true;
+			setTimeout(() => folderInputElRef.value?.focus(), 100);
+			break;
+		case "scanDocument":
+			showScanner.value = true;
+			break;
+	}
+}
+
+function cancelFolderCreation() {
+	folder.value = "";
+	showFolderInput.value = false;
+}
+
 async function createFolder() {
 	if (folder.value) {
 		currentPath.value += `/${folder.value}`;
@@ -1034,6 +1091,7 @@ async function createFolder() {
 				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${currentPath.value}`,
 			);
 		folder.value = "";
+		showFolderInput.value = false;
 	} else window.$message.error(t("folderNameRequired"));
 }
 

@@ -246,7 +246,8 @@ export default {
 		resetPassword: "Réinitialiser le mot de passe",
 		newPassword: "Nouveau mot de passe",
 		confirmPassword: "Confirmer le mot de passe",
-		passwordMinimumLength: "Le mot de passe doit contenir au moins 8 caractères.",
+		passwordMinimumLength:
+			"Le mot de passe doit contenir au moins 8 caractères.",
 		passwordsDoNotMatch: "Les mots de passe ne correspondent pas.",
 		invalidResetLink: "Ce lien de réinitialisation est invalide ou expiré.",
 		backToSignIn: "Retour à la connexion",
@@ -275,7 +276,8 @@ export default {
 		runNow: "Exécuter maintenant",
 		runAllActiveSchedules: "Exécuter toutes les planifications actives",
 		noActiveSchedules: "Aucune planification active à exécuter",
-		allActiveSchedulesRan: "Toutes les planifications actives ont été exécutées",
+		allActiveSchedulesRan:
+			"Toutes les planifications actives ont été exécutées",
 		someSchedulesFailed: "{count} planification(s) ont échoué",
 		tableSlug: "Identifiant de table",
 		clickToToggleDate: "Cliquez pour changer la date",
@@ -449,14 +451,34 @@ export default {
 		smtpPasswordUnchanged: "Laissez vide pour conserver le mot de passe actuel",
 		testEmailRecipient: "Adresse e-mail de test",
 		sendTestEmail: "Envoyer un e-mail de test",
-		emailSendFailed: "L'e-mail n'a pas pu être envoyé. Vérifiez les paramètres.",
+		emailSendFailed:
+			"L'e-mail n'a pas pu être envoyé. Vérifiez les paramètres.",
+
+		// Email template editor
+		emailTemplates: {
+			variables: "Variables",
+			variableName: "Nom de la variable (ex. booking_date)",
+			add: "Ajouter",
+			contentPlaceholder:
+				"Balises <mjml>…</mjml> (ou texte brut) — les variables comme {{@user.email}} et {{@data.field}} sont remplacées à l'envoi.",
+			preview: "Aperçu avec données d'exemple",
+			previewLoading: "Rendu de l'aperçu…",
+			previewSubject: "Objet",
+			previewEmpty: "Commencez à écrire pour voir l'aperçu.",
+			recordFieldsHint:
+				"Tous les champs de l'enregistrement déclencheur sont disponibles en {{field}} ou {{@data.field}} ; l'utilisateur actuel en {{@user.field}}.",
+			sendTest: "Envoyer un test",
+			sendTestHint:
+				"Envoie le modèle actuel (même non enregistré) à l'adresse ci-dessous.",
+			testRecipient: "E-mail du destinataire",
+		},
 
 		// Database settings
 		translationSettings: "Paramètres de Traduction",
 		deleteDatabase: "Supprimer la Base de Données",
 
 		// Tables
-		templates: "Modèles",
+		templates: "Modèles d'e-mail",
 
 		// Flows
 		accessDenied: "Accès refusé",
@@ -478,10 +500,12 @@ export default {
 		inactive: "Inactif",
 		preset: "Préréglage",
 		excludeDays: "Jours exclus",
-		excludeDaysHelp: "Les jours cochés seront ignorés même si l'expression cron correspond.",
+		excludeDaysHelp:
+			"Les jours cochés seront ignorés même si l'expression cron correspond.",
 		excludedDays: "Jours exclus",
 		noExcludedDays: "Aucun",
-		payloadHelp: "Utilisez un objet JSON ou un objet Inison sérialisé pour la ligne à créer.",
+		payloadHelp:
+			"Utilisez un objet JSON ou un objet Inison sérialisé pour la ligne à créer.",
 		payloadTemplateVariablesHelp:
 			"Modèles: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
 		previewResolvedPayload: "Prévisualiser la charge résolue",
@@ -492,9 +516,12 @@ export default {
 		presetDescriptionHourly: "S'exécute une fois par heure.",
 		presetDescriptionDaily: "S'exécute chaque jour à minuit UTC.",
 		presetDescriptionWeekly: "S'exécute chaque lundi à minuit UTC.",
-		presetDescriptionMonthly: "S'exécute le premier jour de chaque mois à minuit UTC.",
-		presetDescriptionCustom: "Utilisez votre propre expression cron pour des planifications avancées.",
-		scheduleSummaryNoExcluded: "Cette planification s'exécutera tous les jours correspondants.",
+		presetDescriptionMonthly:
+			"S'exécute le premier jour de chaque mois à minuit UTC.",
+		presetDescriptionCustom:
+			"Utilisez votre propre expression cron pour des planifications avancées.",
+		scheduleSummaryNoExcluded:
+			"Cette planification s'exécutera tous les jours correspondants.",
 		scheduleSummaryWithExcluded: "Cette planification ignorera : {days}.",
 		sunday: "Dimanche",
 		monday: "Lundi",
@@ -632,7 +659,8 @@ export default {
 				topupSuccess: "Crédit ajouté avec succès",
 				topupSuccessDescription: "Votre solde a été mis à jour.",
 				topupCanceled: "Recharge annulée",
-				topupCanceledDescription: "Votre paiement PayPal a été annulé. Aucun frais n'a été effectué.",
+				topupCanceledDescription:
+					"Votre paiement PayPal a été annulé. Aucun frais n'a été effectué.",
 				processingTopup: "Traitement du paiement en cours…",
 				orderId: "ID de commande",
 				amountAdded: "Montant ajouté",
@@ -644,7 +672,8 @@ export default {
 				notePlaceholder: "Référence du virement ou notes supplémentaires",
 				noteRequired: "Veuillez fournir une référence de virement ou une note",
 				submitRequest: "Soumettre la demande",
-				requestSubmitted: "Votre demande de crédit a été soumise. Un administrateur la traitera bientôt.",
+				requestSubmitted:
+					"Votre demande de crédit a été soumise. Un administrateur la traitera bientôt.",
 				requestFailed: "Échec de la demande de crédit. Veuillez réessayer.",
 				pendingRequests: "Demandes de crédit en attente",
 				noPendingRequests: "Aucune demande en attente",
@@ -670,7 +699,8 @@ export default {
 				activatedDescription:
 					"Votre compte PayPal a été enregistré. Les frais mensuels seront prélevés automatiquement.",
 				activationFailed: "Échec de l'activation du prélèvement automatique",
-				missingApprovalSession: "Session d'approbation manquante. Veuillez réessayer.",
+				missingApprovalSession:
+					"Session d'approbation manquante. Veuillez réessayer.",
 				setupCanceled: "Configuration annulée",
 				setupCanceledDescription:
 					"Vous avez annulé l'autorisation PayPal. Le prélèvement automatique n'a pas été activé.",
@@ -771,29 +801,36 @@ export default {
 
 		// Translation drawer
 		translateItem: "Traduire l'élément",
+		translateData: "Traduire",
 		original: "Original",
-		noSecondaryLanguages: "Aucune langue secondaire n'est configurée pour cette base de données.",
-		noTranslatableFields: "Aucun champ texte traduisible trouvé dans cette table.",
+		noSecondaryLanguages:
+			"Aucune langue secondaire n'est configurée pour cette base de données.",
+		noTranslatableFields:
+			"Aucun champ texte traduisible trouvé dans cette table.",
 		translationPlaceholder: "Saisir la traduction…",
 		translationsSaved: "Traductions enregistrées",
 		translated: "Traduit",
 
-                passkey: {
-                        securityTitle: "Sécurité par clé d'accès",
-                        description: "Enregistrez une clé d'accès pour vous connecter via la vérification de votre appareil.",
-                        register: "Enregistrer la clé d'accès",
-                        enrollmentTitle: "Configurer une clé d'accès",
-                        enrollmentPrompt: "Souhaitez-vous configurer une clé d'accès pour une connexion plus rapide et plus sécurisée sur cet appareil ?",
-                        notNow: "Pas maintenant",
-                        notSupported: "Ce navigateur ne prend pas en charge les clés d'accès.",
-                        hint: "Vous pouvez utiliser Face ID, Touch ID ou une clé de sécurité après l'enregistrement.",
-                        registeredSuccessfully: "Clé d'accès enregistrée avec succès.",
-                        registrationFailed: "Échec de l'enregistrement de la clé d'accès.",
-                        signin: "Se connecter avec une clé d'accès",
-                        signinHintUsername: "Entrez votre nom d'utilisateur ou e-mail, puis continuez avec la clé d'accès.",
-                        signinHintDevice: "Utilisez la vérification de votre appareil (Face ID, Touch ID ou clé de sécurité).",
-                        signinFailed: "Échec de la connexion avec la clé d'accès.",
-                },
+		passkey: {
+			securityTitle: "Sécurité par clé d'accès",
+			description:
+				"Enregistrez une clé d'accès pour vous connecter via la vérification de votre appareil.",
+			register: "Enregistrer la clé d'accès",
+			enrollmentTitle: "Configurer une clé d'accès",
+			enrollmentPrompt:
+				"Souhaitez-vous configurer une clé d'accès pour une connexion plus rapide et plus sécurisée sur cet appareil ?",
+			notNow: "Pas maintenant",
+			notSupported: "Ce navigateur ne prend pas en charge les clés d'accès.",
+			hint: "Vous pouvez utiliser Face ID, Touch ID ou une clé de sécurité après l'enregistrement.",
+			registeredSuccessfully: "Clé d'accès enregistrée avec succès.",
+			registrationFailed: "Échec de l'enregistrement de la clé d'accès.",
+			signin: "Se connecter avec une clé d'accès",
+			signinHintUsername:
+				"Entrez votre nom d'utilisateur ou e-mail, puis continuez avec la clé d'accès.",
+			signinHintDevice:
+				"Utilisez la vérification de votre appareil (Face ID, Touch ID ou clé de sécurité).",
+			signinFailed: "Échec de la connexion avec la clé d'accès.",
+		},
 
 		// Offline / sync
 		online: "En ligne",
@@ -816,11 +853,39 @@ export default {
 		keepServer: "Garder celle du serveur",
 		changeQueuedForSync: "Modification ajoutée à la file de synchronisation",
 		localChangeDiscarded: "Modification locale annulée",
-		allLocalChangesDiscarded: "Toutes les modifications locales ont été annulées",
+		allLocalChangesDiscarded:
+			"Toutes les modifications locales ont été annulées",
 		queuedOfflineToast:
 			"Vous êtes hors ligne — votre modification a été enregistrée localement et sera synchronisée à la reconnexion.",
 		createFailed: "Impossible de créer l'élément.",
 		updateFailed: "Impossible de mettre à jour l'élément.",
 		deleteFailed: "Impossible de supprimer l'élément.",
-        },
+
+		// Document scanner
+		documentScanner: "Scanner de documents",
+		camera: "Caméra",
+		uploadImage: "Importer une image",
+		openCamera: "Ouvrir la caméra",
+		capture: "Capturer",
+		retake: "Reprendre",
+		cameraUnavailable: "Caméra indisponible",
+		loadingScanner: "Chargement du scanner de documents",
+		retry: "Réessayer",
+		dropImageOrClick: "Déposez une image ici, ou cliquez pour parcourir",
+		preview: "Aperçu",
+		extractingDocument: "Extraction du document",
+		ocr: "OCR",
+		language: "Langue",
+		extractedText: "Texte extrait",
+		copy: "Copier",
+		insertAsText: "Insérer comme texte",
+		insertAsImage: "Insérer comme image",
+		useThisScan: "Utiliser ce scan",
+		documentNotDetected: "Document non détecté",
+		adjustCorners: "Ajuster les coins",
+		dragHandlesToAdjust:
+			"Faites glisser les poignées vertes pour délimiter la carte, puis appliquez.",
+		applyCrop: "Appliquer le recadrage",
+		scanDocument: "Scanner un document",
+	},
 } as const;

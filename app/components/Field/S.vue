@@ -1,6 +1,11 @@
 <template>
 	<NFlex>
-		<Field v-for="field of formatedSchema" :field="field" v-model="modelValue[field.key]" />
+		<Field
+			v-for="field of formatedSchema"
+			:field="field"
+			:item="modelValue"
+			v-model="modelValue[field.key]"
+		/>
 	</NFlex>
 </template>
 

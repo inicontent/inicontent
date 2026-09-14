@@ -240,5 +240,10 @@ export default function (
 		translation = interpolate(translation, params);
 	}
 
+	// If the value is still not a string (e.g. the key is a parent node with
+	// nested translations, like t("form")), return just the key instead of the
+	// object it resolved to.
+	if (typeof translation !== "string") return key;
+
 	return translation;
 }

@@ -10,6 +10,10 @@
     </NDrawerContent>
   </NDrawer>
 
+  <LazyAssetScanner v-model:show="showScanner" :allowOCR="true"
+    @scanned="(blob, dataUrl) => { editor?.chain().focus().setImage({ src: dataUrl }).run(); showScanner = false; }"
+    @insertText="(text, blocks) => { editor?.chain().focus().insertContent(blocks).run(); showScanner = false; }" />
+
   <NFlex class="richEditorWrapper" vertical style="width: 100%">
     <NScrollbar x-scrollable>
       <NFlex :wrap="false" align="center">
@@ -104,6 +108,12 @@
           <NButton @click="showAssetsModal = true">
             <NIcon>
               <Icon name="tabler:upload" />
+            </NIcon>
+          </NButton>
+
+          <NButton @click="showScanner = true">
+            <NIcon>
+              <Icon name="tabler:scan" />
             </NIcon>
           </NButton>
 
@@ -342,27 +352,28 @@
 </template>
 
 <script setup lang="ts">
-import { Color as TiptapColor } from "@tiptap/extension-color"
-import TiptapHighlight from "@tiptap/extension-highlight"
-import { Table } from "@tiptap/extension-table"
-import TableCell from "@tiptap/extension-table-cell"
-import TableHeader from "@tiptap/extension-table-header"
-import TableRow from "@tiptap/extension-table-row"
-import TiptapTextAlign from "@tiptap/extension-text-align"
-import { TextStyle as TiptapTextStyle } from "@tiptap/extension-text-style"
+import { Color as TiptapColor } from "@tiptap/extension-color";
+import TiptapHighlight from "@tiptap/extension-highlight";
+import { Table } from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import TiptapTextAlign from "@tiptap/extension-text-align";
+import { TextStyle as TiptapTextStyle } from "@tiptap/extension-text-style";
 
-const modelValue = defineModel<string>()
+const modelValue = defineModel<string>();
 
-const showAssetsModal = ref(false)
-const fontColor = ref()
-const fontBgColor = ref()
-const url = ref()
+const showAssetsModal = ref(false);
+const showScanner = ref(false);
+const fontColor = ref();
+const fontBgColor = ref();
+const url = ref();
 
 function renderHeadingOption({ value }: { value: number }) {
-	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`)
+	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
 }
 
-const Language = useLanguageCookie()
+const Language = useLanguageCookie();
 
 const headingOptions = [
 	{
@@ -383,10 +394,10 @@ const headingOptions = [
 	{
 		value: 6,
 	},
-]
+];
 
 function renderFontSizeOption({ value }: { value: number }) {
-	return h("span", { style: { fontSize: `${value}px` } }, "Paragraph")
+	return h("span", { style: { fontSize: `${value}px` } }, "Paragraph");
 }
 
 const fontSizeOptions = [
@@ -426,19 +437,19 @@ const fontSizeOptions = [
 	{
 		value: 72,
 	},
-]
+];
 
 function setLink() {
 	// cancelled
 	if (url.value === null) {
-		return
+		return;
 	}
 
 	// empty
 	if (url.value === "") {
-		editor.value?.chain().focus().extendMarkRange("link").unsetLink().run()
+		editor.value?.chain().focus().extendMarkRange("link").unsetLink().run();
 
-		return
+		return;
 	}
 
 	// update link
@@ -447,7 +458,7 @@ function setLink() {
 		.focus()
 		.extendMarkRange("link")
 		.setLink({ href: url.value })
-		.run()
+		.run();
 }
 
 declare module "@tiptap/core" {
@@ -456,12 +467,12 @@ declare module "@tiptap/core" {
 			/**
 			 * Set the font size
 			 */
-			setFontSize: (size: string) => ReturnType
+			setFontSize: (size: string) => ReturnType;
 			/**
 			 * Unset the font size
 			 */
-			unsetFontSize: () => ReturnType
-		}
+			unsetFontSize: () => ReturnType;
+		};
 	}
 }
 
@@ -474,14 +485,14 @@ const TextStyleExtended = TiptapTextStyle.extend({
 				parseHTML: (element) => element.style.fontSize.replace("px", ""),
 				renderHTML: (attributes) => {
 					if (!attributes.fontSize) {
-						return {}
+						return {};
 					}
 					return {
 						style: `font-size: ${attributes.fontSize}px`,
-					}
+					};
 				},
 			},
-		}
+		};
 	},
 
 	addCommands() {
@@ -490,7 +501,7 @@ const TextStyleExtended = TiptapTextStyle.extend({
 			setFontSize:
 				(fontSize) =>
 				({ commands }) => {
-					return commands.setMark(this.name, { fontSize: fontSize })
+					return commands.setMark(this.name, { fontSize: fontSize });
 				},
 			unsetFontSize:
 				() =>
@@ -498,11 +509,11 @@ const TextStyleExtended = TiptapTextStyle.extend({
 					return chain()
 						.setMark(this.name, { fontSize: null })
 						.removeEmptyTextStyle()
-						.run()
+						.run();
 				},
-		}
+		};
 	},
-})
+});
 
 const editor = useEditor({
 	content: modelValue.value,
@@ -521,12 +532,12 @@ const editor = useEditor({
 		TableCell,
 	],
 	onUpdate: ({ editor }) => {
-		const content = editor.getHTML()
-		modelValue.value = content
+		const content = editor.getHTML();
+		modelValue.value = content;
 	},
-})
+});
 
 onBeforeUnmount(() => {
-	unref(editor)?.destroy()
-})
+	unref(editor)?.destroy();
+});
 </script>

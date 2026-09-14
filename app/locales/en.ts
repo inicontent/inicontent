@@ -440,6 +440,7 @@ export default {
 		noTranslatableFields: "No translatable text fields found in this table.",
 		translationPlaceholder: "Enter translation…",
 		translationsSaved: "Translations saved",
+		translated: "Translated",
 
 		passkey: {
 			securityTitle: "Passkey Security",
@@ -475,6 +476,26 @@ export default {
 		smtpPasswordUnchanged: "Leave blank to keep the current password",
 		emailSendFailed: "The email could not be sent. Check the email settings.",
 
+		// Email template editor
+		templates: "Email templates",
+		emailTemplates: {
+			variables: "Variables",
+			variableName: "Variable name (e.g. booking_date)",
+			add: "Add",
+			contentPlaceholder:
+				"<mjml>…</mjml> markup (or plain text) — placeholders like {{@user.email}} and {{@data.field}} are replaced on send.",
+			preview: "Preview with sample data",
+			previewLoading: "Rendering preview…",
+			previewSubject: "Subject",
+			previewEmpty: "Start writing to see the preview.",
+			recordFieldsHint:
+				"Every field of the record that triggers the email is available as {{field}} or {{@data.field}}; the current user as {{@user.field}}.",
+			sendTest: "Send test",
+			sendTestHint:
+				"Sends the current template (even unsaved) to the email address below.",
+			testRecipient: "Recipient email",
+		},
+
 		// Offline / sync
 		online: "Online",
 		offline: "Offline",
@@ -502,5 +523,35 @@ export default {
 		createFailed: "Could not create the item.",
 		updateFailed: "Could not update the item.",
 		deleteFailed: "Could not delete the item.",
+
+		// Document scanner
+		documentScanner: "Document scanner",
+		camera: "Camera",
+		uploadImage: "Upload image",
+		openCamera: "Open camera",
+		capture: "Capture",
+		retake: "Retake",
+		reset: "Reset",
+		cameraUnavailable: "Camera unavailable",
+		loadingScanner: "Loading document scanner",
+		error: "Error",
+		retry: "Retry",
+		dropImageOrClick: "Drop an image here, or click to browse",
+		preview: "Preview",
+		extractingDocument: "Extracting document",
+		ocr: "OCR",
+		language: "Language",
+		extractedText: "Extracted text",
+		copy: "Copy",
+		insertAsText: "Insert as text",
+		insertAsImage: "Insert as image",
+		useThisScan: "Use this scan",
+		documentNotDetected: "Document not detected",
+		adjustCorners: "Adjust corners",
+		dragHandlesToAdjust:
+			"Drag the green handles to outline the card, then apply.",
+		cancel: "Cancel",
+		applyCrop: "Apply crop",
+		scanDocument: "Scan document",
 	},
 } as const;

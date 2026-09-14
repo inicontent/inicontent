@@ -244,7 +244,8 @@ export default {
 		confirmPassword: "تأكيد كلمة المرور",
 		passwordMinimumLength: "يجب ألا تقل كلمة المرور عن 8 أحرف.",
 		passwordsDoNotMatch: "كلمتا المرور غير متطابقتين.",
-		invalidResetLink: "رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية.",
+		invalidResetLink:
+			"رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية.",
 		backToSignIn: "العودة إلى تسجيل الدخول",
 
 		// Table actions
@@ -467,12 +468,31 @@ export default {
 		sendTestEmail: "إرسال بريد تجريبي",
 		emailSendFailed: "تعذر إرسال البريد الإلكتروني. تحقق من إعدادات البريد.",
 
+		// Email template editor
+		emailTemplates: {
+			variables: "المتغيرات",
+			variableName: "اسم المتغير (مثال: booking_date)",
+			add: "إضافة",
+			contentPlaceholder:
+				"ترميز <mjml>…</mjml> (أو نص عادي) — يتم استبدال المتغيرات مثل {{@user.email}} و {{@data.field}} عند الإرسال.",
+			preview: "معاينة ببيانات تجريبية",
+			previewLoading: "جارٍ إنشاء المعاينة…",
+			previewSubject: "الموضوع",
+			previewEmpty: "ابدأ بالكتابة لرؤية المعاينة.",
+			recordFieldsHint:
+				"جميع حقول السجل الذي يُفعّل البريد متاحة كـ {{field}} أو {{@data.field}}؛ والمستخدم الحالي كـ {{@user.field}}.",
+			sendTest: "إرسال تجريبي",
+			sendTestHint:
+				"يرسل القالب الحالي (حتى لو لم يُحفظ) إلى عنوان البريد أدناه.",
+			testRecipient: "بريد المستلم",
+		},
+
 		// Database settings
 		translationSettings: "إعدادات الترجمة",
 		deleteDatabase: "حذف قاعدة البيانات",
 
 		// Tables
-		templates: "القوالب",
+		templates: "قوالب البريد الإلكتروني",
 
 		// Flows
 		accessDenied: "لا توجد صلاحيات كافية",
@@ -494,10 +514,12 @@ export default {
 		inactive: "غير نشط",
 		preset: "إعداد مسبق",
 		excludeDays: "استثناء أيام",
-		excludeDaysHelp: "لن تعمل الجدولة في الأيام المحددة حتى لو طابقها تعبير كرون.",
+		excludeDaysHelp:
+			"لن تعمل الجدولة في الأيام المحددة حتى لو طابقها تعبير كرون.",
 		excludedDays: "الأيام المستثناة",
 		noExcludedDays: "لا يوجد",
-		payloadHelp: "استخدم كائناً بصيغة JSON أو كائناً مُحوّلاً إلى نص بواسطة Inison للصف الذي تريد إنشاءه.",
+		payloadHelp:
+			"استخدم كائناً بصيغة JSON أو كائناً مُحوّلاً إلى نص بواسطة Inison للصف الذي تريد إنشاءه.",
 		payloadTemplateVariablesHelp:
 			"القوالب: {{ now }}، {{ now + 2h }}، {{ now|iso }}، {{ today|date }}، {{ schedule.id }}، {{ database.slug }}، {{ table.slug }}، {{ run.iso }}.",
 		previewResolvedPayload: "معاينة الحمولة بعد الحل",
@@ -669,7 +691,8 @@ export default {
 				topupSuccess: "تمت إضافة الرصيد بنجاح",
 				topupSuccessDescription: "تم تحديث رصيد حسابك.",
 				topupCanceled: "تم إلغاء الشحن",
-				topupCanceledDescription: "تم إلغاء دفعتك عبر PayPal. لم يتم تحصيل أي رسوم.",
+				topupCanceledDescription:
+					"تم إلغاء دفعتك عبر PayPal. لم يتم تحصيل أي رسوم.",
 				processingTopup: "جاري معالجة دفعتك…",
 				orderId: "رقم الطلب",
 				amountAdded: "المبلغ المضاف",
@@ -697,8 +720,7 @@ export default {
 			},
 			autoCharge: {
 				title: "خصم تلقائي عبر PayPal",
-				subtitle:
-					"خصم حساب PayPal تلقائياً عندما يكون الرصيد غير كافٍ.",
+				subtitle: "خصم حساب PayPal تلقائياً عندما يكون الرصيد غير كافٍ.",
 				statusEnabled: "مفعّل",
 				enable: "تفعيل الخصم التلقائي",
 				disable: "تعطيل الخصم التلقائي",
@@ -822,15 +844,18 @@ export default {
 			description: "سجّل مفتاح مرور لتسجيل الدخول باستخدام التحقق من جهازك.",
 			register: "تسجيل مفتاح مرور",
 			enrollmentTitle: "إعداد مفتاح مرور",
-			enrollmentPrompt: "هل ترغب في إعداد مفتاح مرور لتسجيل دخول أسرع وأكثر أمانًا على هذا الجهاز؟",
+			enrollmentPrompt:
+				"هل ترغب في إعداد مفتاح مرور لتسجيل دخول أسرع وأكثر أمانًا على هذا الجهاز؟",
 			notNow: "ليس الآن",
 			notSupported: "هذا المتصفح لا يدعم مفاتيح المرور.",
 			hint: "يمكنك استخدام Face ID أو Touch ID أو مفتاح أمان بعد التسجيل.",
 			registeredSuccessfully: "تم تسجيل مفتاح المرور بنجاح.",
 			registrationFailed: "فشل تسجيل مفتاح المرور.",
 			signin: "تسجيل الدخول بمفتاح المرور",
-			signinHintUsername: "أدخل اسم المستخدم أو البريد الإلكتروني ثم تابع باستخدام مفتاح المرور.",
-			signinHintDevice: "استخدم التحقق من جهازك (Face ID أو Touch ID أو مفتاح أمان).",
+			signinHintUsername:
+				"أدخل اسم المستخدم أو البريد الإلكتروني ثم تابع باستخدام مفتاح المرور.",
+			signinHintDevice:
+				"استخدم التحقق من جهازك (Face ID أو Touch ID أو مفتاح أمان).",
 			signinFailed: "فشل تسجيل الدخول بمفتاح المرور.",
 		},
 
@@ -861,5 +886,31 @@ export default {
 		createFailed: "تعذر إنشاء العنصر.",
 		updateFailed: "تعذر تحديث العنصر.",
 		deleteFailed: "تعذر حذف العنصر.",
+
+		// Document scanner
+		documentScanner: "ماسح المستندات",
+		camera: "الكاميرا",
+		uploadImage: "رفع صورة",
+		openCamera: "فتح الكاميرا",
+		capture: "التقاط",
+		retake: "إعادة",
+		cameraUnavailable: "الكاميرا غير متاحة",
+		loadingScanner: "جارٍ تحميل ماسح المستندات",
+		retry: "إعادة المحاولة",
+		dropImageOrClick: "أسقط صورة هنا أو انقر للتصفح",
+		preview: "معاينة",
+		extractingDocument: "جارٍ استخراج المستند",
+		ocr: "OCR",
+		language: "اللغة",
+		extractedText: "النص المستخرج",
+		copy: "نسخ",
+		insertAsText: "إدراج كنص",
+		insertAsImage: "إدراج كصورة",
+		useThisScan: "استخدام هذا المسح",
+		documentNotDetected: "لم يتم اكتشاف المستند",
+		adjustCorners: "ضبط الزوايا",
+		dragHandlesToAdjust: "اسحب المقابض الخضراء لتحديد البطاقة ثم طبّق.",
+		applyCrop: "تطبيق القص",
+		scanDocument: "مسح مستند",
 	},
 } as const;

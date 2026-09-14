@@ -42,11 +42,13 @@
 		"inibase": "1.5.7",
 		"inidot": "latest",
 		"inison": "^2.0.1",
+		"jscanify": "^1.4.3",
 		"jspdf": "^4.2.1",
 		"naive-ui": "^2.45.3",
 		"nuxt": "^4.5.2",
 		"nuxt-tiptap-editor": "3.2.0",
 		"pdfjs-dist": "^5.5.207",
+		"tesseract.js": "^7.0.0",
 		"vue": "^3.5.30",
 		"vue-draggable-plus": "^0.6.1",
 		"vue-echarts": "^8.0.1",
@@ -55,5 +57,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"canvas",
+			"tesseract.js"
+		]
 	}
 }

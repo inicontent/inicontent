@@ -296,8 +296,9 @@ const menuOptions = computed(() => {
 	const options: MenuOption[] = [...primaryTableOptions];
 	
 	if (hasDashboardsTable.value) {
+		if(primaryTableOptions.length)
 			options.push({ key: "divider-1", type: "divider" });
-			options.push(renderDashboardItem());
+		options.push(renderDashboardItem());
 	}
 
 	if (secondaryTableOptions.length) {

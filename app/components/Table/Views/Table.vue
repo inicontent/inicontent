@@ -193,28 +193,23 @@ const pagination = reactive({
 		const OLD_pageSize = toRaw(pagination.pageSize);
 		pagination.pageSize = pageSize;
 		let { perPage, page, ...Query }: any = route.query;
-		const defaultPageSize = Number(
-			route.query.perPage ?? getResponsivePageSize(),
+		pagination.page = Math.round(
+			OLD_pageSize < pageSize
+				? page / (pageSize / OLD_pageSize)
+				: page * (pageSize / OLD_pageSize),
 		);
-		if (pageSize !== defaultPageSize) {
-			pagination.page = Math.round(
-				OLD_pageSize < pageSize
-					? page / (pageSize / OLD_pageSize)
-					: page * (pageSize / OLD_pageSize),
-			);
-			if (Number.isNaN(pagination.page)) pagination.page = 1;
-			Query = {
-				...Query,
-				perPage: pageSize,
-				page: pagination.page === 1 ? undefined : pagination.page,
-			};
-			router.push({
-				query: Query,
-			});
-			await refreshNuxtData(
-				`${database.value.slug}/${table.value?.slug as string}`,
-			);
-		}
+		if (Number.isNaN(pagination.page)) pagination.page = 1;
+		Query = {
+			...Query,
+			perPage: pageSize,
+			page: pagination.page === 1 ? undefined : pagination.page,
+		};
+		router.push({
+			query: Query,
+		});
+		await refreshNuxtData(
+			`${database.value.slug}/${table.value?.slug as string}`,
+		);
 	},
 });
 
@@ -276,10 +271,7 @@ watch(_data, (v) => {
 const dataTablePagination = computed(() => ({
 	disabled: !_data.value?.options.total,
 	simple: isMobile,
-	showSizePicker:
-		_data.value?.options &&
-		(!_data.value.options.perPage ||
-			(_data.value.options.total as number) > _data.value.options.perPage),
+	showSizePicker: !!_data.value?.options?.total,
 	pageSizes: getResponsivePageSizes(),
 	prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
 	...pagination,
@@ -515,7 +507,7 @@ const getCsvHeader: DataTableGetCsvHeader = (col) => {
 	return (col.key as string) || "Unknown";
 };
 
-function handleSorterChange({
+async function handleSorterChange({
 	columnKey,
 	order,
 }: {
@@ -524,6 +516,18 @@ function handleSorterChange({
 }) {
 	if (!order) delete sort.value[columnKey];
 	else sort.value[columnKey] = order.slice(0, -3) as "asc" | "desc";
+
+	// Anchor sorting to the currently selected page size so it doesn't fall
+	// back to the responsive default.
+	if (pagination.pageSize !== getResponsivePageSize()) {
+		let { page, ...Query }: any = route.query;
+		pagination.page = 1;
+		Query = {
+			...Query,
+			perPage: pagination.pageSize,
+		};
+		await router.push({ query: Query });
+	}
 }
 
 const checkedRowKeys = ref<string[]>([]);

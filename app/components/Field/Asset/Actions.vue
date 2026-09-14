@@ -27,7 +27,7 @@
             </NTooltip>
         </template>
         <NInputGroup>
-            <NInput :input-props="{ type: 'url' }" ref="importInputRef" v-model:value="assetURLs"
+            <NInput size="small" :input-props="{ type: 'url' }" ref="importInputRef" v-model:value="assetURLs"
                 :placeholder="t('assetLink')" clearable @keydown.enter.prevent="importAsset">
                 <template #suffix>
                     <NIcon>
@@ -37,7 +37,7 @@
             </NInput>
             <NTooltip :delay="1500">
                 <template #trigger>
-                    <NButton :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
+                    <NButton size="small" :loading="Loading.import" :disabled="!assetURLs" tag="a" @click.prevent.stop="importAsset">
                         <template #icon>
                             <NIcon>
                                 <Icon name="tabler:arrow-right" />
@@ -74,7 +74,7 @@ const sessionID = useSessionCookie()
 async function importAsset() {
     Loading.value.import = true
     const data = await $fetch<apiResponse<Asset | Asset[]>>(
-        `${config.public.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID}`,
+        `${config.public.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID.value}`,
         {
             method: "POST",
             headers: {

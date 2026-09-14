@@ -24,11 +24,11 @@ function getTableIcon(table: Table) {
 		case "sessions":
 			return "tabler:fingerprint"
 		case "pages":
-			return "tabler:app-window"
-		case "blocks":
-			return "tabler:tournament"
-		case "templates":
 			return "tabler:template"
+		case "blocks":
+			return "tabler:layout-2"
+		case "templates":
+			return "tabler:mail-spark"
 		default:
 			return "tabler:table"
 	}

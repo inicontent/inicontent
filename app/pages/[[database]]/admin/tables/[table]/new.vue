@@ -6,7 +6,7 @@
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table", "global"],
 	layout: "table",
-})
+});
 
-const data = ref<Item>({})
+const data = ref<Item>({});
 </script>

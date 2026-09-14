@@ -157,6 +157,9 @@ const toggleDrawerWidth = (index: number) => {
 function onEsc() {
 	const openDrawerIndex = Drawers.value.findLastIndex((drawer) => drawer.show);
 	if (openDrawerIndex !== -1) {
+		// The asset preview modal keeps ".assetLightbox" on the DOM while it's open
+		// (Asset/Preview.vue). First Esc closes only the preview; the drawer waits
+		// until the preview is gone before closing itself.
 		const previewModal = document.querySelector(".assetLightbox");
 		if (!previewModal) onUpdateShow(openDrawerIndex, false);
 	}

@@ -1,5 +1,6 @@
 <template>
-	<NModal v-if="activeAsset" :show="showPreview" :auto-focus="false" :mask-closable="true"
+	<!-- class="assetLightbox" is load-bearing: Form/Drawer.vue's Esc handler and the :has(.assetLightbox) z-index rule in main.css depend on it -->
+	<NModal v-if="activeAsset" class="assetLightbox" :show="showPreview" :auto-focus="false" :mask-closable="true"
 		:close-on-esc="true" @mask-click="closePreview" @close="closePreview" @esc="closePreview"
 		preset="card" 
 		style="width: min(90vw, 1080px);max-width: 1080px;"

@@ -247,7 +247,8 @@ export default {
 		confirmPassword: "Confirmar contraseña",
 		passwordMinimumLength: "La contraseña debe tener al menos 8 caracteres.",
 		passwordsDoNotMatch: "Las contraseñas no coinciden.",
-		invalidResetLink: "Este enlace de restablecimiento no es válido o ha caducado.",
+		invalidResetLink:
+			"Este enlace de restablecimiento no es válido o ha caducado.",
 		backToSignIn: "Volver al inicio de sesión",
 
 		// Table actions
@@ -274,7 +275,8 @@ export default {
 		runNow: "Ejecutar ahora",
 		runAllActiveSchedules: "Ejecutar todas las programaciones activas",
 		noActiveSchedules: "No hay programaciones activas para ejecutar",
-		allActiveSchedulesRan: "Todas las programaciones activas se ejecutaron correctamente",
+		allActiveSchedulesRan:
+			"Todas las programaciones activas se ejecutaron correctamente",
 		someSchedulesFailed: "{count} programación(es) fallaron",
 		tableSlug: "Identificador de tabla",
 		clickToToggleDate: "Haz clic para cambiar la fecha",
@@ -450,12 +452,31 @@ export default {
 		sendTestEmail: "Enviar correo de prueba",
 		emailSendFailed: "No se pudo enviar el correo. Comprueba la configuración.",
 
+		// Email template editor
+		emailTemplates: {
+			variables: "Variables",
+			variableName: "Nombre de la variable (p. ej. booking_date)",
+			add: "Añadir",
+			contentPlaceholder:
+				"Etiquetas <mjml>…</mjml> (o texto plano) — las variables como {{@user.email}} y {{@data.field}} se sustituyen al enviar.",
+			preview: "Vista previa con datos de ejemplo",
+			previewLoading: "Generando vista previa…",
+			previewSubject: "Asunto",
+			previewEmpty: "Empieza a escribir para ver la vista previa.",
+			recordFieldsHint:
+				"Todos los campos del registro que dispara el correo están disponibles como {{field}} o {{@data.field}}; el usuario actual como {{@user.field}}.",
+			sendTest: "Enviar prueba",
+			sendTestHint:
+				"Envía la plantilla actual (aunque no esté guardada) a la dirección indicada.",
+			testRecipient: "Correo del destinatario",
+		},
+
 		// Database settings
 		translationSettings: "Configuración de Traducción",
 		deleteDatabase: "Eliminar Base de Datos",
 
 		// Tables
-		templates: "Plantillas",
+		templates: "Plantillas de correo",
 
 		// Flows
 		accessDenied: "Acceso denegado",
@@ -477,10 +498,12 @@ export default {
 		inactive: "Inactivo",
 		preset: "Preajuste",
 		excludeDays: "Excluir días",
-		excludeDaysHelp: "Los días marcados se omitirán aunque la expresión cron coincida.",
+		excludeDaysHelp:
+			"Los días marcados se omitirán aunque la expresión cron coincida.",
 		excludedDays: "Días excluidos",
 		noExcludedDays: "Ninguno",
-		payloadHelp: "Usa un objeto JSON o un objeto serializado con Inison para la fila que quieres crear.",
+		payloadHelp:
+			"Usa un objeto JSON o un objeto serializado con Inison para la fila que quieres crear.",
 		payloadTemplateVariablesHelp:
 			"Plantillas: {{ now }}, {{ now + 2h }}, {{ now|iso }}, {{ today|date }}, {{ schedule.id }}, {{ database.slug }}, {{ table.slug }}, {{ run.iso }}.",
 		previewResolvedPayload: "Previsualizar carga resuelta",
@@ -491,9 +514,12 @@ export default {
 		presetDescriptionHourly: "Se ejecuta una vez por hora.",
 		presetDescriptionDaily: "Se ejecuta cada día a medianoche UTC.",
 		presetDescriptionWeekly: "Se ejecuta cada lunes a medianoche UTC.",
-		presetDescriptionMonthly: "Se ejecuta el primer día de cada mes a medianoche UTC.",
-		presetDescriptionCustom: "Usa tu propia expresión cron para programaciones avanzadas.",
-		scheduleSummaryNoExcluded: "Esta programación se ejecutará en todos los días que coincidan.",
+		presetDescriptionMonthly:
+			"Se ejecuta el primer día de cada mes a medianoche UTC.",
+		presetDescriptionCustom:
+			"Usa tu propia expresión cron para programaciones avanzadas.",
+		scheduleSummaryNoExcluded:
+			"Esta programación se ejecutará en todos los días que coincidan.",
 		scheduleSummaryWithExcluded: "Esta programación omitirá: {days}.",
 		sunday: "Domingo",
 		monday: "Lunes",
@@ -628,7 +654,8 @@ export default {
 				topupSuccess: "Crédito añadido con éxito",
 				topupSuccessDescription: "Tu saldo ha sido actualizado.",
 				topupCanceled: "Recarga cancelada",
-				topupCanceledDescription: "Tu pago de PayPal fue cancelado. No se realizaron cargos.",
+				topupCanceledDescription:
+					"Tu pago de PayPal fue cancelado. No se realizaron cargos.",
 				processingTopup: "Procesando tu pago…",
 				orderId: "ID de pedido",
 				amountAdded: "Importe añadido",
@@ -637,10 +664,13 @@ export default {
 				requestDescription:
 					"Envía una solicitud de transferencia. Un administrador lo verificará y aplicará el crédito.",
 				note: "Referencia de transferencia / Nota",
-				notePlaceholder: "Referencia de transferencia bancaria o notas adicionales",
-				noteRequired: "Por favor, proporciona una referencia de transferencia o nota",
+				notePlaceholder:
+					"Referencia de transferencia bancaria o notas adicionales",
+				noteRequired:
+					"Por favor, proporciona una referencia de transferencia o nota",
 				submitRequest: "Enviar solicitud",
-				requestSubmitted: "Tu solicitud de crédito ha sido enviada. Un administrador la revisará pronto.",
+				requestSubmitted:
+					"Tu solicitud de crédito ha sido enviada. Un administrador la revisará pronto.",
 				requestFailed: "Error al enviar la solicitud. Inténtalo de nuevo.",
 				pendingRequests: "Solicitudes de crédito pendientes",
 				noPendingRequests: "No hay solicitudes pendientes",
@@ -666,7 +696,8 @@ export default {
 				activatedDescription:
 					"Tu cuenta PayPal ha sido guardada. Los cargos mensuales se cobrarán automáticamente.",
 				activationFailed: "Error al activar el cargo automático",
-				missingApprovalSession: "Sesión de aprobación no encontrada. Inténtalo de nuevo.",
+				missingApprovalSession:
+					"Sesión de aprobación no encontrada. Inténtalo de nuevo.",
 				setupCanceled: "Configuración cancelada",
 				setupCanceledDescription:
 					"Cancelaste la autorización de PayPal. El cargo automático no fue activado.",
@@ -768,29 +799,36 @@ export default {
 
 		// Translation drawer
 		translateItem: "Traducir elemento",
+		translateData: "Traducir",
 		original: "Original",
-		noSecondaryLanguages: "No hay idiomas secundarios configurados para esta base de datos.",
-		noTranslatableFields: "No se encontraron campos de texto traducibles en esta tabla.",
+		noSecondaryLanguages:
+			"No hay idiomas secundarios configurados para esta base de datos.",
+		noTranslatableFields:
+			"No se encontraron campos de texto traducibles en esta tabla.",
 		translationPlaceholder: "Ingrese la traducción…",
 		translationsSaved: "Traducciones guardadas",
 		translated: "Traducido",
 
-                passkey: {
-                        securityTitle: "Seguridad con llave de acceso",
-                        description: "Registra una llave de acceso para iniciar sesión mediante la verificación de tu dispositivo.",
-                        register: "Registrar llave de acceso",
-                        enrollmentTitle: "Configurar una llave de acceso",
-                        enrollmentPrompt: "¿Quieres configurar una llave de acceso para iniciar sesión de forma más rápida y segura en este dispositivo?",
-                        notNow: "Ahora no",
-                        notSupported: "Este navegador no admite llaves de acceso.",
-                        hint: "Puedes usar Face ID, Touch ID o una llave de seguridad después del registro.",
-                        registeredSuccessfully: "Llave de acceso registrada correctamente.",
-                        registrationFailed: "Error al registrar la llave de acceso.",
-                        signin: "Iniciar sesión con llave de acceso",
-                        signinHintUsername: "Introduce tu nombre de usuario o correo y continúa con la llave de acceso.",
-                        signinHintDevice: "Usa la verificación de tu dispositivo (Face ID, Touch ID o llave de seguridad).",
-                        signinFailed: "Error al iniciar sesión con llave de acceso.",
-                },
+		passkey: {
+			securityTitle: "Seguridad con llave de acceso",
+			description:
+				"Registra una llave de acceso para iniciar sesión mediante la verificación de tu dispositivo.",
+			register: "Registrar llave de acceso",
+			enrollmentTitle: "Configurar una llave de acceso",
+			enrollmentPrompt:
+				"¿Quieres configurar una llave de acceso para iniciar sesión de forma más rápida y segura en este dispositivo?",
+			notNow: "Ahora no",
+			notSupported: "Este navegador no admite llaves de acceso.",
+			hint: "Puedes usar Face ID, Touch ID o una llave de seguridad después del registro.",
+			registeredSuccessfully: "Llave de acceso registrada correctamente.",
+			registrationFailed: "Error al registrar la llave de acceso.",
+			signin: "Iniciar sesión con llave de acceso",
+			signinHintUsername:
+				"Introduce tu nombre de usuario o correo y continúa con la llave de acceso.",
+			signinHintDevice:
+				"Usa la verificación de tu dispositivo (Face ID, Touch ID o llave de seguridad).",
+			signinFailed: "Error al iniciar sesión con llave de acceso.",
+		},
 
 		// Offline / sync
 		online: "En línea",
@@ -819,5 +857,32 @@ export default {
 		createFailed: "No se pudo crear el elemento.",
 		updateFailed: "No se pudo actualizar el elemento.",
 		deleteFailed: "No se pudo eliminar el elemento.",
-        },
+
+		// Document scanner
+		documentScanner: "Escáner de documentos",
+		camera: "Cámara",
+		uploadImage: "Subir imagen",
+		openCamera: "Abrir cámara",
+		capture: "Capturar",
+		retake: "Repetir",
+		cameraUnavailable: "Cámara no disponible",
+		loadingScanner: "Cargando el escáner de documentos",
+		retry: "Reintentar",
+		dropImageOrClick: "Suelta una imagen aquí o haz clic para explorar",
+		preview: "Vista previa",
+		extractingDocument: "Extrayendo documento",
+		ocr: "OCR",
+		language: "Idioma",
+		extractedText: "Texto extraído",
+		copy: "Copiar",
+		insertAsText: "Insertar como texto",
+		insertAsImage: "Insertar como imagen",
+		useThisScan: "Usar este escaneo",
+		documentNotDetected: "Documento no detectado",
+		adjustCorners: "Ajustar esquinas",
+		dragHandlesToAdjust:
+			"Arrastra los controles verdes para delimitar la tarjeta y aplica.",
+		applyCrop: "Aplicar recorte",
+		scanDocument: "Escanear documento",
+	},
 } as const;

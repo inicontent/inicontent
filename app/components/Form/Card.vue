@@ -2,7 +2,8 @@
     <div>
         <LazyFormDrawer></LazyFormDrawer>
         <NSpin :show="!!Loading.CREATE || !!Loading.DELETE || !!Loading.UPDATE">
-            <NCard style="height: fit-content">
+            <NCard :header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false"
+                style="background-color: transparent">
                 <template #header>
                     <NPerformantEllipsis>{{ t(table.slug) }}: {{ isEdit ? itemLabel : t('newItem') }}
                     </NPerformantEllipsis>
@@ -70,59 +71,61 @@
                         {{ t('publish') }}
                     </NTooltip>
                 </template>
-                <template #action>
-                    <NFlex justify="end">
-                        <NButtonGroup v-if="isEdit">
-                            <NButton type="info" secondary round>
-                                <template #icon>
-                                    <NuxtLink
-                                        :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
-                                        <NIcon>
-                                            <Icon name="tabler:eye" />
-                                        </NIcon>
-                                    </NuxtLink>
-                                </template>
-                                {{ t('view') }}
-                            </NButton>
-                            <NPopconfirm @positive-click="formRef?.delete">
-                                <template #trigger>
-                                    <NButton secondary round type="error" :loading="Loading.DELETE">
-                                        <template #icon>
+                <NCard style="height: fit-content;min-height: 200px;">
+                    <template #action>
+                        <NFlex justify="end">
+                            <NButtonGroup v-if="isEdit">
+                                <NButton type="info" secondary round>
+                                    <template #icon>
+                                        <NuxtLink
+                                            :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
                                             <NIcon>
-                                                <Icon name="tabler:trash" />
+                                                <Icon name="tabler:eye" />
                                             </NIcon>
-                                        </template>
-                                        {{ t('delete') }}
-                                    </NButton>
-                                </template>
-                                {{ t("theFollowingActionIsIrreversible") }}
-                            </NPopconfirm>
+                                        </NuxtLink>
+                                    </template>
+                                    {{ t('view') }}
+                                </NButton>
+                                <NPopconfirm @positive-click="formRef?.delete">
+                                    <template #trigger>
+                                        <NButton secondary round type="error" :loading="Loading.DELETE">
+                                            <template #icon>
+                                                <NIcon>
+                                                    <Icon name="tabler:trash" />
+                                                </NIcon>
+                                            </template>
+                                            {{ t('delete') }}
+                                        </NButton>
+                                    </template>
+                                    {{ t("theFollowingActionIsIrreversible") }}
+                                </NPopconfirm>
 
-                            <NButton secondary round type="primary" @click="formRef?.update"
-                                :loading="Loading.UPDATE || Loading.SCHEMA">
+                                <NButton secondary round type="primary" @click="formRef?.update"
+                                    :loading="Loading.UPDATE || Loading.SCHEMA">
+                                    <template #icon>
+                                        <NIcon>
+                                            <Icon name="tabler:device-floppy" />
+                                        </NIcon>
+                                    </template>
+                                    {{ t('update') }}
+                                </NButton>
+                            </NButtonGroup>
+                            <NButton v-else secondary round type="primary" @click="formRef?.create"
+                                :loading="Loading.CREATE || Loading.SCHEMA">
                                 <template #icon>
                                     <NIcon>
-                                        <Icon name="tabler:device-floppy" />
+                                        <Icon name="tabler:send" />
                                     </NIcon>
                                 </template>
-                                {{ t('update') }}
+                                {{ t('publish') }}
                             </NButton>
-                        </NButtonGroup>
-                        <NButton v-else secondary round type="primary" @click="formRef?.create"
-                            :loading="Loading.CREATE || Loading.SCHEMA">
-                            <template #icon>
-                                <NIcon>
-                                    <Icon name="tabler:send" />
-                                </NIcon>
-                            </template>
-                            {{ t('publish') }}
-                        </NButton>
-                        <slot name="extraActions"></slot>
-                    </NFlex>
-                </template>
-                <slot>
-                    <Form ref="formRef" v-model="modelValue"></Form>
-                </slot>
+                            <slot name="extraActions"></slot>
+                        </NFlex>
+                    </template>
+                    <slot>
+                        <Form ref="formRef" v-model="modelValue"></Form>
+                    </slot>
+                </NCard>
             </NCard>
         </NSpin>
     </div>

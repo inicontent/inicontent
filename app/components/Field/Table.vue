@@ -1,8 +1,8 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options="options" remote
-			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="loading"
-			:multiple="!!field.isArray" :consistent-menu-width="false" max-tag-count="responsive"
+			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="loading" :reset-menu-on-options-change="false"
+			:multiple="!!field.isArray" consistent-menu-width max-tag-count="responsive"
 			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
 					? field.inputProps(modelValue) ?? {}
@@ -32,7 +32,13 @@ const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<Item | Item[]>();
 const options = ref<tableOption[] | undefined>();
 const loading = ref(false);
+const loadingMore = ref(false);
 const database = useState<Database>("database");
+
+// Monotonic token that invalidates stale responses from superseded requests.
+let requestSeq = 0;
+// The resolved query (search + where) the currently loaded options belong to.
+let loadedQuery: string | undefined;
 const table = database.value.tables?.find(({ slug }) => slug === field.table);
 
 // Id-only model values (translated / stored table refs) are resolved through
@@ -175,7 +181,7 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 const sessionID = useSessionCookie();
 
 async function loadOptions(searchValue?: string | number) {
-	loading.value = true;
+	const seq = ++requestSeq;
 	const searchOrObject =
 		searchValue &&
 		(typeof searchValue !== "string" || searchValue.trim().length) &&
@@ -216,13 +222,18 @@ async function loadOptions(searchValue?: string | number) {
 	if (searchValue && isValidID(searchValue))
 		_where = Inison.stringify({ id: searchValue });
 
-	if (_where) {
-		if (!where.value || where.value !== _where) where.value = _where;
-		else {
-			loading.value = false;
-			return;
-		}
-	} else where.value = undefined;
+	// Already loaded for this query (e.g. the dropdown was re-opened) — keep
+	// the existing options instead of fetching and rebuilding the whole menu.
+	if (loadedQuery === _where && options.value !== undefined) {
+		loading.value = false;
+		return;
+	}
+
+	loadedQuery = _where;
+	where.value = _where || undefined;
+	pagination.value = undefined;
+	loading.value = true;
+	loadingMore.value = false;
 
 	const request = await $fetch<apiResponse<tableOption[]>>(
 		`${config.public.apiBase}${database.value.slug}/${field.table}`,
@@ -238,8 +249,12 @@ async function loadOptions(searchValue?: string | number) {
 			credentials: "include",
 		},
 	).finally(() => {
-		loading.value = false;
+		if (seq === requestSeq) loading.value = false;
 	});
+
+	// Ignore stale responses from superseded requests
+	if (seq !== requestSeq) return;
+
 	pagination.value = request.options;
 
 	if (modelValue.value) {
@@ -255,10 +270,16 @@ async function loadOptions(searchValue?: string | number) {
 	} else options.value = request.result?.map(singleOption) ?? [];
 }
 
-async function handleScroll(e: Event) {
+let lastScrollCall = 0;
+function handleScroll(e: Event) {
+	const now = Date.now();
+	if (now - lastScrollCall < 120) return;
+	lastScrollCall = now;
+
 	const currentTarget = e.currentTarget as HTMLElement;
 	if (
 		loading.value ||
+		loadingMore.value ||
 		!pagination.value ||
 		!pagination.value.page ||
 		!pagination.value.totalPages
@@ -266,30 +287,55 @@ async function handleScroll(e: Event) {
 		return;
 	if (
 		currentTarget.scrollTop + currentTarget.clientHeight >=
-			currentTarget.scrollHeight - 4 &&
+			currentTarget.scrollHeight - 80 &&
 		pagination.value.page < pagination.value.totalPages
-	) {
-		loading.value = true;
-		const request = await $fetch<apiResponse<tableOption[]>>(
-			`${config.public.apiBase}${database.value.slug}/${field.table}`,
-			{
-				params: {
-					where: where.value,
-					options: Inison.stringify({
-						page: pagination.value.page + 1,
-						columns: table?.columns,
-					}),
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				cache: "no-cache",
-				credentials: "include",
+	)
+		void loadMoreOptions();
+}
+
+async function loadMoreOptions() {
+	if (
+		loading.value ||
+		loadingMore.value ||
+		!pagination.value ||
+		!pagination.value.page ||
+		!pagination.value.totalPages ||
+		pagination.value.page >= pagination.value.totalPages
+	)
+		return;
+
+	loadingMore.value = true;
+	const page = pagination.value.page + 1;
+	const seq = requestSeq;
+
+	const request = await $fetch<apiResponse<tableOption[]>>(
+		`${config.public.apiBase}${database.value.slug}/${field.table}`,
+		{
+			params: {
+				where: where.value,
+				options: Inison.stringify({
+					page,
+					columns: table?.columns,
+				}),
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
-		).finally(() => {
-			loading.value = false;
-		});
-		if (request.result) request.result = request.result.map(singleOption);
-		pagination.value = request.options;
-		if (options.value && request.result) options.value.push(...request.result);
+			cache: "no-cache",
+			credentials: "include",
+		},
+	).finally(() => {
+		if (seq === requestSeq) loadingMore.value = false;
+	});
+
+	// Ignore stale responses from superseded requests
+	if (seq !== requestSeq) return;
+
+	if (request.result) request.result = request.result.map(singleOption);
+	pagination.value = request.options;
+	if (options.value && request.result) {
+		const known = new Set(options.value.map(({ value }) => value));
+		options.value.push(
+			...request.result.filter(({ value }) => !known.has(value)),
+		);
 	}
 }
 

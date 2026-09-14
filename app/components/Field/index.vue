@@ -41,6 +41,7 @@
 <script lang="ts" setup>
 import { isVNode } from "vue";
 const field = defineModel<Field>("field", { required: true });
+const { item } = defineProps<{ item?: Item }>();
 const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
     const fieldType = (field.value.subType ?? field.value.type) as
         | DB_FieldType

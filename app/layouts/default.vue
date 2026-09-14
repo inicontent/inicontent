@@ -177,19 +177,26 @@ onMounted(() => {
 
 watch(Language, fetchTranslation)
 
+// Naive UI default body colors for each mode.
+const bodyBgColor = computed(() =>
+	Theme.value === "dark" ? "rgb(16, 16, 20)" : "#fff",
+)
+
 useHead({
 	meta: [
 		{
 			name: "theme-color",
-			content: computed(() => ThemeConfig.value.primaryColor),
+			content: bodyBgColor,
 		},
 	],
 	htmlAttrs: {
 		// Let the browser render its own chrome (scrollbars, form controls,
 		// native widgets) in the matching color scheme so it follows the
 		// database primary color on desktop, mobile, android, mac & windows.
-		style: computed(() =>
-			`color-scheme: ${Theme.value === "dark" ? "dark" : "light"}`,
+		style: computed(
+			() =>
+				`color-scheme: ${Theme.value === "dark" ? "dark" : "light"}; ` +
+				`background-color: ${bodyBgColor.value}`,
 		),
 	},
 	bodyAttrs: {
@@ -198,6 +205,23 @@ useHead({
 				`--primaryColor: ${hexToRGB(ThemeConfig.value.primaryColor).join(", ")}`,
 		),
 	},
+})
+
+// Safari Mobile ignores dynamic attribute changes on <meta name="theme-color">.
+// Force it to re-read by removing and re-adding the element whenever the mode
+// changes.  The matching background-color on <html> gives Safari a reliable
+// signal for the status-bar / safe-area-inset color.
+onMounted(() => {
+	watch(bodyBgColor, (color) => {
+		const existing = document.querySelector('meta[name="theme-color"]')
+		if (existing) existing.remove()
+		const meta = document.createElement("meta")
+		meta.name = "theme-color"
+		meta.content = color
+		document.head.appendChild(meta)
+
+		document.documentElement.style.backgroundColor = color
+	}, { immediate: true })
 })
 
 </script>

@@ -49,8 +49,6 @@
 	<NModal
 		v-model:show="showPasskeyEnrollment"
 		preset="card"
-		:mask-closable="false"
-		:close-on-esc="false"
 		:title="t('passkey.enrollmentTitle')"
 		style="width: min(420px, calc(100vw - 32px));"
 	>
