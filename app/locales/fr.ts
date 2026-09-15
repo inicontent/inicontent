@@ -52,7 +52,6 @@ export default {
 
 		// Common nouns
 		name: "Nom",
-		slug: "Identifiant",
 		description: "Description",
 		title: "Titre",
 		content: "Contenu",

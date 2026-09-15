@@ -51,7 +51,6 @@ export default {
 
 		// Common nouns
 		name: "الإسم",
-		slug: "الإسم",
 		description: "الوصف",
 		title: "العنوان",
 		content: "المحتوى",

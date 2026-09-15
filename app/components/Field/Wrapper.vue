@@ -1,5 +1,5 @@
 <template>
-	<NFormItem :id="field.id" :label="field.label ?? t(field.key)" :rule :path="String(field.id)"
+	<NFormItem :id="field.id" :label="resolvedLabel" :rule :path="String(field.id)"
 		:style="{ flex: fieldFlex }" v-bind="field.labelProps">
 		<slot></slot>
 		<template #label>
@@ -8,7 +8,7 @@
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="800" :options="dropdownOptions"
 					@select="handleSelect">
-					{{ field.label ?? t(field.key) }}
+					{{ resolvedLabel }}
 				</NDropdown>
 				<NTooltip>
 					<template #trigger>
@@ -26,7 +26,7 @@
 					:disabled="([] as string[]).concat(field.type).every(type => !['table', 'array', 'date'].includes(type))"
 					show-arrow placement="top" trigger="hover" :delay="1500" :options="dropdownOptions" size="small"
 					@select="handleSelect">
-					{{ field.label ?? t(field.key) }}
+					{{ resolvedLabel }}
 				</NDropdown>
 			</template>
 			<slot name="label"></slot>
@@ -43,6 +43,9 @@ import { Icon, NIcon } from "#components";
 const { field, rule } = defineProps<{ field: Field; rule: FormItemRule }>();
 
 const modelValue = defineModel<any>();
+const resolvedLabel = computed(() =>
+	field.labelKey ? t(field.labelKey) : (field.label ?? t(field.key)),
+);
 
 const { isMobile } = useDevice();
 function numberToPercentage(width: number, wrapperWidth?: string | number) {

@@ -96,6 +96,7 @@ declare global {
 		itemExtraActions?: (index: number) => VNode | undefined;
 		itemExtraButtons?: (index: number) => VNode | VNode[] | undefined;
 		width?: number;
+		labelKey?: string;
 		label?: any;
 	};
 	type Schema = Field[];

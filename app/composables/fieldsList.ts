@@ -257,11 +257,13 @@ export default function fieldsList(): fieldListOptionType[] {
 	];
 }
 
-const defaultField: fieldListOptionType = {
-	key: "custom",
-	label: t("fields.custom"),
-	icon: renderIcon("question-mark"),
-};
+function defaultField(): fieldListOptionType {
+	return {
+		key: "custom",
+		label: t("fields.custom"),
+		icon: renderIcon("question-mark"),
+	};
+}
 
 export function flatFieldsList() {
 	return fieldsList().flatMap((field) => field.children || field);
@@ -272,14 +274,14 @@ export function getField(field: Field) {
 		return (
 			flatFieldsList().find(({ key }) => key === `date-${field.date}`) ??
 			flatFieldsList().find(({ key }) => key === "date") ??
-			defaultField
+			defaultField()
 		);
 	}
 	if (field.table === "assets")
 		return (
 			flatFieldsList().find(
 				({ key }) => key === (field.type === "array" ? "array-asset" : "asset"),
-			) ?? defaultField
+			) ?? defaultField()
 		);
 	if (field.type === "array") {
 		if (
@@ -289,11 +291,11 @@ export function getField(field: Field) {
 			return (
 				flatFieldsList().find(
 					({ key }) => key === [field.type, field.children].join("-"),
-				) ?? defaultField
+				) ?? defaultField()
 			);
 	}
 	let fieldType = field.subType ?? field.type;
 	if (Array.isArray(fieldType)) fieldType = "multiple";
-	if (!fieldType) return defaultField;
-	return flatFieldsList().find(({ key }) => key === fieldType) ?? defaultField;
+	if (!fieldType) return defaultField();
+	return flatFieldsList().find(({ key }) => key === fieldType) ?? defaultField();
 }

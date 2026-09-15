@@ -14,7 +14,7 @@
 			</template>
 		</NCollapseItem>
 		<VueDraggable v-model="slicedSchema" item-key="id" ghost-class="ghost" :disabled="!reorderEnabled">
-			<NCollapseItem v-for="(element, index) in slicedSchema" :name="element.id" :id="`element-${element.id}`" class="element"
+			<NCollapseItem v-for="(element, index) in slicedSchema" :key="fieldTypeSignature(element)" :name="element.id" :id="`element-${element.id}`" class="element"
 				:class="{ 'field-selected': selectedFieldIds.has(element.id as string | number)}"
 				:disabled="isDisabled(element.key)"
 				:title="getDisplayKey(element) ? (isDisabled(element.key) ? t(element.key as string) : getDisplayKey(element)) : '--'"
@@ -37,7 +37,7 @@
 							</NDropdown>
 							<NDropdown :disabled="isDisabled(element.key)" :options="fieldTypeOptions"
 								style="max-height: 200px" trigger="click" scrollable
-								@select="(type) => slicedSchema[index] = changeFieldType(element, type)">
+								@select="(type) => applyFieldType(element, type)">
 								<NButton round strong secondary size="small" type="primary"
 									:disabled="isDisabled(element.key)">
 									<template #icon>
@@ -510,7 +510,6 @@ function changeFieldType(
 	{ id, key, required, children, width }: any,
 	newType: string,
 ): any {
-	console.log(newType)
 	switch (newType) {
 		case "object":
 		case "array":
@@ -540,11 +539,26 @@ function changeFieldType(
 	}
 }
 
+// Mutate the field object in place (instead of replacing the array element) so type-specific
+// leftovers (table/options/subType/etc) are always cleared, even when the object is shared by reference.
+function applyFieldType(element: Field, newType: string) {
+	const changes = changeFieldType(element, newType);
+	for (const key of Object.keys(element))
+		if (!(key in changes)) delete (element as any)[key];
+	Object.assign(element, changes);
+}
+
+// Forces NCollapseItem to remount its body whenever a field's type-relevant shape changes.
+function fieldTypeSignature(element: Field) {
+	const typeKey = Array.isArray(element.type) ? element.type.join(",") : element.type;
+	return `${element.id}-${typeKey}-${element.subType ?? ""}-${element.table ?? ""}`;
+}
+
 function renderIcon(iconName: string) {
 	return () => h(NIcon, () => h(Icon, { name: iconName }));
 }
 
-const fileTypeSelectOptions = [
+const fileTypeSelectOptions = computed(() => [
 	{
 		label: t("fileType.image"),
 		value: "image",
@@ -570,7 +584,7 @@ const fileTypeSelectOptions = [
 		value: "archive",
 		icon: renderIcon("tabler:file-zip"),
 	},
-];
+]);
 function selectRenderLabelWithIcon(
 	option: SelectOption & { icon: CallableFunction },
 ) {
@@ -580,15 +594,17 @@ function selectRenderLabelWithIcon(
 	]);
 }
 
-const valuesTypeSelectOptions = flatFieldsList()
-	?.filter(({ key }) =>
-		["string", "number", "password", "email", "url"].includes(key),
-	)
-	.map((field) => ({
-		label: field.label,
-		value: field.key,
-		icon: field.icon,
-	}));
+const valuesTypeSelectOptions = computed(() =>
+	flatFieldsList()
+		.filter(({ key }) =>
+			["string", "number", "password", "email", "url"].includes(key),
+		)
+		.map((field) => ({
+			label: field.label,
+			value: field.key,
+			icon: field.icon,
+		})),
+);
 
 // Cache field type options to avoid recomputing heavy dropdown option lists on each re-render
 const fieldTypeOptions = computed(() => fieldsList());

@@ -134,7 +134,9 @@ function mapSchema(schema: Schema, parentPath: string[] = []): SchemaDocRow[] {
 		const fallbackKey = `field-${index}`;
 		const key = field.key ?? fallbackKey;
 		const path = [...parentPath, key].join(".");
-		const labelReference = field.label ?? key;
+		const labelText = field.labelKey
+			? t(field.labelKey)
+			: (field.label ?? t(key));
 
 		const nestedChildren = hasSchemaChildren(field)
 			? mapSchema(field.children as Schema, [...parentPath, key])
@@ -143,7 +145,7 @@ function mapSchema(schema: Schema, parentPath: string[] = []): SchemaDocRow[] {
 		return {
 			id: path,
 			keyText: key,
-			labelText: t(labelReference),
+			labelText,
 			typeText: formatFieldType(field),
 			required: Boolean(field.required),
 			requiredText: field.required ? t("required") : t("optional"),
