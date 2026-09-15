@@ -630,6 +630,17 @@ a {
 	overflow: hidden;
 }
 
+.settings-tabs-affix {
+	position: sticky;
+	top: 0;
+	padding-top: 16px;
+	z-index: 1;
+}
+
+.settings-tabs-affix .n-tabs.n-tabs--right {
+	flex-direction: row;
+}
+
 @media only screen and (min-width: 869px) and (max-width: 1200px) {
 	.masonry {
 		columns: 2;

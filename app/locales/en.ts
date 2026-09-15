@@ -21,6 +21,19 @@ export default {
 		// Admin
 		auth: "Authentication",
 		importedRows: "Imported {count} rows",
+		databaseExport: "Database export",
+		databaseExportDescription:
+			"Create a private archive of all schemas and records. Asset files are not included.",
+		startDatabaseExport: "Create export",
+		databaseExportFailed: "Database export failed",
+		databaseExportExpires: "Available until {date}",
+		databaseExportState: {
+			queued: "Export queued",
+			running: "Exporting database",
+			completed: "Export ready",
+			failed: "Export failed",
+			expired: "Export expired",
+		},
 		forgotPassword: "Forgot password?",
 		passwordMinimumLength: "Password must be at least 8 characters.",
 		passwordsDoNotMatch: "Passwords do not match.",

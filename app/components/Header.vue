@@ -94,7 +94,7 @@ const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 
 const Language = useLanguageCookie();
-const Theme = useCookie<"dark" | "light">("theme");
+const Theme = useThemeCookie();
 const redirectTo = useRedirectToCookie(database.value?.slug);
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({

@@ -21,7 +21,7 @@ watch(Language, async (newLang, oldLang) => {
 		await loadCoreTranslations(newLang, oldLang)
 })
 
-const Theme = useCookie<"dark" | "light">("theme")
+const Theme = useThemeCookie()
 const sessionID = useSessionCookie()
 const osThemeRef = useOsTheme()
 const isManual = ref(false)

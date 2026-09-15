@@ -51,6 +51,7 @@ export default {
 
 		// Common nouns
 		name: "الإسم",
+		slug: "المعرّف النصّي",
 		description: "الوصف",
 		title: "العنوان",
 		content: "المحتوى",
@@ -252,6 +253,19 @@ export default {
 		clearTable: "إفراغ الجدول",
 		exportCurrentData: "تصدير البيانات الحالية",
 		exportAllData: "تصدير كل البيانات",
+		databaseExport: "تصدير قاعدة البيانات",
+		databaseExportDescription:
+			"إنشاء أرشيف خاص لجميع المخططات والسجلات. ملفات الأصول غير مضمنة.",
+		startDatabaseExport: "إنشاء التصدير",
+		databaseExportFailed: "فشل تصدير قاعدة البيانات",
+		databaseExportExpires: "متاح حتى {date}",
+		databaseExportState: {
+			queued: "تم وضع التصدير في قائمة الانتظار",
+			running: "جاري تصدير قاعدة البيانات",
+			completed: "التصدير جاهز",
+			failed: "فشل التصدير",
+			expired: "انتهت صلاحية التصدير",
+		},
 		columns: "الأعمدة",
 		an_export_job_is_running_in_background: "هناك عملية تصدير جارية",
 		an_export_job_is_done: "عملية التصدير إنتهت",

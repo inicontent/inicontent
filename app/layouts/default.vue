@@ -21,7 +21,7 @@ import "~/assets/main.css"
 import { hexToRGB } from "~/composables"
 
 const Language = useLanguageCookie()
-const Theme = useCookie<"dark" | "light">("theme", { sameSite: true })
+const Theme = useThemeCookie()
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
 
 // The unstable*Rtl styles are only meaningful for Arabic/rtl layouts. They used

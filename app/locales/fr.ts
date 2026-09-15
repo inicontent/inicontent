@@ -52,6 +52,7 @@ export default {
 
 		// Common nouns
 		name: "Nom",
+		slug: "Identifiant de texte",
 		description: "Description",
 		title: "Titre",
 		content: "Contenu",
@@ -256,6 +257,19 @@ export default {
 		clearTable: "Vider la table",
 		exportCurrentData: "Exporter les données actuelles",
 		exportAllData: "Exporter toutes les données",
+		databaseExport: "Exportation de la base de données",
+		databaseExportDescription:
+			"Crée une archive privée de tous les schémas et enregistrements. Les fichiers multimédias ne sont pas inclus.",
+		startDatabaseExport: "Créer l'exportation",
+		databaseExportFailed: "L'exportation de la base de données a échoué",
+		databaseExportExpires: "Disponible jusqu'au {date}",
+		databaseExportState: {
+			queued: "Exportation en attente",
+			running: "Exportation de la base de données",
+			completed: "Exportation prête",
+			failed: "Échec de l'exportation",
+			expired: "Exportation expirée",
+		},
 		columns: "Colonnes",
 		an_export_job_is_running_in_background: "Une exportation est en cours",
 		an_export_job_is_done: "L'exportation est terminée",

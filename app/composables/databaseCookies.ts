@@ -43,6 +43,13 @@ export function useLanguageCookie(databaseSlug?: string) {
 	);
 }
 
+export function useThemeCookie(databaseSlug?: string) {
+	return useCookie<"dark" | "light" | null>(
+		"theme",
+		{ sameSite: true },
+	);
+}
+
 export function useRedirectToCookie(databaseSlug?: string) {
 	return useCookie<string | null>(scopedCookieName("redirectTo", databaseSlug), {
 		sameSite: true,

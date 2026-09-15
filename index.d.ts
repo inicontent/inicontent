@@ -202,6 +202,22 @@ declare global {
 			from_name?: string;
 		};
 	};
+	type DatabaseExportStatus = {
+		id: string;
+		databaseSlug: string;
+		state: "queued" | "running" | "completed" | "failed" | "expired";
+		progress: number;
+		processedBytes: number;
+		totalBytes: number;
+		destination: "tenant" | "platform";
+		consistency: "best-effort";
+		createdAt: number;
+		updatedAt: number;
+		expiresAt: number;
+		startedAt?: number;
+		finishedAt?: number;
+		error?: string;
+	};
 	type apiResponse<T = any> = {
 		result: T;
 		message: string;

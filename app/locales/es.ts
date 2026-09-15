@@ -52,6 +52,7 @@ export default {
 
 		// Common nouns
 		name: "Nombre",
+		slug: "Identificador de texto",
 		description: "Descripción",
 		title: "Título",
 		content: "Contenido",
@@ -255,6 +256,19 @@ export default {
 		clearTable: "Vaciar tabla",
 		exportCurrentData: "Exportar datos actuales",
 		exportAllData: "Exportar todos los datos",
+		databaseExport: "Exportación de la base de datos",
+		databaseExportDescription:
+			"Crea un archivo privado con todos los esquemas y registros. Los archivos de recursos no están incluidos.",
+		startDatabaseExport: "Crear exportación",
+		databaseExportFailed: "La exportación de la base de datos falló",
+		databaseExportExpires: "Disponible hasta {date}",
+		databaseExportState: {
+			queued: "Exportación en espera",
+			running: "Exportando la base de datos",
+			completed: "Exportación lista",
+			failed: "La exportación falló",
+			expired: "La exportación caducó",
+		},
 		columns: "Columnas",
 		an_export_job_is_running_in_background: "Una exportación está en curso",
 		an_export_job_is_done: "La exportación ha terminado",
