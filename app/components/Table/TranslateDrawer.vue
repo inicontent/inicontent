@@ -263,7 +263,7 @@ async function fetchItemTranslations() {
 				if (!draft.value[record.locale]) draft.value[record.locale] = {};
 				draft.value[record.locale][fieldId] = parseTranslationValue(
 					field,
-					record.translation ?? record.translated ?? "",
+					record.translation ?? "",
 				);
 			}
 

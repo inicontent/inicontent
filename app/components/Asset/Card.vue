@@ -34,8 +34,8 @@
 				<span style="color: #18a058; font-size: 16px; font-weight: 500;">{{ t("dropFilesHere") }}</span>
 			</div>
 		</Transition>
-		<NCard :header-style="isAssetRoute ? { paddingRight: 0, paddingLeft: 0 } : undefined" embedded
-		 id="assetsContainer" style="height: fit-content;background-color: transparent;" :content-style="isAssetRoute ? 'padding: 0' : undefined" :bordered="false">
+		<NCard :header-style="{ paddingRight: 0, paddingLeft: 0 }" embedded
+		 id="assetsContainer" style="height: fit-content;background-color: transparent;" :content-style="{ padding: 0 }" :bordered="false">
 			<template #header>
 				<span v-if="isAssetRoute">{{ t("assets") }}</span>
 				<NBreadcrumb v-else>
@@ -284,7 +284,7 @@ const notifyPdfSize = (size: number) => {
 
 const route = useRoute();
 const router = useRouter();
-const isAssetRoute = route.path.includes("/tables/assets");
+const isAssetRoute = computed(() => route.path.includes("/tables/assets"));
 
 const table = useState<Table>("table");
 const currentItem = useState<Item>("currentItem");

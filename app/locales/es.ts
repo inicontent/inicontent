@@ -369,6 +369,7 @@ export default {
 		// Assets
 		uploadFiles: "Subir archivos",
 		uploadFolder: "Subir carpeta",
+		createFolder: "Crear carpeta",
 		dropFilesHere: "Suelta los archivos aquí",
 		folderName: "Nombre de la carpeta",
 		image: "Imagen",
@@ -820,6 +821,7 @@ export default {
 			"No se encontraron campos de texto traducibles en esta tabla.",
 		translationPlaceholder: "Ingrese la traducción…",
 		translationsSaved: "Traducciones guardadas",
+		translationCount: "{count} traducciones",
 		translated: "Traducido",
 
 		passkey: {

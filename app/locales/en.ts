@@ -453,6 +453,7 @@ export default {
 		noTranslatableFields: "No translatable text fields found in this table.",
 		translationPlaceholder: "Enter translation…",
 		translationsSaved: "Translations saved",
+		translationCount: "{count} translations",
 		translated: "Translated",
 
 		passkey: {

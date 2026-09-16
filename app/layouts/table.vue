@@ -93,6 +93,8 @@ const fetchDashboards = async () => {
 	}
 };
 
+watch(table, () => fetchTranslation(true))
+
 watch(
 	() => [database.value?.slug, sessionID.value, Language.value],
 	() => {

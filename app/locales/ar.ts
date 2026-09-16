@@ -367,6 +367,7 @@ export default {
 		// Assets
 		uploadFiles: "رفع ملفات",
 		uploadFolder: "رفع مجلد",
+		createFolder: "إنشاء مجلد",
 		dropFilesHere: "أسقط الملفات هنا",
 		folderName: "إسم المجلد",
 		image: "صورة",
@@ -851,6 +852,7 @@ export default {
 		noTranslatableFields: "لا توجد حقول نصية قابلة للترجمة في هذا الجدول.",
 		translationPlaceholder: "أدخل الترجمة…",
 		translationsSaved: "تم حفظ الترجمات",
+		translationCount: "{count} ترجمة",
 
 		passkey: {
 			securityTitle: "أمان مفتاح المرور",

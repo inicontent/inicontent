@@ -370,6 +370,7 @@ export default {
 		// Assets
 		uploadFiles: "Envoyer des fichiers",
 		uploadFolder: "Envoyer un dossier",
+		createFolder: "Créer un dossier",
 		dropFilesHere: "Déposez les fichiers ici",
 		folderName: "Nom du dossier",
 		image: "Image",

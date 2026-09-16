@@ -5,7 +5,7 @@
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 				<NButton v-if="acceptsImages" circle secondary size="tiny" :title="t('scanDocument')"
-					@click="showScanner = true">
+					@click.prevent.stop="showScanner = true">
 					<template #icon>
 						<NIcon>
 							<Icon name="tabler:scan" />
@@ -31,15 +31,29 @@
 				</NProgress>
 			</NUploadDragger>
 			<NUploadDragger v-else-if="!field.isTable">
-				<NIcon size="48" depth="3">
-					<Icon name="tabler:upload" />
-				</NIcon>
+				<NFlex vertical align="center">
+					<NIcon size="48" depth="3">
+						<Icon name="tabler:upload" />
+					</NIcon>
+					<NFlex v-if="field.labelProps?.showLabel === false">
+						<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
+							:callback="importAssetCallback" />
+						<NButton v-if="acceptsImages" circle secondary size="tiny" :title="t('scanDocument')"
+							@click.prevent.stop="showScanner = true">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:scan" />
+								</NIcon>
+							</template>
+						</NButton>
+					</NFlex>
+				</NFlex>
 			</NUploadDragger>
 			<NFlex v-else align="center" size="small">
 				<LazyFieldAssetActions v-model:showAssetsModal="showAssetsModal" :field
 					:callback="importAssetCallback" />
 				<NButton v-if="acceptsImages" circle secondary size="tiny" :title="t('scanDocument')"
-					@click="showScanner = true">
+					@click.prevent.stop="showScanner = true">
 					<template #icon>
 						<NIcon>
 							<Icon name="tabler:scan" />
@@ -142,8 +156,10 @@ async function handleRemoveUpload({
 		return false;
 	}
 
-	const assetId = fileIdObject.value[file.id] || file.id;
-	if (assetId) {
+	// Only assets uploaded in this session (tracked in fileIdObject) should be hard-deleted;
+	// pre-existing assets (loaded on mount or picked from the library) are just detached.
+	const uploadedAssetId = fileIdObject.value[file.id];
+	if (uploadedAssetId) {
 		try {
 			const path = field.suffix
 				? renderLabel(
@@ -152,7 +168,7 @@ async function handleRemoveUpload({
 					)
 				: "";
 			await $fetch(
-				`${config.public.apiBase}${database.value.slug}/assets${path}/${assetId}`,
+				`${config.public.apiBase}${database.value.slug}/assets${path}/${uploadedAssetId}`,
 				{
 					method: "DELETE",
 					params: {
@@ -164,12 +180,14 @@ async function handleRemoveUpload({
 			);
 
 			const asset = Array.isArray(modelValue.value)
-				? (modelValue.value as Asset[]).find((a) => a.id === assetId)
+				? (modelValue.value as Asset[]).find((a) => a.id === uploadedAssetId)
 				: (modelValue.value as Asset | undefined);
 
-			if (asset && asset.id === assetId && database.value.size) {
+			if (asset && asset.id === uploadedAssetId && database.value.size) {
 				database.value.size -= asset.size ?? 0;
 			}
+
+			delete fileIdObject.value[file.id];
 		} catch (e) {
 			console.error("Failed to delete asset", e);
 		}

@@ -175,7 +175,7 @@ onMounted(() => {
 	fetchTranslation()
 })
 
-watch(Language, fetchTranslation)
+watch(Language, () => fetchTranslation())
 
 // Naive UI default body colors for each mode.
 const bodyBgColor = computed(() =>
