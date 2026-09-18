@@ -563,6 +563,7 @@ const columns = computed<DataTableColumns<Backup>>(() => [
 		title: t("actions"),
 		key: "actions",
 		width: 170,
+		fixed: "right",
 		render: (backup) => {
 			const canRestore =
 				backup.state === "completed" &&
