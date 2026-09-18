@@ -104,10 +104,6 @@ watch(
 	{ immediate: true },
 );
 
-function getTableUrl(slug: string) {
-	return `${adminBase.value}/admin/tables/${slug}`;
-}
-
 function getTableActions(tbl: Table): TableAction[] {
 	const tableUrl = `${adminBase.value}/admin/tables/${tbl.slug}`;
 	return [
@@ -157,22 +153,22 @@ function getTableActions(tbl: Table): TableAction[] {
 }
 
 function renderActionsPopover(
-	items: { key: string; to: string; icon: string; title: string; active: boolean }[],
-	triggerActive: boolean,
+	items: { key: string; to: string; icon: string; title: string; active: boolean }[]
 ) {
 	if (!items.length) return undefined;
 	return h(
 		NPopover,
 		{
 			placement: Language.value === "ar" ? "left" : "right",
-			raw: true,
+			style: { padding: 0 },
 		},
 		{
 			trigger: () =>
 				h(
 					NButton,
 					{
-						text: true,
+						quaternary: true,
+						size: "small",
 					},
 					{
 						icon: () => h(NIcon, { size: 16 }, () => h(Icon, { name: "tabler:dots" })),
@@ -183,29 +179,21 @@ function renderActionsPopover(
 					NButtonGroup,
 					{ vertical: true },
 					items.map((item) =>
-						h(
-							NTooltip,
+						h(NButton,
 							{ 
-								placement: Language.value === "ar" ? "left" : "right",
-							 	width: 60, 
-							 	contentStyle: { textAlign: "center" }
-							},
-							{
-								trigger: () =>
-									h(NButton,
-										{ 
-											type: "primary",
-											tag: "a",
-											href: item.to,
-											onClick: (e: Event) => {
-												e.stopPropagation();
-												e.preventDefault();
-												navigateTo(item.to);
-											},
-										}, () => h(NIcon, { size: 18 }, () => h(Icon, { name: item.icon }))
-									),
+								secondary: true,
+								type: item.active ? "primary" : "default",
+								tag: "a",
+								href: item.to,
+								onClick: (e: Event) => {
+									e.stopPropagation();
+									e.preventDefault();
+									navigateTo(item.to);
+								},
+							}, {
 								default: () => item.title,
-							},
+								icon: () => h(NIcon, { size: 18 }, () => h(Icon, { name: item.icon }))
+							}
 						),
 					),
 				),
@@ -222,15 +210,12 @@ function renderTableExtra(tbl: Table) {
 			icon: action.icon,
 			title: t(action.labelKey),
 			active: defaultValue.value === action.key,
-		})),
-		defaultValue.value === tbl.slug ||
-			defaultValue.value.startsWith(`${tbl.slug}-`),
+		}))
 	);
 }
 
 function renderDashboardsExtra() {
 	const dashboardsUrl = `${adminBase.value}/admin/dashboards`;
-	const insideDashboards = route.path.includes("/admin/dashboards");
 	return renderActionsPopover(
 		[
 			{
@@ -247,8 +232,7 @@ function renderDashboardsExtra() {
 				title: dashboard.name?.trim() || t("dashboard"),
 				active: defaultValue.value === String(dashboard.id),
 			})),
-		],
-		insideDashboards,
+		]
 	);
 }
 

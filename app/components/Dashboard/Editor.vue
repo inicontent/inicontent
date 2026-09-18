@@ -189,8 +189,8 @@ async function save() {
 	try {
 		const isUpdate = !!props.dashboard.id;
 		const url = isUpdate
-			? `${config.public.apiBase}${database.value.slug}dashboards/${props.dashboard.id}`
-			: `${config.public.apiBase}${database.value.slug}dashboards`;
+			? `${config.public.apiBase}${database.value.slug}/dashboards/${props.dashboard.id}`
+			: `${config.public.apiBase}${database.value.slug}/dashboards`;
 
 		const res = await $fetch<apiResponse<Dashboard>>(url, {
 			method: isUpdate ? "PUT" : "POST",

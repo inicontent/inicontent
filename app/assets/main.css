@@ -30,7 +30,11 @@ a {
 }
 
 .n-menu .n-menu-item-content .n-menu-item-content-header .n-menu-item-content-header__extra {
-    height: 18px;
+    height: 28px;
+}
+
+.n-menu .n-menu-item-content {
+    padding-left: 16px!important; 
 }
 
 .n-input-number,

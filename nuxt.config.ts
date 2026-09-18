@@ -155,7 +155,7 @@ export default defineNuxtConfig({
 	},
 	vite: {
 		server: {
-			hmr: { clientPort: 3434 },
+			ws: { clientPort: 3434 },
 		},
 		optimizeDeps: {
 			exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],

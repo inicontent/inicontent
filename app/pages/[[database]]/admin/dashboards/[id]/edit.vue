@@ -31,7 +31,7 @@ const loading = ref(true);
 onMounted(async () => {
 	try {
 		const res = await $fetch<apiResponse<Dashboard>>(
-			`${config.public.apiBase}${database.value.slug}dashboards/${route.params.id}`,
+			`${config.public.apiBase}${database.value.slug}/dashboards/${route.params.id}`,
 			{
 				params: {
 					locale: Language.value,
