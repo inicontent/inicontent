@@ -67,9 +67,9 @@ const config = useRuntimeConfig()
 const assetURLs = ref()
 const database = useState<Database>("database")
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const Language = useLanguageCookie()
 
-const sessionID = useSessionCookie()
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 async function importAsset() {
     Loading.value.import = true

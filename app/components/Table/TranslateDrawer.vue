@@ -89,10 +89,10 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "update:show", v: boolean) => void>();
 
-const config = useRuntimeConfig();
-const Language = useLanguageCookie();
-const sessionID = useSessionCookie();
 const database = useState<Database>("database");
+const config = useRuntimeConfig();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const table = useState<Table>("table");
 
 const drawerWidth = useCookie<number | string>("translateDrawerWidth", {

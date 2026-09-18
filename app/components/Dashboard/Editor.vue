@@ -124,17 +124,16 @@ import { VueDraggable } from "vue-draggable-plus";
 
 const props = defineProps<{
 	dashboard: Dashboard;
-	databaseSlug: string;
 }>();
 
 const emit = defineEmits<{
 	saved: [dashboard: Dashboard];
 }>();
 
-const config = useRuntimeConfig();
 const database = useState<Database>("database");
-const Language = useLanguageCookie();
-const sessionID = useSessionCookie();
+const config = useRuntimeConfig();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const model = ref<Dashboard>({ ...props.dashboard, widgets: [...(props.dashboard.widgets ?? [])] });
 const saving = ref(false);
@@ -171,6 +170,7 @@ function addWidget() {
 		operation: "count",
 		size: "small",
 		dateRange: "all",
+		searchArray: { and: [[null, "=", null]] },
 	};
 	model.value.widgets.push(newWidget);
 	editingWidgetIndex.value = model.value.widgets.length - 1;
@@ -187,12 +187,10 @@ async function save() {
 	}
 	saving.value = true;
 	try {
-		const slug =
-			props.databaseSlug ? `${props.databaseSlug}/` : "";
 		const isUpdate = !!props.dashboard.id;
 		const url = isUpdate
-			? `${config.public.apiBase}${slug}dashboards/${props.dashboard.id}`
-			: `${config.public.apiBase}${slug}dashboards`;
+			? `${config.public.apiBase}${database.value.slug}dashboards/${props.dashboard.id}`
+			: `${config.public.apiBase}${database.value.slug}dashboards`;
 
 		const res = await $fetch<apiResponse<Dashboard>>(url, {
 			method: isUpdate ? "PUT" : "POST",
@@ -204,7 +202,7 @@ async function save() {
 			},
 			params: {
 				locale: Language.value,
-				[`${props.databaseSlug}_sid`]: sessionID.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		});

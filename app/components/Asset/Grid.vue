@@ -100,16 +100,17 @@ const { isAssetRoute, table, selectedAssetIds } = defineProps<{
 	selectedAssetIds?: Asset["id"][];
 }>();
 
-const Language = useLanguageCookie();
+const database = useState<Database>("database");
+
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const modelValue = defineModel<Asset[]>();
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
 const CurrentAsset = ref<Asset>();
 const { openPreview } = useAssetPreview();
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;

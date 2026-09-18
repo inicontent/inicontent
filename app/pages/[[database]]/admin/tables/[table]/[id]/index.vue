@@ -86,7 +86,7 @@ const route = useRoute()
 const database = useState<Database>("database")
 const table = useState<Table>("table")
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 const { data } = await useFetch<Item>(
     `${config.public.apiBase}${database.value.slug}/${table.value.slug

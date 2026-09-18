@@ -93,9 +93,9 @@ const route = useRoute();
 const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 
-const Language = useLanguageCookie();
-const Theme = useThemeCookie();
-const redirectTo = useRedirectToCookie(database.value?.slug);
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Theme = useCookie<"light" | "dark">("theme", { sameSite: true });
+const redirectTo = useScopedCookie<string | null>("redirectTo", database.value?.slug);
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",
@@ -213,7 +213,7 @@ const userDropdownOptions = computed(() => [
 	},
 ]);
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function onSelectUserDropdown(v: string) {
 	switch (v) {

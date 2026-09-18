@@ -14,7 +14,7 @@
 				</template>
 				<template #header-extra>
 					<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
-						<NButton circle size="small">
+						<NButton circle secondary size="small">
 							<template #icon>
 								<NIcon>
 									<Icon name="tabler:dots" />
@@ -96,6 +96,23 @@
 				{{ t('newTable') }}
 			</NPopover>
 		</NGridItem>
+
+		<NGridItem v-if="user?.role === config.public.idOne">
+			<NCard hoverable>
+				<template #header>
+					<NuxtLink :to="getTableUrl('backups')">
+						<NFlex align="center">
+							<NIconWrapper :border-radius="50" style="font-style: normal">
+								<NIcon size="24">
+									<Icon name="tabler:database-export" />
+								</NIcon>
+							</NIconWrapper>
+							<NH4 style="margin: 0">{{ t("backups") }}</NH4>
+						</NFlex>
+					</NuxtLink>
+				</template>
+			</NCard>
+		</NGridItem>
 	</NGrid>
 </template>
 
@@ -119,9 +136,9 @@ function getTableUrl(slug: string) {
 	return `/${route.params.database ? ((database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : `${route.params.database}/`) : ""}admin/tables/${slug}`
 }
 
-const Language = useLanguageCookie()
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 type CrudPermission = "c" | "r" | "u" | "d"
 const permissionMethods: Record<CrudPermission, string> = {

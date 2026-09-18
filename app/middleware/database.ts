@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			: config.public.database || to.params.database,
 	);
 
-	const sessionID = useSessionCookie(currentDatabaseSlug);
+	const sessionID = useScopedCookie<string>("sid", currentDatabaseSlug);
 	const query: Record<string, string> = {};
 
 	if (sessionID.value) query[`${currentDatabaseSlug}_sid`] = sessionID.value;

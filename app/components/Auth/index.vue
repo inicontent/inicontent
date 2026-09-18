@@ -48,6 +48,7 @@
 
 	<NModal
 		v-model:show="showPasskeyEnrollment"
+		@esc="skipPasskeyEnrollment"
 		preset="card"
 		:title="t('passkey.enrollmentTitle')"
 		style="width: min(420px, calc(100vw - 32px));"
@@ -99,7 +100,7 @@ const route = useRoute();
 const tabsInstRef = ref<TabsInst | null>(null);
 const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
 const database = useState<Database>("database");
-const redirectTo = useRedirectToCookie(database.value.slug);
+const redirectTo = useScopedCookie<string | null>("redirectTo", database.value?.slug);
 const table = useState<Table>("table");
 const user = useState<User>("user");
 const SignupForm = useState(() => ({
@@ -143,14 +144,14 @@ const ResetRequestColumns: Schema = [
 	},
 ];
 
-const Language = useLanguageCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 function onAfterSignup(data?: Item) {
 	SigninForm.value.username = data?.username || "";
 	tabsValue.value = "signin";
 	tabsInstRef.value?.syncBarPosition();
 }
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const isSafeRedirect = (value?: string) =>
 	!!value &&

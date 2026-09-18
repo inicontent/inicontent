@@ -28,7 +28,8 @@
 import type { MenuOption } from "naive-ui"
 import { Icon, LazyTableIcon, NuxtLink, NIcon } from "#components"
 
-const Language = useLanguageCookie()
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 onBeforeUpdate(() => {
     clearNuxtState("isMenuOpen")
@@ -36,7 +37,6 @@ onBeforeUpdate(() => {
 
 const route = useRoute()
 const isMenuOpen = useState("isMenuOpen", () => false)
-const database = useState<Database>("database")
 const table = useState<Table>("table")
 
 const defaultValue = computed(() => {

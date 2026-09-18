@@ -1,6 +1,7 @@
-import Inison from "inison";
 import { flattenSchema } from "inibase/utils";
+import Inison from "inison";
 import renderLabel from "~/composables/renderLabel";
+import { generateSearchString } from "~/composables/search";
 
 type WidgetDataResult = {
 	value: Ref<number | null>;
@@ -17,9 +18,9 @@ export function useDashboardData(
 	dateRangeOverride?: Ref<WidgetDateRange | undefined>,
 ): WidgetDataResult {
 	const config = useRuntimeConfig();
-	const sessionID = useSessionCookie();
-	const Language = useLanguageCookie();
 	const database = useState<Database>("database");
+	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 	const value = ref<number | null>(null);
 	const data = ref<Item[]>([]);
@@ -117,6 +118,46 @@ export function useDashboardData(
 		return nested.length ? [field, ...nested] : [field];
 	}
 
+	function isRecord(value: unknown): value is Record<string, unknown> {
+		return typeof value === "object" && value !== null && !Array.isArray(value);
+	}
+
+	function combineSameFieldValues(existing: unknown, incoming: unknown): unknown {
+		if (existing === undefined) return incoming;
+		if (existing === incoming) return existing;
+		// Reuse the backend-supported grouped shape:
+		// { field: { and: { 0: "...", 1: "..." } } }
+		const existingGroup =
+			isRecord(existing) && isRecord(existing.and)
+				? { ...(existing.and as Record<string, unknown>) }
+				: null;
+		if (existingGroup) {
+			existingGroup[Object.keys(existingGroup).length.toString()] =
+				String(incoming);
+			return { and: existingGroup };
+		}
+		return { and: { "0": String(existing), "1": String(incoming) } };
+	}
+
+	function mergeWhere(
+		a?: Record<string, any>,
+		b?: Record<string, any>,
+	): Record<string, any> | undefined {
+		if (!a) return b;
+		if (!b) return a;
+		// Both are { and: {...}, or: {...} } — merge each group, keeping
+		// both values when date-range and search target the same field.
+		const and: Record<string, unknown> = { ...(a.and ?? {}) };
+		for (const [key, value] of Object.entries(b.and ?? {})) {
+			and[key] = combineSameFieldValues(and[key], value);
+		}
+		const merged: Record<string, any> = { and };
+		const or = { ...(a.or ?? {}), ...(b.or ?? {}) };
+		if (Object.keys(or).length) merged.or = or;
+		if (!Object.keys(and).length) delete merged.and;
+		return Object.keys(merged).length ? merged : undefined;
+	}
+
 	async function fetchItems(opts: {
 		perPage?: number;
 		sort?: Record<string, number>;
@@ -152,8 +193,23 @@ export function useDashboardData(
 			const activeDateRange = dateRangeOverride?.value ?? widget.dateRange;
 			const rangeMs = getDateRangeMs(activeDateRange);
 			const dateField = widget.dateField ?? "createdAt";
-			const whereDate =
-				rangeMs ? { [dateField]: `>${Date.now() - rangeMs}` } : undefined;
+			const whereDateFlat = rangeMs
+				? { [dateField]: `>${Date.now() - rangeMs}` }
+				: undefined;
+			// Use "display" mode so relative operators (r>=, etc.) stay as
+			// strings for the backend to resolve — same as Table view.
+			const whereSearch = widget.searchArray
+				? generateSearchString(widget.searchArray, "display")
+				: undefined;
+			// No saved filters → keep the exact legacy shape (flat) so
+			// existing dashboards send byte-identical queries. With filters,
+			// normalize the date into an `and` group and merge.
+			const where = whereSearch
+				? mergeWhere(
+						whereDateFlat ? { and: { ...whereDateFlat } } : undefined,
+						whereSearch as Record<string, any> | undefined,
+					)
+				: whereDateFlat;
 
 			switch (widget.type) {
 				case "counter": {
@@ -165,14 +221,14 @@ export function useDashboardData(
 						const res = await fetchItems({
 							perPage: 1,
                             columns: ["id"],
-							where: whereDate,
+							where,
 						});
 						value.value = res.options?.total ?? 0;
 					} else {
 						const res = await fetchItems({
 							perPage: 1000,
 							columns: [widget.field],
-							where: whereDate,
+							where,
 						});
 						const items = res.result ?? [];
 						const nums = items
@@ -192,7 +248,7 @@ export function useDashboardData(
 						perPage: 1000,
 						columns: [dateField],
 						sort: { [dateField]: 1 },
-						where: whereDate,
+						where,
 					});
 					data.value = res.result ?? [];
 					timeSeries.value = groupByDate(
@@ -209,7 +265,7 @@ export function useDashboardData(
 					const res = await fetchItems({
 						perPage: 1000,
 						columns: getColumnsForField(field),
-						where: whereDate,
+						where,
 					});
 					data.value = res.result ?? [];
 					groups.value = groupByField(data.value, field);
@@ -219,7 +275,7 @@ export function useDashboardData(
 					const res = await fetchItems({
 						perPage: widget.limit ?? 10,
 						sort: { createdAt: -1 },
-						where: whereDate,
+						where,
 					});
 					data.value = res.result ?? [];
 					break;

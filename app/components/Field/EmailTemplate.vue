@@ -279,11 +279,10 @@ function insert(key: string) {
 }
 
 // ── Live preview (compiled server-side, rendered in a sandboxed iframe) ────────
-
-const sessionID = useSessionCookie();
+const database = useState<Database>("database");
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
 
 const previewHtml = ref("");
 const previewText = ref("");

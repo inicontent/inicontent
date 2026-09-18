@@ -298,10 +298,11 @@ const currentPath = ref<string>(
 	}`,
 );
 
-const sessionID = useSessionCookie();
+const database = useState<Database>("database");
+
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const database = useState<Database>("database");
 if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
@@ -315,7 +316,7 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result;
 
-const Language = useLanguageCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const assets = ref<Asset[]>();
 const selectedAssetIds = ref<Asset["id"][]>([]);

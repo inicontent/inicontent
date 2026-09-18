@@ -901,5 +901,51 @@ export default {
 			"Faites glisser les poignées vertes pour délimiter la carte, puis appliquez.",
 		applyCrop: "Appliquer le recadrage",
 		scanDocument: "Scanner un document",
+
+		// Sauvegardes
+		backups: "Sauvegardes",
+		backupsAdminOnly:
+			"Seul le propriétaire (admin) de la base peut gérer les sauvegardes.",
+		createBackup: "Créer une sauvegarde",
+		backupName: "Nom de la sauvegarde",
+		backupNamePlaceholder: "ex. Avant le lancement",
+		backupNameHelp: "Laissez vide pour générer un nom avec la date et l'heure.",
+		backupType: "Type de sauvegarde",
+		fullBackup: "Base complète",
+		tableBackup: "Table",
+		fullBackupHelp:
+			"Capture de tout le dossier de la base (tables et métadonnées) en archive brute.",
+		tableBackupHelp: "Capture d'un seul dossier de table en archive brute.",
+		backupCreatedSuccessfully:
+			"Sauvegarde démarrée. Elle apparaîtra ici une fois terminée.",
+		backupDeletedSuccessfully: "Sauvegarde supprimée",
+		backupOrigin: "Origine",
+		automaticBackup: "Automatique",
+		manualBackup: "Manuelle",
+		backupSize: "Taille",
+		backupState: "État",
+		queued: "En attente",
+		running: "En cours",
+		completed: "Terminée",
+		failed: "Échouée",
+		restoring: "Restauration",
+		restoreBackup: "Restaurer la sauvegarde",
+		restoreScope: "Portée de restauration",
+		restoreWarning:
+			"La restauration remplace les données existantes par le contenu de cette sauvegarde. Cette action est irréversible.",
+		restoreConfirmation: "Confirmation",
+		restoreConfirmationHelp:
+			"Je comprends que cela remplacera les données existantes.",
+		restoreStarted: "Restauration démarrée. Vous serez notifié à la fin.",
+		restore: "Restaurer",
+		backupScopeTable: "Table (dossier complet)",
+		backupScopeTableSchema: "Schéma de table uniquement",
+		backupScopeTableData: "Données de table uniquement",
+		backupScopeDatabaseSchema: "Tous les schémas de tables",
+		backupScopeDatabaseData: "Toutes les données de tables",
+		backupScopeDatabaseFull: "Base entière (schémas + données)",
+		folder: "Dossier",
+		deleteBackupConfirm:
+			'Supprimer la sauvegarde "{name}" ? Cette action est irréversible.',
 	},
 } as const;

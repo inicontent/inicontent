@@ -79,7 +79,8 @@ import { Icon, NIcon } from "#components";
 import { imageExtensions, videoExtensions } from "~/composables";
 import { useAssetPreview } from "~/composables/useAssetPreview";
 
-const Language = useLanguageCookie();
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const {
 	currentPreviewAsset,

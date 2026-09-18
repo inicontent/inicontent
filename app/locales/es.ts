@@ -899,5 +899,52 @@ export default {
 			"Arrastra los controles verdes para delimitar la tarjeta y aplica.",
 		applyCrop: "Aplicar recorte",
 		scanDocument: "Escanear documento",
+
+		// Copias de seguridad
+		backups: "Copias de seguridad",
+		backupsAdminOnly:
+			"Solo el propietario (admin) de la base puede gestionar las copias de seguridad.",
+		createBackup: "Crear copia de seguridad",
+		backupName: "Nombre de la copia",
+		backupNamePlaceholder: "p. ej. Antes del lanzamiento",
+		backupNameHelp:
+			"Déjalo vacío para generar un nombre con la fecha y la hora.",
+		backupType: "Tipo de copia",
+		fullBackup: "Base completa",
+		tableBackup: "Tabla",
+		fullBackupHelp:
+			"Instantánea de toda la carpeta de la base (tablas y metadatos) como archivo sin procesar.",
+		tableBackupHelp:
+			"Instantánea de una sola carpeta de tabla como archivo sin procesar.",
+		backupCreatedSuccessfully: "Copia iniciada. Aparecerá aquí cuando termine.",
+		backupDeletedSuccessfully: "Copia eliminada",
+		backupOrigin: "Origen",
+		automaticBackup: "Automática",
+		manualBackup: "Manual",
+		backupSize: "Tamaño",
+		backupState: "Estado",
+		queued: "En cola",
+		running: "En curso",
+		completed: "Completada",
+		failed: "Fallida",
+		restoring: "Restaurando",
+		restoreBackup: "Restaurar copia",
+		restoreScope: "Alcance de restauración",
+		restoreWarning:
+			"Restaurar sobrescribe los datos existentes con el contenido de esta copia. Esta acción no se puede deshacer.",
+		restoreConfirmation: "Confirmación",
+		restoreConfirmationHelp:
+			"Entiendo que esto sobrescribirá los datos existentes.",
+		restoreStarted: "Restauración iniciada. Se te notificará cuando termine.",
+		restore: "Restaurar",
+		backupScopeTable: "Tabla (carpeta completa)",
+		backupScopeTableSchema: "Solo esquema de tabla",
+		backupScopeTableData: "Solo datos de tabla",
+		backupScopeDatabaseSchema: "Todos los esquemas de tablas",
+		backupScopeDatabaseData: "Todos los datos de tablas",
+		backupScopeDatabaseFull: "Base completa (esquemas + datos)",
+		folder: "Carpeta",
+		deleteBackupConfirm:
+			'¿Eliminar la copia de seguridad "{name}"? Esta acción es irreversible.',
 	},
 } as const;

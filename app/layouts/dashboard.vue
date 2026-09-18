@@ -30,7 +30,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const database = useState<Database>("database")
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 const showAuthModal = ref(false)
 const authCheckFailCount = ref(0)

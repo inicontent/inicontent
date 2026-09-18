@@ -142,7 +142,8 @@ const props = defineProps<{
 	showPwa?: boolean;
 }>();
 
-const Language = useLanguageCookie()
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 const sync = useOfflineSync();
 const show = ref(false);

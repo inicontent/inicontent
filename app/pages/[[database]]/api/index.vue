@@ -48,7 +48,7 @@ definePageMeta({
 const config = useRuntimeConfig();
 const database = useState<Database>("database");
 const route = useRoute();
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const authPath = computed(
 	() => `${route.params.database ? `/${route.params.database}` : ""}/auth`,

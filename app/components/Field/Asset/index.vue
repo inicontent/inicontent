@@ -100,7 +100,9 @@ const { field } = defineProps<{ field: Field }>();
 
 const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 
-const Language = useLanguageCookie();
+const database = useState<Database>("database");
+
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const config = useRuntimeConfig();
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;
@@ -634,5 +636,5 @@ const getChecked = (asset: Asset) =>
 				: value.id === asset.id,
 		) > -1;
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 </script>

@@ -128,7 +128,9 @@ import {
 	NButtonGroup
 } from "#components";
 
-const Language = useLanguageCookie();
+const database = useState<Database>("database");
+
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const { field } = defineProps<{ field: Field }>();
 

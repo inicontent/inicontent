@@ -373,7 +373,8 @@ function renderHeadingOption({ value }: { value: number }) {
 	return h(`h${value}`, { style: { margin: 0 } }, `Heading ${value}`);
 }
 
-const Language = useLanguageCookie();
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const headingOptions = [
 	{

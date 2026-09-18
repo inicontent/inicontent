@@ -178,7 +178,7 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 	await loadOptions(searchValue);
 }, 1000);
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function loadOptions(searchValue?: string | number) {
 	const seq = ++requestSeq;

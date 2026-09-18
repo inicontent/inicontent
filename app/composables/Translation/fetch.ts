@@ -8,15 +8,15 @@ type TableTranslationOverlay = {
 
 export default async function (onlyTableTranslations = false) {
 	const config = useRuntimeConfig();
-	const Language = useLanguageCookie();
+	const database = useState<Database>("database");
+	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 	const translationsState = useState<TranslationsType>("translations");
 	const tableOverlays = useState<
 		Record<string, Record<string, TableTranslationOverlay>>
 	>("tableTranslationOverlays", () => ({}));
 
-	const database = useState<Database>("database");
 	const table = useState<Table>("table");
-	const sessionID = useSessionCookie();
+	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	if (!Language.value || !database.value) return;
 

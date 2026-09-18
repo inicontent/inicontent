@@ -144,7 +144,7 @@ const route = useRoute();
 const router = useRouter();
 const database = useState<Database>("database");
 const user = useState<User>("user");
-const Language = useLanguageCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 const isRTL = computed(() => Language.value === "ar");
 const generalRef = ref<FormInst>();
 const translationRef = ref<FormInst>();
@@ -320,7 +320,7 @@ const emailSchema = computed<Schema>(() => [
 		: []),
 ]);
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 function exportRequestOptions() {
 	return {

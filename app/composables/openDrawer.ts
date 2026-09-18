@@ -14,16 +14,16 @@ function rollbackNestedWidthIncrements(index: number) {
 async function loadDrawer(index: number) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const drawer = Drawers.value[index];
+	const database = useState<Database>("database");
 
-	const sessionID = useSessionCookie();
+	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	if (!drawer) return;
 
 	if (drawer.id) {
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		const config = useRuntimeConfig();
-		const database = useState<Database>("database");
-		const Language = useLanguageCookie();
+		const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 		const currentItem = useState<Item>("currentItem");
 
 		drawer.show = false;

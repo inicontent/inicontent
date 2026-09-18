@@ -80,9 +80,9 @@
 </template>
 
 <script setup lang="ts">
-const Language = useLanguageCookie();
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
 defineSlots<{
 	default({

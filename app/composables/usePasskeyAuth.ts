@@ -17,8 +17,8 @@ type PasskeyRegisterResponse = apiResponse<Record<string, unknown>>;
 export function usePasskeyAuth() {
 	const config = useRuntimeConfig();
 	const database = useState<Database>("database");
-	const language = useLanguageCookie();
-	const sessionID = useSessionCookie();
+	const language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	const isPasskeySupported = ref(false);
 

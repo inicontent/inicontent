@@ -155,7 +155,7 @@ if (field?.options) {
 	})
 }
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 // Watch searchString changes and refetch data for Kanban view
 watch(
@@ -199,7 +199,7 @@ const calculateHeight = computed(() => {
 	return `${Math.min(calculatedHeight, maxHeight)}px`
 })
 
-const Language = useLanguageCookie()
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 const onItemDrop = async (evt: any, targetColumn: columnType) => {
 	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return

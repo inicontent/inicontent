@@ -130,11 +130,11 @@ import type { DataTableColumns, SelectOption } from "naive-ui"
 import Inison from "inison"
 import { Icon, NButton, NButtonGroup, NIcon, NPopconfirm, NTag } from "#components"
 
+const database = useState<Database>("database");
 const config = useRuntimeConfig()
-const Language = useLanguageCookie()
-const sessionID = useSessionCookie()
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
-const database = useState<Database>("database")
 const table = useState<Table>("table")
 
 const loading = ref(false)

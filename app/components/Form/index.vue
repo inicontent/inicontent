@@ -135,7 +135,7 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	return mergedSchema;
 }
 
-const Language = useLanguageCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 const PostSchemaResp = useState<
 	Record<string, apiResponse<{ schema: Schema; data: Item }>>
 >("PostSchema", () => ({}));
@@ -144,7 +144,7 @@ const filterDefaultColumns = (field: Field) =>
 		field.key,
 	);
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 function hasFunctionsProperties(items: Schema): boolean {
 	return items.some((item) => {

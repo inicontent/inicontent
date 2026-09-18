@@ -94,7 +94,7 @@ async function registerPasskey() {
 	}
 }
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 await useFetch<Item>(
 	`${config.public.apiBase}${database.value.slug}/${

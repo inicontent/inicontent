@@ -388,19 +388,17 @@ onMounted(() => {
 	}).catch(() => {})
 })
 
-const Language = useLanguageCookie()
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const database = useState<Database>("database")
 const table = useState<Table>("table")
 const tableCopy = ref<any>(toRaw(table.value))
 const currentFlow = ref<string>("onRequest")
 const currentFlowCard = ref<string>()
-const saveFlowTabName = "__save__"
-const previousFlowTab = ref<string>(currentFlow.value)
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 
 const templateNames = ref<SelectOption[]>([])
 

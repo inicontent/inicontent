@@ -41,11 +41,12 @@ let runtime:
 
 function ensureRuntime() {
 	if (runtime) return runtime;
+	const database = useState<Database>("database");
 	runtime = {
 		config: useRuntimeConfig(),
-		database: useState<Database | undefined>("database"),
-		sessionID: useSessionCookie(),
-		language: useLanguageCookie(),
+		database,
+		sessionID: useScopedCookie<string>("sid", database.value?.slug),
+		language: useScopedCookie<LanguagesType>("language", database.value?.slug),
 	};
 	return runtime;
 }

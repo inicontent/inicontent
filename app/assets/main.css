@@ -23,6 +23,16 @@ a {
 	color: inherit;
 }
 
+.n-menu .n-menu-item-content .n-menu-item-content-header {
+    display: flex;
+    justify-content: space-between;
+	align-items: center;
+}
+
+.n-menu .n-menu-item-content .n-menu-item-content-header .n-menu-item-content-header__extra {
+    height: 18px;
+}
+
 .n-input-number,
 .n-date-picker {
 	width: 100%;

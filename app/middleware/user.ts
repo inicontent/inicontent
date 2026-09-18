@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware(async () => {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
 
-	const sessionID = useSessionCookie();
+	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	if (!user.value) {
 		// No session cookie yet → anonymous visitor. Skip the auth round-trip;

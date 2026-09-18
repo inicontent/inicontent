@@ -188,8 +188,8 @@ if (tablesConfig.value[table.value.slug]?.view)
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const Language = useLanguageCookie();
-const sessionID = useSessionCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const importFileInputRef = ref<HTMLInputElement>();
 const importUploadProgress = ref(0);
 

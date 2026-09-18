@@ -229,7 +229,7 @@ const tableCopy = ref<
 	displayAs: table.value.displayAs || "table",
 	schema: table.value.schema || [],
 });
-const Language = useLanguageCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 function sanitizeSchema(schema: Schema): Schema {
 	return schema
 		.filter((field) => field.type !== "custom") // Remove custom fields
@@ -260,7 +260,7 @@ function sanitizeSchema(schema: Schema): Schema {
 		});
 }
 
-const sessionID = useSessionCookie();
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function updateTable() {
 	settingsFormRef.value?.validate(async (errors) => {

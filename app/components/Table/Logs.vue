@@ -97,8 +97,8 @@ const isOpen = ref(open)
 
 const config = useRuntimeConfig()
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const Language = useLanguageCookie()
-const database = useState<Database>("database")
+const database = useState<Database>("database");
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 const usersTable = database.value.tables?.find(({ slug }) => slug === "users")
 
@@ -108,7 +108,7 @@ onBeforeRouteLeave(() => {
 	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`)
 })
 
-const sessionID = useSessionCookie()
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 const hasLogs = ref(true)
 
 const { data, execute } = await useLazyFetch<apiResponse<Log[]>>(

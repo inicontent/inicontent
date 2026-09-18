@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
 	const user = useState<User>("user");
 	const database = useState<Database>("database");
-	const redirectTo = useRedirectToCookie(database.value.slug);
+	const redirectTo = useScopedCookie<string | null>("redirectTo", database.value?.slug);
 	const isSafeRedirect = (value?: string) =>
 		!!value &&
 		value.startsWith("/") &&

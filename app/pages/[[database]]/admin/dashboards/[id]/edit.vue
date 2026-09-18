@@ -1,15 +1,13 @@
 <template>
-	<NFlex vertical :size="16">
-		<NPageHeader :title="t('editDashboard')" />
+	<NCard :title="t('editDashboard')" style="background:none" :bordered="false">
 		<NSpin :show="loading">
 			<DashboardEditor
 				v-if="dashboard"
 				:dashboard="dashboard"
-				:database-slug="databaseSlug"
 				@saved="onSaved"
 			/>
 		</NSpin>
-	</NFlex>
+	</NCard>
 </template>
 
 <script setup lang="ts">
@@ -23,12 +21,8 @@ const router = useRouter();
 const config = useRuntimeConfig();
 const database = useState<Database>("database");
 
-const databaseSlug = computed(() =>
-	(route.params.database as string) || database.value?.slug || "",
-);
-
-const Language = useLanguageCookie();
-const sessionID = useSessionCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const dashboard = ref<Dashboard | null>(null);
 const currentDashboard = useState<Dashboard | null>("currentDashboard", () => null);
@@ -36,13 +30,12 @@ const loading = ref(true);
 
 onMounted(async () => {
 	try {
-		const slug = databaseSlug.value ? `${databaseSlug.value}/` : "";
 		const res = await $fetch<apiResponse<Dashboard>>(
-			`${config.public.apiBase}${slug}dashboards/${route.params.id}`,
+			`${config.public.apiBase}${database.value.slug}dashboards/${route.params.id}`,
 			{
 				params: {
 					locale: Language.value,
-					[`${databaseSlug.value}_sid`]: sessionID.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},

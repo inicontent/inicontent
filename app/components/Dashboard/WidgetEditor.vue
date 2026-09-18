@@ -95,6 +95,10 @@
 			/>
 		</NFormItem>
 
+		<NFormItem v-if="model.table" :label="t('filter')" path="searchArray">
+			<LazyTableSearch v-model="model.searchArray" v-model:schema="widgetSchema" />
+		</NFormItem>
+
 		<NFormItem :label="t('size')" path="size">
 			<NSelect
 				v-model:value="model.size"
@@ -110,6 +114,8 @@
 </template>
 
 <script lang="ts" setup>
+import { LazyTableSearch } from "#components";
+
 const props = defineProps<{
 	modelValue: Widget;
 }>();
@@ -124,6 +130,33 @@ const model = computed({
 	get: () => props.modelValue,
 	set: (v) => emit("update:modelValue", v),
 });
+
+// Schema for the search builder, synced from the selected source table.
+// LazyTableSearch writes to its schema model only when empty, so a local
+// ref synced via watcher is safe.
+const widgetSchema = ref<Schema | undefined>(
+	database.value?.tables?.find((t) => t.slug === model.value.table)?.schema,
+);
+
+watch(
+	() => model.value.table,
+	(newTable, oldTable) => {
+		widgetSchema.value = database.value?.tables?.find(
+			(t) => t.slug === newTable,
+		)?.schema;
+		// Source table changed → previously picked fields are invalid
+		if (newTable !== oldTable && oldTable !== undefined) {
+			model.value.searchArray = { and: [[null, "=", null]] };
+		}
+		if (!model.value.searchArray) {
+			model.value.searchArray = { and: [[null, "=", null]] };
+		}
+	},
+);
+
+if (!model.value.searchArray) {
+	model.value.searchArray = { and: [[null, "=", null]] };
+}
 
 const typeOptions = [
 	{ label: t("counter"), value: "counter" },

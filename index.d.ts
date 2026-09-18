@@ -6,10 +6,7 @@ import type {
 	FieldType as dbFieldType,
 	pageInfo,
 } from "inibase";
-import type {
-	DataTableColumns,
-	SelectOption,
-} from "naive-ui";
+import type { DataTableColumns, SelectOption } from "naive-ui";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
 import type languages from "~/composables/Translation/languages";
@@ -155,12 +152,7 @@ declare global {
 	type Item = Data & {
 		createdBy?: User;
 	};
-	type SchedulesPreset =
-		| "hourly"
-		| "daily"
-		| "weekly"
-		| "monthly"
-		| "custom";
+	type SchedulesPreset = "hourly" | "daily" | "weekly" | "monthly" | "custom";
 	type Schedules = Item & {
 		databaseSlug: string;
 		table: string;
@@ -222,7 +214,7 @@ declare global {
 		result: T;
 		message: string;
 		options: pageInfo;
-		code: string|number;
+		code: string | number;
 	};
 	type Asset = Item & {
 		name: string;
@@ -230,6 +222,20 @@ declare global {
 		extension: string;
 		size: number;
 		publicURL: string;
+	};
+	type Backup = Item & {
+		name: string;
+		extension: string;
+		size: number;
+		publicURL?: string;
+		type?: "full" | "table";
+		table?: string;
+		automatic?: boolean;
+		state?: "queued" | "running" | "completed" | "failed";
+		error?: string;
+		restoreState?: "running" | "completed" | "failed";
+		restoreError?: string;
+		restoredAt?: number;
 	};
 	type ThemeConfig = {
 		primaryColor: string;
@@ -308,6 +314,7 @@ declare global {
 		limit?: number;
 		color?: string;
 		size?: WidgetSize;
+		searchArray?: searchType;
 	};
 
 	type Dashboard = Item & {
@@ -352,6 +359,7 @@ export type {
 	Item,
 	Database,
 	Asset,
+	Backup,
 	apiResponse,
 	ThemeConfig,
 	LanguagesType,

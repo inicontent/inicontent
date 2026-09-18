@@ -1,9 +1,9 @@
 <template>
-	<NFlex vertical :size="16">
-		<NPageHeader :title="dashboard?.name ?? t('dashboard')">
-			<template #extra>
+	<NSpin :show="loading">
+		<NCard :title="dashboard?.name ?? t('dashboard')" style="background:none" :bordered="false">
+			<template #header-extra>
 				<NFlex :size="8" align="center">
-					<NPopover trigger="click" placement="bottom-end">
+					<NPopover v-if="dashboard?.widgets?.length" trigger="click" placement="bottom-end">
 						<template #trigger>
 							<NButton size="small" secondary :type="dateRangeOverride ? 'primary' : 'default'">
 								<template #icon>
@@ -38,16 +38,14 @@
 					</NButton>
 				</NFlex>
 			</template>
-		</NPageHeader>
-		<NSpin :show="loading">
-			<DashboardView
+			<LazyDashboardView
 				v-if="dashboard"
 				:dashboard="dashboard"
 				:database-slug="databaseSlug"
 				:date-range-override="dateRangeOverride"
 			/>
-		</NSpin>
-	</NFlex>
+		</NCard>
+	</NSpin>
 </template>
 
 <script setup lang="ts">
@@ -69,8 +67,8 @@ const routeBase = computed(() =>
 	route.params.database ? `/${route.params.database}` : "",
 );
 
-const Language = useLanguageCookie();
-const sessionID = useSessionCookie();
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const dashboard = ref<Dashboard | null>(null);
 const currentDashboard = useState<Dashboard | null>("currentDashboard", () => null);

@@ -10,7 +10,7 @@ import { useOsTheme } from "naive-ui"
 import { loadCoreTranslations } from "./composables"
 
 const database = useState<Database>("database")
-const Language = useLanguageCookie()
+const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
 
 // Load core translations with the initial language
 loadCoreTranslations(Language.value)
@@ -21,8 +21,8 @@ watch(Language, async (newLang, oldLang) => {
 		await loadCoreTranslations(newLang, oldLang)
 })
 
-const Theme = useThemeCookie()
-const sessionID = useSessionCookie()
+const Theme = useCookie<"light" | "dark">("theme", { sameSite: true })
+const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 const osThemeRef = useOsTheme()
 const isManual = ref(false)
 if (!Theme.value) {
@@ -36,7 +36,6 @@ watch(Theme, () => {
 	if (Theme.value !== osThemeRef.value) {
 		isManual.value = true
 	}
-	if (Theme.value) syncThemeToAllDatabases(Theme.value)
 })
 
 watch(osThemeRef, (newOsTheme) => {
