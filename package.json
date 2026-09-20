@@ -1,6 +1,8 @@
 {
-	"private": true,
+	"name": "inicontent",
+	"version": "1.0.0",
 	"type": "module",
+  	"main": "./nuxt.config.ts",
 	"scripts": {
 		"lint": "biome check",
 		"format": "biome check --write",
@@ -10,13 +12,6 @@
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare"
 	},
-	"files": [
-		"app",
-		"public",
-		"types",
-		"biome.json",
-		"nuxt.config.ts"
-	],
 	"dependencies": {
 		"@ffmpeg/ffmpeg": "^0.12.15",
 		"@ffmpeg/util": "^0.12.2",
@@ -57,11 +52,5 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"canvas",
-			"tesseract.js"
-		]
 	}
 }

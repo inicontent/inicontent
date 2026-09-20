@@ -59,32 +59,32 @@
 							</NFlex>
 							<NText depth="3">{{ humanFileSize(table?.size) }}</NText>
 						</NFlex>
-					</NPopover>
-					<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
-						@select="(v) => Language = v">
-						<NButton secondary round size="small">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:language" />
-								</NIcon>
-							</template>
-						</NButton>
-					</NDropdown>
-					<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-						<NButton secondary type="primary" round size="small">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:user" />
-								</NIcon>
-							</template>
-							<template v-if="user">
-								<NText strong>{{ user.username.charAt(0).toUpperCase() +
-									user.username.slice(1) }}</NText>
-							</template>
-						</NButton>
-					</NDropdown>
-				</NButtonGroup>
-			</template>
+				</NPopover>
+				<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
+					@select="(v) => Language = v">
+					<NButton secondary round size="small">
+						<template #icon>
+							<NIcon>
+								<Icon name="tabler:language" />
+							</NIcon>
+						</template>
+					</NButton>
+				</NDropdown>
+				<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+					<NButton secondary type="primary" round size="small">
+						<template #icon>
+							<NIcon>
+								<Icon name="tabler:user" />
+							</NIcon>
+						</template>
+						<template v-if="user">
+							<NText strong>{{ user.username.charAt(0).toUpperCase() +
+								user.username.slice(1) }}</NText>
+						</template>
+					</NButton>
+				</NDropdown>
+			</NButtonGroup>
+		</template>
     </NPageHeader>
 </template>
 
@@ -200,7 +200,7 @@ const userDropdownOptions = computed(() => [
 		show: user.value?.role === config.public.idOne,
 	},
 	{
-		label: () => h(NFlex,{ align: "center" }, () => [
+		label: () => h(NFlex,{ justify: "start", align: "center" }, () => [
 			t("billing"),
 			h(NIcon, { color: ThemeConfig.value.primaryColor}, () => h(Icon, { name: "tabler:external-link" }))
 		]),
