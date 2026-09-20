@@ -135,7 +135,10 @@ function mergeItems(existing: Schema, updated: Schema): Schema {
 	return mergedSchema;
 }
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const PostSchemaResp = useState<
 	Record<string, apiResponse<{ schema: Schema; data: Item }>>
 >("PostSchema", () => ({}));
@@ -267,8 +270,32 @@ async function fetchSchemaAndData() {
 			else modelValue.value = response.result.data;
 		}
 	} catch (error) {
-		console.error("Error fetching schema:", error);
-		window.$message.error(t("errorFetchingSchema"));
+		// The /schema endpoint needs the network and can be unreachable when
+		// offline (device on Wi-Fi/LAN without internet, captive portal, etc.).
+		// Queuing an "error fetching schema" toast for that is pure noise — it
+		// would also re-fire on every debounced refetch while the user types.
+		//
+		// Render the form from the table's default schema (the cached database
+		// metadata, the same source the success path merges in) whenever there
+		// are no fields yet: an empty create drawer must never be blocked by an
+		// unreachable /schema call, and the create button stays clickable so the
+		// drawer can complete and close.
+		const defaultSchema = props.table
+			? database.value.tables?.find(
+					({ slug }) =>
+						slug === (props.table ?? table.value?.slug ?? route.params.table),
+				)?.schema
+			: table.value?.schema;
+		if (!schema.value.length && defaultSchema?.length)
+			schema.value = defaultSchema.filter(filterDefaultColumns);
+
+		// Network failures and junk (HTML-stub) responses are silent. Only
+		// genuine server errors (HTTP status, valid JSON API) get a toast.
+		if (!isNetworkError(error) && !isJunkResponse(error)) {
+			console.error("Error fetching schema:", error);
+			window.$message.error(t("errorFetchingSchema"));
+		}
+		return;
 	} finally {
 		oldModelValue.value = JSON.parse(JSON.stringify(modelValue.value));
 		Loading.value.SCHEMA = false;
@@ -464,6 +491,11 @@ async function CREATE() {
 			if (isOfflineQueuedResult(data)) {
 				window.$message.warning(t("queuedOfflineToast"));
 				useOfflineSync().refreshCounts();
+				// Re-read the (cached) table data so the new item shows up in
+				// the list — Table/index.vue merges queued creates into view.
+				await refreshNuxtData(
+					`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+				);
 				return navigateTo(
 					`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
 				);

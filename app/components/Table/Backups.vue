@@ -258,17 +258,6 @@ function formatDate(value?: number) {
 	return new Date(value).toLocaleString();
 }
 
-function formatSize(bytes?: number) {
-	if (!bytes || bytes <= 0) return "--";
-	const units = ["B", "KB", "MB", "GB", "TB"];
-	const index = Math.min(
-		Math.floor(Math.log(bytes) / Math.log(1024)),
-		units.length - 1,
-	);
-	const value = bytes / 1024 ** index;
-	return `${value.toFixed(value >= 100 || index === 0 ? 0 : 1)} ${units[index]}`;
-}
-
 async function load(silent = false) {
 	if (!isAdmin.value) return;
 	if (!silent) loading.value = true;
@@ -505,7 +494,7 @@ const columns = computed<DataTableColumns<Backup>>(() => [
 		title: t("backupSize"),
 		key: "size",
 		width: 110,
-		render: (backup) => formatSize(backup.size),
+		render: (backup) => humanFileSize(backup.size),
 	},
 	{
 		title: t("backupState"),
@@ -596,7 +585,6 @@ const columns = computed<DataTableColumns<Backup>>(() => [
 								NButton,
 								{ type: "error", secondary: true },
 								{
-									default: () => t("delete"),
 									icon: () => h(NIcon, () => h(Icon, { name: "tabler:trash" })),
 								},
 							),

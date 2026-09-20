@@ -247,7 +247,6 @@ const rule: FormItemRule = {
 	},
 };
 
-const database = useState<Database>("database");
 const showAssetsModal = ref(false);
 const showScanner = ref(false);
 const uploadRef = ref<{ submit?: (options?: { fileId?: string }) => void }>();

@@ -426,11 +426,10 @@ export default {
 		line: "Line chart",
 		bar: "Bar chart",
 		pie: "Pie chart",
-		recent: "Recent activity",
+		table: "Table",
 		lineChart: "Line chart",
 		barChart: "Bar chart",
 		pieChart: "Pie chart",
-		recentActivity: "Recent activity",
 		sourceTable: "Source table",
 		selectTable: "Select table",
 		selectField: "Select field",
@@ -443,7 +442,13 @@ export default {
 		last90Days: "Last 90 days",
 		lastYear: "Last year",
 		allTime: "All time",
+		limit: "Limit",
 		noData: "No data",
+		columnsToDisplay: "Columns to display",
+		sortField: "Sort by",
+		sortOrder: "Sort order",
+		asc: "Ascending",
+		desc: "Descending",
 
 		// Translation drawer
 		translateItem: "Translate item",
@@ -523,6 +528,8 @@ export default {
 		updateAvailable: "Update available",
 		installApp: "Install app",
 		resolveConflicts: "Resolve conflicts",
+		conflictModalIntro:
+			"Your offline change conflicts with a newer version on the server. Choose which version to keep.",
 		noConflicts: "No conflicts to resolve",
 		discardAll: "Discard all",
 		localVersion: "Your version",
@@ -537,6 +544,7 @@ export default {
 		createFailed: "Could not create the item.",
 		updateFailed: "Could not update the item.",
 		deleteFailed: "Could not delete the item.",
+		errorFetchingSchema: "Could not fetch the table schema.",
 
 		// Document scanner
 		documentScanner: "Document scanner",

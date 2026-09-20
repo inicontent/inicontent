@@ -83,7 +83,48 @@
 		</NFormItem>
 
 		<NFormItem
-			v-if="model.type === 'recent'"
+			v-if="model.type === 'table'"
+			:label="t('columnsToDisplay')"
+			path="columns"
+		>
+			<NSelect
+				v-model:value="model.columns"
+				:options="fieldOptions"
+				:placeholder="t('columnsToDisplay')"
+				filterable
+				multiple
+				clearable
+			/>
+		</NFormItem>
+
+		<NFormItem
+			v-if="model.type === 'table'"
+			:label="t('sortField')"
+			path="sortField"
+		>
+			<NSelect
+				v-model:value="model.sortField"
+				:options="fieldOptions"
+				:placeholder="t('sortField')"
+				filterable
+				clearable
+			/>
+		</NFormItem>
+
+		<NFormItem
+			v-if="model.type === 'table' && model.sortField"
+			:label="t('sortOrder')"
+			path="sortOrder"
+		>
+			<NSelect
+				v-model:value="model.sortOrder"
+				:options="sortOrderOptions"
+				:placeholder="t('sortOrder')"
+			/>
+		</NFormItem>
+
+		<NFormItem
+			v-if="model.type === 'table'"
 			:label="t('limit')"
 			path="limit"
 		>
@@ -147,6 +188,9 @@ watch(
 		// Source table changed → previously picked fields are invalid
 		if (newTable !== oldTable && oldTable !== undefined) {
 			model.value.searchArray = { and: [[null, "=", null]] };
+			model.value.columns = undefined;
+			model.value.sortField = undefined;
+			model.value.sortOrder = undefined;
 		}
 		if (!model.value.searchArray) {
 			model.value.searchArray = { and: [[null, "=", null]] };
@@ -163,7 +207,7 @@ const typeOptions = [
 	{ label: t("lineChart"), value: "line" },
 	{ label: t("barChart"), value: "bar" },
 	{ label: t("pieChart"), value: "pie" },
-	{ label: t("recentActivity"), value: "recent" },
+	{ label: t("table"), value: "table" },
 ];
 
 const operationOptions = [
@@ -171,6 +215,11 @@ const operationOptions = [
 	{ label: t("sum"), value: "sum" },
 	{ label: t("max"), value: "max" },
 	{ label: t("min"), value: "min" },
+];
+
+const sortOrderOptions = [
+	{ label: t("asc"), value: "asc" },
+	{ label: t("desc"), value: "desc" },
 ];
 
 const sizeOptions = [

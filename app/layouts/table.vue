@@ -5,7 +5,7 @@
 				isMenuOpen = !collapsed" :style="{ zIndex: 1000, borderLeft: Language === 'ar' ? '1px solid var(--n-border-color)' : 'none', borderRight: Language === 'ar' ? 'none' : '1px solid var(--n-border-color)' }" bordered show-trigger="bar" collapse-mode="width"
 				:collapsed-width="$device.isMobile ? 0 : 64" width="240" :native-scrollbar="false">
 				<NMenu :collapsed="!isMenuOpen" :collapsed-icon-size="22" :collapsed-width="$device.isMobile ? 0 : 64"
-					:options="menuOptions" :defaultValue :watch-props="['defaultValue']" :render-extra="renderMenuExtra" accordion />
+					v-model:value="selectedValue" :options="menuOptions" :render-extra="renderMenuExtra" accordion />
 			</NLayoutSider>
 			<NLayoutContent id="pageContent" :content-style="{
 				padding: $device.isMobile
@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import type { MenuOption } from "naive-ui";
-import { Icon, LazyTableIcon, NButton, NButtonGroup, NIcon, NPopover, NTooltip, NuxtLink } from "#components";
+import { Icon, LazyTableIcon, NButton, NButtonGroup, NIcon, NPopover, NEllipsis, NuxtLink } from "#components";
 
 interface TableAction {
 	key: string;
@@ -181,6 +181,7 @@ function renderActionsPopover(
 					items.map((item) =>
 						h(NButton,
 							{ 
+								style: { justifyContent: "start" },
 								secondary: true,
 								type: item.active ? "primary" : "default",
 								tag: "a",
@@ -268,7 +269,7 @@ function renderSingleItem(tbl: Table): MenuOption {
 				{
 					to: `${adminBase.value}/admin/tables/${tbl.slug}`,
 				},
-				{ default: () => t(tbl.slug) },
+				{ default: () => h(NEllipsis, { tooltip: false, style: { maxWidth: '130px' } }, () => t(tbl.slug)) },
 			),
 		key: isMenuOpen.value ? tbl.slug : `${tbl.slug}Group`,
 		icon: () => h(LazyTableIcon, { table: tbl }),
@@ -421,5 +422,50 @@ const menuOptions = computed(() => {
 	}
 
 	return options;
+});
+
+// The menu selection is derived from the current route. It is a computed that
+// re-normalizes against the live menu structure, so it stays correct when the
+// sidebar is toggled between expanded and collapsed mode (the menu keys differ
+// between modes: leaves like `products` vs. groups like `productsGroup`).
+// Child pages (e.g. /admin/tables/:slug/new) have no item of their own when
+// the sidebar is expanded, so they highlight the parent table item instead.
+function optionContainsKey(options: MenuOption[], key: string): boolean {
+	return options.some((option) => {
+		if (String(option.key ?? "") === key) return true;
+		const children = option.children;
+		return (
+			Array.isArray(children) &&
+			children.some((child) => {
+				if (String(child.key ?? "") === key) return true;
+				const grandchildren = child.children;
+				return (
+					Array.isArray(grandchildren) &&
+					grandchildren.some((grand) => String(grand.key ?? "") === key)
+				);
+			})
+		);
+	});
+}
+
+function normalizeMenuValue(value: string): string {
+	if (optionContainsKey(menuOptions.value, value)) return value;
+	// Prefer the longest matching slug so e.g. "user-roles-*" isn't mistaken
+	// for a child page of "users".
+	const tbl = database.value?.tables
+		?.filter((candidate) => value.startsWith(`${candidate.slug}-`))
+		.sort((a, b) => b.slug.length - a.slug.length)[0];
+	if (tbl) return tbl.slug;
+	// Specific dashboard pages have no item of their own when expanded.
+	if (route.path.includes("/admin/dashboards")) return "dashboards";
+	return value;
+}
+
+// Read-only from the component's perspective: NMenu's transient value changes
+// (e.g. opening a collapsed submenu sets the parent's key) are discarded, and
+// the highlight always reflects the real current page + menu mode.
+const selectedValue = computed({
+	get: () => normalizeMenuValue(defaultValue.value),
+	set: () => {},
 });
 </script>

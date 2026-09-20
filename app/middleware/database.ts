@@ -1,4 +1,8 @@
-import { isNetworkError } from "~/composables/useOfflineFetch";
+import {
+	loadDatabaseConfigLocally,
+	saveDatabaseConfigLocally,
+} from "~/composables/useLocalDatabaseConfig";
+import { isJunkResponse, isNetworkError } from "~/composables/useOfflineFetch";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
@@ -25,26 +29,45 @@ export default defineNuxtRouteMiddleware(async (to) => {
 					},
 				)
 			).result;
+			// Persist a local copy of the database config so the app can still
+			// boot offline from local storage even when the service worker's
+			// config cache is missing or evicted.
+			saveDatabaseConfigLocally(currentDatabaseSlug, database.value);
 		} catch (error) {
-			// Offline (or a hung network). In production the service worker
-			// serves this from the config cache, but when there's no cached
-			// copy yet (e.g. dev mode) that's impossible — so surface a clean
-			// 503 "offline" error instead of leaking the raw fetch stack.
-			if (isNetworkError(error)) {
-				throw createError({
-					statusCode: 503,
-					statusMessage: "offline",
-				});
+			// Offline (or a hung network). Prefer the locally-persisted copy of
+			// the database config — with it the app boots normally with the real
+			// metadata. In production the service worker also serves this request
+			// from its config cache, so this local copy is a second, independent
+			// fallback that survives cache eviction.
+			//
+			// Never THROW from here: an error thrown during the *initial*
+			// navigation rejects nuxt's `app:created` hook, which skips
+			// `vueApp.mount()` entirely in entry.js — the app never renders
+			// and the user just sees a blank page (NUXT_E1005). Instead,
+			// register the error via `showError()` so `payload.error` is set
+			// *before* mount (NuxtRoot then swaps in error.vue), and return
+			// `true` so the navigation itself completes and mounting proceeds.
+			const localConfig = loadDatabaseConfigLocally(currentDatabaseSlug);
+			if (localConfig) {
+				database.value = localConfig;
+			} else {
+				showError(
+					isNetworkError(error) || isJunkResponse(error)
+						? createError({
+								statusCode: 503,
+								statusMessage: "offline",
+							})
+						: (error as Error),
+				);
+				return true;
 			}
-			throw error;
 		}
 	}
 
-	if (!database.value)
-		throw createError({
-			statusCode: 404,
-			statusMessage: "database",
-		});
+	if (!database.value) {
+		showError(createError({ statusCode: 404, statusMessage: "database" }));
+		return true;
+	}
 
 	formatDatabase();
 	syncCookiesFromDatabase(database.value.slug);

@@ -105,14 +105,17 @@ import {
 	Icon,
 	NButton,
 	NButtonGroup,
+	NFlex,
 	NIcon,
 	NPopconfirm,
 	NProgress,
 	NTime,
 	NTooltip,
-	NFlex,
 } from "#components";
-import { generateSearchArray, generateSearchString } from "~/composables/search";
+import {
+	generateSearchArray,
+	generateSearchString,
+} from "~/composables/search";
 import { useRealtimeSync } from "~/composables/useRealtimeSync";
 
 const user = useState<User>("user");
@@ -137,6 +140,46 @@ const table = useState<Table>("table");
 
 // ── When the current language isn't the primary language, disable inline table edit feature ──
 const { isConnected, isConnecting } = useRealtimeSync(table, data, database);
+
+// ── Offline-queued creates appear in the table ──────────────────────────────
+// When a create is queued (device offline), the cached table data has no trace
+// of the new item. Merge the pending POSTs back in as virtual rows so the item
+// is visibly "there" — at the top when the table's `prepend` config is set,
+// otherwise appended at the bottom. Once the mutation syncs and the server has
+// the real item, the next refresh drops the virtual row automatically.
+const pendingMergeSignature = ref("");
+async function mergePendingCreates() {
+	const db = database.value?.slug;
+	const slug = table.value?.slug;
+	if (!db || !slug || !Array.isArray(data.value?.result)) return;
+
+	const pending = await getPendingCreates(db, slug);
+	const signature = pending
+		.map((p) => (p as any).__pending?.queuedId ?? "")
+		.sort()
+		.join(",");
+	// Same queue state as last merge — nothing to do. This guard also stops
+	// this watcher from looping after the in-place re-sort below.
+	if (signature === pendingMergeSignature.value) return;
+	pendingMergeSignature.value = signature;
+
+	// Drop previously-merged virtual rows, then re-add the pending set.
+	const result = data.value.result.filter((row) => !(row as any).__pending);
+	if (pending.length) {
+		const prepend = !!table.value?.config?.prepend;
+		for (const item of pending) {
+			if (prepend) result.unshift(item);
+			else result.push(item);
+		}
+	}
+	data.value.result = result;
+}
+watch(data, () => {
+	mergePendingCreates();
+});
+onMounted(() => {
+	mergePendingCreates();
+});
 
 watch(searchString, (v) => {
 	const { search, page, ...Query }: any = route.query;
@@ -188,7 +231,10 @@ if (tablesConfig.value[table.value.slug]?.view)
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const importFileInputRef = ref<HTMLInputElement>();
 const importUploadProgress = ref(0);
@@ -266,7 +312,7 @@ function renderItemButtons(row: Item) {
 		[
 			slots.itemExtraButtons ? slots.itemExtraButtons(row) : undefined,
 			database.value?.secondaryLanguages?.length &&
-				table.value?.slug !== "translations"
+			table.value?.slug !== "translations"
 				? h(
 						NTooltip,
 						{ delay: 1500 },
@@ -283,107 +329,111 @@ function renderItemButtons(row: Item) {
 									},
 									{
 										icon: () =>
-											h(NIcon, () =>
-												h(Icon, { name: "tabler:language" }),
-											),
+											h(NIcon, () => h(Icon, { name: "tabler:language" })),
 									},
 								),
 							default: () => t("translateItem"),
 						},
-				  )
+					)
 				: null,
 			table.value?.allowedMethods?.includes("r")
 				? h(
-					NButton,
-					{
-						class: "viewItemButton",
-						tag: "a",
-						href: viewHref,
-						onClick: async (e: MouseEvent) => {
-							// Keep native anchor behaviors for modified/middle clicks.
-							if (
-								e.button !== 0 ||
-								e.metaKey ||
-								e.ctrlKey ||
-								e.shiftKey ||
-								e.altKey
-							)
-								return;
+						NButton,
+						{
+							class: "viewItemButton",
+							tag: "a",
+							href: viewHref,
+							onClick: async (e: MouseEvent) => {
+								// Keep native anchor behaviors for modified/middle clicks.
+								if (
+									e.button !== 0 ||
+									e.metaKey ||
+									e.ctrlKey ||
+									e.shiftKey ||
+									e.altKey
+								)
+									return;
 
-							e.preventDefault();
+								e.preventDefault();
 
-							// If a page component exists for this table's item route, bail out and let
-							try {
-								// Use project-root relative path so glob works in dev and production builds
-								const pages = Object.keys(import.meta.glob('/pages/admin/tables/**/[id]/index.vue'));
-								const slug = table.value?.slug;
-								if (slug && pages.some(p => p.includes(`/tables/${slug}/[id]/index.vue`)))
-									return navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+								// If a page component exists for this table's item route, bail out and let
+								try {
+									// Use project-root relative path so glob works in dev and production builds
+									const pages = Object.keys(
+										import.meta.glob("/pages/admin/tables/**/[id]/index.vue"),
 									);
-							} catch (e) {
-								// ignore and continue with drawer behavior
-							}
-							openDrawer(table.value?.slug as string, row.id, {}, "view");
+									const slug = table.value?.slug;
+									if (
+										slug &&
+										pages.some((p) =>
+											p.includes(`/tables/${slug}/[id]/index.vue`),
+										)
+									)
+										return navigateTo(
+											`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+										);
+								} catch (e) {
+									// ignore and continue with drawer behavior
+								}
+								openDrawer(table.value?.slug as string, row.id, {}, "view");
+							},
+							secondary: true,
+							circle: true,
+							type: "primary",
 						},
-						secondary: true,
-						circle: true,
-						type: "primary",
-					},
-					{
-						icon: () =>
-							h(NIcon, () => h(Icon, { name: "tabler:eye" })),
-					},
-				)
+						{
+							icon: () => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
+						},
+					)
 				: null,
 			table.value?.allowedMethods?.includes("u")
 				? h(
-					NButton,
-					{
-						class: "editItemButton",
-						tag: "a",
-						href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-						onClick: (e) => {
-							e.preventDefault();
-							if (!isMobile)
-								openDrawer(table.value?.slug as string, row.id, toRaw(row));
-							else
-								navigateTo(
-									`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
-								);
+						NButton,
+						{
+							class: "editItemButton",
+							tag: "a",
+							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							onClick: (e) => {
+								e.preventDefault();
+								if (!isMobile)
+									openDrawer(table.value?.slug as string, row.id, toRaw(row));
+								else
+									navigateTo(
+										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+									);
+							},
+							secondary: true,
+							circle: true,
+							type: "info",
 						},
-						secondary: true,
-						circle: true,
-						type: "info",
-					},
-					{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
-				)
+						{ icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })) },
+					)
 				: null,
 			table.value?.allowedMethods?.includes("d")
 				? h(
-					NPopconfirm,
-					{
-						onPositiveClick: () => deleteItem(row.id),
-					},
-					{
-						trigger: () =>
-							h(
-								NButton,
-								{
-									class: "deleteItemButton",
-									strong: true,
-									secondary: true,
-									circle: true,
-									type: "error",
-								},
-								{
-									icon: () =>
-										h(NIcon, () => h(Icon, { name: "tabler:trash" })),
-								},
-							),
-						default: () => t("theFollowingActionIsIrreversible"),
-					},
-				)
+						NPopconfirm,
+						{
+							onPositiveClick: () => deleteItem(row.id),
+						},
+						{
+							trigger: () =>
+								h(
+									NButton,
+									{
+										class: "deleteItemButton",
+										strong: true,
+										secondary: true,
+										circle: true,
+										type: "error",
+									},
+									{
+										icon: () =>
+											h(NIcon, () => h(Icon, { name: "tabler:trash" })),
+									},
+								),
+							default: () => t("theFollowingActionIsIrreversible"),
+						},
+					)
 				: null,
 		].filter((i) => i !== null),
 	);
@@ -464,7 +514,10 @@ function uploadImportFile(file: File) {
 			"Content-Type",
 			file.type || "application/octet-stream",
 		);
-		request.setRequestHeader("x-import-file-name", encodeURIComponent(file.name));
+		request.setRequestHeader(
+			"x-import-file-name",
+			encodeURIComponent(file.name),
+		);
 		request.upload.onprogress = (event) => {
 			if (event.lengthComputable)
 				importUploadProgress.value = Math.round(
@@ -472,7 +525,8 @@ function uploadImportFile(file: File) {
 				);
 		};
 		request.onload = () => {
-			const response = request.response as apiResponse<TableImportStatus> | null;
+			const response =
+				request.response as apiResponse<TableImportStatus> | null;
 			if (request.status >= 200 && request.status < 300 && response)
 				resolve(response);
 			else reject(new Error(response?.message || t("uploadFailed")));
@@ -553,9 +607,7 @@ async function jobNotification() {
 		});
 		notificationRef.value = notification;
 	} else
-		notificationRef.value.title = t(
-			`an_${job}_job_is_running_in_background`,
-		);
+		notificationRef.value.title = t(`an_${job}_job_is_running_in_background`);
 
 	const pollJob = async () => {
 		if (!notificationRef.value || currentJob.value !== job) return true;
@@ -770,11 +822,11 @@ async function toolsDropdownOnSelect(
 			const displayAs = value === "viewKanban" ? "kanban" : undefined;
 			if (!clonedTablesConfig[table.value.slug])
 				clonedTablesConfig[table.value.slug] = {};
-			// @ts-ignore
+			// @ts-expect-error
 			clonedTablesConfig[table.value.slug].view = displayAs;
 
 			if (value.startsWith("tableSize"))
-				// @ts-ignore
+				// @ts-expect-error
 				clonedTablesConfig[table.value.slug].size = value.endsWith("S")
 					? "small"
 					: value.endsWith("L")

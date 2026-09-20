@@ -3,7 +3,7 @@
 		<NGridItem
 			v-for="widget in dashboard.widgets"
 			:key="widget.id + dateRangeKey"
-			:span="getSpan(widget.size)"
+			:span="getSpan(widget)"
 		>
 			<NCard
 				:title="widget.title"
@@ -39,8 +39,8 @@
 					:database-slug="databaseSlug"
 					:date-range-override="dateRangeOverride"
 				/>
-				<DashboardWidgetRecentActivity
-					v-else-if="widget.type === 'recent'"
+				<DashboardWidgetTable
+					v-else-if="widget.type === 'table'"
 					:widget="widget"
 					:database-slug="databaseSlug"
 					:date-range-override="dateRangeOverride"
@@ -62,10 +62,11 @@ const dateRangeKey = computed(() => props.dateRangeOverride ?? "default");
 
 const windowWidth = ref(0);
 
-const smallWidgetsCount = computed(() =>
-	(props.dashboard.widgets ?? []).filter(
-		(widget) => widget.size === "small" || !widget.size,
-	).length,
+const smallWidgetsCount = computed(
+	() =>
+		(props.dashboard.widgets ?? []).filter(
+			(widget) => widget.size === "small" || !widget.size,
+		).length,
 );
 
 const desktopSmallWidgetsPerLine = computed(() => {
@@ -115,8 +116,10 @@ onBeforeUnmount(() => {
 	window.removeEventListener("resize", updateWindowWidth);
 });
 
-function getSpan(size?: WidgetSize): number {
-	switch (size) {
+function getSpan(widget: Widget): number {
+	// Tables always get the full row so columns can breathe.
+	if (widget.type === "table") return 24;
+	switch (widget.size) {
 		case "large":
 			return 24;
 		case "medium":

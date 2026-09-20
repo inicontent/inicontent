@@ -19,7 +19,7 @@
 						:options="getDropdownOptions(dashboard)"
 						:renderLabel="renderDropdownLabel"
 					>
-						<NButton circle size="small">
+						<NButton secondary size="small">
 							<template #icon>
 								<NIcon>
 									<Icon name="tabler:dots" />

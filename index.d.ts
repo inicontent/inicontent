@@ -295,7 +295,7 @@ declare global {
 		}
 	>;
 
-	type WidgetType = "counter" | "line" | "bar" | "pie" | "recent";
+	type WidgetType = "counter" | "line" | "bar" | "pie" | "table";
 	type WidgetSize = "small" | "medium" | "large";
 	type WidgetOperation = "count" | "sum" | "max" | "min";
 	type WidgetDateRange = "7d" | "30d" | "90d" | "1y" | "all";
@@ -315,6 +315,9 @@ declare global {
 		color?: string;
 		size?: WidgetSize;
 		searchArray?: searchType;
+		columns?: string[];
+		sortField?: string;
+		sortOrder?: "asc" | "desc";
 	};
 
 	type Dashboard = Item & {

@@ -17,6 +17,11 @@
 			<Auth v-if="showAuthModal" :onLoggedIn />
 		</NModal>
 
+		<!-- Global conflict resolution modal: auto-opens when an offline edit
+		     collides with the server during sync; also reachable from the
+		     SyncStatus popover in the header. -->
+		<OfflineConflictModal />
+
 		<LazyAssetPreview />
 	</NuxtLayout>
 </template>
@@ -26,21 +31,21 @@
 //     clearNuxtState("translations");
 // })
 
-const config = useRuntimeConfig()
-const route = useRoute()
-const database = useState<Database>("database")
+const config = useRuntimeConfig();
+const route = useRoute();
+const database = useState<Database>("database");
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const showAuthModal = ref(false)
-const authCheckFailCount = ref(0)
-const AUTH_CHECK_MAX_FAILS = 3
+const showAuthModal = ref(false);
+const authCheckFailCount = ref(0);
+const AUTH_CHECK_MAX_FAILS = 3;
 
 async function checkAuth() {
-	if (showAuthModal.value || String(route.name).includes('auth')) return;
+	if (showAuthModal.value || String(route.name).includes("auth")) return;
 
 	if (!sessionID.value) {
-		showAuthModal.value = true
+		showAuthModal.value = true;
 		return;
 	}
 
@@ -49,33 +54,36 @@ async function checkAuth() {
 			`${config.public.apiBase}${database.value.slug}/auth/current`,
 			{
 				credentials: "include",
-				query: { isSignedIn: true, [`${database.value.slug}_sid`]: sessionID.value },
+				query: {
+					isSignedIn: true,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
 			},
-		)
-		authCheckFailCount.value = 0
+		);
+		authCheckFailCount.value = 0;
 		if (!data.result) {
-			showAuthModal.value = true
+			showAuthModal.value = true;
 		}
 	} catch (error) {
 		// Do not force logout on a single transient network/server error.
-		authCheckFailCount.value += 1
+		authCheckFailCount.value += 1;
 		if (authCheckFailCount.value >= AUTH_CHECK_MAX_FAILS) {
-			showAuthModal.value = true
+			showAuthModal.value = true;
 		}
 	}
 }
 
 function onLoggedIn() {
-	showAuthModal.value = false
-	authCheckFailCount.value = 0
+	showAuthModal.value = false;
+	authCheckFailCount.value = 0;
 	// User and sessionID are already updated in Auth component
 }
 
 onMounted(async () => {
-	checkAuth()
+	checkAuth();
 	if (!String(route.name).endsWith("auth")) {
-		const interval = setInterval(checkAuth, 60000) // Check every 1 minute
-		onUnmounted(() => clearInterval(interval))
+		const interval = setInterval(checkAuth, 60000); // Check every 1 minute
+		onUnmounted(() => clearInterval(interval));
 	}
-})
+});
 </script>

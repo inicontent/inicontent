@@ -786,11 +786,9 @@ export default {
 		line: "Gráfico de líneas",
 		bar: "Gráfico de barras",
 		pie: "Gráfico circular",
-		recent: "Actividad reciente",
 		lineChart: "Gráfico de líneas",
 		barChart: "Gráfico de barras",
 		pieChart: "Gráfico circular",
-		recentActivity: "Actividad reciente",
 		sourceTable: "Tabla fuente",
 		selectTable: "Seleccionar tabla",
 		selectField: "Seleccionar campo",
@@ -810,6 +808,11 @@ export default {
 		allTime: "Todo el tiempo",
 		limit: "Límite",
 		noData: "Sin datos",
+		columnsToDisplay: "Columnas a mostrar",
+		sortField: "Ordenar por",
+		sortOrder: "Orden de clasificación",
+		asc: "Ascendente",
+		desc: "Descendente",
 
 		// Translation drawer
 		translateItem: "Traducir elemento",
@@ -858,6 +861,8 @@ export default {
 		updateAvailable: "Actualización disponible",
 		installApp: "Instalar aplicación",
 		resolveConflicts: "Resolver conflictos",
+		conflictModalIntro:
+			"Tu cambio sin conexión entra en conflicto con una versión más reciente en el servidor. Elige qué versión conservar.",
 		noConflicts: "No hay conflictos que resolver",
 		discardAll: "Descartar todo",
 		localVersion: "Tu versión",
@@ -872,6 +877,7 @@ export default {
 		createFailed: "No se pudo crear el elemento.",
 		updateFailed: "No se pudo actualizar el elemento.",
 		deleteFailed: "No se pudo eliminar el elemento.",
+		errorFetchingSchema: "No se pudo obtener el esquema de la tabla.",
 
 		// Document scanner
 		documentScanner: "Escáner de documentos",

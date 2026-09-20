@@ -32,28 +32,32 @@
         <template #extra>
 			<NButtonGroup>
 				<LazyOfflineSyncStatus show-pwa />
-				<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
+				<NPopover trigger="click" v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
 						<template #trigger>
-							<NButton round size="small">{{ humanFileSize(
-								database?.tables
-									?.map(({ size }) => size)
-									.reduce((total, num) => {
-										return (total ?? 0) + (num ?? 0);
-									}, 0),
-							) }}</NButton>
+							<NButton round size="small">{{ humanFileSize(totalSize) }}</NButton>
 						</template>
-						<NFlex vertical>
-							<NTag v-for="table in database.tables" round
-								style="width:fit-content;padding-inline-start: 0; margin: auto;" :bordered="false">
-								<NTag style="width:fit-content;margin-inline-end: 8px;" :bordered="false" type="primary"
-									round strong>
-									<template #avatar>
-										<LazyTableIcon :table="table" />
-									</template>
-									{{ t(table.slug) }}
-								</NTag>
-								{{ humanFileSize(table?.size) }}
-							</NTag>
+						<div v-if="barSegments.length > 0"
+							style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: rgba(128,128,128,.2); margin-block-end: 10px;">
+							<div v-for="table in barSegments" :key="table.slug"
+								:style="{ width: `${((table.size ?? 0) / totalSize) * 100}%`, backgroundColor: tableColor(table) }" />
+						</div>
+						<NFlex v-for="(table, index) in sortedTables" :key="table.slug" justify="space-between" align="center">
+							<NFlex align="center" :size="6">
+								<span :style="{
+									width: '8px',
+									height: '8px',
+									borderRadius: '50%',
+									// Tables under the 5% bar threshold have no segment, so
+									// their dot renders grey — signaling 'too small to draw'.
+									backgroundColor: barSegments.some((t) => t.slug === table.slug)
+										? tableColor(table)
+										: 'rgba(128,128,128,.5)',
+									flexShrink: 0,
+								}" />
+								<LazyTableIcon :table="table" />
+								<NText>{{ t(table.slug) }}</NText>
+							</NFlex>
+							<NText depth="3">{{ humanFileSize(table?.size) }}</NText>
 						</NFlex>
 					</NPopover>
 					<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
@@ -111,6 +115,39 @@ const showBreadcrumb = computed(
 			String(route.matched[0]?.name),
 		),
 );
+
+const sortedTables = computed(() =>
+	[...(database.value?.tables ?? [])].sort(
+		(a, b) => (b.size ?? 0) - (a.size ?? 0),
+	),
+);
+const totalSize = computed(() =>
+	sortedTables.value.reduce((total, table) => total + (table.size ?? 0), 0),
+);
+// Only draw bar segments that represent a meaningful share of storage, so
+// tiny tables don't render as sub-pixel slivers of clutter. The gap left at
+// the end of the bar reads as "the remaining small tables".
+const barSegments = computed(() =>
+	totalSize.value === 0
+		? []
+		: sortedTables.value.filter(
+				(table) => ((table.size ?? 0) / totalSize.value) * 100 >= 5,
+			),
+);
+// Spread hues evenly across however many tables exist, so colors never repeat
+// (unlike a fixed palette that cycles once there are more tables than colors).
+// Key color off the table's position in the FULL sorted list, so a row's dot
+// and its bar segment always share the same hue — even after `barSegments`
+// drops sub-5% tables (whose segment index would otherwise disagree with the
+// row index). Hues spread evenly so they never repeat, regardless of count.
+const tableColor = (table: Table) => {
+	const count = Math.max(sortedTables.value.length, 1);
+	const index = Math.max(
+		sortedTables.value.findIndex((t) => t.slug === table.slug),
+		0,
+	);
+	return `hsl(${(360 / count) * index} 70% 52%)`;
+};
 
 function breadCrumbItemLink(index: number) {
 	const breadcrumbSegments = breadcrumbArray.value.slice(0, index + 1);

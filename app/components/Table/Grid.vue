@@ -14,7 +14,7 @@
 				</template>
 				<template #header-extra>
 					<NDropdown :options="getDropdownOptions(table)" :renderLabel="renderDropdownLabel">
-						<NButton circle secondary size="small">
+						<NButton secondary size="small">
 							<template #icon>
 								<NIcon>
 									<Icon name="tabler:dots" />
@@ -25,7 +25,22 @@
 				</template>
 			</NCard>
 		</NGridItem>
-
+		<NGridItem v-if="user?.role === config.public.idOne">
+			<NCard hoverable>
+				<template #header>
+					<NuxtLink :to="getTableUrl('backups')">
+						<NFlex align="center">
+							<NIconWrapper :border-radius="50" style="font-style: normal">
+								<NIcon>
+									<Icon name="tabler:database-export" />
+								</NIcon>
+							</NIconWrapper>
+							<NH4 style="margin: 0">{{ t("backups") }}</NH4>
+						</NFlex>
+					</NuxtLink>
+				</template>
+			</NCard>
+		</NGridItem>
 		<NGridItem v-if="user?.role === config.public.idOne">
 			<NPopover placement="bottom">
 				<template #trigger>
@@ -96,23 +111,6 @@
 				{{ t('newTable') }}
 			</NPopover>
 		</NGridItem>
-
-		<NGridItem v-if="user?.role === config.public.idOne">
-			<NCard hoverable>
-				<template #header>
-					<NuxtLink :to="getTableUrl('backups')">
-						<NFlex align="center">
-							<NIconWrapper :border-radius="50" style="font-style: normal">
-								<NIcon size="24">
-									<Icon name="tabler:database-export" />
-								</NIcon>
-							</NIconWrapper>
-							<NH4 style="margin: 0">{{ t("backups") }}</NH4>
-						</NFlex>
-					</NuxtLink>
-				</template>
-			</NCard>
-		</NGridItem>
 	</NGrid>
 </template>
 
@@ -133,7 +131,7 @@ const route = useRoute()
 const database = useState<Database>("database")
 
 function getTableUrl(slug: string) {
-	return `/${route.params.database ? ((database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : `${route.params.database}/`) : ""}admin/tables/${slug}`
+	return `/${!route.params.database && database.value?.slug !== "inicontent" ? "" : `${modelValue.value.slug}/`}admin/tables/${slug}`
 }
 
 const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)

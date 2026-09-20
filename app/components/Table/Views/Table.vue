@@ -19,9 +19,9 @@ import type {
 import type { VNodeChild } from "vue";
 
 import {
+	Icon,
 	LazyColumn,
 	LazyColumnEdit,
-	Icon,
 	NButton,
 	NFlex,
 	NIcon,
@@ -49,7 +49,10 @@ const route = useRoute();
 const router = useRouter();
 const config = useRuntimeConfig();
 const { isMobile } = useDevice();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const user = useState<User>("user");
 const tablesConfig = computed({
@@ -379,7 +382,12 @@ async function openRowDropdown(
 }
 
 function rowProps(row: Item) {
+	// Rows merged in from the offline queue (see getPendingCreates) don't exist
+	// on the server yet — dim them so it's clear they're pending local changes.
+	const pendingRow = !!(row as any).__pending;
 	return {
+		class: pendingRow ? "pending-row" : undefined,
+		style: pendingRow ? { opacity: "0.6", fontStyle: "italic" } : undefined,
 		onContextmenu: async (e: MouseEvent) => {
 			e.preventDefault();
 			clearRowTouchTimeout();
@@ -1025,7 +1033,7 @@ async function setColumns(skipVisualWidths = false) {
 															table.value?.slug as string
 														]?.columns?.includes(id as number)
 													)
-														// @ts-ignore
+														// @ts-expect-error
 														tablesConfig.value[
 															table.value?.slug as string
 														].columns = tablesConfig.value[
@@ -1043,7 +1051,7 @@ async function setColumns(skipVisualWidths = false) {
 															clonedTablesConfig[table.value?.slug as string] =
 																{ columns: [] };
 
-														// @ts-ignore
+														// @ts-expect-error
 														clonedTablesConfig[
 															table.value?.slug as string
 														].columns?.push(id as number);
@@ -1131,7 +1139,8 @@ async function setColumns(skipVisualWidths = false) {
 										"createdBy",
 										"updatedAt",
 										"updatedBy",
-									].includes(field.key) && Language.value === database.value?.primaryLanguage
+									].includes(field.key) &&
+									Language.value === database.value?.primaryLanguage
 								? h(LazyColumnEdit, {
 										editKey: `${row.id ?? "row"}-${field.key}`,
 										itemLabel: renderLabel(table.value, row),

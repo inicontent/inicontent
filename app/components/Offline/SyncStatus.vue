@@ -1,5 +1,6 @@
 <template>
 	<NPopover
+		v-if="buttonVisible"
 		v-model:show="show"
 		trigger="click"
 		:placement="'bottom'"
@@ -33,12 +34,12 @@
 		<NFlex vertical justify="center" :size="6" style="min-width: 200px">
 			<!-- Connection + sync status -->
 			<NFlex align="center" justify="center" :reverse="Language === 'ar'" :size="6">
-				<NIcon :class="{ spin: sync.isSyncing }">
+				<NIcon :class="{ spin: isSyncing }">
 					<Icon
 						:name="
-							sync.isSyncing
+							isSyncing
 								? 'tabler:refresh'
-								: sync.isOnline
+								: isOnline
 									? 'tabler:cloud-check'
 									: 'tabler:cloud-off'
 						"
@@ -46,9 +47,9 @@
 				</NIcon>
 				<NText depth="2" style="font-size: 12px">
 					{{
-						sync.isSyncing
+						isSyncing
 							? t("syncingPending")
-							: sync.isOnline
+							: isOnline
 								? t("online")
 								: t("offline")
 					}}
@@ -56,7 +57,7 @@
 			</NFlex>
 
 			<NText
-				v-if="!sync.isOnline && !sync.isSyncing"
+				v-if="!isOnline && !isSyncing"
 				depth="3"
 				style="font-size: 12px; line-height: 1.4; white-space: normal"
 			>
@@ -64,10 +65,10 @@
 			</NText>
 
 			<!-- Pending changes + sync now -->
-			<template v-if="sync.pendingCount > 0 && !sync.isSyncing">
+			<template v-if="pendingCount > 0 && !isSyncing">
 				<NFlex align="center" justify="center" :size="12">
 					<NText depth="2" style="font-size: 12px">
-						{{ t("pendingChanges", { count: sync.pendingCount }) }}
+						{{ t("pendingChanges", { count: pendingCount }) }}
 					</NText>
 					<NButton size="tiny" type="primary" tertiary @click="onOpenSync">
 						{{ t("syncNow") }}
@@ -122,8 +123,6 @@
 			</template>
 		</NFlex>
 	</NPopover>
-
-	<OfflineConflictDrawer ref="conflictDrawer" />
 </template>
 
 <script setup lang="ts">
@@ -143,30 +142,56 @@ const props = defineProps<{
 }>();
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
-const sync = useOfflineSync();
+// Destructured at top level so the template compiler auto-unwraps these refs
+// (a plain-object property like `sync.isSyncing` would NOT unwrap, silently
+// breaking the popover content: `!sync.isSyncing` is always false because a
+// Ref object is always truthy).
+const {
+	isOnline,
+	isSyncing,
+	conflicts,
+	pendingCount,
+	syncPendingMutations,
+	initSync,
+} = useOfflineSync();
 const show = ref(false);
 
 // Reactive $pwa instance injected by the vite-pwa Nuxt client plugin.
 const { $pwa } = useNuxtApp() as any;
 const pwa = ref($pwa);
 
-const conflictCount = computed(() => sync.conflicts.value.length);
-const badgeCount = computed(() => sync.pendingCount.value + conflictCount.value);
+const conflictCount = computed(() => conflicts.value.length);
+const badgeCount = computed(() => pendingCount.value + conflictCount.value);
+
+// Hide the network status button entirely when everything is fine: online,
+// nothing pending, no conflicts, no PWA update/install prompt. It only appears
+// when there is something the user should be aware of (offline, syncing, queued
+// changes, conflicts) or can act on (PWA prompt).
+const buttonVisible = computed(
+	() =>
+		!isOnline.value ||
+		isSyncing.value ||
+		badgeCount.value > 0 ||
+		!!(pwa.value?.needRefresh || pwa.value?.showInstallPrompt),
+);
 
 const buttonIcon = computed(() =>
-	sync.isSyncing.value
+	isSyncing.value
 		? "tabler:refresh"
-		: sync.isOnline.value
+		: isOnline.value
 			? "tabler:cloud-check"
 			: "tabler:cloud-off",
 );
 
 const buttonType = computed(() => {
 	if (conflictCount.value > 0) return "error";
-	if (sync.pendingCount.value > 0) return "warning";
-	if (!sync.isOnline.value) return "error";
+	if (pendingCount.value > 0) return "warning";
+	if (!isOnline.value) return "error";
 	return "default";
 });
 
@@ -183,18 +208,23 @@ function onInstall() {
 }
 
 function onOpenSync() {
-	sync.syncPendingMutations();
+	syncPendingMutations();
 }
 
-const conflictDrawer = ref();
+// The conflict resolution UI lives as a global modal (mounted in the layout);
+// opening it here just flips the shared useState bus so it appears.
+const conflictModalOpen = useState<boolean>(
+	"offline_conflictModalOpen",
+	() => false,
+);
 function onOpenConflicts() {
 	show.value = false;
-	conflictDrawer.value?.open();
+	conflictModalOpen.value = true;
 }
 
 onMounted(() => {
 	// Deferred so opening IndexedDB never competes with initial render/fetch.
-	const runInit = () => sync.initSync();
+	const runInit = () => initSync();
 	if ("requestIdleCallback" in window) {
 		// @ts-expect-error requestIdleCallback types not present
 		window.requestIdleCallback(runInit, { timeout: 3000 });

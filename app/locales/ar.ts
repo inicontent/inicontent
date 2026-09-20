@@ -820,11 +820,9 @@ export default {
 		line: "رسم بياني خطي",
 		bar: "رسم بياني شريطي",
 		pie: "رسم بياني دائري",
-		recent: "النشاط الأخير",
 		lineChart: "رسم بياني خطي",
 		barChart: "رسم بياني شريطي",
 		pieChart: "رسم بياني دائري",
-		recentActivity: "النشاط الأخير",
 		sourceTable: "الجدول المصدر",
 		selectTable: "اختر جدول",
 		selectField: "اختر حقل",
@@ -844,6 +842,11 @@ export default {
 		allTime: "كل الوقت",
 		limit: "الحد",
 		noData: "لا توجد بيانات",
+		columnsToDisplay: "الأعمدة المعروضة",
+		sortField: "ترتيب حسب",
+		sortOrder: "اتجاه الترتيب",
+		asc: "تصاعدي",
+		desc: "تنازلي",
 
 		// Translation drawer
 		translateItem: "ترجمة العنصر",
@@ -887,6 +890,8 @@ export default {
 		updateAvailable: "يتوفر تحديث",
 		installApp: "تثبيت التطبيق",
 		resolveConflicts: "حل التعارضات",
+		conflictModalIntro:
+			"تغييرك دون اتصال يتعارض مع نسخة أحدث على الخادم. اختر النسخة التي تريد الاحتفاظ بها.",
 		noConflicts: "لا توجد تعارضات لحلها",
 		discardAll: "تجاهل الكل",
 		localVersion: "نسختك",
@@ -901,6 +906,7 @@ export default {
 		createFailed: "تعذر إنشاء العنصر.",
 		updateFailed: "تعذر تحديث العنصر.",
 		deleteFailed: "تعذر حذف العنصر.",
+		errorFetchingSchema: "تعذر جلب مخطط الجدول.",
 
 		// Document scanner
 		documentScanner: "ماسح المستندات",

@@ -6,6 +6,7 @@ import { generateSearchString } from "~/composables/search";
 type WidgetDataResult = {
 	value: Ref<number | null>;
 	data: Ref<Item[]>;
+	total: Ref<number>;
 	groups: Ref<{ name: string; value: number }[]>;
 	timeSeries: Ref<{ date: string; value: number }[]>;
 	loading: Ref<boolean>;
@@ -20,10 +21,14 @@ export function useDashboardData(
 	const config = useRuntimeConfig();
 	const database = useState<Database>("database");
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
 
 	const value = ref<number | null>(null);
 	const data = ref<Item[]>([]);
+	const total = ref(0);
 	const groups = ref<{ name: string; value: number }[]>([]);
 	const timeSeries = ref<{ date: string; value: number }[]>([]);
 	const loading = ref(false);
@@ -122,7 +127,10 @@ export function useDashboardData(
 		return typeof value === "object" && value !== null && !Array.isArray(value);
 	}
 
-	function combineSameFieldValues(existing: unknown, incoming: unknown): unknown {
+	function combineSameFieldValues(
+		existing: unknown,
+		incoming: unknown,
+	): unknown {
 		if (existing === undefined) return incoming;
 		if (existing === incoming) return existing;
 		// Reuse the backend-supported grouped shape:
@@ -178,7 +186,7 @@ export function useDashboardData(
 						perPage: opts.perPage ?? 1000,
 						page: 1,
 						...(opts.sort ? { sort: opts.sort } : {}),
-						...(opts.columns ? { columns: opts.columns   } : {}),
+						...(opts.columns ? { columns: opts.columns } : {}),
 					}),
 					...(opts.where ? { where: Inison.stringify(opts.where) } : {}),
 				},
@@ -220,7 +228,7 @@ export function useDashboardData(
 					) {
 						const res = await fetchItems({
 							perPage: 1,
-                            columns: ["id"],
+							columns: ["id"],
 							where,
 						});
 						value.value = res.options?.total ?? 0;
@@ -271,13 +279,19 @@ export function useDashboardData(
 					groups.value = groupByField(data.value, field);
 					break;
 				}
-				case "recent": {
+				case "table": {
 					const res = await fetchItems({
 						perPage: widget.limit ?? 10,
-						sort: { createdAt: -1 },
+						sort: widget.sortField
+							? {
+									[widget.sortField]: widget.sortOrder === "desc" ? -1 : 1,
+								}
+							: undefined,
+						columns: widget.columns?.length ? widget.columns : undefined,
 						where,
 					});
 					data.value = res.result ?? [];
+					total.value = res.options?.total ?? 0;
 					break;
 				}
 			}
@@ -292,5 +306,5 @@ export function useDashboardData(
 		watch(dateRangeOverride, () => refresh());
 	}
 
-	return { value, data, groups, timeSeries, loading, refresh };
+	return { value, data, total, groups, timeSeries, loading, refresh };
 }

@@ -96,23 +96,40 @@ async function registerPasskey() {
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-await useFetch<Item>(
-	`${config.public.apiBase}${database.value.slug}/${
-		table.value.slug
-	}/${route.params.id}`,
-	{
-		query: {
-			options: Inison.stringify({
-				columns: table.value.columns,
-			}),
-			[`${database.value.slug}_sid`]: sessionID.value,
-		},
-		transform: (input) => {
-			dataObject.value = input.result;
-		},
+const itemUrl = `${config.public.apiBase}${database.value.slug}/${
+	table.value.slug
+}/${route.params.id}`;
+const queryParams = {
+	options: Inison.stringify({
+		columns: table.value.columns,
+	}),
+	[`${database.value.slug}_sid`]: sessionID.value,
+};
+
+// Fetch the item. Offline (or on a network that answers with junk) fall back
+// to the last known copy — the user's queued offline edit, or the cached item/
+// list response — so editing from outside the table keeps working.
+let fetched: Item | undefined;
+try {
+	const res = await $fetch<apiResponse<Item>>(itemUrl, {
+		query: queryParams,
 		credentials: "include",
-	},
-);
+	});
+	fetched = res?.result;
+} catch (error) {
+	if (isNetworkError(error) || isJunkResponse(error)) {
+		fetched = await getOfflineItem(
+			database.value.slug,
+			table.value.slug,
+			String(route.params.id),
+			itemUrl,
+		);
+	} else {
+		throw error;
+	}
+}
+
+if (fetched?.id) dataObject.value = fetched;
 
 if (!dataObject.value?.id)
 	throw createError({

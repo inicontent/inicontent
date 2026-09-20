@@ -14,10 +14,15 @@ definePageMeta({
 				["sessions", "translations", "assets"].includes(
 					route.params.table as string,
 				)
-			)
-				throw createError({
+			) {
+				// Same as the table middleware: a thrown error is silently
+				// swallowed during client-side navigation, so surface it via
+				// showError() and let the navigation complete.
+				showError(createError({
 					statusCode: 403,
-				})
+				}))
+				return true
+			}
 		},
 	],
 	layout: "table",

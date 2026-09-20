@@ -44,10 +44,46 @@ export function isNetworkError(error: unknown): boolean {
 		return true;
 	if (e?.code && ["ECONNREFUSED", "ENOTFOUND", "ECONNRESET"].includes(e.code))
 		return true;
+	// Message-based detection — wrappers on different platforms (Chrome/Safari/
+	// ofetch) sometimes only expose the failure through the message text.
+	const message = `${e?.message ?? ""} ${e?.cause?.message ?? ""}`;
+	if (
+		/(Failed to fetch|Load failed|NetworkError|Network request failed|Internet connection appears to be offline|ERR_INTERNET_DISCONNECTED|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION|ERR_NETWORK_|ERR_ABORTED|socket hang up|fetch failed|getaddrinfo|network unreachable)/i.test(
+			message,
+		)
+	)
+		return true;
 	// Offline navigator check as a fallback
 	if (typeof navigator !== "undefined" && navigator.onLine === false)
 		return true;
 	return false;
+}
+
+/**
+ * A failed request can also be a "junk" response — e.g. the device is on a
+ * network that answers every request with an HTML stub (captive portal,
+ * offline/local proxy, DNS-hijack page). The request technically got a
+ * response, but it's not the JSON the API would return, so it must be treated
+ * like a network failure (silent fallback) rather than a real server error.
+ */
+export function isJunkResponse(error: unknown): boolean {
+	if (!error) return false;
+	const e = error as any;
+	// ofetch stores the raw response body in `data` when parsing fails.
+	const data = e?.data ?? e?.cause?.data;
+	if (typeof data === "string" && /^\s*</.test(data)) return true;
+	// The response object (headers) is exposed on the FetchError or its cause.
+	const response = e?.response ?? e?.cause?.response;
+	if (!response || typeof response !== "object") return false;
+	try {
+		const contentType =
+			typeof response.headers?.get === "function"
+				? (response.headers.get("content-type") ?? "")
+				: "";
+		return /text\/html/i.test(contentType);
+	} catch {
+		return false;
+	}
 }
 
 /**

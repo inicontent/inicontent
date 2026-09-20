@@ -269,3 +269,34 @@ export async function clearAllMutations(): Promise<void> {
 		console.warn("[OfflineQueue] Failed to clear queue:", error);
 	}
 }
+
+/**
+ * Build virtual rows for queued POST (create) mutations scoped to a table, so
+ * items created while offline still appear in the table view until they sync.
+ * Each virtual row carries a `__pending` marker (with the queued mutation id)
+ * and a synthetic id so the grid can key it without colliding with real ids.
+ */
+export async function getPendingCreates(
+	database: string,
+	table: string,
+): Promise<Item[]> {
+	try {
+		const mutations = await getMutationsByScope(database, table);
+		return mutations
+			.filter((m) => m.method === "POST")
+			.map((m) => {
+				const body =
+					m.body && typeof m.body === "object" && !Array.isArray(m.body)
+						? (m.body as Record<string, any>)
+						: {};
+				return {
+					...body,
+					id: `${String(body.id ?? "")}` || `pending__${m.id}`,
+					__pending: { queuedId: m.id },
+				} as Item;
+			});
+	} catch (error) {
+		console.warn("[OfflineQueue] Failed to build pending creates:", error);
+		return [];
+	}
+}

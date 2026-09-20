@@ -69,59 +69,78 @@
 </template>
 
 <script lang="ts" setup>
-import Inison from "inison"
+import Inison from "inison";
 
 onBeforeRouteUpdate((route, currentRoute) => {
-    if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
-        clearNuxtState("currentItem")
-})
+	if (`${decodeURIComponent(currentRoute.fullPath)}/edit` !== route.fullPath)
+		clearNuxtState("currentItem");
+});
 
 definePageMeta({
-    middleware: ["database", "user", "dashboard", "table", "global"],
-    layout: "table",
-})
+	middleware: ["database", "user", "dashboard", "table", "global"],
+	layout: "table",
+});
 
-const config = useRuntimeConfig()
-const route = useRoute()
-const database = useState<Database>("database")
-const table = useState<Table>("table")
+const config = useRuntimeConfig();
+const route = useRoute();
+const database = useState<Database>("database");
+const table = useState<Table>("table");
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const { data } = await useFetch<Item>(
-    `${config.public.apiBase}${database.value.slug}/${table.value.slug
-    }/${route.params.id}`,
-    {
-        query: {
-            options: Inison.stringify({
-                columns: table.value.columns,
-            }),
-            [`${database.value.slug}_sid`]: sessionID.value,
-        },
-        transform: (input) => input.result,
-        credentials: "include",
-    },
-)
+const itemUrl = `${config.public.apiBase}${database.value.slug}/${
+	table.value.slug
+}/${route.params.id}`;
+const queryParams = {
+	options: Inison.stringify({
+		columns: table.value.columns,
+	}),
+	[`${database.value.slug}_sid`]: sessionID.value,
+};
 
-if (!data.value?.id)
-    throw createError({
-        statusCode: 404,
-        statusMessage: "item",
-        fatal: true,
-    })
-
-function PRINT() {
-    window.print()
+// Fetch the item. Offline, fall back to the last known copy so the detail
+// page (and from there edit/PRINT/logs) keep working outside the table grid.
+let loaded: Item | undefined;
+try {
+	const res = await $fetch<apiResponse<Item>>(itemUrl, {
+		query: queryParams,
+		credentials: "include",
+	});
+	loaded = res?.result;
+} catch (error) {
+	if (isNetworkError(error) || isJunkResponse(error)) {
+		loaded = await getOfflineItem(
+			database.value.slug,
+			table.value.slug,
+			String(route.params.id),
+			itemUrl,
+		);
+	} else {
+		throw error;
+	}
 }
 
-const currentItem = useState<Item>("currentItem")
-currentItem.value = data.value
-const itemLabel = renderLabel(table.value, data.value)
+const data = ref<Item>(loaded);
+
+if (!data.value?.id)
+	throw createError({
+		statusCode: 404,
+		statusMessage: "item",
+		fatal: true,
+	});
+
+function PRINT() {
+	window.print();
+}
+
+const currentItem = useState<Item>("currentItem");
+currentItem.value = data.value;
+const itemLabel = renderLabel(table.value, data.value);
 
 useHead({
-    title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel}`,
-    link: [
-        { rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
-    ],
-})
+	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${itemLabel}`,
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
+});
 </script>
