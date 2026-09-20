@@ -70,7 +70,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	}
 
 	formatDatabase();
-	syncCookiesFromDatabase(database.value.slug);
 
 	useState<ThemeConfig>("ThemeConfig", () => ({
 		primaryColor: "#FF9800",

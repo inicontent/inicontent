@@ -47,22 +47,6 @@ watch(osThemeRef, (newOsTheme) => {
 	}
 });
 
-watch(
-	() => database.value?.slug,
-	(slug) => {
-		syncCookiesFromDatabase(slug);
-	},
-	{ immediate: true },
-);
-
-watch(
-	[Language, Theme, sessionID, () => database.value?.slug],
-	() => {
-		syncCookiesToDatabase(database.value?.slug);
-	},
-	{ immediate: true },
-);
-
 // Persist the database config locally so the app stays reachable offline from
 // local storage even when the service worker cache is missing. The middleware
 // saves the initial fetch; this debounced deep watcher also catches config

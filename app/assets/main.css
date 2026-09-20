@@ -253,7 +253,8 @@ a {
 .rtl .i-tabler\:send,
 .rtl .i-tabler\:question-mark,
 .rtl .i-tabler\:arrow-back-up,
-.rtl .i-tabler\:arrow-forward-up {
+.rtl .i-tabler\:arrow-forward-up,
+.rtl .i-tabler\:external-link {
 	transform: scaleX(-1) !important;
 }
 
