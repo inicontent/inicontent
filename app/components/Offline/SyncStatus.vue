@@ -14,7 +14,7 @@
 				:type="conflictCount > 0 ? 'error' : 'warning'"
 				:offset="[3, 3]"
 			>
-				<NButton round size="small" :type="buttonType">
+				<NButton secondary round size="small" :type="buttonType">
 					<template #icon>
 						<NIcon>
 							<Icon :name="buttonIcon" />
@@ -22,7 +22,7 @@
 					</template>
 				</NButton>
 			</NBadge>
-			<NButton v-else round size="small" :type="buttonType">
+			<NButton secondary v-else round size="small" :type="buttonType">
 				<template #icon>
 					<NIcon>
 						<Icon :name="buttonIcon" />

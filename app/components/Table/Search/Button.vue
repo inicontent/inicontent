@@ -5,7 +5,7 @@
         <template #trigger>
             <NTooltip :delay="1500">
                 <template #trigger>
-                    <NButton round :size="props.size" :tertiary="isSearchPopoverVisible"
+                    <NButton secondary round :size="props.size" :tertiary="isSearchPopoverVisible"
                         :type="isSearchPopoverVisible ? 'primary' : undefined">
                         <template #icon>
                             <NIcon>

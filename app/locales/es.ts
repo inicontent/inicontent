@@ -548,6 +548,38 @@ export default {
 		monthly: "Mensual",
 		custom: "Personalizado",
 
+		// Chatbot IA
+		chatbot: "Asistente IA",
+		chatWelcomeDefault:
+			"¡Hola! Puedo ayudarte a crear nuevas tablas de base de datos o modificar las existentes. Describe lo que necesitas y generaré los esquemas por ti.",
+		chatWelcomeScopedDatabase:
+			"¡Hola! Puedo ayudarte a crear y actualizar tablas en esta base de datos. Para crear una nueva base de datos, usa el espacio de trabajo de Inicontent.",
+		chatWelcomeTables:
+			"Estoy listo para ayudarte a diseñar y gestionar tus tablas de base de datos. Puedes pedirme que cree nuevas tablas o edite las existentes.",
+		chatWelcomePages:
+			"Puedo ayudarte a crear páginas web. Describe la página que deseas y generaré la estructura.",
+		chatPlaceholder: "Describe la base de datos que te gustaría crear...",
+		chatPlaceholderScopedDatabase:
+			"Describe las tablas que quieres crear o actualizar en esta base de datos...",
+		chatPlaceholderShort: "Escribe un mensaje...",
+		applied: "Aplicado",
+		chatPaidPlanRequired:
+			"Este asistente de IA está disponible solo con un plan de pago activo.",
+		continue: "Continuar",
+		continued: "Continuado",
+		dataPreview: "Vista previa de datos",
+		generatingMoreTables: "Generando las tablas restantes...",
+		homePage: "Página de inicio",
+		namesUpdated: "Nombres actualizados",
+		newChat: "Nuevo chat",
+		pagePreviewUnavailable:
+			"La vista previa en vivo de la página está disponible en el creador de sitios web de Inicontent.",
+		published: "Publicado",
+		applyChanges: "Aplicar cambios",
+		skipAiHelp: "Omitir ayuda IA",
+		publishData: "Publicar datos",
+		tableDemo: "Vista previa de la tabla",
+
 		billingUi: {
 			title: "Facturación y suscripción",
 			subtitle: "Administra tu plan, facturas y ajustes de pago.",
@@ -905,6 +937,14 @@ export default {
 			"Arrastra los controles verdes para delimitar la tarjeta y aplica.",
 		applyCrop: "Aplicar recorte",
 		scanDocument: "Escanear documento",
+
+		// Espacios de trabajo de la plataforma (páginas, bloques, plantillas, facturación)
+		openInPlatform: "Abrir en Inicontent",
+		platformFeatureIntro:
+			"El espacio de trabajo de {{feature}} forma parte de la plataforma Inicontent.",
+		platformFeatureAt: "Abrir en:",
+		platformFeatureHint:
+			"Se te identificará automáticamente con tu sesión actual.",
 
 		// Copias de seguridad
 		backups: "Copias de seguridad",

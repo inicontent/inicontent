@@ -201,6 +201,22 @@ export default {
 		chatPlaceholderScopedDatabase:
 			"Describe the tables you want to create or update in this database...",
 		chatPlaceholderShort: "Type a message...",
+		applied: "Applied",
+		billing: "Billing",
+		chatPaidPlanRequired:
+			"This AI assistant is available only with an active paid plan.",
+		close: "Close",
+		continue: "Continue",
+		continued: "Continued",
+		dataPreview: "Data Preview",
+		generatingMoreTables: "Generating the remaining tables...",
+		homePage: "Home page",
+		namesUpdated: "Names updated",
+		newChat: "New chat",
+		pagePreviewUnavailable:
+			"Live page preview is available in the Inicontent website builder.",
+		published: "Published",
+		role: "Role",
 		applyChanges: "Apply changes",
 		skipAiHelp: "Skip AI help",
 		publishData: "Publish data",
@@ -575,6 +591,14 @@ export default {
 		cancel: "Cancel",
 		applyCrop: "Apply crop",
 		scanDocument: "Scan document",
+
+		// Platform workspaces (pages, blocks, templates, billing)
+		openInPlatform: "Open in Inicontent",
+		platformFeatureIntro:
+			"The {{feature}} workspace is part of the Inicontent platform.",
+		platformFeatureAt: "Open it at:",
+		platformFeatureHint:
+			"You'll be signed in automatically with your current session.",
 
 		// Backups
 		backups: "Backups",

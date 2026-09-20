@@ -37,6 +37,170 @@ a {
     padding-left: 16px!important; 
 }
 
+.chat-interface {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	padding: 10px;
+	border-radius: 8px;
+	margin-top: 20px;
+}
+
+.spin-icon {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.messages-area {
+	flex-grow: 1;
+	max-height: 450px;
+	overflow-y: auto;
+}
+
+.message-row {
+	width: 100%;
+	margin-bottom: 12px;
+}
+
+.message-row:last-child {
+	margin-bottom: 0;
+}
+
+.message-card {
+	max-width: 85%;
+	width: fit-content;
+	word-wrap: break-word;
+	border-radius: 15px;
+}
+
+.message-card p {
+	margin: 0;
+	line-height: 1.5;
+}
+
+.message-text {
+	white-space: pre-wrap;
+}
+
+.translation-results {
+	min-width: min(360px, 100%);
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid var(--n-divider-color);
+}
+
+.translation-result-row {
+	padding: 7px 9px;
+	border-radius: 8px;
+	background: var(--n-action-color);
+}
+
+.translation-result-count {
+	color: var(--n-text-color-3);
+	font-size: 0.875em;
+	white-space: nowrap;
+}
+
+.scroll-to-bottom-button.show {
+	opacity: 1;
+	visibility: visible;
+}
+
+.scroll-to-bottom-button {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s ease;
+}
+
+.floating-chatbot-button {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 998;
+    width: 46px !important;
+    height: 46px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.rtl .floating-chatbot-button {
+    right: auto;
+    left: 24px;
+}
+
+.floating-chatbot-button:hover {
+    transform: scale(1.1);
+}
+
+.floating-chatbot-panel {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    z-index: 1000;
+    width: min(420px, calc(100vw - 48px));
+    max-height: calc(100vh - 140px);
+}
+
+.rtl .floating-chatbot-panel {
+    right: auto;
+    left: 24px;
+}
+
+.floating-chatbot-panel .chatbot-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.floating-chatbot-panel .chatbot-body {
+    height: min(500px, calc(100vh - 240px));
+    overflow: hidden;
+}
+
+.floating-chatbot-panel .chatbot-body .chat-interface {
+    height: 100%;
+    margin-top: 0;
+    padding: 10px;
+}
+
+.floating-chatbot-panel .chatbot-body .messages-area {
+    max-height: none;
+    flex: 1;
+}
+
+.floating-chatbot-panel .chatbot-body .message-input {
+    margin-bottom: 20px;
+}
+
+/* Transition */
+.chatbot-panel-enter-active,
+.chatbot-panel-leave-active {
+    transition: all 0.3s ease;
+}
+
+.chatbot-panel-enter-from,
+.chatbot-panel-leave-to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+}
+
+.chatbot-panel-enter-to,
+.chatbot-panel-leave-from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
 .n-input-number,
 .n-date-picker {
 	width: 100%;

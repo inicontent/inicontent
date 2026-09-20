@@ -19,7 +19,7 @@
 							</template>
 							{{ t("refresh") }}
 					</NTooltip>
-					<NPopconfirm @positive-click="runAllActiveSchedules">
+					<NPopconfirm v-if="!!schedules?.length" @positive-click="runAllActiveSchedules">
 						<template #trigger>
 							<NTooltip :delay="1500">
 								<template #trigger>

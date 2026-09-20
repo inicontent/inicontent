@@ -67,7 +67,7 @@
 								</NInput>
 								<NTooltip :delay="600">
 									<template #trigger>
-										<NButton :type="showQuickSettings ? 'primary' : 'default'"
+										<NButton tertiary :type="showQuickSettings ? 'primary' : 'default'"
 											@click="toggleQuickSettings">
 											<template #icon>
 												<NIcon>
@@ -79,7 +79,7 @@
 									</template>
 									{{ t('quickSettings') }}
 								</NTooltip>
-								<NButton @click="createTable" :loading="Loading.Table">
+								<NButton secondary type="primary" @click="createTable" :loading="Loading.Table">
 									<template #icon>
 										<NIcon>
 											<Icon name="tabler:chevron-right" />

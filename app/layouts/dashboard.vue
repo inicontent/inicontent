@@ -23,6 +23,8 @@
 		<OfflineConflictModal />
 
 		<LazyAssetPreview />
+
+		<LazyFloatingChatbot v-if="route.path.includes('/admin')" />
 	</NuxtLayout>
 </template>
 

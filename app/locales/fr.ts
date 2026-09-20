@@ -552,6 +552,38 @@ export default {
 		reorderFlows: "Réorganiser les flux",
 		reorderFields: "Réorganiser les champs",
 
+		// Chatbot IA
+		chatbot: "Assistant IA",
+		chatWelcomeDefault:
+			"Bonjour ! Je peux vous aider à créer de nouvelles tables de base de données ou à modifier celles qui existent. Décrivez ce dont vous avez besoin et je générerai les schémas pour vous.",
+		chatWelcomeScopedDatabase:
+			"Bonjour ! Je peux vous aider à créer et mettre à jour des tables dans cette base de données. Pour créer une nouvelle base de données, utilisez l'espace de travail de base de données Inicontent.",
+		chatWelcomeTables:
+			"Je suis prêt à vous aider à concevoir et gérer vos tables de base de données. Vous pouvez me demander de créer de nouvelles tables ou d'en modifier.",
+		chatWelcomePages:
+			"Je peux vous aider à créer des pages web. Décrivez la page souhaitée et je générerai la structure.",
+		chatPlaceholder: "Décrivez la base de données que vous souhaitez créer...",
+		chatPlaceholderScopedDatabase:
+			"Décrivez les tables que vous souhaitez créer ou mettre à jour dans cette base de données...",
+		chatPlaceholderShort: "Écrivez un message...",
+		applied: "Appliqué",
+		chatPaidPlanRequired:
+			"Cet assistant IA est disponible uniquement avec un plan payant actif.",
+		continue: "Continuer",
+		continued: "Continué",
+		dataPreview: "Aperçu des données",
+		generatingMoreTables: "Génération des tables restantes...",
+		homePage: "Page d'accueil",
+		namesUpdated: "Noms mis à jour",
+		newChat: "Nouvelle discussion",
+		pagePreviewUnavailable:
+			"L'aperçu en direct de la page est disponible dans le créateur de site Inicontent.",
+		published: "Publié",
+		applyChanges: "Appliquer les modifications",
+		skipAiHelp: "Ignorer l'aide IA",
+		publishData: "Publier les données",
+		tableDemo: "Aperçu de la table",
+
 		billingUi: {
 			title: "Facturation et abonnement",
 			subtitle: "Gérez votre plan, vos factures et vos paramètres de paiement.",
@@ -907,6 +939,14 @@ export default {
 			"Faites glisser les poignées vertes pour délimiter la carte, puis appliquez.",
 		applyCrop: "Appliquer le recadrage",
 		scanDocument: "Scanner un document",
+
+		// Espaces de travail de la plateforme (pages, blocs, modèles, facturation)
+		openInPlatform: "Ouvrir dans Inicontent",
+		platformFeatureIntro:
+			"L'espace de travail {{feature}} fait partie de la plateforme Inicontent.",
+		platformFeatureAt: "Ouvrir à :",
+		platformFeatureHint:
+			"Vous serez connecté automatiquement avec votre session actuelle.",
 
 		// Sauvegardes
 		backups: "Sauvegardes",

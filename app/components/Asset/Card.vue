@@ -100,57 +100,59 @@
 							{{ t("deleteSelectedAssetsConfirm", { count: selectedAssetIds.length }) }}
 						</NPopconfirm>
 					</NButtonGroup>
-					<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema
-						size="small" />
-					<NUpload v-if="table?.allowedMethods?.includes('c')" ref="uploadRef" multiple abstract
-						:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
-						@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
-						<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
-							style="max-height: 160px">
-							<template #trigger>
-								<NDropdown placement="bottom-end" trigger="click" size="small"
-									:options="uploadDropdownOptions" @select="onUploadDropdownSelect">
-									<NButton round size="small" :title="t('uploadFiles')">
-										<template #icon>
-											<NProgress v-if="compressionIndicator" type="circle" status="warning"
-												:percentage="compressionIndicator" :stroke-width="10">
-												<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
-													<template #trigger>
-														<Icon @click.stop="skipCompression" :size="10"
-															name="tabler:player-track-next-filled" />
-													</template>
-													{{ t("skipCompression") }}
-												</NTooltip>
-											</NProgress>
-											<NIcon v-else-if="!UploadProgress">
-												<Icon name="tabler:upload" />
-											</NIcon>
-											<NIcon v-else-if="UploadProgress === 10000">
-												<Icon name="tabler:check" />
-											</NIcon>
-											<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
-												:size="16" />
-											<NProgress v-else type="circle" :show-indicator="false"
-												:status="UploadProgress === 100 ? 'success' : 'warning'"
-												:percentage="UploadProgress" :stroke-width="20" />
-										</template>
-									</NButton>
-								</NDropdown>
-							</template>
-							<NFlex v-if="UploadProgress === 1001" vertical
-								style="gap: 6px; padding: 2px 0; min-width: 160px;">
-								<NText style="font-size: 12px;">
-									{{ folderUploadProgress.total > 0
-										? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
-										: folderUploadProgress.current }}
-								</NText>
-								<NProgress v-if="folderUploadProgress.total > 0" type="line"
-									:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
-									:show-indicator="false" />
-							</NFlex>
-							<NUploadFileList v-else />
-						</NPopover>
-					</NUpload>
+					<NButtonGroup>
+						<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema
+							size="small" />
+						<NUpload v-if="table?.allowedMethods?.includes('c')" ref="uploadRef" multiple abstract
+							:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+							@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
+							<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
+								style="max-height: 160px">
+								<template #trigger>
+									<NDropdown placement="bottom-end" trigger="click" size="small"
+										:options="uploadDropdownOptions" @select="onUploadDropdownSelect">
+										<NButton secondary type="primary" round size="small" :title="t('uploadFiles')">
+											<template #icon>
+												<NProgress v-if="compressionIndicator" type="circle" status="warning"
+													:percentage="compressionIndicator" :stroke-width="10">
+													<NTooltip v-model:show="showSkipCompressionTooltip" placement="top">
+														<template #trigger>
+															<Icon @click.stop="skipCompression" :size="10"
+																name="tabler:player-track-next-filled" />
+														</template>
+														{{ t("skipCompression") }}
+													</NTooltip>
+												</NProgress>
+												<NIcon v-else-if="!UploadProgress">
+													<Icon name="tabler:upload" />
+												</NIcon>
+												<NIcon v-else-if="UploadProgress === 10000">
+													<Icon name="tabler:check" />
+												</NIcon>
+												<NSpin v-else-if="UploadProgress === 1000 || UploadProgress === 1001"
+													:size="16" />
+												<NProgress v-else type="circle" :show-indicator="false"
+													:status="UploadProgress === 100 ? 'success' : 'warning'"
+													:percentage="UploadProgress" :stroke-width="20" />
+											</template>
+										</NButton>
+									</NDropdown>
+								</template>
+								<NFlex v-if="UploadProgress === 1001" vertical
+									style="gap: 6px; padding: 2px 0; min-width: 160px;">
+									<NText style="font-size: 12px;">
+										{{ folderUploadProgress.total > 0
+											? `${folderUploadProgress.current} / ${folderUploadProgress.total}`
+											: folderUploadProgress.current }}
+									</NText>
+									<NProgress v-if="folderUploadProgress.total > 0" type="line"
+										:percentage="Math.round((folderUploadProgress.current / folderUploadProgress.total) * 100)"
+										:show-indicator="false" />
+								</NFlex>
+								<NUploadFileList v-else />
+							</NPopover>
+						</NUpload>
+					</NButtonGroup>
 				</NFlex>
 			</template>
 			<NCard>

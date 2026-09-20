@@ -575,6 +575,16 @@ export default {
 		chatPlaceholderScopedDatabase:
 			"صف الجداول التي تريد إنشاءها أو تحديثها في قاعدة البيانات الحالية...",
 		chatPlaceholderShort: "اكتب رسالة...",
+		chatPaidPlanRequired: "هذا المساعد الذكي متاح فقط مع خطة مدفوعة نشطة.",
+		continue: "متابعة",
+		continued: "تمت المتابعة",
+		dataPreview: "معاينة البيانات",
+		generatingMoreTables: "جارٍ إنشاء الجداول المتبقية...",
+		homePage: "الصفحة الرئيسية",
+		namesUpdated: "تم تحديث الأسماء",
+		newChat: "محادثة جديدة",
+		pagePreviewUnavailable:
+			"تتوفر معاينة الصفحة الحية في منشئ مواقع Inicontent.",
 		applyChanges: "تطبيق التغييرات",
 		skipAiHelp: "تخطي مساعدة الذكاء الاصطناعي",
 		applied: "تم التطبيق",
@@ -933,6 +943,12 @@ export default {
 		dragHandlesToAdjust: "اسحب المقابض الخضراء لتحديد البطاقة ثم طبّق.",
 		applyCrop: "تطبيق القص",
 		scanDocument: "مسح مستند",
+
+		// مساحات عمل المنصة (الصفحات، الكتل، القوالب، الفوترة)
+		openInPlatform: "فتح في إينيكونتينت",
+		platformFeatureIntro: "مساحة عمل {{feature}} جزء من منصة إينيكونتينت.",
+		platformFeatureAt: "افتحها على:",
+		platformFeatureHint: "سيتم تسجيل دخولك تلقائيًا بجلستك الحالية.",
 
 		// النسخ الاحتياطية
 		backups: "النسخ الاحتياطية",

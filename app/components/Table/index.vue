@@ -36,7 +36,7 @@
 							<NDropdown :options="toolsDropdownOptions" @select="toolsDropdownOnSelect" trigger="click">
 								<NTooltip :delay="1500">
 									<template #trigger>
-										<NButton round size="small">
+										<NButton secondary round size="small">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:tools" />
@@ -52,7 +52,7 @@
 								size="small" :options="createDropdownOptions" @select="createDropdownOnSelect">
 								<NTooltip placement="top" :delay="1500">
 									<template #trigger>
-										<NButton round :disabled="!table.schema" tag="a"
+										<NButton secondary round :disabled="!table.schema" tag="a"
 											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
 											@click.prevent="() => {
 												if (!isMobile)

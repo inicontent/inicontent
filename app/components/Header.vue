@@ -32,9 +32,9 @@
         <template #extra>
 			<NButtonGroup>
 				<LazyOfflineSyncStatus show-pwa />
-				<NPopover trigger="click" v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
+				<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
 						<template #trigger>
-							<NButton round size="small">{{ humanFileSize(totalSize) }}</NButton>
+							<NButton secondary round size="small">{{ humanFileSize(totalSize) }}</NButton>
 						</template>
 						<div v-if="barSegments.length > 0"
 							style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: rgba(128,128,128,.2); margin-block-end: 10px;">
@@ -60,8 +60,18 @@
 							<NText depth="3">{{ humanFileSize(table?.size) }}</NText>
 						</NFlex>
 					</NPopover>
+					<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
+						@select="(v) => Language = v">
+						<NButton secondary round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:language" />
+								</NIcon>
+							</template>
+						</NButton>
+					</NDropdown>
 					<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-						<NButton round size="small">
+						<NButton secondary type="primary" round size="small">
 							<template #icon>
 								<NIcon>
 									<Icon name="tabler:user" />
@@ -73,16 +83,6 @@
 							</template>
 						</NButton>
 					</NDropdown>
-					<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
-						@select="(v) => Language = v">
-						<NButton round size="small">
-							<template #icon>
-								<NIcon>
-									<Icon name="tabler:language" />
-								</NIcon>
-							</template>
-						</NButton>
-					</NDropdown>
 				</NButtonGroup>
 			</template>
     </NPageHeader>
@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { isValidID } from "inibase/utils";
-import { Icon, NIcon, NTag, NText } from "#components";
+import { Icon, NIcon, NTag, NText, NFlex } from "#components";
 
 const config = useRuntimeConfig();
 const route = useRoute();
@@ -200,7 +200,10 @@ const userDropdownOptions = computed(() => [
 		show: user.value?.role === config.public.idOne,
 	},
 	{
-		label: t("billing"),
+		label: () => h(NFlex,{ align: "center" }, () => [
+			t("billing"),
+			h(NIcon, { color: ThemeConfig.value.primaryColor}, () => h(Icon, { name: "tabler:external-link" }))
+		]),
 		key: "billing",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
 		show:
@@ -251,6 +254,7 @@ const userDropdownOptions = computed(() => [
 ]);
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+const { platformUrl } = usePlatformRedirect();
 
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
@@ -267,12 +271,7 @@ async function onSelectUserDropdown(v: string) {
 			);
 			break;
 		case "billing":
-			navigateTo(
-				database.value?.slug === "inicontent"
-					? "https://inicontent.com/admin/billing"
-					: `https://inicontent.com/${database.value.slug}/admin/billing`,
-				{ external: true },
-			);
+			navigateTo(platformUrl("billing"), { external: true });
 			break;
 		case "settings":
 			navigateTo(
