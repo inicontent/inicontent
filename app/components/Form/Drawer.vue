@@ -98,7 +98,10 @@ defineSlots<{
 }>();
 
 const Drawers = useState<DrawerRef>("drawers", () => []);
-const defaultWidth = useCookie<number | string>("width");
+const defaultWidth = useCookie<number | string>("drawerWidth", {
+	sameSite: true,
+	default: () => 560,
+});
 const formRefs = ref<FormRef[]>([]);
 
 const screenHalf = window.screen.width / 2;

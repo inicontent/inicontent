@@ -1,4 +1,5 @@
 <template>
+	<LazyFormDrawer />
 	<NSpin :show="loading">
 		<NDataTable
 			size="small"

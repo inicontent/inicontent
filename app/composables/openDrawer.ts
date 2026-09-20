@@ -68,14 +68,15 @@ export default function (
 	mode: "view" | "edit" = "edit",
 ) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
-	const defaultWidth = useCookie<number | string>("width", {
+	const defaultWidth = useCookie<number | string>("drawerWidth", {
 		sameSite: true,
+		default: () => 560,
 	});
 	const index = Drawers.value.findIndex(
 		(d) => d.table === table && d.id === id,
 	);
 
-	let width = defaultWidth.value ?? 251;
+	let width = defaultWidth.value ?? 560;
 	if (index === -1) {
 		if (Drawers.value.length) {
 			for (let index = 0; index < Drawers.value.length; index++) {

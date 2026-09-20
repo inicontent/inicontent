@@ -1,6 +1,6 @@
 <template>
     <NFlex vertical>
-        <LazyFormDrawer v-if="!$device.isMobile" />
+        <LazyFormDrawer/>
         <NCard style="height: fit-content">
             <template #header>
                 <NPerformantEllipsis>{{ t(table.slug) }}: {{ itemLabel }}</NPerformantEllipsis>

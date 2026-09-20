@@ -95,7 +95,7 @@ const Language = useScopedCookie<LanguagesType>("language", database.value?.slug
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const table = useState<Table>("table");
 
-const drawerWidth = useCookie<number | string>("translateDrawerWidth", {
+const drawerWidth = useCookie<number | string>("drawerWidth", {
 	sameSite: true,
 	default: () => 560,
 });
