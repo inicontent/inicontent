@@ -1,8 +1,8 @@
 {
 	"name": "inicontent",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"type": "module",
-  	"main": "./nuxt.config.ts",
+	"main": "./nuxt.config.ts",
 	"scripts": {
 		"lint": "biome check",
 		"format": "biome check --write",
