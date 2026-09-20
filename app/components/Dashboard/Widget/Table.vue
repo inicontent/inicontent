@@ -74,7 +74,8 @@ const columns = computed<DataTableColumns>(() =>
 		key: field.key,
 		minWidth: 150,
 		width: 150,
-		ellipsis: field.table !== undefined ? false : { tooltip: true },
+		resizable: true,
+		ellipsis: { tooltip: true },
 		render: (row: Item) =>
 			h(LazyColumn, {
 				field,

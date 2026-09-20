@@ -306,5 +306,36 @@ export function useDashboardData(
 		watch(dateRangeOverride, () => refresh());
 	}
 
+	// Re-fetch when the widget's own criteria change (source table, type,
+	// operation, field, filters, sort, …) so inline edits preview live
+	// before the dashboard is saved. A short debounce absorbs rapid
+	// changes while typing in the widget editor.
+	const widgetSignature = computed(() =>
+		JSON.stringify({
+			type: widget.type,
+			table: widget.table,
+			operation: widget.operation,
+			field: widget.field,
+			groupBy: widget.groupBy,
+			dateField: widget.dateField,
+			dateRange: widget.dateRange,
+			searchArray: widget.searchArray,
+			sortField: widget.sortField,
+			sortOrder: widget.sortOrder,
+			columns: widget.columns,
+			limit: widget.limit,
+		}),
+	);
+
+	let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+	watch(widgetSignature, () => {
+		if (refreshTimer) clearTimeout(refreshTimer);
+		refreshTimer = setTimeout(() => refresh(), 250);
+	});
+
+	onBeforeUnmount(() => {
+		if (refreshTimer) clearTimeout(refreshTimer);
+	});
+
 	return { value, data, total, groups, timeSeries, loading, refresh };
 }

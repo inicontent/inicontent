@@ -93,7 +93,10 @@ const user = useState<User>("user");
 const route = useRoute();
 const database = useState<Database>("database");
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const dashboards = ref<Dashboard[]>([]);
@@ -166,7 +169,7 @@ const fetchDashboards = async () => {
 onMounted(fetchDashboards);
 
 function getDashboardUrl(id?: string | number) {
-	return `/${route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : ""}admin/dashboards/${id}`
+	return `/${route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : ""}admin/dashboards/${id}`;
 }
 
 const createDashboard = async () => {
@@ -238,7 +241,7 @@ const getDropdownOptions = (dashboard: Dashboard) => {
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
 		},
 		{
-			key: `${url}/edit`,
+			key: `${url}?edit=true`,
 			label: t("edit"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:edit" })),
 			show: user.value?.role === config.public.idOne,
