@@ -17,7 +17,7 @@
 			style="background-color: transparent;"
 			:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0" :bordered="false">
 			<template #header-extra>
-				<NFlex id="navbarActions" align="center" justify="center" :size="isSlotSet('navbarExtraActions') ? 'medium' : 0" style="flex-direction: row-reverse;">
+				<NFlex id="navbarActions" align="center" justify="center" :size="isSlotSet('navbarExtraActions') || isSlotSet('navbarActions') ? 'medium' : 0" style="flex-direction: row-reverse;">
 					<slot name="navbarActions">
 						<NButtonGroup id="navbarExtraButtons">
 							<NTooltip v-if="table.config?.realtime" :delay="1500">
