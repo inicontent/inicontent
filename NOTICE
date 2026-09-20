@@ -1,0 +1,11 @@
+Inicontent CMS
+Copyright 2024-2026 Karim Amahtil
+
+This product is licensed under the Apache License, Version 2.0.
+See LICENSE for the full license text.
+
+This product includes software developed under the Apache License,
+Version 2.0:
+
+- pdfjs-dist (https://github.com/mozilla/pdf.js), Copyright Mozilla Foundation
+- xlsx (https://github.com/SheetJS/sheetjs), Copyright SheetJS LLC

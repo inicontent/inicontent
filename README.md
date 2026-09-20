@@ -1,5 +1,9 @@
 # Inicontent CMS
 
+[![npmjs](https://img.shields.io/npm/dm/inicontent.svg?style=flat)](https://www.npmjs.org/package/inicontent) [![License](https://img.shields.io/github/license/inicontent/inicontent.svg?style=flat&colorA=18181B&colorB=28CF8D)](./LICENSE) [![Activity](https://img.shields.io/github/commit-activity/m/inicontent/inicontent)](https://github.com/inicontent/inicontent/pulse) [![GitHub stars](https://img.shields.io/github/stars/inicontent/inicontent?style=social)](https://github.com/inicontent/inicontent)
+
+> **License:** Inicontent CMS is open source under the [Apache License 2.0](./LICENSE). This repository contains the client layer only — the Inicontent backend API (`inicontent/api`) is proprietary.
+
 ## Introduction
 
 Inicontent CMS is a content management system built using [Nuxt](https://github.com/nuxt/nuxt) as its framework. It leverages modern tools such as:  
