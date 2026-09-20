@@ -44,40 +44,38 @@ schema field types, flows, routing).
 
 There are two ways to use this project:
 
-### 1. Recommended Method: Add as a Nuxt Layer
+### 1. Recommended Method: Install from npm and Add as a Nuxt Layer
 
-The easiest way to integrate Inicontent CMS is to use it as a Nuxt Layer.  
+The easiest way to integrate Inicontent CMS is to install it from npm and use it as a Nuxt Layer.
 
 **Steps:**
-1. Add the repository as a layer in your `nuxt.config` file.
-2. Remove your existing `app.vue` file to avoid conflicts.  
-3. To override specific admin routes, create corresponding files in the `pages` directory. These will automatically override the default routes provided by the CMS.
 
-**Database Configuration:**  
-- By default, the CMS is a multi-database manager.  
-  - When no `database` is set in `.env`, the admin interface (`/admin`) will display all available databases. Users can then navigate to a specific database's admin panel at `/admin/<dbName>`.  
-  - If a `database` is specified in `.env`, the `/admin` route will directly display the tables for the specified database, removing the need to include the database name in the path.  
+1. Install the package:
+   ```bash
+   npm install inicontent
+   ```
+   (or `pnpm add inicontent`, `yarn add inicontent`, `bun add inicontent`)
+2. Add it as a layer in your `nuxt.config` file:
+   ```javascript
+   // nuxt.config.ts
+   export default defineNuxtConfig({
+     extends: ["inicontent"]
+   });
+   ```
+3. Remove your existing `app.vue` file to avoid conflicts.
+4. To override specific admin routes, create corresponding files in the `pages` directory. These will automatically override the default routes provided by the CMS.
 
-**Example Configuration:**
-
-```javascript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  extends: [["github:inicontent/inicontent", { install: true }]]
-});
-```
+**Database Configuration:**
+- By default, the CMS is a multi-database manager.
+  - When no `database` is set in `.env`, the admin interface (`/admin`) will display all available databases. Users can then navigate to a specific database's admin panel at `/admin/<dbName>`.
+  - If a `database` is specified in `.env`, the `/admin` route will directly display the tables for the specified database, removing the need to include the database name in the path.
 
 ```sh
 # .env
 database=DATABASE_SLUG
 ```
 
-**Database configuration:**
-- The CMS is a multi-database manager by default.
-- When no `database` is set in `.env`, `/admin` lists all available databases; users navigate to a specific database's admin panel at `/admin/<dbName>`.
-- When `database` is set, `/admin` shows that database's tables directly, without the name in the path.
-
-This method keeps your project clean and makes updates to the CMS easy.
+This method keeps your project clean and makes updates to the CMS easy: you stay on the `inicontent` version pinned in your `package.json` and upgrade intentionally with `npm update inicontent`.
 
 ### 2. Advanced Method: Clone and Edit the Repository
 
