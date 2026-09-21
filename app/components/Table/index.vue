@@ -357,11 +357,17 @@ function renderItemButtons(row: Item) {
 
 								e.preventDefault();
 
-								// If a page component exists for this table's item route, bail out and let
+								// When a concrete page component exists for this table's item
+								// route (i.e. the app overrides the generic view page for this
+								// table), open that page. Otherwise fall back to the drawer.
+								//
+								// NOTE: `[id]` must not appear in the glob pattern itself — the
+								// matcher reads `[id]` as a character class (`i` or `d`) and
+								// would match zero folders. Glob every admin/tables page and
+								// filter by the literal path instead.
 								try {
-									// Use project-root relative path so glob works in dev and production builds
 									const pages = Object.keys(
-										import.meta.glob("/pages/admin/tables/**/[id]/index.vue"),
+										import.meta.glob("/pages/admin/tables/**/index.vue"),
 									);
 									const slug = table.value?.slug;
 									if (
