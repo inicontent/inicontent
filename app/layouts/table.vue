@@ -44,6 +44,7 @@ const dashboards = ref<Dashboard[]>([]);
 const adminBase = computed(() =>
 	route.params.database ? `/${route.params.database}` : "",
 );
+const { tableUrl } = useTableUrl();
 const defaultValue = computed(() => {
 	const pathSegments = route.path.split("/").filter(Boolean);
 	const lastPathInRoute = decodeURIComponent(pathSegments.at(-1) ?? "");
@@ -105,25 +106,25 @@ watch(
 );
 
 function getTableActions(tbl: Table): TableAction[] {
-	const tableUrl = `${adminBase.value}/admin/tables/${tbl.slug}`;
+	const url = tableUrl(tbl.slug);
 	return [
 		{
 			labelKey: "showAll",
-			to: tableUrl,
+			to: url,
 			key: tbl.slug,
 			show: tbl.slug !== "assets",
 			icon: "tabler:eye",
 		},
 		{
 			labelKey: "newItem",
-			to: `${tableUrl}/new`,
+			to: `${url}/new`,
 			key: `${tbl.slug}-new`,
 			show: tbl.slug !== "assets" && !!tbl.allowedMethods?.includes("c"),
 			icon: "tabler:plus",
 		},
 		{
 			labelKey: "settings",
-			to: `${tableUrl}/settings`,
+			to: `${url}/settings`,
 			key: `${tbl.slug}-settings`,
 			icon: "tabler:settings",
 			show:
@@ -132,7 +133,7 @@ function getTableActions(tbl: Table): TableAction[] {
 		},
 		{
 			labelKey: "flows",
-			to: `${tableUrl}/flows`,
+			to: `${url}/flows`,
 			key: `${tbl.slug}-flows`,
 			icon: "tabler:webhook",
 			show:
@@ -141,7 +142,7 @@ function getTableActions(tbl: Table): TableAction[] {
 		},
 		{
 			labelKey: "schedules",
-			to: `${tableUrl}/schedules`,
+			to: `${url}/schedules`,
 			key: `${tbl.slug}-schedules`,
 			icon: "tabler:clock-play",
 			show:
@@ -267,7 +268,7 @@ function renderSingleItem(tbl: Table): MenuOption {
 			h(
 				NuxtLink,
 				{
-					to: `${adminBase.value}/admin/tables/${tbl.slug}`,
+					to: tableUrl(tbl.slug),
 				},
 				{ default: () => h(NEllipsis, { tooltip: false, style: { maxWidth: '130px' } }, () => t(tbl.slug)) },
 			),
@@ -349,7 +350,7 @@ function renderDashboardItem(): MenuOption {
 }
 
 function renderBackupsItem(): MenuOption {
-	const backupsUrl = `${adminBase.value}/admin/tables/backups`;
+	const backupsUrl = tableUrl("backups");
 	return {
 		label: () =>
 			h(

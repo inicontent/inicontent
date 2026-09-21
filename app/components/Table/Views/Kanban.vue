@@ -15,7 +15,7 @@
 								if (!isMobile)
 									openDrawer(table?.slug as string, undefined, { [field?.key as string]: column.key === UNSET_KEY ? '' : column.key })
 								else
-									navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table?.slug}/new`);
+									navigateTo(tableUrl(table?.slug ?? '', '/new'));
 							}">
 								<template #icon>
 									<NIcon :color="column.color?.textColor">
@@ -74,6 +74,8 @@ import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
 import Inison from "inison"
 import type { TagColor } from "naive-ui/es/tag/src/common-props"
 import { VueDraggable } from "vue-draggable-plus"
+
+const { tableUrl } = useTableUrl()
 
 const props = defineProps<{
 	slots: any

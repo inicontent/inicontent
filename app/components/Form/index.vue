@@ -41,6 +41,7 @@ defineExpose<FormRef>({
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const route = useRoute();
+const { tableUrl } = useTableUrl();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
@@ -445,7 +446,7 @@ async function DELETE() {
 		if (props.onAfterDelete) return props.onAfterDelete((data as any).result);
 
 		await navigateTo(
-			`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
+			tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? "")),
 		);
 		return;
 	}
@@ -497,7 +498,7 @@ async function CREATE() {
 					`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 				);
 				return navigateTo(
-					`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}`,
+					tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? "")),
 				);
 			}
 
@@ -517,7 +518,7 @@ async function CREATE() {
 			if (props.onAfterCreate) return props.onAfterCreate(data.result);
 
 			return navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${props.table ?? table.value?.slug ?? route.params.table}/${data.result.id}/edit`,
+				tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? ""), `/${data.result.id}/edit`),
 			);
 		}
 		window.$message.error(t("inputsAreInvalid"));

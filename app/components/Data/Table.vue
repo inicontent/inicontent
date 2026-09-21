@@ -1,7 +1,7 @@
 <template>
     <NFlex :wrap="false" class="tableCellLinks">
         <NButton v-for="value in values" class="tableCellLinkButton" tag="a"
-            :href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${field.table}/${idOf(value)}`"
+            :href="tableUrl(field.table, `/${idOf(value)}`)"
             @click.prevent.stop="handleClick(value)" :loading="Loading[`Drawer_${field.table}_${idOf(value)}`]" size="small"
             round>
             <template v-if="table" #icon>
@@ -26,6 +26,7 @@ const table = database.value.tables?.find(({ slug }) => slug === props.field.tab
 const values = computed(() => ([] as unknown[]).concat(props.value ?? []));
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const { tableUrl } = useTableUrl();
 
 // Table references can be raw ids (translated / stored values). Resolve them
 // through the shared cache which batches all ids of the current page into a
