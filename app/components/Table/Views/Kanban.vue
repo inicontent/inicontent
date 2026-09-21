@@ -15,7 +15,7 @@
 								if (!isMobile)
 									openDrawer(table?.slug as string, undefined, { [field?.key as string]: column.key === UNSET_KEY ? '' : column.key })
 								else
-									navigateTo(tableUrl(table?.slug ?? "", "/new"));
+									navigateTo(tableUrl(table?.slug ?? '', '/new'));
 							}">
 								<template #icon>
 									<NIcon :color="column.color?.textColor">
