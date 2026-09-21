@@ -139,6 +139,19 @@ export default {
 			tableNotFoundTitle: "Tabla no encontrada",
 			tableNotFoundDescription: "Verifica el slug o selecciona otra tabla.",
 			backToTables: "Volver a las tablas API",
+			realtime: {
+				enabled: "Tiempo real activado",
+				title: "Actualizaciones en tiempo real",
+				description:
+					"Esta tabla difunde los cambios de datos en vivo a través de una conexión WebSocket. Conéctate al endpoint de abajo y suscríbete para recibir eventos de creación, actualización y eliminación al instante.",
+				endpointLabel: "Endpoint WebSocket",
+				subscribeLabel: "Mensaje de suscripción",
+				subscribeHint:
+					"Envía este mensaje justo después de abrir la conexión. {database} y {table} son los slugs de tu base de datos y de tu tabla; {param} lleva tu ID de sesión.",
+				eventsLabel: "Eventos entrantes",
+				eventsHint:
+					"El servidor envía mensajes data_change con una acción de crear, actualizar o eliminar. Las conexiones perdidas se reintentan automáticamente.",
+			},
 			auth: {
 				title: "Endpoints de autenticación",
 				description:

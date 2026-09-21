@@ -22,6 +22,12 @@
                         </template>
                         <NFlex vertical size="small">
                             <NFlex wrap :size="6">
+                                <NTag v-if="tableOption.config?.realtime" type="info" round>
+                                    <NFlex align="center" :size="4">
+                                        <Icon name="tabler:wifi" size="14" />
+                                        {{ t('apiDocs.realtime.enabled') }}
+                                    </NFlex>
+                                </NTag>
                                 <NTag v-for="method in tableOption.methods" :key="method.key" :type="method.type" round>
                                     {{ method.label }}
                                 </NTag>
@@ -35,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { LazyTableIcon, NuxtLink } from "#components";
+import { Icon, LazyTableIcon, NuxtLink } from "#components";
 
 definePageMeta({
 	layout: "dashboard",

@@ -98,6 +98,19 @@ export default {
 			tableNotFoundDescription:
 				"Double-check the slug or pick another table from the list.",
 			backToTables: "Back to API tables",
+			realtime: {
+				enabled: "Realtime enabled",
+				title: "Realtime updates",
+				description:
+					"This table broadcasts live data changes over a WebSocket connection. Connect to the endpoint below and subscribe to receive create, update, and delete events as they happen.",
+				endpointLabel: "WebSocket endpoint",
+				subscribeLabel: "Subscribe message",
+				subscribeHint:
+					"Send this message right after the connection opens. {database} and {table} are the slugs of your database and table; {param} carries your session id.",
+				eventsLabel: "Incoming events",
+				eventsHint:
+					"The server pushes data_change messages with an action of create, update, or delete. Lost connections are retried automatically.",
+			},
 			tableEndpoints: {
 				title: "Table endpoints",
 				listTitle: "List items",
@@ -221,6 +234,11 @@ export default {
 		skipAiHelp: "Skip AI help",
 		publishData: "Publish data",
 		translateData: "Translate",
+		// Table settings - realtime sync
+		realtime: "Realtime sync",
+		enableRealtimeSync: "Enable realtime data sync",
+		realtimeEnabled: "Realtime sync enabled",
+		connectingToRealtime: "Connecting to realtime sync...",
 		tableSchedules: "Table schedules",
 		addSchedule: "Add schedule",
 		runNow: "Run now",

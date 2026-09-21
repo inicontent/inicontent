@@ -137,6 +137,19 @@ export default {
 			tableNotFoundTitle: "لم يتم العثور على الجدول",
 			tableNotFoundDescription: "تحقق من المعرّف أو اختر جدولاً آخر من القائمة.",
 			backToTables: "العودة إلى قوائم الواجهة البرمجية",
+			realtime: {
+				enabled: "المزامنة الفورية مفعلة",
+				title: "التحديثات الفورية",
+				description:
+					"يبث هذا الجدول تغييرات البيانات مباشرة عبر اتصال WebSocket. اتصل بالنقطة الطرفية أدناه واشترك لتلقي أحداث الإنشاء والتحديث والحذف لحظة حدوثها.",
+				endpointLabel: "نقطة اتصال WebSocket",
+				subscribeLabel: "رسالة الاشتراك",
+				subscribeHint:
+					"أرسل هذه الرسالة فور فتح الاتصال. {database} و {table} هما معرفا قاعدة البيانات والجدول، و {param} يحمل معرف جلستك.",
+				eventsLabel: "الأحداث الواردة",
+				eventsHint:
+					"يرسل الخادم رسائل data_change بإجراء إنشاء أو تحديث أو حذف، ويُعاد الاتصال تلقائياً عند انقطاعه.",
+			},
 			auth: {
 				title: "نهايات المصادقة",
 				description:

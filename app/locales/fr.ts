@@ -139,6 +139,19 @@ export default {
 			tableNotFoundDescription:
 				"Vérifiez le slug ou choisissez une autre table.",
 			backToTables: "Retour aux tables API",
+			realtime: {
+				enabled: "Temps réel activé",
+				title: "Mises à jour en temps réel",
+				description:
+					"Cette table diffuse les modifications de données en direct via une connexion WebSocket. Connectez-vous au point de terminaison ci-dessous et abonnez-vous pour recevoir les événements de création, de mise à jour et de suppression dès qu'ils surviennent.",
+				endpointLabel: "Point de terminaison WebSocket",
+				subscribeLabel: "Message d'abonnement",
+				subscribeHint:
+					"Envoyez ce message juste après l'ouverture de la connexion. {database} et {table} sont les identifiants de votre base et de votre table ; {param} contient votre identifiant de session.",
+				eventsLabel: "Événements reçus",
+				eventsHint:
+					"Le serveur envoie des messages data_change avec une action de création, de mise à jour ou de suppression. Les connexions perdues sont relancées automatiquement.",
+			},
 			auth: {
 				title: "Endpoints d'authentification",
 				description:

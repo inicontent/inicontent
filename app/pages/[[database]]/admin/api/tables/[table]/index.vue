@@ -14,6 +14,12 @@
 				<div class="api-table-doc-page__methods">
 					<NText strong>{{ t('apiDocs.availableMethods') }}</NText>
 					<NFlex wrap :size="8">
+						<NTag v-if="currentTable.config?.realtime" type="info" size="large" round>
+							<NFlex align="center" :size="6">
+								<Icon name="tabler:wifi" size="16" />
+								{{ t('apiDocs.realtime.enabled') }}
+							</NFlex>
+						</NTag>
 						<NTag v-for="method in availableMethods" :key="method.key" :type="method.type" size="large" round>
 							{{ method.label.toUpperCase() }}
 						</NTag>
@@ -49,6 +55,41 @@
 							.
 						</span>
 					</NAlert>
+				</NFlex>
+			</NCard>
+		</section>
+
+		<section v-if="currentTable.config?.realtime" class="api-table-doc-page__realtime">
+			<NCard :bordered="false">
+				<template #header>
+					<NFlex align="center" :size="8">
+						<Icon name="tabler:wifi" size="18" />
+						<span>{{ t('apiDocs.realtime.title') }}</span>
+					</NFlex>
+				</template>
+				<NFlex vertical :size="16">
+					<NP>{{ t('apiDocs.realtime.description') }}</NP>
+					<NFlex vertical :size="6">
+						<NText strong>{{ t('apiDocs.realtime.endpointLabel') }}</NText>
+						<NCode :code="realtimeWsUrl" language="bash" word-wrap />
+					</NFlex>
+					<NFlex vertical :size="6">
+						<NText strong>{{ t('apiDocs.realtime.subscribeLabel') }}</NText>
+						<NCode :code="realtimeSubscribeMessage" language="json" word-wrap />
+					</NFlex>
+					<NP>
+						{{
+							t('apiDocs.realtime.subscribeHint', {
+								database: dbSlug,
+								table: currentTable.slug,
+								param: sessionParamName,
+							})
+						}}
+					</NP>
+					<NFlex vertical :size="6">
+						<NText strong>{{ t('apiDocs.realtime.eventsLabel') }}</NText>
+						<NP>{{ t('apiDocs.realtime.eventsHint') }}</NP>
+					</NFlex>
 				</NFlex>
 			</NCard>
 		</section>
@@ -205,6 +246,26 @@ const dbSlug = computed(
 );
 
 const authDocsUrl = computed(() => `${basePath.value}/admin/api/auth`);
+
+const realtimeWsUrl = computed(() => {
+	const apiBase = config.public.apiBase as string;
+	if (apiBase.startsWith("http")) {
+		const url = new URL(apiBase);
+		const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+		return `${wsProtocol}//${url.host}/realtime`;
+	}
+	const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+	return `${wsProtocol}//${window.location.host}/realtime`;
+});
+
+const realtimeSubscribeMessage = computed(
+	() => `{
+  "type": "subscribe",
+  "database": "${dbSlug.value}",
+  "table": "${currentTable.value?.slug ?? ""}",
+  "sessionId": "SESSION_ID"
+}`,
+);
 
 const listEndpoint = computed(
 	() => `/${dbSlug.value}/${currentTable.value?.slug}`,
