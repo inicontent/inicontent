@@ -12,7 +12,7 @@
                             <NButton secondary round type="info">
                                 <template #icon>
                                     <NuxtLink
-                                        :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
+                                        :to="tableUrl(table.slug, `/${$route.params.id}/edit`)">
                                         <NIcon>
                                             <Icon name="tabler:pencil" />
                                         </NIcon>
@@ -42,7 +42,7 @@
                     <NButton v-if="table.allowedMethods?.includes('u')" secondary round type="info">
                         <template #icon>
                             <NuxtLink
-                                :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}/edit`">
+                                :to="tableUrl(table.slug, `/${$route.params.id}/edit`)">
                                 <NIcon>
                                     <Icon name="tabler:pencil" />
                                 </NIcon>
@@ -85,6 +85,7 @@ const config = useRuntimeConfig();
 const route = useRoute();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
+const { tableUrl } = useTableUrl();
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 

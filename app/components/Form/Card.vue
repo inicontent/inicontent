@@ -15,7 +15,7 @@
                                 <NButton type="info" secondary round>
                                     <template #icon>
                                         <NuxtLink
-                                            :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
+                                            :to="tableUrl(table.slug, `/${$route.params.id}`)">
                                             <NIcon>
                                                 <Icon name="tabler:eye" />
                                             </NIcon>
@@ -78,7 +78,7 @@
                                 <NButton type="info" secondary round>
                                     <template #icon>
                                         <NuxtLink
-                                            :to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/${$route.params.id}`">
+                                            :to="tableUrl(table.slug, `/${$route.params.id}`)">
                                             <NIcon>
                                                 <Icon name="tabler:eye" />
                                             </NIcon>
@@ -139,6 +139,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
 const table = useState<Table>("table")
 const database = useState<Database>("database")
 const formRef = ref<FormRef>()
+const { tableUrl } = useTableUrl()
 
 const itemLabel = computed(() => renderLabel(table.value, modelValue.value))
 

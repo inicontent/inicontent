@@ -53,12 +53,12 @@
 								<NTooltip placement="top" :delay="1500">
 									<template #trigger>
 										<NButton secondary round :disabled="!table.schema" tag="a"
-											:href="table.schema ? `${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new` : '#'"
+											:href="table.schema ? tableUrl(table.slug, '/new') : '#'"
 											@click.prevent="() => {
 												if (!isMobile)
 													openDrawer(table.slug)
 												else
-													navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`);
+													navigateTo(tableUrl(table.slug, '/new'));
 											}" size="small">
 											<template #icon>
 												<NIcon>
@@ -122,6 +122,7 @@ const user = useState<User>("user");
 const route = useRoute();
 const router = useRouter();
 const { isMobile } = useDevice();
+const { tableUrl } = useTableUrl();
 
 const searchString = ref<string>(
 	(route.query.search as string | undefined) ?? "",
@@ -306,7 +307,7 @@ function openTranslateDrawer(row: Item) {
 }
 
 function renderItemButtons(row: Item) {
-	const viewHref = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`;
+	const viewHref = tableUrl(table.value?.slug ?? "", `/${row.id}`);
 
 	return h(NButtonGroup, { vertical: isMobile }, () =>
 		[
@@ -370,7 +371,7 @@ function renderItemButtons(row: Item) {
 										)
 									)
 										return navigateTo(
-											`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}`,
+											tableUrl(table.value?.slug ?? "", `/${row.id}`),
 										);
 								} catch (e) {
 									// ignore and continue with drawer behavior
@@ -392,14 +393,14 @@ function renderItemButtons(row: Item) {
 						{
 							class: "editItemButton",
 							tag: "a",
-							href: `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+							href: tableUrl(table.value?.slug ?? "", `/${row.id}/edit`),
 							onClick: (e) => {
 								e.preventDefault();
 								if (!isMobile)
 									openDrawer(table.value?.slug as string, row.id, toRaw(row));
 								else
 									navigateTo(
-										`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value?.slug}/${row.id}/edit`,
+										tableUrl(table.value?.slug ?? "", `/${row.id}/edit`),
 									);
 							},
 							secondary: true,
@@ -872,7 +873,7 @@ async function createDropdownOnSelect(value: string) {
 					openDrawer(table.value.slug, undefined, unstringifiedItem);
 				else
 					await navigateTo(
-						`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/${table.value.slug}/new?data=${itemFromClipboard}`,
+						tableUrl(table.value.slug, `/new?data=${itemFromClipboard}`),
 					);
 			}
 		}

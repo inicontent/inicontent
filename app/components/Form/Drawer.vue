@@ -10,7 +10,7 @@
 					<span v-if="drawer.id">
 						{{ t(drawer.mode === 'view' ? 'view' : 'edit') }}
 						<NuxtLink
-							:to="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${drawer.table}/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`">
+							:to="tableUrl(drawer.table, `/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`)">
 							<NText type="primary">
 								{{ itemsLabels[index] }}
 								<NIcon size="small">
@@ -83,6 +83,7 @@
 const database = useState<Database>("database");
 const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const { tableUrl } = useTableUrl();
 
 defineSlots<{
 	default({

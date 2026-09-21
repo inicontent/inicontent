@@ -94,6 +94,7 @@ import { Icon, NIcon, NTag, NText, NFlex } from "#components";
 
 const config = useRuntimeConfig();
 const route = useRoute();
+const { tableUrl } = useTableUrl();
 const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 
@@ -264,11 +265,7 @@ async function onSelectUserDropdown(v: string) {
 			);
 			break;
 		case "edit":
-			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/tables/users/${
-					(user.value as User).id
-				}/edit`,
-			);
+			navigateTo(tableUrl("users", `/${(user.value as User).id}/edit`));
 			break;
 		case "billing":
 			navigateTo(platformUrl("billing"), { external: true });

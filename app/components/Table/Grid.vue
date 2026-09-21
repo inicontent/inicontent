@@ -130,8 +130,14 @@ const route = useRoute()
 
 const database = useState<Database>("database")
 
+const { tableUrl } = useTableUrl()
+
 function getTableUrl(slug: string) {
-	return `/${!route.params.database && database.value?.slug !== "inicontent" ? "" : `${modelValue.value.slug}/`}admin/tables/${slug}`
+	const db =
+		!route.params.database && database.value?.slug !== "inicontent"
+			? ""
+			: String(modelValue.value.slug)
+	return tableUrl(slug, "", db || undefined)
 }
 
 const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
@@ -243,21 +249,21 @@ const filteredTables = computed(() =>
 )
 
 const getDropdownOptions = (table: Table) => {
-	const tableUrl = getTableUrl(table.slug)
+	const url = getTableUrl(table.slug)
 	return [
 		{
-			key: tableUrl,
+			key: url,
 			label: t("showAll"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:eye" })),
 		},
 		{
-			key: `${tableUrl}/new`,
+			key: `${url}/new`,
 			label: t("newItem"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:plus" })),
 			show: table.slug !== "assets" && table.allowedMethods?.includes("c"),
 		},
 		{
-			key: `${tableUrl}/settings`,
+			key: `${url}/settings`,
 			label: t("settings"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:settings" })),
 			show:
@@ -265,7 +271,7 @@ const getDropdownOptions = (table: Table) => {
 				user.value?.role === config.public.idOne,
 		},
 		{
-			key: `${tableUrl}/flows`,
+			key: `${url}/flows`,
 			label: t("flows"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:webhook" })),
 			show:
@@ -273,7 +279,7 @@ const getDropdownOptions = (table: Table) => {
 				user.value?.role === config.public.idOne,
 		},
 		{
-			key: `${tableUrl}/schedules`,
+			key: `${url}/schedules`,
 			label: t("schedules"),
 			icon: () => h(NIcon, () => h(Icon, { name: "tabler:clock-play" })),
 			show:
