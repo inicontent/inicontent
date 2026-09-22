@@ -204,6 +204,11 @@ export function handleSelectedSchemaType(type: string) {
 				type: "date",
 				date: "week",
 			};
+		case "computed":
+			return {
+				type: "number",
+				computed: "",
+			};
 		case "array":
 		case "object":
 			return {

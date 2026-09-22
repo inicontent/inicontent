@@ -90,6 +90,15 @@ export default function fieldsList(): fieldListOptionType[] {
 					icon: renderIcon("numbers"),
 				},
 				{
+					// Number field with the computed expression option enabled — a
+					// value derived from other fields (sum/avg/count/min/max, or
+					// arithmetic on field references), read-only and recalculated
+					// on every save.
+					label: t("fields.computed"),
+					key: "computed",
+					icon: renderIcon("sum"),
+				},
+				{
 					label: t("fields.slider"),
 					key: "slider",
 					icon: renderIcon("timeline-event"),
@@ -294,6 +303,10 @@ export function getField(field: Field) {
 				) ?? defaultField()
 			);
 	}
+	if(field.type === "number" && isComputedField(field))
+		return (
+			flatFieldsList().find(({ key }) => key === "computed") ?? defaultField()
+		);
 	let fieldType = field.subType ?? field.type;
 	if (Array.isArray(fieldType)) fieldType = "multiple";
 	if (!fieldType) return defaultField();

@@ -1,4 +1,5 @@
 <template>
+    <span v-if="affixes.prefix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)" class="fx-affix">{{ affixes.prefix }}</span>
     <template v-if="value === null || value === undefined || (Array.isArray(value) && value.length === 0)">
         <LazyColumnBoolean v-if="detectedFieldType === 'boolean'" />
         <NText :depth="3" v-else>--</NText>
@@ -21,11 +22,14 @@
     <LazyColumnText
         v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple', 'json'].includes(detectedFieldType)"
         :value />
+    <span v-if="affixes.suffix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)" class="fx-affix">{{ affixes.suffix }}</span>
 </template>
 
 
 <script lang="ts" setup>
 const { field, value } = defineProps<{ field: Field; value: any }>()
+
+const affixes = computed(() => computedAffixesOf(field))
 
 let detectedFieldType = (field.subType ?? field.type) as
     | DB_FieldType

@@ -173,7 +173,7 @@ const oldModelValue = ref();
 let schemaFetchSequence = 0;
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
-	const bodyContent = toRaw(modelValue.value);
+	const bodyContent = stripComputedKeys(schema.value, toRaw(modelValue.value));
 	const requestSequence = ++schemaFetchSequence;
 
 	let response: apiResponse<{ schema: Schema; data: Item }>;
@@ -347,7 +347,10 @@ async function UPDATE() {
 
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = toRaw(modelValue.value);
+			const bodyContent = stripComputedKeys(
+				schema.value,
+				toRaw(modelValue.value),
+			);
 
 			if (props.onBeforeUpdate)
 				modelValue.value = props.onBeforeUpdate(bodyContent);
@@ -402,7 +405,7 @@ async function UPDATE() {
 async function DELETE() {
 	if (Loading.value.DELETE) return;
 
-	const bodyContent = toRaw(modelValue.value);
+	const bodyContent = stripComputedKeys(schema.value, toRaw(modelValue.value));
 
 	if (props.onBeforeDelete) props.onBeforeDelete(bodyContent);
 
@@ -459,7 +462,10 @@ async function CREATE() {
 
 	formValidationRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = toRaw(modelValue.value);
+			const bodyContent = stripComputedKeys(
+				schema.value,
+				toRaw(modelValue.value),
+			);
 
 			if (props.onBeforeCreate)
 				modelValue.value = props.onBeforeCreate(bodyContent);

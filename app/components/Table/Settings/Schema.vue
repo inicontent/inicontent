@@ -51,7 +51,7 @@
 						</NButtonGroup>
 
 						<NButtonGroup v-if="!isDisabled(element.key) && !$device.isMobile">
-							<NTooltip :delay="1500">
+							<NTooltip v-if="!isComputedField(element)" :delay="1500">
 								<template #trigger>
 									<NButton round secondary size="small"
 										:type="element.required ? 'error' : 'tertiary'"
@@ -218,21 +218,74 @@
 				</template>
 
 				<NFormItem :label="t('unique')" label-placement="left"
-					v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string)">
+					v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string) && !isComputedField(element)">
 					<NSwitch :value="element.unique ? true : false"
+						:disabled="isComputedField(element)"
 						@update:value="(value) => element.unique = value" :checked-value="true"
 						:unchecked-value="false" />
 				</NFormItem>
-				<NFormItem v-if="element.unique" :label="t('uniqueGroup')">
+				<NFormItem v-if="element.unique && !isComputedField(element)" :label="t('uniqueGroup')">
 					<NSelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
+						:disabled="isComputedField(element)"
 						@update:value="(value) => element.unique = value" :options="uniqueGroupOptions" tag
 						filterable clearable />
 				</NFormItem>
 
-				<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children))"
+				<NFormItem v-if="!element.table && (!element.children || !isArrayOfObjects(element.children)) && !isComputedField(element)"
 					:label="t('regex')">
 					<NInput v-model:value="element.regex" />
 				</NFormItem>
+
+				<NGrid :x-gap="12" :y-gap="12" cols="1 500:3">
+					<NGridItem>
+						<NFormItem
+							v-if="!skipDefaultFields && !element.table && !Array.isArray(element.type) && !['array', 'object'].includes(element.type as string) && (!element.children || !isArrayOfObjects(element.children))"
+							:label="t('computedExpression')">
+							<template #label>
+								<NFlex align="center" :size="4">
+									<span>{{ t('computedExpression') }}</span>
+									<NPopover trigger="click" placement="top-start" scrollable
+										style="width: 360px; max-width: 80vw; max-height: 480px;">
+										<template #trigger>
+											<NButton circle text size="tiny">
+												<template #icon>
+													<NIcon>
+														<Icon name="tabler:question-mark" />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										<NFlex vertical :size="10" style="margin: 4px 0;">
+											<div v-for="section in computedExpressionDocs" :key="section.title">
+												<NText strong style="font-size: 12px; display: block; margin-bottom: 2px;">
+													{{ t(section.title) }}
+												</NText>
+												<NText depth="2" style="font-size: 12.5px; line-height: 1.55; display: block;">
+													{{ t(section.body) }}
+												</NText>
+											</div>
+										</NFlex>
+									</NPopover>
+								</NFlex>
+							</template>
+							<NInput :value="computedExprOf(element)"
+								@update:value="(v) => onComputedInput(element, v)"
+								:placeholder="t('computedExpressionPlaceholder')" />
+						</NFormItem>
+					</NGridItem>
+					<NGridItem>
+						<NFormItem v-if="showFieldAffixes(element)" :label="t('computedPrefix')">
+							<NInput v-model:value="element.prefix"
+								:placeholder="t('computedAffixPlaceholder')" />
+						</NFormItem>
+					</NGridItem>
+					<NGridItem>
+						<NFormItem v-if="showFieldAffixes(element)" :label="t('computedSuffix')">
+							<NInput v-model:value="element.suffix"
+								:placeholder="t('computedAffixPlaceholder')" />
+						</NFormItem>
+					</NGridItem>
+				</NGrid>
 
 				<LazyTableSettingsSchema
 					v-if="!Array.isArray(element.type) && ['array', 'object'].includes(element.type) && isArrayOfObjects(element.children)"
@@ -274,6 +327,7 @@ import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
 import type { DataTableColumns, SelectOption } from "naive-ui";
 import { VueDraggable } from "vue-draggable-plus";
 import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components";
+import { N } from "vue-router/dist/index-BN0B0y8a.js";
 
 const widthOptions = [
 	{
@@ -325,7 +379,7 @@ function fieldActionOptions(element: Field) {
 }
 
 function onFieldAction(action: string, element: Field, index: number) {
-	if (action === "required") element.required = !element.required;
+	if (action === "required" && !isComputedField(element)) element.required = !element.required;
 	else if (action === "delete") schema.value.splice(index, 1);
 	else if (action.startsWith("width-"))
 		element.width = Number(action.slice("width-".length));
@@ -507,7 +561,7 @@ const database = useState<Database>("database");
 const table = useState<Table>("table");
 
 function changeFieldType(
-	{ id, key, required, children, width }: any,
+	{ id, key, required, children, width, computed, prefix, suffix }: any,
 	newType: string,
 ): any {
 	switch (newType) {
@@ -535,6 +589,9 @@ function changeFieldType(
 				...(handleSelectedSchemaType(newType) as any),
 				width,
 				required,
+				computed: newType === "computed" ? (computed ?? "") : computed,
+				prefix,
+				suffix,
 			};
 	}
 }
@@ -780,6 +837,40 @@ function onKeyInput(element: Field, v: string) {
 	}, 200);
 	keyCommitTimers.set(id, timeout);
 }
+
+// Commit a computed expression on the field (empty input removes it). Setting a
+// computed expression clears required/unique/regex: the engine rejects fields
+// that are both computed and any of those (COMPUTED_FIELD_CONFLICT).
+function onComputedInput(element: Field, v: string) {
+	const expr = v.trim();
+	if (!expr) {
+		delete element.computed;
+		return;
+	}
+	element.computed = expr;
+	delete element.required;
+	delete element.unique;
+	delete element.regex;
+}
+
+// The prefix/suffix display decorations apply to every scalar number field
+// (they are pickable from the Number group in the add-field menu) as well as
+// any computed column, whose values are typically numbers too.
+function showFieldAffixes(element: Field) {
+	return isComputedField(element) || element.type === "number";
+}
+
+// Sections rendered inside the computed-expression docs popover: title/body
+// pairs, both translation keys of the `computedExpressionDocs` locale block.
+const computedExpressionDocs = [
+	{ title: "computedExpressionDocs.whatIsIt", body: "computedExpressionDocs.whatIsItBody" },
+	{ title: "computedExpressionDocs.referencing", body: "computedExpressionDocs.referencingBody" },
+	{ title: "computedExpressionDocs.operators", body: "computedExpressionDocs.operatorsBody" },
+	{ title: "computedExpressionDocs.functions", body: "computedExpressionDocs.functionsBody" },
+	{ title: "computedExpressionDocs.decimals", body: "computedExpressionDocs.decimalsBody" },
+	{ title: "computedExpressionDocs.links", body: "computedExpressionDocs.linksBody" },
+	{ title: "computedExpressionDocs.notes", body: "computedExpressionDocs.notesBody" },
+];
 </script>
 
 <style scoped>

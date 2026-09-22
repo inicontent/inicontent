@@ -15,6 +15,11 @@ const CLIPBOARD_TAG = "INISON_SCHEMA_FIELDS";
 function copyableField(field: Field): Record<string, unknown> {
 	const { render, onCreate, onDelete, children, ...rest } = field;
 	const cleaned = rest as Record<string, unknown>;
+	// Computed expressions are id-based once compiled: copying the persisted
+	// `{ expr, ast }` across tables would retarget fields by the wrong ids, so
+	// always carry the raw expression (the destination recompiles it).
+	if (cleaned.computed !== undefined)
+		cleaned.computed = computedExprOf(field) ?? "";
 	if (children === undefined) return cleaned;
 	if (isArrayOfObjects(children))
 		return {

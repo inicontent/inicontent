@@ -61,8 +61,9 @@ const currentValue = computed({
 })
 
 // ── When the current language isn't the primary language, disable inline table edit feature ──
+// Computed columns are read-only: their values come from the expression engine.
 const isEditable = computed(
-	() => !isArrayOfObjects(fieldRef.value.children),
+	() => !isArrayOfObjects(fieldRef.value.children) && !isComputedField(fieldRef.value),
 )
 const isAssetField = computed(
 	() => fieldRef.value.type === "asset" || fieldRef.value.table === "assets",

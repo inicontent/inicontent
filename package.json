@@ -11,6 +11,7 @@
 		"dev": "nuxt dev",
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
+		"test": "node --test \"tests/*.test.ts\"",
 		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {
@@ -35,8 +36,8 @@
 		"echarts": "^6.0.0",
 		"html2canvas": "^1.4.1",
 		"idb": "^8.0.3",
-		"inibase": "1.5.7",
-		"inidot": "latest",
+		"inibase": "3.1.0",
+		"inidot": "^2.0.0",
 		"inison": "^2.0.1",
 		"jscanify": "^1.4.3",
 		"jspdf": "^4.2.1",
@@ -53,5 +54,10 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8"
+	},
+	"pnpm": {
+		"overrides": {
+			"inibase": "link:../inibase"
+		}
 	}
 }

@@ -354,6 +354,34 @@ export default {
 		unique: "Unique",
 		uniqueGroup: "Groupe unique",
 		regex: "Expression régulière",
+		computedExpression: "Expression calculée",
+		computedExpressionPlaceholder: "ex. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionDocs: {
+			whatIsIt: "Qu'est-ce que c'est ?",
+			whatIsItBody:
+				"Un champ calculé est évalué automatiquement par le moteur à chaque enregistrement de la ligne. Le résultat est stocké sur la ligne et est strictement en lecture seule — il ne peut être ni modifié manuellement ni envoyé lors de la création/mise à jour d'enregistrements.",
+			referencing: "Référencer des champs",
+			referencingBody:
+				"Référencez d'autres champs par leur identifiant numérique, affiché sous forme de #id sous le nom du champ. Ex. : `2 , 3` multiplie le champ #2 par le champ #3.",
+			operators: "Opérateurs",
+			operatorsBody:
+				"`+` addition, `-` soustraction, `,` multiplication, `/` division, `%` modulo, parenthèses `(...)` pour grouper.",
+			functions: "Fonctions de tableau",
+			functionsBody:
+				"Agrègent les éléments d'un champ de type tableau d'objets : `sum(id)` total, `count(id)` nombre d'éléments, `avg(id)` moyenne, `min(id)` minimum, `max(id)` maximum.",
+			decimals: "Décimales",
+			decimalsBody:
+				"Il n'y a pas de nombres décimaux — `.` est réservé aux liens. Utilisez la division : `314 / 100` donne 3.14.",
+			tables: "Tables",
+			tablesBody:
+				"Référencez des champs à l'intérieur d'une table liée en utilisant `.` : `3.4` lit le champ #4 de la ligne liée par le champ #3.",
+			notes: "Remarques",
+			notesBody:
+				"Un champ ne peut pas être calculé et requis / unique / regex en même temps — ces derniers sont effacés quand vous définissez une expression. Les champs calculés sont réévalués dans l'ordre de leurs dépendances, un champ calculé peut donc référencer un autre champ calculé.",
+		},
+		computedPrefix: "Préfixe",
+		computedSuffix: "Suffixe",
+		computedAffixPlaceholder: "Affichage uniquement — ex. $ ou %",
 		uploadParams: "Paramètres de téléchargement",
 		minimumItems: "Nombre minimum d'éléments",
 		maximumItems: "Nombre maximum d'éléments",
@@ -425,6 +453,7 @@ export default {
 			longText: "Texte long",
 			html: "Éditeur HTML",
 			number: "Nombre",
+			computed: "Nombre calculé",
 			password: "Mot de passe",
 			link: "Lien",
 			email: "Email",

@@ -1,11 +1,20 @@
 <template>
 	<NFlex>
-		<Field
-			v-for="field of formatedSchema"
-			:field="field"
-			:item="modelValue"
-			v-model="modelValue[field.key]"
-		/>
+		<template v-for="field of formatedSchema" :key="field.id ?? field.key">
+			<Field
+				v-if="!isComputedField(field)"
+				:field="field"
+				:item="modelValue"
+				v-model="modelValue[field.key]"
+			/>
+			<NFormItem
+				v-else
+				:style="{ flex: '1 1 100%' }"
+				:label="field.labelKey ? t(field.labelKey) : (field.label ?? t(field.key))"
+			>
+				<DataValue :field="field" :value="modelValue[field.key]" />
+			</NFormItem>
+		</template>
 	</NFlex>
 </template>
 

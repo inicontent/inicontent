@@ -353,6 +353,34 @@ export default {
 		unique: "Único",
 		uniqueGroup: "Grupo único",
 		regex: "Expresión regular",
+		computedExpression: "Expresión calculada",
+		computedExpressionPlaceholder: "p. ej. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionDocs: {
+			whatIsIt: "¿Qué es?",
+			whatIsItBody:
+				"Un campo calculado lo evalúa el motor automáticamente cada vez que se guarda la fila. El resultado se almacena en la fila y es estrictamente de solo lectura: no se puede editar manualmente ni enviar al crear/actualizar registros.",
+			referencing: "Referenciar campos",
+			referencingBody:
+				"Referencia otros campos por su id numérico, que se muestra como #id bajo el nombre del campo. Ej.: `2 , 3` multiplica el campo #2 por el campo #3.",
+			operators: "Operadores",
+			operatorsBody:
+				"`+` suma, `-` resta, `,` multiplicación, `/` división, `%` módulo, paréntesis `(...)` para agrupar.",
+			functions: "Funciones de matriz",
+			functionsBody:
+				"Agregan los elementos de un campo tipo matriz de objetos: `sum(id)` total, `count(id)` elementos, `avg(id)` promedio, `min(id)` mínimo, `max(id)` máximo.",
+			decimals: "Decimales",
+			decimalsBody:
+				"No hay números decimales — `.` está reservado para los enlaces. Usa la división: `314 / 100` da 3.14.",
+			tables: "Tablas",
+			tablesBody:
+				"Referencia campos dentro de una tabla relacionada usando `.`: `3.4` lee el campo #4 de la fila enlazada por el campo #3.",
+			notes: "Notas",
+			notesBody:
+				"Un campo no puede ser calculado y requerido / único / regex a la vez; se borran al definir una expresión. Los campos calculados se reevalúan en orden de dependencias, por lo que uno puede referenciar a otro campo calculado.",
+		},
+		computedPrefix: "Prefijo",
+		computedSuffix: "Sufijo",
+		computedAffixPlaceholder: "Solo visual — p. ej. $ o %",
 		uploadParams: "Parámetros de carga",
 		minimumItems: "Número mínimo de elementos",
 		maximumItems: "Número máximo de elementos",
@@ -424,6 +452,7 @@ export default {
 			longText: "Texto largo",
 			html: "Editor HTML",
 			number: "Número",
+			computed: "Número calculado",
 			password: "Contraseña",
 			link: "Enlace",
 			email: "Correo electrónico",

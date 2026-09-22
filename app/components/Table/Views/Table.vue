@@ -1140,6 +1140,7 @@ async function setColumns(skipVisualWidths = false) {
 										"updatedAt",
 										"updatedBy",
 									].includes(field.key) &&
+									!isComputedField(field) &&
 									Language.value === database.value?.primaryLanguage
 								? h(LazyColumnEdit, {
 										editKey: `${row.id ?? "row"}-${field.key}`,
@@ -1158,7 +1159,7 @@ async function setColumns(skipVisualWidths = false) {
 												}/${row.id}`,
 												{
 													method: "PUT",
-													body: row,
+													body: stripComputedKeys(table.value?.schema, row),
 													params: {
 														return: false,
 														locale: Language.value,

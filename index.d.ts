@@ -83,6 +83,12 @@ declare global {
 			| "quarterrange"
 			| "week";
 		expand?: boolean;
+		// Frontend-only display affixes for number columns (plain or computed) —
+		// pickable from the Number group in the add-field menu and editable on any
+		// number field. Stored on the field so they survive schema reloads, but
+		// never sent to the expression engine. `suffix` doubles as the asset-field
+		// URL suffix; the two never co-occur on one field.
+		prefix?: string;
 		suffix?: string;
 		optimize?: boolean;
 		where?: string | Record<string, any>;

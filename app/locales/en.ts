@@ -47,6 +47,36 @@ export default {
 		noFieldsToCopy: "There are no fields to copy",
 		cutSuccessfully: "Cut successfully",
 
+		// Computed fields
+		computedExpression: "Computed expression",
+		computedExpressionPlaceholder: "e.g. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionDocs: {
+			whatIsIt: "What is it?",
+			whatIsItBody:
+				"A computed field is evaluated automatically every time the row is saved. The result is stored on the row and is strictly read-only — it can't be edited manually or sent when creating/updating records.",
+			referencing: "Referencing fields",
+			referencingBody:
+				"Reference other fields by their numeric id, shown as #id under the field name. E.g. `2 , 3` multiplies field #2 by field #3.",
+			operators: "Operators",
+			operatorsBody:
+				"`+` add, `-` subtract, `*` multiply, `/` divide, `%` modulo, parentheses `(...)` group.",
+			functions: "Array functions",
+			functionsBody:
+				"Aggregate over the elements of an array-of-objects field: `sum(id)` total, `count(id)` elements, `avg(id)` average, `min(id)` minimum, `max(id)` maximum.",
+			decimals: "Decimals",
+			decimalsBody:
+				"There are no decimal numbers — `.` is reserved for links. Use division instead: `314 / 100` gives 3.14.",
+			tables: "Tables",
+			tablesBody:
+				"Reference fields within a related table using `.`: `3.4` reads field #4 of the row linked by field #3.",
+			notes: "Notes",
+			notesBody:
+				"A field can't be computed and required / unique / regex at the same time — they are cleared when you set an expression. Computed fields are re-evaluated in dependency order, so one can reference another computed field.",
+		},
+		computedPrefix: "Prefix",
+		computedSuffix: "Suffix",
+		computedAffixPlaceholder: "Display only — e.g. $ or %",
+
 		// Field types that differ from default
 		fields: {
 			html: "Rich Editor",
@@ -57,6 +87,7 @@ export default {
 			monthRange: "Month range",
 			yearRange: "Year range",
 			quarterRange: "Quarter range",
+			computed: "Computed number",
 		},
 
 		apiDocs: {

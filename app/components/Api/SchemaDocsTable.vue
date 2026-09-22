@@ -18,6 +18,7 @@ interface SchemaDocRow {
 	required: boolean;
 	requiredText: string;
 	descriptionText: string;
+	computedText?: string;
 	children?: SchemaDocRow[];
 }
 
@@ -66,15 +67,25 @@ const columns = computed<DataTableColumns<SchemaDocRow>>(() => [
 	{
 		title: t("required"),
 		key: "requiredText",
-		width: 120,
+		width: 160,
 		render: (rowData) =>
-			rowData.required
-				? h(NText, { type: "success" }, { default: () => rowData.requiredText })
-				: h(
+			rowData.computedText
+				? h(
 						NText,
-						{ type: "default" },
-						{ default: () => rowData.requiredText },
-					),
+						{ type: "info", style: "white-space: nowrap;" },
+						{ default: () => `fx · ${rowData.computedText}` },
+					)
+				: rowData.required
+					? h(
+							NText,
+							{ type: "success" },
+							{ default: () => rowData.requiredText },
+						)
+					: h(
+							NText,
+							{ type: "default" },
+							{ default: () => rowData.requiredText },
+						),
 	},
 	{
 		title: t("description"),
@@ -118,7 +129,13 @@ function renderNestedTable(children: SchemaDocRow[]) {
 								),
 								h("td", null, child.keyText),
 								h("td", null, child.typeText),
-								h("td", null, child.requiredText),
+								h(
+									"td",
+									null,
+									child.computedText
+										? `fx · ${child.computedText}`
+										: child.requiredText,
+								),
 								h("td", null, child.descriptionText),
 							]),
 						),
@@ -150,6 +167,7 @@ function mapSchema(schema: Schema, parentPath: string[] = []): SchemaDocRow[] {
 			required: Boolean(field.required),
 			requiredText: field.required ? t("required") : t("optional"),
 			descriptionText: field.description || "—",
+			computedText: computedExprOf(field),
 			children: nestedChildren,
 		};
 	});
