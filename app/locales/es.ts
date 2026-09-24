@@ -70,6 +70,16 @@ export default {
 		role: "Rol",
 		item: "Elemento",
 		anItem: "Un elemento",
+		newItem: "Nuevo elemento",
+		asFollow: "como sigue",
+		latestActivities: "Actividades recientes",
+		revertedToVersion: "Restaurado a versión",
+		revertToVersion: "Restaurar a versión",
+		revertConfirmMessage:
+			"Esto restaurará el elemento a su estado en el momento seleccionado. ¿Estás seguro?",
+		revert: "Restaurar",
+		revertSuccess: "Elemento restaurado exitosamente",
+		revertFailed: "Error al restaurar el elemento",
 
 		// Navigation
 		home: "Inicio",
@@ -187,6 +197,8 @@ export default {
 
 		compression: {
 			label: "Compresión de datos",
+			description:
+				"La compresión reduce el espacio utilizado pero puede ralentizar los resultados",
 			videoLarge:
 				"Video grande detectado ({size}). Lo optimizaremos localmente antes de subirlo.",
 			videoHuge:
@@ -318,6 +330,8 @@ export default {
 		prepend: "Prefijo",
 		recentItemsAppearAtTheTop: "Los elementos recientes aparecen arriba",
 		cache: "Caché",
+		cacheDescription:
+			"La caché muestra los resultados más rápido pero puede aumentar el tamaño de la base de datos",
 		clearCache: "Limpiar caché",
 		log: "Registro",
 		enableActivityLog: "Activar registro de actividad",
@@ -354,29 +368,35 @@ export default {
 		uniqueGroup: "Grupo único",
 		regex: "Expresión regular",
 		computedExpression: "Expresión calculada",
-		computedExpressionPlaceholder: "p. ej. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionPlaceholder: "p. ej. sum(5 * 6)",
 		computedExpressionDocs: {
 			whatIsIt: "¿Qué es?",
 			whatIsItBody:
-				"Un campo calculado lo evalúa el motor automáticamente cada vez que se guarda la fila. El resultado se almacena en la fila y es estrictamente de solo lectura: no se puede editar manualmente ni enviar al crear/actualizar registros.",
+				"Una columna calculada la recalcula el motor cada vez que se guarda la fila. El resultado se almacena en la fila, es de solo lectura y nunca puede enviarse al crear o actualizar registros. El prefijo y el sufijo solo cambian la forma de mostrarlo.",
+			example: "Ejemplo real — total de un pedido",
+			exampleBody:
+				"Dale a la tabla un array `items` con `quantity` (id 5) y `price` (id 6), y este campo calcula el total de cada elemento:\n`total = sum(5 * 6)`\n`items: [{quantity: 2, price: 250}, {quantity: 1, price: 100}]`\n`→ total = (2 × 250) + (1 × 100) = 600`",
 			referencing: "Referenciar campos",
 			referencingBody:
-				"Referencia otros campos por su id numérico, que se muestra como #id bajo el nombre del campo. Ej.: `2 , 3` multiplica el campo #2 por el campo #3.",
+				"Cada campo se referencia por el número entre paréntesis bajo su nombre, p. ej. `items.quantity (5)` es el campo #5, la fila `quantity` dentro de `items`.\nUn número que coincide con un id de campo ES ese campo; un número que no coincide con ninguno es un número normal. Así, `6 / 4` divide el campo #6 por el campo #4, mientras que `314 / 100` divide por 100 (no existe el campo #100).",
 			operators: "Operadores",
 			operatorsBody:
-				"`+` suma, `-` resta, `,` multiplicación, `/` división, `%` módulo, paréntesis `(...)` para agrupar.",
-			functions: "Funciones de matriz",
+				"`+` suma, `-` resta, `*` multiplicación, `/` división, `%` módulo, `(...)` para agrupar.\n`* / %` ligan más fuerte que `+ -`: `2 * 3 + 4` es 10, `2 * (3 + 4)` es 14.",
+			functions: "Funciones de array",
 			functionsBody:
-				"Agregan los elementos de un campo tipo matriz de objetos: `sum(id)` total, `count(id)` elementos, `avg(id)` promedio, `min(id)` mínimo, `max(id)` máximo.",
+				"`sum`, `count`, `avg`, `min` y `max` recorren los elementos de un campo tipo array de objetos. El argumento es una expresión completa evaluada una vez por elemento y luego agregada:\n`sum(5 * 6)` = suma de `cantidad × precio` por elemento; `count(5)` = número de elementos; `avg(5)` = promedio; `min(5)` / `max(5)` = mínimo / máximo.",
 			decimals: "Decimales",
 			decimalsBody:
-				"No hay números decimales — `.` está reservado para los enlaces. Usa la división: `314 / 100` da 3.14.",
-			tables: "Tablas",
+				"No hay literales decimales — `.` está reservado para enlaces, así que `3.14` es una ruta, nunca 3.14. Los resultados fraccionarios sí son válidos: `314 / 100` da 3.14.",
+			tables: "Tablas relacionadas",
 			tablesBody:
-				"Referencia campos dentro de una tabla relacionada usando `.`: `3.4` lee el campo #4 de la fila enlazada por el campo #3.",
+				"Salta a una tabla relacionada con `.`: `3.4` lee el campo #4 de la fila enlazada por el campo #3. También dentro de funciones: `sum(5 * 4.2)` = `cantidad × product.price`.",
+			children: "Campos calculados en hijos",
+			childrenBody:
+				"Un campo calculado en un hijo de una columna tipo array de objetos se recalcula una vez por elemento. Referencia los campos del propio elemento por id y salta a tablas relacionadas con `.`: con `items.quantity` = 4 e `items.product` = 3 (los productos tienen `price` = 2), `lineTotal = 4 * 3.2` calcula `cantidad × product.price` para cada elemento.\nUn operando ausente o nulo escribe 0 en lugar de fallar. La del hijo es de solo lectura — enviarla al guardar se rechaza — y el campo hijo debe ser `number`.\nEn un contador del panel, elige el campo con punto (p. ej. `items.lineTotal`) con la operación Suma.",
 			notes: "Notas",
 			notesBody:
-				"Un campo no puede ser calculado y requerido / único / regex a la vez; se borran al definir una expresión. Los campos calculados se reevalúan en orden de dependencias, por lo que uno puede referenciar a otro campo calculado.",
+				"Un campo no puede ser calculado y requerido / único / regex a la vez; se borran al definir una expresión. Los campos calculados se reevalúan en orden de dependencias, así que uno puede usar otro campo calculado. Las expresiones inválidas se rechazan al guardar el esquema.",
 		},
 		computedPrefix: "Prefijo",
 		computedSuffix: "Sufijo",
@@ -845,6 +865,7 @@ export default {
 		dashboardSettings: "Configuración del panel",
 		editDashboard: "Editar panel",
 		createDashboard: "Crear panel",
+		dashboardPreview: "Vista previa del panel",
 		widgets: "Widgets",
 		widget: "Widget",
 		addWidget: "Añadir widget",

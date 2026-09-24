@@ -310,19 +310,26 @@ declare global {
 		id: string;
 		icon?: string;
 		type: WidgetType;
-		title: string;
-		table: string;
-		field?: string;
+		title?: string;
+		/** Source table id (not slug). */
+		table?: string;
+		/** Field id (not key). */
+		field?: string | number;
 		operation?: WidgetOperation;
-		groupBy?: string;
-		dateField?: string;
+		/** Field id (not key). */
+		groupBy?: string | number;
+		/** Field id (not key); the reserved system keys `createdAt`/`updatedAt`
+		 *  are stored as-is because they have no schema id. */
+		dateField?: string | number;
 		dateRange?: WidgetDateRange;
 		limit?: number;
 		color?: string;
 		size?: WidgetSize;
 		searchArray?: searchType;
-		columns?: string[];
-		sortField?: string;
+		/** Field ids (not keys). */
+		columns?: (string | number)[];
+		/** Field id (not key). */
+		sortField?: string | number;
 		sortOrder?: "asc" | "desc";
 	};
 

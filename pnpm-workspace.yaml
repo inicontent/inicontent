@@ -1,5 +1,11 @@
 allowBuilds:
-  "@parcel/watcher": false
+  re2: false
+  canvas: true
+  tesseract.js: true
+  '@parcel/watcher': false
   core-js: false
   esbuild: false
-  re2: false
+minimumReleaseAgeExclude:
+- inibase
+- inidot
+- inison

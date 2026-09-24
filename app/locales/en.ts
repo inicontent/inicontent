@@ -15,6 +15,27 @@ export default {
 		post: "Create",
 		put: "Update",
 
+		// Log actions
+		created: "Created",
+		updated: "Updated",
+		deleted: "Deleted",
+		removed: "Removed",
+		set: "Set",
+		unset: "Unset",
+		add: "Added",
+		update: "Updated",
+		newItem: "New item",
+		anItem: "An item",
+		asFollow: "as follows",
+		latestActivities: "Latest activities",
+		revertedToVersion: "Reverted to version",
+		revertToVersion: "Revert to version",
+		revertConfirmMessage:
+			"This will restore the item to its state at the selected time. Are you sure?",
+		revert: "Revert",
+		revertSuccess: "Item reverted successfully",
+		revertFailed: "Failed to revert item",
+
 		// API
 		apiDocumentation: "API Documentation",
 
@@ -49,29 +70,35 @@ export default {
 
 		// Computed fields
 		computedExpression: "Computed expression",
-		computedExpressionPlaceholder: "e.g. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionPlaceholder: "e.g. sum(5 * 6)",
 		computedExpressionDocs: {
 			whatIsIt: "What is it?",
 			whatIsItBody:
-				"A computed field is evaluated automatically every time the row is saved. The result is stored on the row and is strictly read-only — it can't be edited manually or sent when creating/updating records.",
+				"A computed column is recalculated by the engine every time the row is saved. The result is stored on the row, is read-only, and can never be sent when creating or updating records. Prefix and suffix only change how the value is displayed.",
+			example: "Worked example — order total",
+			exampleBody:
+				"Give the table an array `items` with `quantity` (id 5) and `price` (id 6), then this field computes the total over every item:\n`total = sum(5 * 6)`\n`items: [{quantity: 2, price: 250}, {quantity: 1, price: 100}]`\n`→ total = (2 × 250) + (1 × 100) = 600`",
 			referencing: "Referencing fields",
 			referencingBody:
-				"Reference other fields by their numeric id, shown as #id under the field name. E.g. `2 , 3` multiplies field #2 by field #3.",
+				"Each field is referenced by the number in parentheses shown under its name — e.g. `items.quantity (5)` means field #5, the `quantity` row inside `items`.\nA number that matches a field id IS that field; a number that matches no field is a plain number. So `6 / 4` divides field #6 by field #4, while `314 / 100` divides by 100 (there is no field #100).",
 			operators: "Operators",
 			operatorsBody:
-				"`+` add, `-` subtract, `*` multiply, `/` divide, `%` modulo, parentheses `(...)` group.",
+				"`+` add, `-` subtract, `*` multiply, `/` divide, `%` modulo, `(...)` grouping.\n`* / %` bind tighter than `+ -`: `2 * 3 + 4` equals 10, `2 * (3 + 4)` equals 14.",
 			functions: "Array functions",
 			functionsBody:
-				"Aggregate over the elements of an array-of-objects field: `sum(id)` total, `count(id)` elements, `avg(id)` average, `min(id)` minimum, `max(id)` maximum.",
+				"`sum`, `count`, `avg`, `min` and `max` run over the elements of an array-of-objects field. The argument is a full expression evaluated once per element, then aggregated:\n`sum(5 * 6)` = sum of `quantity × price` per item; `count(5)` = number of elements; `avg(5)` = average; `min(5)` / `max(5)` = lowest / highest.",
 			decimals: "Decimals",
 			decimalsBody:
-				"There are no decimal numbers — `.` is reserved for links. Use division instead: `314 / 100` gives 3.14.",
-			tables: "Tables",
+				"There are no decimal literals — `.` is reserved for links, so `3.14` is a path, never 3.14. Fractional results are fine: `314 / 100` gives 3.14.",
+			tables: "Related tables",
 			tablesBody:
-				"Reference fields within a related table using `.`: `3.4` reads field #4 of the row linked by field #3.",
+				"Hop into a linked table with `.`: `3.4` reads field #4 of the row linked by field #3. Hops work inside functions too: `sum(5 * 4.2)` = `quantity × product.price`.",
+			children: "Computed children",
+			childrenBody:
+				"A computed field on a child of an array-of-objects column is recalculated once per element. Reference the element's own fields by id and hop into linked tables with `.`: with `items.quantity` = 4 and `items.product` = 3 (products have `price` = 2), `lineTotal = 4 * 3.2` computes `quantity × product.price` for every element.\nMissing or null operands write 0 instead of failing. Child values are read-only — sending them back when saving is rejected — and the child field must be `number`.\nIn a dashboard counter, pick the dotted field (e.g. `items.lineTotal`) with the Sum operation.",
 			notes: "Notes",
 			notesBody:
-				"A field can't be computed and required / unique / regex at the same time — they are cleared when you set an expression. Computed fields are re-evaluated in dependency order, so one can reference another computed field.",
+				"A field can't be computed and required / unique / regex at the same time — those are cleared when you set an expression. Computed fields are evaluated in dependency order, so one computed field can use another. Invalid expressions are rejected when the schema is saved.",
 		},
 		computedPrefix: "Prefix",
 		computedSuffix: "Suffix",
@@ -113,6 +140,12 @@ export default {
 				"isSignedIn — set to true to check if the session is valid",
 			searchParam: "search — search query encoded in Inison format",
 			columnsParam: "columns — comma-separated list of fields to return",
+			sumColumnsParam:
+				"columns — a column or comma-separated list; with nested, a dotted path like items.quantity",
+			sumWhereParam:
+				"where — optional Inison-encoded criteria; keys that resolve as children of the array root become per-element predicates",
+			sumNestedParam:
+				"nested — set to true to sum element-wise over an array-of-objects column",
 			assetsUploadTitle: "Uploading assets",
 			assetsUploadIntro:
 				"Send a POST request to /assets or /assets/<folder> with one or more objects that describe the files you plan to upload.",
@@ -162,6 +195,9 @@ export default {
 					"Returns the schema definition for the {table} table.",
 				logsTitle: "Activity logs",
 				logsDescription: "Returns recent activity logs for the {table} table.",
+				sumTitle: "Sum columns",
+				sumDescription:
+					"Sum one or more columns of the {table} table. Pass a dotted column (e.g. items.quantity) with nested=true to sum element-wise over an array-of-objects column.",
 			},
 			auth: {
 				title: "Authentication endpoints",
@@ -217,6 +253,8 @@ export default {
 
 		compression: {
 			label: "Compression",
+			description:
+				"Compression reduces used space but might slow down results",
 			videoLarge:
 				"Large video detected ({size}). We'll optimize it locally before uploading.",
 			videoHuge:
@@ -270,6 +308,8 @@ export default {
 		enableRealtimeSync: "Enable realtime data sync",
 		realtimeEnabled: "Realtime sync enabled",
 		connectingToRealtime: "Connecting to realtime sync...",
+		cacheDescription:
+			"Cache shows results faster but might increase database size",
 		tableSchedules: "Table schedules",
 		addSchedule: "Add schedule",
 		runNow: "Run now",
@@ -478,6 +518,7 @@ export default {
 		dashboardSettings: "Dashboard settings",
 		editDashboard: "Edit dashboard",
 		createDashboard: "Create dashboard",
+		dashboardPreview: "Dashboard preview",
 		addWidget: "Add widget",
 		editWidget: "Edit widget",
 		widgetTitle: "Widget title",

@@ -2,6 +2,11 @@ import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
 import renderLabel from "~/composables/renderLabel";
 import { generateSearchString } from "~/composables/search";
+import {
+	resolveWidgetDateField,
+	resolveWidgetField,
+	resolveWidgetTable,
+} from "~/composables/widgetSchema";
 
 type WidgetDataResult = {
 	value: Ref<number | null>;
@@ -11,7 +16,33 @@ type WidgetDataResult = {
 	timeSeries: Ref<{ date: string; value: number }[]>;
 	loading: Ref<boolean>;
 	refresh: () => Promise<void>;
+	/** Schema field the widget aggregates (dotted paths like `items.lineTotal`
+	 *  resolve to the leaf child). Its `prefix`/`suffix` decorate the counter
+	 *  value, mirroring how affixes render in the table cells. */
+	field: Ref<Field | undefined>;
+	/** Columns the table widget renders (table type only): explicit widget
+	 *  column keys, else the table's default columns, else the first 8 schema
+	 *  fields. The fetch requests exactly these so rows don't carry every
+	 *  schema column — same approach as the table page (`options.columns`). */
+	fields: Ref<Field[]>;
 };
+
+type DashboardDataCacheEntry = {
+	signature: string;
+	value: number | null;
+	data: Item[];
+	total: number;
+	groups: { name: string; value: number }[];
+	timeSeries: { date: string; value: number }[];
+};
+
+/** Per-widget payload cache keyed by database/session/widget id. Widget
+ *  components remount when toggling between view and edit mode (the two modes
+ *  render different DOM trees), so without a cache every toggle would re-fetch
+ *  the whole dashboard. On mount the composable restores the last fetched
+ *  payload when the effective signature matches; a signature mismatch (edited
+ *  filters, changed date range, …) still refetches. */
+const dashboardWidgetCache = new Map<string, DashboardDataCacheEntry>();
 
 export function useDashboardData(
 	widget: Widget,
@@ -32,6 +63,46 @@ export function useDashboardData(
 	const groups = ref<{ name: string; value: number }[]>([]);
 	const timeSeries = ref<{ date: string; value: number }[]>([]);
 	const loading = ref(false);
+
+	// Source table resolved from the widget's stored table id. Every consumer
+	// (field lookups, API paths, column rendering) goes through this, so the
+	// widget keeps working even if the table's slug is later renamed.
+	const sourceTable = computed(() =>
+		resolveWidgetTable(database.value?.tables, widget.table),
+	);
+
+	// Resolve the aggregated field through the widget's table schema. The flat
+	// list from `flattenSchema` keeps top-level fields as-is and turns
+	// array-of-objects children into dotted leaves (`items.lineTotal`), so one
+	// lookup covers both plain and nested counter fields.
+	const field = computed<Field | undefined>(() => {
+		if (widget.field == null) return undefined;
+		return resolveWidgetField(sourceTable.value, widget.field);
+	});
+
+	// Columns the table widget renders. Same "needed columns" approach as the
+	// table page: request only what's displayed instead of every schema column.
+	// Fallback order mirrors the widget component — explicit `widget.columns`
+	// field ids, then the table's default columns, then the first 8 schema
+	// fields.
+	const fields = computed<Field[]>(() => {
+		if (widget.type !== "table") return [];
+		const schema = sourceTable.value?.schema ?? [];
+		if (!schema.length) return [];
+		if (widget.columns?.length) {
+			const byId = schema.filter((f) =>
+				widget.columns?.includes(f.id as number),
+			);
+			if (byId.length) return byId;
+		}
+		if (sourceTable.value?.defaultTableColumns?.length) {
+			const byDefaultId = sourceTable.value.defaultTableColumns
+				.map((id) => schema.find((f) => f.id === id))
+				.filter((f): f is Field => !!f);
+			if (byDefaultId.length) return byDefaultId;
+		}
+		return schema.slice(0, 8);
+	});
 
 	function getDateRangeMs(range?: WidgetDateRange): number | null {
 		const day = 86400000;
@@ -81,11 +152,8 @@ export function useDashboardData(
 		const raw = item[field];
 		if (raw == null) return "unknown";
 		if (typeof raw === "object") {
-			const sourceTable = database.value?.tables?.find(
-				(t) => t.slug === widget.table,
-			);
-			const schema = sourceTable?.schema
-				? flattenSchema(sourceTable.schema as any)
+			const schema = sourceTable.value?.schema
+				? flattenSchema(sourceTable.value.schema as any)
 				: [];
 			const fieldDef = schema.find((f: Field) => f.key === field);
 			if (fieldDef?.table) {
@@ -111,12 +179,9 @@ export function useDashboardData(
 	}
 
 	function getColumnsForField(field: string): string[] {
-		const sourceTable = database.value?.tables?.find(
-			(t) => t.slug === widget.table,
-		);
-		if (!sourceTable?.columns) return [field];
+		if (!sourceTable.value?.columns) return [field];
 		// Find dot-path columns that start with this field (e.g. "المساحة.name")
-		const nested = sourceTable.columns.filter(
+		const nested = sourceTable.value.columns.filter(
 			(col) => col.startsWith(`${field}.`) || col === `${field}.*`,
 		);
 		// Always include the field itself + any nested sub-columns for label rendering
@@ -177,7 +242,7 @@ export function useDashboardData(
 				? ""
 				: `${databaseSlug}/`;
 		return $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${slug}${widget.table}`,
+			`${config.public.apiBase}${slug}${sourceTable.value?.slug}`,
 			{
 				params: {
 					locale: Language.value,
@@ -195,12 +260,55 @@ export function useDashboardData(
 		);
 	}
 
+	/** Split a dotted nested path (`items.quantity`) into its array root and
+	 *  leaf child name, or `undefined` for a plain top-level field. */
+	function splitNested(field: string): [string, string] | undefined {
+		const dot = field.indexOf(".");
+		if (dot === -1) return undefined;
+		return [field.slice(0, dot), field.slice(dot + 1)];
+	}
+
+	/** Server-side sum over a column (`/sum?columns=<field>`). Dotted paths
+	 *  (`items.quantity`) send `nested=true` so the engine aggregates element-
+	 *  wise over the array column; plain columns sum without it. Either way the
+	 *  engine resolves the `where` and aggregates every matching row, so the
+	 *  counter is exact — unlike fetching rows client-side, which is capped at
+	 *  the fetch page size (1000). */
+	async function fetchSum(
+		field: string,
+		where: Record<string, any> | undefined,
+	): Promise<number> {
+		const slug =
+			database.value?.slug === "inicontent" && !databaseSlug
+				? ""
+				: `${databaseSlug}/`;
+		const res = await $fetch<apiResponse<number>>(
+			`${config.public.apiBase}${slug}${sourceTable.value?.slug}/sum`,
+			{
+				params: {
+					locale: Language.value,
+					[`${databaseSlug}_sid`]: sessionID.value,
+					columns: field,
+					...(field.includes(".") ? { nested: true } : {}),
+					...(where ? { where: Inison.stringify(where) } : {}),
+				},
+				credentials: "include",
+			},
+		);
+		return res.result ?? 0;
+	}
+
 	async function refresh() {
 		loading.value = true;
 		try {
+			const signature = widgetSignature.value;
 			const activeDateRange = dateRangeOverride?.value ?? widget.dateRange;
 			const rangeMs = getDateRangeMs(activeDateRange);
-			const dateField = widget.dateField ?? "createdAt";
+			const dateField =
+				resolveWidgetDateField(
+					sourceTable.value,
+					widget.dateField ?? "createdAt",
+				) ?? "createdAt";
 			const whereDateFlat = rangeMs
 				? { [dateField]: `>${Date.now() - rangeMs}` }
 				: undefined;
@@ -221,33 +329,48 @@ export function useDashboardData(
 
 			switch (widget.type) {
 				case "counter": {
-					if (
-						widget.operation === "count" ||
-						!widget.operation ||
-						!widget.field
-					) {
+					const fieldKey = resolveWidgetField(
+						sourceTable.value,
+						widget.field,
+					)?.key;
+					if (widget.operation === "count" || !widget.operation || !fieldKey) {
 						const res = await fetchItems({
 							perPage: 1,
 							columns: ["id"],
 							where,
 						});
 						value.value = res.options?.total ?? 0;
+					} else if (widget.operation === "sum") {
+						// Sums run server-side (`/sum`; dotted fields add
+						// `nested=true`) so the engine resolves the where and
+						// aggregates every matching row — element predicates for
+						// array columns, and no 1000-row fetch cap.
+						value.value = await fetchSum(fieldKey, where);
 					} else {
+						// max / min — aggregated client-side over the fetched
+						// rows; dotted fields flatten the array column first.
+						const nested = splitNested(fieldKey);
 						const res = await fetchItems({
 							perPage: 1000,
-							columns: [widget.field],
+							columns: nested ? [nested[0]] : [fieldKey],
 							where,
 						});
 						const items = res.result ?? [];
-						const nums = items
-							.map((i) => Number(i[widget.field!]))
-							.filter((n) => !Number.isNaN(n));
-						if (widget.operation === "sum")
-							value.value = nums.reduce((a, b) => a + b, 0);
-						else if (widget.operation === "max")
-							value.value = nums.length ? Math.max(...nums) : 0;
+						const nums = items.flatMap((item) => {
+							if (nested) {
+								const elements = item[nested[0]];
+								if (!Array.isArray(elements)) return [];
+								return (elements as Record<string, unknown>[])
+									.filter((element) => element?.[nested[1]] !== undefined)
+									.map((element) => Number(element[nested[1]]));
+							}
+							return [Number(item[fieldKey])];
+						});
+						const cleaned = nums.filter((n) => !Number.isNaN(n));
+						if (widget.operation === "max")
+							value.value = cleaned.length ? Math.max(...cleaned) : 0;
 						else if (widget.operation === "min")
-							value.value = nums.length ? Math.min(...nums) : 0;
+							value.value = cleaned.length ? Math.min(...cleaned) : 0;
 					}
 					break;
 				}
@@ -268,7 +391,11 @@ export function useDashboardData(
 				}
 				case "bar":
 				case "pie": {
-					const field = widget.groupBy ?? widget.field;
+					const fieldRef = widget.groupBy ?? widget.field;
+					const field =
+						fieldRef == null
+							? undefined
+							: resolveWidgetField(sourceTable.value, fieldRef)?.key;
 					if (!field) break;
 					const res = await fetchItems({
 						perPage: 1000,
@@ -280,14 +407,25 @@ export function useDashboardData(
 					break;
 				}
 				case "table": {
+					const sortFieldKey = resolveWidgetField(
+						sourceTable.value,
+						widget.sortField,
+					)?.key;
 					const res = await fetchItems({
 						perPage: widget.limit ?? 10,
-						sort: widget.sortField
+						sort: sortFieldKey
 							? {
-									[widget.sortField]: widget.sortOrder === "desc" ? -1 : 1,
+									[sortFieldKey]: widget.sortOrder === "desc" ? -1 : 1,
 								}
 							: undefined,
-						columns: widget.columns?.length ? widget.columns : undefined,
+						// Only the rendered columns — same "needed columns" approach as
+						// the table page, so rows don't carry every schema column.
+						// Reference fields expand into their nested label sub-columns
+						// (`customer.name`, `customer.*`) so nested table items render,
+						// mirroring formatDatabase's processField.
+						columns: fields.value.length
+							? fields.value.flatMap((f) => getColumnsForField(f.key))
+							: undefined,
 						where,
 					});
 					data.value = res.result ?? [];
@@ -295,6 +433,17 @@ export function useDashboardData(
 					break;
 				}
 			}
+
+			// Only cache successful fetches; a failed fetch leaves the previous
+			// payload in place so the next remount can still restore it.
+			dashboardWidgetCache.set(cacheKey(), {
+				signature,
+				value: value.value,
+				data: data.value,
+				total: total.value,
+				groups: groups.value,
+				timeSeries: timeSeries.value,
+			});
 		} catch (e) {
 			console.error(`[Dashboard] Widget "${widget.title}" fetch error:`, e);
 		} finally {
@@ -302,14 +451,14 @@ export function useDashboardData(
 		}
 	}
 
-	if (dateRangeOverride) {
-		watch(dateRangeOverride, () => refresh());
-	}
-
 	// Re-fetch when the widget's own criteria change (source table, type,
 	// operation, field, filters, sort, …) so inline edits preview live
-	// before the dashboard is saved. A short debounce absorbs rapid
-	// changes while typing in the widget editor.
+	// before the dashboard is saved. The override date range is included too,
+	// so the dashboard-level date picker refetches through the same path.
+	// A short debounce absorbs rapid changes while typing in the widget
+	// editor. The signature is a JSON string, so passing a cloned widget (the
+	// view⇄edit toggle deep-clones the dashboard) with equal criteria does
+	// NOT refetch — only real changes do.
 	const widgetSignature = computed(() =>
 		JSON.stringify({
 			type: widget.type,
@@ -319,6 +468,7 @@ export function useDashboardData(
 			groupBy: widget.groupBy,
 			dateField: widget.dateField,
 			dateRange: widget.dateRange,
+			dateRangeOverride: dateRangeOverride?.value,
 			searchArray: widget.searchArray,
 			sortField: widget.sortField,
 			sortOrder: widget.sortOrder,
@@ -337,5 +487,38 @@ export function useDashboardData(
 		if (refreshTimer) clearTimeout(refreshTimer);
 	});
 
-	return { value, data, total, groups, timeSeries, loading, refresh };
+	// Cache identity: per database/session/widget. Session is part of the key
+	// so a re-login never serves another user's cached rows.
+	function cacheKey(): string {
+		return `${databaseSlug}|${sessionID.value}|${widget.id}`;
+	}
+
+	// Restore the last successful payload synchronously when the widget still
+	// has the same effective signature, so remounts (the view⇄edit toggle
+	// deep-clones the dashboard and rebuilds every widget component) show
+	// their data instantly instead of re-fetching. The fetch itself is
+	// deferred to mount so it only ever runs on the client.
+	const initialSignature = widgetSignature.value;
+	const cached = dashboardWidgetCache.get(cacheKey());
+	if (cached?.signature === initialSignature) {
+		value.value = cached.value;
+		data.value = cached.data;
+		total.value = cached.total;
+		groups.value = cached.groups;
+		timeSeries.value = cached.timeSeries;
+	} else {
+		onMounted(() => refresh());
+	}
+
+	return {
+		value,
+		data,
+		total,
+		groups,
+		timeSeries,
+		loading,
+		refresh,
+		field,
+		fields,
+	};
 }

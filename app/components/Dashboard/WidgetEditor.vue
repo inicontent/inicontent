@@ -4,6 +4,11 @@
 			<NInput v-model:value="model.title" :placeholder="t('widgetTitle')" />
 		</NFormItem>
 
+		<LazyFieldIcon
+			v-model="model.icon"
+			:field="{ key: 'icon', type: 'string', subType: 'icon' }"
+		/>
+
 		<NFormItem :label="t('type')" path="type">
 			<NSelect
 				v-model:value="model.type"
@@ -40,7 +45,7 @@
 		>
 			<NSelect
 				v-model:value="model.field"
-				:options="fieldOptions"
+				:options="counterFieldOptions"
 				:placeholder="t('selectField')"
 				filterable
 				clearable
@@ -155,7 +160,9 @@
 </template>
 
 <script lang="ts" setup>
+import { flattenSchema } from "inibase/utils";
 import { LazyTableSearch } from "#components";
+import { resolveWidgetTable } from "~/composables/widgetSchema";
 
 const props = defineProps<{
 	modelValue: Widget;
@@ -176,14 +183,15 @@ const model = computed({
 // LazyTableSearch writes to its schema model only when empty, so a local
 // ref synced via watcher is safe.
 const widgetSchema = ref<Schema | undefined>(
-	database.value?.tables?.find((t) => t.slug === model.value.table)?.schema,
+	resolveWidgetTable(database.value?.tables, model.value.table)?.schema,
 );
 
 watch(
 	() => model.value.table,
 	(newTable, oldTable) => {
-		widgetSchema.value = database.value?.tables?.find(
-			(t) => t.slug === newTable,
+		widgetSchema.value = resolveWidgetTable(
+			database.value?.tables,
+			newTable,
 		)?.schema;
 		// Source table changed → previously picked fields are invalid
 		if (newTable !== oldTable && oldTable !== undefined) {
@@ -243,27 +251,56 @@ const tableOptions = computed(
 				({ slug, allowedMethods }) =>
 					allowedMethods?.includes("r") && slug !== "dashboards",
 			)
-			.map((table) => ({ label: t(table.slug), value: table.slug })) ?? [],
+			.map((table) => ({ label: t(table.slug), value: table.id })) ?? [],
 );
 
 const selectedTable = computed(() =>
-	database.value?.tables?.find((t) => t.slug === model.value.table),
+	resolveWidgetTable(database.value?.tables, model.value.table),
 );
 
 const fieldOptions = computed(
 	() =>
 		selectedTable.value?.schema?.map((f) => ({
 			label: f.label || f.key,
-			value: f.key,
+			value: f.id,
 		})) ?? [],
 );
+
+// True when the field aggregates to a number (single or multi-typed).
+const isNumberField = (f: Field): boolean => {
+	if (f.type === "number") return true;
+	return (
+		Array.isArray(f.type) &&
+		f.type.some((t) => String(t).toLowerCase() === "number")
+	);
+};
+
+// Counter aggregation fields: the plain fields plus number leaves of
+// array-of-objects children (dotted paths like `items.quantity` and
+// `items.lineTotal`) that the engine can sum element-wise.
+const counterFieldOptions = computed(() => {
+	const flat = fieldOptions.value;
+	const schema = selectedTable.value?.schema;
+	if (!schema?.length) return flat;
+	const leaves = flattenSchema(schema as any).filter(
+		(f: Field) =>
+			f.key.includes(".") &&
+			f.key.split(".").length === 2 && // v1: single nesting level
+			isNumberField(f),
+	);
+	if (!leaves.length) return flat;
+	return [
+		...flat,
+		...leaves.map((f) => ({ label: f.label || f.key, value: f.id })),
+	];
+});
 
 const dateFieldOptions = computed(() => [
 	{ label: "createdAt", value: "createdAt" },
 	{ label: "updatedAt", value: "updatedAt" },
 	...(selectedTable.value?.schema
 		?.filter((f) => f.type === "date" || f.date)
-		.map((f) => ({ label: f.label || f.key, value: f.key })) ?? []),
+		.map((f) => ({ label: f.label || f.key, value: f.id })) ?? []),
 ]);
 
 const showFieldPicker = computed(() => {

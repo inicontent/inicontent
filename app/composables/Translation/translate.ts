@@ -1,4 +1,49 @@
-import { getProperty, hasProperty, setProperty } from "inidot";
+import { getProperty, hasProperty } from "inidot";
+
+/**
+ * Record a missing translation key inside `target`, mirroring the nested
+ * shape inidot's `setProperty` would build for a dotted key.
+ *
+ * Translation keys can be dotted paths (e.g. log action field paths like
+ * `المرفقات.ملفات طباعة[0]`), and a shorter key may already be recorded as
+ * `null` (a plain `t("المرفقات")` miss stores `target.المرفقات = null`).
+ * inidot's `setIn` only creates intermediate nodes for `undefined` values,
+ * so a later deeper miss walks into that `null` and crashes with
+ * `TypeError: null is not an object (evaluating 'cur[key] = value')`.
+ * This upgrades `null` (and any other non-object) intermediates to objects
+ * instead of walking into them, and drops prototype-polluting segments the
+ * same way inidot's parser does.
+ */
+function recordUnfound(target: Record<string, unknown>, path: string) {
+	const segments = path.split(".").filter(Boolean);
+	let node: Record<string, unknown> = target;
+
+	for (let i = 0; i < segments.length; i++) {
+		const segment = segments[i];
+		if (
+			segment === "__proto__" ||
+			segment === "prototype" ||
+			segment === "constructor"
+		)
+			return;
+
+		// Last segment: the leaf key of the missing translation.
+		if (i === segments.length - 1) {
+			node[segment] = null;
+			return;
+		}
+
+		const child = node[segment];
+		if (
+			child === null ||
+			child === undefined ||
+			typeof child !== "object" ||
+			Array.isArray(child)
+		)
+			node[segment] = {};
+		node = node[segment] as Record<string, unknown>;
+	}
+}
 
 function formatUnfoundTranslation(
 	input: string,
@@ -218,7 +263,7 @@ export default function (
 			"unfoundTranslations",
 		);
 		if (!unfoundTranslationsState.value) unfoundTranslationsState.value = {};
-		setProperty(unfoundTranslationsState.value, key, null);
+		recordUnfound(unfoundTranslationsState.value, key);
 	}
 
 	let translation =

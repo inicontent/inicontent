@@ -220,13 +220,11 @@
 				<NFormItem :label="t('unique')" label-placement="left"
 					v-if="!['array', 'object', 'tags'].includes((element.subType ?? element.type) as string) && !isComputedField(element)">
 					<NSwitch :value="element.unique ? true : false"
-						:disabled="isComputedField(element)"
 						@update:value="(value) => element.unique = value" :checked-value="true"
 						:unchecked-value="false" />
 				</NFormItem>
 				<NFormItem v-if="element.unique && !isComputedField(element)" :label="t('uniqueGroup')">
 					<NSelect :value="typeof element.unique === 'boolean' ? undefined : element.unique"
-						:disabled="isComputedField(element)"
 						@update:value="(value) => element.unique = value" :options="uniqueGroupOptions" tag
 						filterable clearable />
 				</NFormItem>
@@ -236,16 +234,14 @@
 					<NInput v-model:value="element.regex" />
 				</NFormItem>
 
-				<NGrid :x-gap="12" :y-gap="12" cols="1 500:3">
+				<NGrid v-if="isComputedField(element)" :x-gap="12" :y-gap="12" cols="1 500:3">
 					<NGridItem>
-						<NFormItem
-							v-if="!skipDefaultFields && !element.table && !Array.isArray(element.type) && !['array', 'object'].includes(element.type as string) && (!element.children || !isArrayOfObjects(element.children))"
-							:label="t('computedExpression')">
+						<NFormItem :label="t('computedExpression')">
 							<template #label>
 								<NFlex align="center" :size="4">
 									<span>{{ t('computedExpression') }}</span>
 									<NPopover trigger="click" placement="top-start" scrollable
-										style="width: 360px; max-width: 80vw; max-height: 480px;">
+										style="width: 400px; max-width: 80vw; max-height: 480px;">
 										<template #trigger>
 											<NButton circle text size="tiny">
 												<template #icon>
@@ -257,14 +253,21 @@
 										</template>
 										<NFlex vertical :size="10" style="margin: 4px 0;">
 											<div v-for="section in computedExpressionDocs" :key="section.title">
-												<NText strong style="font-size: 12px; display: block; margin-bottom: 2px;">
+												<NText strong style="font-size: 12px; display: block; margin-bottom: 4px;">
 													{{ t(section.title) }}
 												</NText>
-												<NText depth="2" style="font-size: 12.5px; line-height: 1.55; display: block;">
-													{{ t(section.body) }}
-												</NText>
+												<div v-for="(line, li) in formatDocs(t(section.body))" :key="li">
+													<NText depth="2" style="font-size: 12.5px; line-height: 1.6; display: block;">
+														<template v-for="(seg, si) in line" :key="si">
+															<code v-if="seg.code" class="doc-code" dir="ltr">{{ seg.text }}</code>
+															<template v-else>{{ seg.text }}</template>
+														</template>
+													</NText>
+												</div>
 											</div>
+	
 										</NFlex>
+
 									</NPopover>
 								</NFlex>
 							</template>
@@ -274,13 +277,13 @@
 						</NFormItem>
 					</NGridItem>
 					<NGridItem>
-						<NFormItem v-if="showFieldAffixes(element)" :label="t('computedPrefix')">
+						<NFormItem :label="t('computedPrefix')">
 							<NInput v-model:value="element.prefix"
 								:placeholder="t('computedAffixPlaceholder')" />
 						</NFormItem>
 					</NGridItem>
 					<NGridItem>
-						<NFormItem v-if="showFieldAffixes(element)" :label="t('computedSuffix')">
+						<NFormItem :label="t('computedSuffix')">
 							<NInput v-model:value="element.suffix"
 								:placeholder="t('computedAffixPlaceholder')" />
 						</NFormItem>
@@ -367,7 +370,10 @@ function fieldActionOptions(element: Field) {
 			label: t("width"),
 			key: "width",
 			children: widthOptions.map((option) => ({
-				label: option.value === (element.width ?? 1) ? `${option.label} ✓` : option.label,
+				label:
+					option.value === (element.width ?? 1)
+						? `${option.label} ✓`
+						: option.label,
 				key: `width-${option.value}`,
 			})),
 		},
@@ -379,7 +385,8 @@ function fieldActionOptions(element: Field) {
 }
 
 function onFieldAction(action: string, element: Field, index: number) {
-	if (action === "required" && !isComputedField(element)) element.required = !element.required;
+	if (action === "required" && !isComputedField(element))
+		element.required = !element.required;
 	else if (action === "delete") schema.value.splice(index, 1);
 	else if (action.startsWith("width-"))
 		element.width = Number(action.slice("width-".length));
@@ -435,7 +442,9 @@ function toggleFieldSelection(id: string | number) {
 }
 
 const selectedFields = computed<Field[]>(() =>
-	schema.value.filter(({ id }) => selectedFieldIds.value.has(id as string | number)),
+	schema.value.filter(({ id }) =>
+		selectedFieldIds.value.has(id as string | number),
+	),
 );
 
 // Add a global keydown handler so that ctrl/cmd+c and ctrl/cmd+x copy/cut the
@@ -457,9 +466,7 @@ function onSchemaKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => document.addEventListener("keydown", onSchemaKeydown));
-onBeforeUnmount(() =>
-	document.removeEventListener("keydown", onSchemaKeydown),
-);
+onBeforeUnmount(() => document.removeEventListener("keydown", onSchemaKeydown));
 
 async function copySelectedFields(cut = false) {
 	const fields = selectedFields.value;
@@ -507,7 +514,10 @@ const disabledKeysSet = computed<Set<string>>(() => {
 });
 const expandedNames = defineModel<(string | number)[]>("expandedNames");
 const expandedChildNames = ref<(string | number)[]>();
-const { reorderEnabled = false, skipDefaultFields } = defineProps<{ reorderEnabled?: boolean, skipDefaultFields?: boolean }>();
+const { reorderEnabled = false, skipDefaultFields } = defineProps<{
+	reorderEnabled?: boolean;
+	skipDefaultFields?: boolean;
+}>();
 async function pushToChildrenSchema(type: string, index: number) {
 	if (!schema.value[index]) return;
 	if (!schema.value[index].children)
@@ -538,25 +548,42 @@ async function pushToChildrenSchema(type: string, index: number) {
 const schema = defineModel<Schema>({
 	default: () => reactive([]),
 });
-const slicedSchema = ref(skipDefaultFields || schema.value?.[0]?.id !== 0 ? schema.value : schema.value.slice(1, -2));
-watch(() => slicedSchema.value, (newVal) => {
-	if (skipDefaultFields || schema.value?.[0]?.id !== 0) {
-		schema.value = newVal
-		return;
-	}
+const slicedSchema = ref(
+	skipDefaultFields || schema.value?.[0]?.id !== 0
+		? schema.value
+		: schema.value.slice(1, -2),
+);
+watch(
+	() => slicedSchema.value,
+	(newVal) => {
+		if (skipDefaultFields || schema.value?.[0]?.id !== 0) {
+			schema.value = newVal;
+			return;
+		}
 
-	schema.value = [schema.value[0] as Field, ...newVal, schema.value.at(-2)!, schema.value.at(-1)!];
-}, { deep: true });
-watch(() => schema.value, (newVal) => {
-	if (skipDefaultFields || newVal?.[0]?.id !== 0) {
-		if (newVal.length === slicedSchema.value.length)
-			slicedSchema.value = newVal;
-		return;
-	}
+		schema.value = [
+			schema.value[0] as Field,
+			...newVal,
+			schema.value.at(-2)!,
+			schema.value.at(-1)!,
+		];
+	},
+	{ deep: true },
+);
+watch(
+	() => schema.value,
+	(newVal) => {
+		if (skipDefaultFields || newVal?.[0]?.id !== 0) {
+			if (newVal.length === slicedSchema.value.length)
+				slicedSchema.value = newVal;
+			return;
+		}
 
-	if(newVal.length - 3 !== slicedSchema.value.length)
-		slicedSchema.value = newVal.slice(1, -2);
-}, { deep: true });
+		if (newVal.length - 3 !== slicedSchema.value.length)
+			slicedSchema.value = newVal.slice(1, -2);
+	},
+	{ deep: true },
+);
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
@@ -578,7 +605,7 @@ function changeFieldType(
 			return {
 				id,
 				key,
-				type: ["string","number"],
+				type: ["string", "number"],
 				width,
 				required,
 			};
@@ -607,7 +634,9 @@ function applyFieldType(element: Field, newType: string) {
 
 // Forces NCollapseItem to remount its body whenever a field's type-relevant shape changes.
 function fieldTypeSignature(element: Field) {
-	const typeKey = Array.isArray(element.type) ? element.type.join(",") : element.type;
+	const typeKey = Array.isArray(element.type)
+		? element.type.join(",")
+		: element.type;
 	return `${element.id}-${typeKey}-${element.subType ?? ""}-${element.table ?? ""}`;
 }
 
@@ -853,24 +882,61 @@ function onComputedInput(element: Field, v: string) {
 	delete element.regex;
 }
 
-// The prefix/suffix display decorations apply to every scalar number field
-// (they are pickable from the Number group in the add-field menu) as well as
-// any computed column, whose values are typically numbers too.
-function showFieldAffixes(element: Field) {
-	return isComputedField(element) || element.type === "number";
-}
-
 // Sections rendered inside the computed-expression docs popover: title/body
 // pairs, both translation keys of the `computedExpressionDocs` locale block.
 const computedExpressionDocs = [
-	{ title: "computedExpressionDocs.whatIsIt", body: "computedExpressionDocs.whatIsItBody" },
-	{ title: "computedExpressionDocs.referencing", body: "computedExpressionDocs.referencingBody" },
-	{ title: "computedExpressionDocs.operators", body: "computedExpressionDocs.operatorsBody" },
-	{ title: "computedExpressionDocs.functions", body: "computedExpressionDocs.functionsBody" },
-	{ title: "computedExpressionDocs.decimals", body: "computedExpressionDocs.decimalsBody" },
-	{ title: "computedExpressionDocs.links", body: "computedExpressionDocs.linksBody" },
-	{ title: "computedExpressionDocs.notes", body: "computedExpressionDocs.notesBody" },
+	{
+		title: "computedExpressionDocs.whatIsIt",
+		body: "computedExpressionDocs.whatIsItBody",
+	},
+	{
+		title: "computedExpressionDocs.example",
+		body: "computedExpressionDocs.exampleBody",
+	},
+	{
+		title: "computedExpressionDocs.referencing",
+		body: "computedExpressionDocs.referencingBody",
+	},
+	{
+		title: "computedExpressionDocs.operators",
+		body: "computedExpressionDocs.operatorsBody",
+	},
+	{
+		title: "computedExpressionDocs.functions",
+		body: "computedExpressionDocs.functionsBody",
+	},
+	{
+		title: "computedExpressionDocs.decimals",
+		body: "computedExpressionDocs.decimalsBody",
+	},
+	{
+		title: "computedExpressionDocs.tables",
+		body: "computedExpressionDocs.tablesBody",
+	},
+	{
+		title: "computedExpressionDocs.children",
+		body: "computedExpressionDocs.childrenBody",
+	},
+	{
+		title: "computedExpressionDocs.notes",
+		body: "computedExpressionDocs.notesBody",
+	},
 ];
+
+// Split a docs body into renderable lines/segments: text wrapped in
+// backticks becomes <code> (kept LTR so RTL prose never scrambles formulas),
+// and plain newlines become separate lines.
+function formatDocs(text: string): { code: boolean; text: string }[][] {
+	return text
+		.split("\n")
+		.map((line) =>
+			line
+				.split("`")
+				.map((part, i) => ({ code: i % 2 === 1, text: part }))
+				.filter((seg) => seg.text.length > 0),
+		)
+		.filter((line) => line.length > 0);
+}
 </script>
 
 <style scoped>
@@ -883,6 +949,18 @@ const computedExpressionDocs = [
 	outline: 2px solid rgb(var(--primaryColor));
 	background-color: rgb(var(--primaryColor), 0.08);
 	outline-offset: 2px;
+}
+
+.doc-code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 11.5px;
+	padding: 1px 5px;
+	border-radius: 5px;
+	background: rgb(128 128 128 / 0.12);
+	border: 1px solid rgb(128 128 128 / 0.25);
+	direction: ltr;
+	unicode-bidi: isolate;
+	word-break: break-word;
 }
 
 .formItemFlex :deep(.n-form-item-blank) {

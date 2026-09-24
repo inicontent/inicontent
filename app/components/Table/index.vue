@@ -595,6 +595,7 @@ async function jobNotification() {
 	if (!job) return;
 
 	if (!notificationRef.value) {
+		window.$notification.destroyAll();
 		// NOTE: don't pass `onClose` here — with naive-ui 2.45 + Vue 3.5,
 		// mergeProps turns it into an array ([userOnClose, handleClose]),
 		// so the notification's close button throws

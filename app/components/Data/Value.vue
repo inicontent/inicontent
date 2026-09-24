@@ -1,5 +1,5 @@
 <template>
-    <span v-if="affixes.prefix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)" class="fx-affix">{{ affixes.prefix }}</span>
+    <span v-if="field.prefix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)">{{ field.prefix }}&nbsp;</span>
     <template v-if="value === null || value === undefined || (Array.isArray(value) && value.length === 0)">
         <LazyColumnBoolean v-if="detectedFieldType === 'boolean'" />
         <NText :depth="3" v-else>--</NText>
@@ -22,7 +22,7 @@
     <LazyColumnText
         v-else-if="['string', 'text', 'number', 'radio', 'id', 'multiple', 'json'].includes(detectedFieldType)"
         :value />
-    <span v-if="affixes.suffix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)" class="fx-affix">{{ affixes.suffix }}</span>
+    <span v-if="field.suffix && value !== null && value !== undefined && !(Array.isArray(value) && value.length === 0)">&nbsp;{{ field.suffix }}</span>
 </template>
 
 

@@ -86,6 +86,23 @@ test("missing keys are formatted and recorded as unfound", () => {
 	});
 });
 
+test("dotted misses after a null parent do not crash (inidot null-intermediate bug)", () => {
+	// A plain miss records the shorter key as `null`. A later deeper miss
+	// (e.g. log action field paths like `المرفقات.ملفات طباعة[0]` rendered
+	// through t()) used to crash inidot's setProperty, which walked into the
+	// null node and then assigned through it. The parent is upgraded instead.
+	const unfound = mockNuxt({});
+	assert.equal(translate("المرفقات"), "المرفقات");
+	assert.deepEqual(unfound, { المرفقات: null });
+	assert.equal(translate("المرفقات.ملفات طباعة[0]"), "ملفات طباعة[0]");
+	assert.deepEqual(unfound, { المرفقات: { "ملفات طباعة[0]": null } });
+	// The upgraded parent is reusable for further siblings.
+	assert.equal(translate("المرفقات.ملفات طباعة[1]"), "ملفات طباعة[1]");
+	assert.deepEqual(unfound, {
+		المرفقات: { "ملفات طباعة[0]": null, "ملفات طباعة[1]": null },
+	});
+});
+
 test("prototype-polluting paths are rejected (inidot safety)", () => {
 	const unfound = mockNuxt({ en: {} });
 	assert.equal(translate("__proto__.polluted"), "Polluted");

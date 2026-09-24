@@ -50,7 +50,7 @@
 			</template>
 			<template #header-extra>
 				<NFlex :size="8" align="center">
-					<NPopover v-if="dashboard?.widgets?.length" trigger="click" placement="bottom-end">
+					<NPopover v-if="dashboard?.widgets?.length" style="padding:0" trigger="click" placement="bottom-end">
 						<template #trigger>
 							<NButton size="small" secondary :type="dateRangeOverride ? 'primary' : 'default'">
 								<template #icon>
@@ -123,6 +123,7 @@ definePageMeta({
 });
 
 const route = useRoute();
+const router = useRouter();
 const config = useRuntimeConfig();
 const user = useState<User>("user");
 const database = useState<Database>("database");
@@ -251,7 +252,12 @@ onMounted(async () => {
 		currentDashboard.value = res.result;
 		if (dashboard.value) {
 			parseWidgets(dashboard.value);
-			if (route.query.edit === "true" && canEdit.value) enterEditMode();
+			if (route.query.edit === "true" && canEdit.value) {
+				enterEditMode();
+				const query = { ...route.query };
+				delete query.edit;
+				await router.replace({ query });
+			}
 		}
 	} catch {
 		window.$message.error(t("error"));

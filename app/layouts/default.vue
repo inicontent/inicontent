@@ -133,6 +133,12 @@ const { message, notification } = createDiscreteApi(
 				top: "70px",
 			},
 		},
+		notificationProviderProps: {
+			containerStyle: {
+				top: "70px",
+			},
+			placement: Language.value === "ar" ? "top-left" : "top-right",
+		},
 		configProviderProps,
 	},
 )

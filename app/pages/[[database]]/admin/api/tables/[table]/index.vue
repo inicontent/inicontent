@@ -113,6 +113,15 @@
 			/>
 
 			<ApiEndpointCard
+				v-if="hasMethod('r')"
+				:endpoint="sumEndpoint"
+				method="GET"
+				:description="t('apiDocs.tableEndpoints.sumDescription', { table: currentTable.slug })"
+				:response-example="sumResponse"
+				:params="sumParams"
+			/>
+
+			<ApiEndpointCard
 				v-if="hasMethod('c')"
 				:endpoint="createEndpoint"
 				method="POST"
@@ -281,6 +290,44 @@ const updateEndpoint = computed(
 );
 const deleteEndpoint = computed(
 	() => `/${dbSlug.value}/${currentTable.value?.slug}/{id}`,
+);
+
+const sumEndpoint = computed(
+	() => `/${dbSlug.value}/${currentTable.value?.slug}/sum`,
+);
+
+const sumParams = computed(() => [
+	{
+		name: "columns",
+		type: "string",
+		required: true,
+		description: t("apiDocs.sumColumnsParam"),
+	},
+	{
+		name: "where",
+		type: "Inison",
+		required: false,
+		description: t("apiDocs.sumWhereParam"),
+	},
+	{
+		name: "nested",
+		type: "boolean",
+		required: false,
+		description: t("apiDocs.sumNestedParam"),
+	},
+]);
+
+const sumResponse = computed(
+	() => `{
+  "result": 4250,
+  "message": "",
+  "options": {
+    "page": 1,
+    "perPage": 15
+  },
+  "where": {},
+  "code": 200
+}`,
 );
 
 const listParams = computed(() => [

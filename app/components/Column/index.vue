@@ -4,7 +4,7 @@
         <NText :depth="3" v-else>--</NText>
     </div>
     <div v-else>
-        <span v-if="affixes.prefix" class="fx-affix">{{ affixes.prefix }}</span>
+        <span v-if="field.prefix">{{ field.prefix }}&nbsp;</span>
         <ColumnRole v-if="detectedFieldType === 'role'" :value />
         <ColumnId v-else-if="['id', 'ip'].includes(detectedFieldType)" :value />
         <NScrollbar v-else-if="field.table === 'assets'" x-scrollable>
@@ -25,7 +25,7 @@
         <ColumnText
             v-else-if="['string', 'text', 'textarea', 'number', 'radio', 'multiple'].includes(detectedFieldType)"
             :value />
-        <span v-if="affixes.suffix" class="fx-affix">{{ affixes.suffix }}</span>
+        <span v-if="field.suffix">&nbsp;{{ field.suffix }} </span>
     </div>
 </template>
 
@@ -35,8 +35,6 @@ const { field, value, itemLabel } = defineProps<{
 	value?: any;
 	itemLabel?: string;
 }>();
-
-const affixes = computed(() => computedAffixesOf(field));
 
 let detectedFieldType = (field.subType ?? field.type) as
 	| DB_FieldType

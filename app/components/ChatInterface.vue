@@ -4,7 +4,7 @@
 		<div ref="scrollbarRef" class="messages-area" @scroll="handleScroll">
 			<NFlex v-for="(message, index) in messages" :key="index" :wrap="false" align="start" class="message-row"
 				:justify="isRTL ? (message.sender === 'User' ? 'start' : 'end') : (message.sender === 'User' ? 'end' : 'start')"
-				:style="{ flexDirection: isRTL ? 'row-reverse' : 'row' }">
+				:reverse="isRTL">
 				<NButton v-if="message.sender === 'AI'" circle>
 					<Icon name="tabler:robot" />
 				</NButton>
@@ -12,7 +12,7 @@
 				<NCard :bordered="true" class="message-card">
 					<template
 						#header
-						v-if="message.action && (['database_approval_pending', 'roles_defined', 'tables_naming_pending', 'tables_approval_pending', 'structure_generated', 'data_approval_pending', 'translation_approval_pending']).includes(message.action)"
+						v-if="message.action && (['database_approval_pending', 'roles_defined', 'tables_naming_pending', 'tables_approval_pending', 'structure_generated', 'data_approval_pending', 'translation_approval_pending', 'dashboards_approval_pending', 'dashboards_delete_pending']).includes(message.action)"
 					>
 						<NFlex align="center" :wrap="true">
 							<NTag v-if="message.action === 'database_approval_pending' && getMessageDatabasePlan(message)" size="small" round type="success">
@@ -130,6 +130,43 @@
 									{{ item.table }} → {{ item.locale }}
 								</NTag>
 							</template>
+
+							<NButton
+								v-else-if="message.action === 'dashboards_approval_pending'"
+								v-for="(dashboard, dashboardIndex) in getMessageDashboards(message)"
+								:key="dashboardIndex"
+								size="small"
+								round
+								@click="openDashboardPreviewModal(dashboard)"
+							>
+								<template #icon>
+									<NIcon><Icon :name="`tabler:${tablerIcon(dashboard.icon)}`" /></NIcon>
+								</template>
+								{{ dashboard.name }}
+								<NTag
+									v-if="dashboard.id !== undefined"
+									type="warning"
+									size="small"
+									round
+									style="margin-inline-start: 4px;"
+								>
+									{{ t('edit') }}
+								</NTag>
+								<NTag
+									v-else
+									type="success"
+									size="small"
+									round
+									style="margin-inline-start: 4px;"
+								>
+									{{ t('new') }}
+								</NTag>
+							</NButton>
+
+							<NTag v-else-if="message.action === 'dashboards_delete_pending'" size="small" round type="error">
+								<template #icon><NIcon><Icon name="tabler:trash" /></NIcon></template>
+								{{ t('delete') }} ({{ getMessageDeleteIDs(message).length }})
+							</NTag>
 						</NFlex>
 
 						<NFlex v-if="message.action === 'database_approval_pending' && !message.applied && isAdmin" justify="end" style="margin-top: 8px;">
@@ -246,6 +283,48 @@
 								{{ t('translated') }}
 							</NTag>
 						</NFlex>
+
+						<NFlex v-if="message.action === 'dashboards_approval_pending' && !message.applied && isAdmin" justify="end" style="margin-top: 8px;">
+							<NButton size="small" type="primary" :loading="applyingDashboardsIndex === index" :disabled="applyingDashboardsIndex !== null" @click="applyDashboards(message, index)">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:layout-dashboard-plus" />
+									</NIcon>
+								</template>
+								{{ t('applyChanges') }}
+							</NButton>
+						</NFlex>
+						<NFlex v-else-if="message.action === 'dashboards_approval_pending' && message.applied" justify="end" style="margin-top: 8px;">
+							<NTag type="success" size="small" round>
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:check" />
+									</NIcon>
+								</template>
+								{{ t('applied') }}
+							</NTag>
+						</NFlex>
+
+						<NFlex v-if="message.action === 'dashboards_delete_pending' && !message.applied && isAdmin" justify="end" style="margin-top: 8px;">
+							<NButton size="small" type="error" :loading="applyingDashboardsIndex === index" :disabled="applyingDashboardsIndex !== null" @click="applyDashboardDeletes(message, index)">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:trash" />
+									</NIcon>
+								</template>
+								{{ t('delete') }}
+							</NButton>
+						</NFlex>
+						<NFlex v-else-if="message.action === 'dashboards_delete_pending' && message.applied" justify="end" style="margin-top: 8px;">
+							<NTag type="success" size="small" round>
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:check" />
+									</NIcon>
+								</template>
+								{{ t('deleted') }}
+							</NTag>
+						</NFlex>
 					</template>
 
 					<template v-if="message.action === 'roles_defined' && selectedTable">
@@ -313,6 +392,63 @@
 							</span>
 						</NFlex>
 					</NFlex>
+					<NFlex
+						v-if="message.action === 'dashboards_approval_pending'"
+						vertical
+						:size="8"
+						style="margin-top: 8px;"
+					>
+						<NCard
+							v-for="(dashboard, dashboardIndex) in getMessageDashboards(message)"
+							:key="dashboardIndex"
+							size="small"
+							:bordered="true"
+						>
+							<NFlex align="center" :wrap="true" style="margin-bottom: 6px;">
+								<NIconWrapper :border-radius="50" style="font-style: normal">
+									<NIcon size="16">
+										<Icon :name="`tabler:${tablerIcon(dashboard.icon)}`" />
+									</NIcon>
+								</NIconWrapper>
+								<NH4 style="margin: 0">{{ dashboard.name }}</NH4>
+								<NTag
+									v-if="dashboard.id !== undefined"
+									size="small"
+									round
+									type="warning"
+									style="margin-inline-start: 4px;"
+								>
+									{{ t('edit') }}
+								</NTag>
+								<NTag
+									v-else
+									size="small"
+									round
+									type="success"
+									style="margin-inline-start: 4px;"
+								>
+									{{ t('new') }}
+								</NTag>
+							</NFlex>
+							<NText
+								v-if="dashboard.description"
+								depth="3"
+								style="display: block; margin-bottom: 6px;"
+							>
+								{{ dashboard.description }}
+							</NText>
+							<NFlex :wrap="true" :size="6">
+								<NTag
+									v-for="(widget, widgetIndex) in dashboard.widgets || []"
+									:key="widgetIndex"
+									size="small"
+									round
+								>
+									{{ widget.title }} · {{ t(widget.type) || widget.type }}
+								</NTag>
+							</NFlex>
+						</NCard>
+					</NFlex>
 				</NCard>
 
 				<NButton v-if="message.sender === 'User'" type="primary" circle>
@@ -357,6 +493,34 @@
 			:primary-color="databaseModel?.primaryColor"
 			@update:show="showPageModal = $event"
 		/>
+
+		<NModal v-model:show="showDashboardModal" preset="card" :title="t('dashboardPreview')" size="large">
+			<NFlex vertical :size="10">
+				<NText v-if="selectedDashboardPreview?.description" depth="3">
+					{{ selectedDashboardPreview.description }}
+				</NText>
+				<NCard
+					v-for="(widget, widgetIndex) in selectedDashboardPreview?.widgets || []"
+					:key="widgetIndex"
+					size="small"
+				>
+					<NFlex align="center" justify="space-between" :wrap="false">
+						<NFlex align="center" :size="8" :wrap="false">
+							<NTag size="small" round>{{ t(widget.type) || widget.type }}</NTag>
+							<strong>{{ widget.title }}</strong>
+						</NFlex>
+						<NTag size="small" round type="info">
+							{{ getWidgetTableLabel(widget) || t('sourceTable') }}
+						</NTag>
+					</NFlex>
+					<NFlex v-if="getWidgetDetails(widget).length" :wrap="true" :size="6" style="margin-top: 6px;">
+						<NTag v-for="(detail, detailIndex) in getWidgetDetails(widget)" :key="detailIndex" size="small" round quaternary>
+							{{ detail }}
+						</NTag>
+					</NFlex>
+				</NCard>
+			</NFlex>
+		</NModal>
 		</template>
 
 		<template v-else-if="subscriptionChecked">
@@ -400,6 +564,8 @@ type MessageAction =
 	| "tables_approval_pending"
 	| "data_approval_pending"
 	| "translation_approval_pending"
+	| "dashboards_approval_pending"
+	| "dashboards_delete_pending"
 	| "rejected"
 	| "error"
 	| "roles_defined"
@@ -466,6 +632,37 @@ type TranslationResult = {
 	success: boolean;
 };
 
+/** A widget proposed by the dashboard assistant (field refs are table/field
+ *  ids once sanitized, matching the front-end `Widget` contract). */
+type DashboardWidgetProposal = {
+	id?: string | number;
+	icon?: string;
+	type: string;
+	title: string;
+	table: string;
+	field?: string | number;
+	operation?: string;
+	groupBy?: string | number;
+	dateField?: string | number;
+	dateRange?: string;
+	limit?: number;
+	color?: string;
+	size?: string;
+	searchArray?: Record<string, unknown>;
+	columns?: (string | number)[];
+	sortField?: string | number;
+	sortOrder?: string;
+};
+
+/** A dashboard proposed by the assistant, pending user approval. */
+type DashboardProposal = {
+	id?: string | number;
+	name: string;
+	description?: string;
+	icon?: string;
+	widgets?: DashboardWidgetProposal[];
+};
+
 type DatabasePlan = {
 	slug: string;
 	primaryLanguage?: string;
@@ -485,6 +682,8 @@ type AIResponsePayload = {
 	remainingTables?: string[];
 	database?: DatabasePlan;
 	reusableBlocks?: ReusableBlockProposal[];
+	dashboards?: DashboardProposal[];
+	deleteIDs?: Array<string | number>;
 	message?: string;
 };
 
@@ -715,6 +914,9 @@ const isTranslationPlanItem = (value: unknown): value is TranslationPlanItem =>
 	typeof value.locale === "string" &&
 	!Array.isArray(value.records);
 
+const isDashboardProposal = (value: unknown): value is DashboardProposal =>
+	isRecord(value) && typeof value.name === "string";
+
 const isDatabasePlan = (value: unknown): value is DatabasePlan =>
 	isRecord(value) &&
 	typeof value.slug === "string" &&
@@ -902,6 +1104,105 @@ const getMessageTranslationPlan = (message: Message): TranslationPlanItem[] =>
 const getMessageDatabasePlan = (message: Message): DatabasePlan | null =>
 	isDatabasePlan(message.response) ? message.response : null;
 
+const getMessageDashboards = (message: Message): DashboardProposal[] =>
+	Array.isArray(message.response)
+		? message.response.filter(isDashboardProposal)
+		: [];
+
+const getMessageDeleteIDs = (message: Message): Array<string | number> =>
+	Array.isArray(message.response)
+		? message.response.filter(
+				(id): id is string | number =>
+					(typeof id === "string" && id.trim().length > 0) ||
+					(typeof id === "number" && Number.isFinite(id)),
+			)
+		: [];
+
+/** Strip a `tabler:` prefix from an icon name (Grid renders bare Tabler slugs). */
+const tablerIcon = (icon?: string): string =>
+	(icon || "chart-bar").replace(/^tabler:/, "").trim() || "chart-bar";
+
+/** Recursively find a schema field's key by its id (array children included). */
+const findFieldKeyById = (
+	schema: Schema | undefined,
+	id: string | number,
+): string | undefined => {
+	if (!schema) return undefined;
+	const needle = String(id);
+	for (const field of schema) {
+		if (field.id !== undefined && String(field.id) === needle)
+			return typeof field.key === "string" && field.key ? field.key : undefined;
+		const children = Array.isArray(field.children)
+			? field.children
+			: field.children && typeof field.children === "object"
+				? [field.children]
+				: [];
+		if (children.length) {
+			const found = findFieldKeyById(children as Schema, id);
+			if (found) return found;
+		}
+	}
+	return undefined;
+};
+
+/** Widgets persist table/field ids; resolve them to readable labels. */
+const getWidgetTableLabel = (widget: DashboardWidgetProposal): string => {
+	const table = activeDatabase.value?.tables?.find(
+		(t) => t.id != null && String(t.id) === String(widget.table),
+	);
+	return table?.slug || widget.table;
+};
+
+const widgetDateRangeLabel = (range?: string): string => {
+	switch (range) {
+		case "7d":
+			return t("last7Days");
+		case "30d":
+			return t("last30Days");
+		case "90d":
+			return t("last90Days");
+		case "1y":
+			return t("lastYear");
+		case "all":
+			return t("allTime");
+		default:
+			return "";
+	}
+};
+
+/** One-line facts about a widget, shown as chips in the preview modal. */
+const getWidgetDetails = (widget: DashboardWidgetProposal): string[] => {
+	const details: string[] = [];
+	if (widget.operation) details.push(t(widget.operation) || widget.operation);
+	if (widget.size) details.push(t(widget.size) || widget.size);
+	const range = widgetDateRangeLabel(widget.dateRange);
+	if (range) details.push(range);
+
+	const table = activeDatabase.value?.tables?.find(
+		(t) => t.id != null && String(t.id) === String(widget.table),
+	);
+	const schema =
+		table && Array.isArray(table.schema) ? table.schema : undefined;
+	const fieldLabel = (ref?: string | number) =>
+		ref === undefined ? "" : (findFieldKeyById(schema, ref) ?? String(ref));
+
+	if (widget.field !== undefined) details.push(fieldLabel(widget.field));
+	if (widget.groupBy !== undefined)
+		details.push(`${t("groupBy")}: ${fieldLabel(widget.groupBy)}`);
+	if (widget.dateField !== undefined)
+		details.push(`${t("dateField")}: ${String(widget.dateField)}`);
+	if (widget.columns?.length)
+		details.push(widget.columns.map(fieldLabel).join(", "));
+	if (widget.sortField !== undefined) {
+		const sort =
+			`${fieldLabel(widget.sortField)} ${widget.sortOrder || ""}`.trim();
+		if (sort) details.push(sort);
+	}
+	if (widget.limit !== undefined) details.push(`${widget.limit} rows`);
+	if (widget.color) details.push(widget.color);
+	return details;
+};
+
 /**
  * Tables endpoint step selection: propose names first for fresh build flows
  * and when refining a pending name-proposal card; fall back to the full
@@ -1081,6 +1382,14 @@ const openPagePreviewModal = (page: PageResponse) => {
 	showPageModal.value = true;
 };
 
+const showDashboardModal = ref(false);
+const selectedDashboardPreview = ref<DashboardProposal | null>(null);
+
+const openDashboardPreviewModal = (dashboard: DashboardProposal) => {
+	selectedDashboardPreview.value = dashboard;
+	showDashboardModal.value = true;
+};
+
 const user = useState<User>("user");
 const config = useRuntimeConfig();
 const chatDatabaseContext = ref<Database | null>(null);
@@ -1094,6 +1403,7 @@ const applyingIndex = ref<number | null>(null);
 const applyingDataIndex = ref<number | null>(null);
 const applyingTranslateIndex = ref<number | null>(null);
 const applyingDatabaseIndex = ref<number | null>(null);
+const applyingDashboardsIndex = ref<number | null>(null);
 const activeDatabaseSlug = computed(
 	() =>
 		chatDatabaseContext.value?.slug ||
@@ -1705,6 +2015,160 @@ const applyTranslation = async (message: Message, index: number) => {
 	}
 };
 
+type DashboardApplyResult = {
+	id?: string | number;
+	name: string;
+	action?: "created" | "updated";
+	success: boolean;
+	error?: string;
+};
+
+const applyDashboards = async (message: Message, index: number) => {
+	if (applyingDashboardsIndex.value !== null) return;
+	const dashboards = getMessageDashboards(message);
+	if (!dashboards.length) {
+		messages.value.push({
+			sender: "AI",
+			action: "error",
+			text: "No valid dashboard definitions returned by AI.",
+		});
+		return;
+	}
+	if (!activeDatabaseSlug.value) {
+		messages.value.push({
+			sender: "AI",
+			action: "error",
+			text: "The current database is not available.",
+		});
+		return;
+	}
+
+	applyingDashboardsIndex.value = index;
+	try {
+		const data = await $fetch<{
+			results?: DashboardApplyResult[];
+			dashboards?: Dashboard[];
+			result?: {
+				results?: DashboardApplyResult[];
+				dashboards?: Dashboard[];
+			};
+		}>(`${config.public.apiBase}${activeDatabaseSlug.value}/ai/dashboards`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ dashboards }),
+			params: buildRequestParams(activeDatabaseSlug.value),
+			credentials: "include",
+		});
+
+		const normalized = data.result ?? data;
+		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (failed.length) {
+			messages.value.push({
+				sender: "AI",
+				action: "error",
+				text: `Failed to apply some dashboards: ${failed.map((f) => `${f.name} (${f.error})`).join(", ")}`,
+			});
+		} else {
+			message.applied = true;
+			const appliedText = (normalized.results || [])
+				.map((r) => `${r.name} (${t(r.action || "applied")})`)
+				.join(", ");
+			messages.value.push({ sender: "AI", text: appliedText });
+		}
+
+		if (!userHasScrolledUp.value) await scrollToBottom();
+	} catch (error: unknown) {
+		console.error("Error applying dashboards:", error);
+		const apiError = error as {
+			data?: { result?: { message?: string }; message?: string };
+			message?: string;
+		};
+		const errorMsg =
+			apiError?.data?.result?.message ||
+			apiError?.data?.message ||
+			apiError?.message ||
+			t("error");
+		messages.value.push({ sender: "AI", action: "error", text: errorMsg });
+		if (!userHasScrolledUp.value) await scrollToBottom();
+	} finally {
+		applyingDashboardsIndex.value = null;
+	}
+};
+
+const applyDashboardDeletes = async (message: Message, index: number) => {
+	if (applyingDashboardsIndex.value !== null) return;
+	const ids = getMessageDeleteIDs(message);
+	if (!ids.length) {
+		messages.value.push({
+			sender: "AI",
+			action: "error",
+			text: "No valid dashboard ids returned by AI.",
+		});
+		return;
+	}
+	if (!activeDatabaseSlug.value) {
+		messages.value.push({
+			sender: "AI",
+			action: "error",
+			text: "The current database is not available.",
+		});
+		return;
+	}
+
+	applyingDashboardsIndex.value = index;
+	try {
+		const data = await $fetch<{
+			results?: { id?: string | number; success: boolean; error?: string }[];
+			result?: {
+				results?: {
+					id?: string | number;
+					success: boolean;
+					error?: string;
+				}[];
+			};
+		}>(`${config.public.apiBase}${activeDatabaseSlug.value}/ai/dashboards`, {
+			method: "DELETE",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ ids }),
+			params: buildRequestParams(activeDatabaseSlug.value),
+			credentials: "include",
+		});
+
+		const normalized = data.result ?? data;
+		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (failed.length) {
+			messages.value.push({
+				sender: "AI",
+				action: "error",
+				text: `Failed to delete some dashboards: ${failed
+					.map((f) => String(f.id ?? ""))
+					.filter(Boolean)
+					.join(", ")}`,
+			});
+		} else {
+			message.applied = true;
+			messages.value.push({ sender: "AI", text: t("deleted") });
+		}
+
+		if (!userHasScrolledUp.value) await scrollToBottom();
+	} catch (error: unknown) {
+		console.error("Error deleting dashboards:", error);
+		const apiError = error as {
+			data?: { result?: { message?: string }; message?: string };
+			message?: string;
+		};
+		const errorMsg =
+			apiError?.data?.result?.message ||
+			apiError?.data?.message ||
+			apiError?.message ||
+			t("error");
+		messages.value.push({ sender: "AI", action: "error", text: errorMsg });
+		if (!userHasScrolledUp.value) await scrollToBottom();
+	} finally {
+		applyingDashboardsIndex.value = null;
+	}
+};
+
 const uniqueTables = computed(() => {
 	const rolesMessage = messages.value.find(
 		(msg) => msg.action === "roles_defined",
@@ -1833,6 +2297,9 @@ const resetChat = async () => {
 	applyingDataIndex.value = null;
 	applyingTranslateIndex.value = null;
 	applyingDatabaseIndex.value = null;
+	applyingDashboardsIndex.value = null;
+	showDashboardModal.value = false;
+	selectedDashboardPreview.value = null;
 	await addWelcomeMessage();
 	persistChatState();
 };
@@ -1976,6 +2443,23 @@ const continueDataGeneration = async (dataMessage: Message) => {
 	dataMessage.loadingMore = false;
 };
 
+/** Load the rows of the protected `dashboards` table for AI context. */
+const fetchExistingDashboards = async (): Promise<Dashboard[] | undefined> => {
+	if (!activeDatabaseSlug.value) return undefined;
+	try {
+		const res = await $fetch<apiResponse<Dashboard[]>>(
+			`${config.public.apiBase}${activeDatabaseSlug.value}/dashboards`,
+			{
+				params: buildRequestParams(activeDatabaseSlug.value),
+				credentials: "include",
+			},
+		);
+		return res.result;
+	} catch {
+		return undefined;
+	}
+};
+
 const sendMessage = async () => {
 	const originalUserText = currentMessage.value.trim();
 	if (originalUserText === "") return;
@@ -2009,7 +2493,8 @@ const sendMessage = async () => {
 				responseID?: string;
 				existingTables?:
 					| Record<string, string[]>
-					| Array<{ slug: string; keys?: string[]; schema?: Schema }>;
+					| Array<{ id?: string; slug: string; keys?: string[]; schema?: Schema }>;
+				existingDashboards?: Dashboard[];
 				secondaryLanguages?: string[];
 				primaryLanguage?: string;
 			} = {
@@ -2023,13 +2508,14 @@ const sendMessage = async () => {
 				payload.step = shouldUseNamesStep() ? "names" : "schema";
 			}
 
-			// Include existing tables context when targeting the tables, data or
-			// pages endpoint (pages need them for table-backed blocks like
-			// Loop/Form/Product and their column-id mappings).
+			// Include existing tables context when targeting the tables, data,
+			// pages or dashboards endpoint (dashboards need them to validate
+			// widget table/field references).
 			if (
 				(currentEndpoint.value === "tables" ||
 					currentEndpoint.value === "data" ||
-					currentEndpoint.value === "pages") &&
+					currentEndpoint.value === "pages" ||
+					currentEndpoint.value === "dashboards") &&
 				activeDatabase.value?.tables?.length
 			) {
 				const systemTables = ["sessions", "assets", "translations"];
@@ -2041,9 +2527,18 @@ const sendMessage = async () => {
 							!systemTables.includes(table.slug),
 					)
 					.map((table) => ({
+						// The dashboards assistant stores widget table refs by id;
+						// ids are also harmless extra context for other endpoints.
+						id: table.id,
 						slug: table.slug,
 						schema: table.schema as Schema,
 					}));
+			}
+
+			// Included existing dashboards context so the assistant can edit
+			// stored dashboards and cannot duplicate names.
+			if (currentEndpoint.value === "dashboards") {
+				payload.existingDashboards = await fetchExistingDashboards();
 			}
 
 			// Include language context when targeting the translate endpoint
@@ -2239,6 +2734,44 @@ const sendMessage = async () => {
 						text:
 							response.message ||
 							"Review the translation plan before proceeding.",
+					});
+				} else if (response.action === "dashboards_approval_pending") {
+					const dashboards = Array.isArray(response.dashboards)
+						? response.dashboards.filter(isDashboardProposal)
+						: [];
+
+					if (!dashboards.length) {
+						throw new Error("AI returned no valid dashboard definitions.");
+					}
+
+					messages.value.push({
+						sender: "AI",
+						action: "dashboards_approval_pending",
+						response: dashboards,
+						text:
+							response.message ||
+							"Review the generated dashboards before applying the changes.",
+					});
+				} else if (response.action === "dashboards_delete_pending") {
+					const ids = Array.isArray(response.deleteIDs)
+						? response.deleteIDs.filter(
+								(id): id is string | number =>
+									(typeof id === "string" && id.trim().length > 0) ||
+									(typeof id === "number" && Number.isFinite(id)),
+							)
+						: [];
+
+					if (!ids.length) {
+						throw new Error("AI returned no valid dashboard ids to delete.");
+					}
+
+					messages.value.push({
+						sender: "AI",
+						action: "dashboards_delete_pending",
+						response: ids,
+						text:
+							response.message ||
+							"Review the dashboards to delete before confirming.",
 					});
 				} else if (response.message) {
 					messages.value.push({

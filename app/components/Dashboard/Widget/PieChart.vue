@@ -19,7 +19,7 @@ const props = defineProps<{
 
 const dateRangeRef = toRef(props, "dateRangeOverride");
 
-const { groups, loading, refresh } = useDashboardData(
+const { groups, loading } = useDashboardData(
 	props.widget,
 	props.databaseSlug,
 	dateRangeRef,
@@ -70,6 +70,4 @@ const chartOption = computed(() => ({
 		},
 	],
 }));
-
-onMounted(refresh);
 </script>

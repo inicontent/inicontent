@@ -507,6 +507,7 @@ const generalSettingsSchema = reactive<Schema>([
 		key: "compression",
 		labelKey: "compression.label",
 		type: "boolean",
+		description: "compression.description",
 		inputProps: isUnDeletable.value
 			? {
 				disabled: true,
@@ -517,6 +518,7 @@ const generalSettingsSchema = reactive<Schema>([
 	{
 		key: "cache",
 		type: "boolean",
+		description: "cacheDescription",
 		inputProps: isUnDeletable.value
 			? {
 				disabled: true,

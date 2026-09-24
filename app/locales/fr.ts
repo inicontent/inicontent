@@ -70,6 +70,16 @@ export default {
 		role: "Rôle",
 		item: "Élément",
 		anItem: "Un élément",
+		newItem: "Nouvel élément",
+		asFollow: "comme suit",
+		latestActivities: "Activités récentes",
+		revertedToVersion: "Restauré à la version",
+		revertToVersion: "Restaurer à la version",
+		revertConfirmMessage:
+			"Cela restaurera l'élément à son état au moment sélectionné. Êtes-vous sûr ?",
+		revert: "Restaurer",
+		revertSuccess: "Élément restauré avec succès",
+		revertFailed: "Échec de la restauration de l'élément",
 
 		// Navigation
 		home: "Accueil",
@@ -188,6 +198,8 @@ export default {
 
 		compression: {
 			label: "Compression des données",
+			description:
+				"La compression réduit l'espace utilisé mais peut ralentir les résultats",
 			videoLarge:
 				"Vidéo volumineuse détectée ({size}). Nous l'optimiserons localement avant l'envoi.",
 			videoHuge:
@@ -319,6 +331,8 @@ export default {
 		prepend: "Préfixer",
 		recentItemsAppearAtTheTop: "Les éléments récents apparaissent en haut",
 		cache: "Cache",
+		cacheDescription:
+			"Le cache affiche les résultats plus rapidement mais peut augmenter la taille de la base de données",
 		clearCache: "Effacer le cache",
 		log: "Journal",
 		enableActivityLog: "Activer le journal d'activité",
@@ -355,29 +369,35 @@ export default {
 		uniqueGroup: "Groupe unique",
 		regex: "Expression régulière",
 		computedExpression: "Expression calculée",
-		computedExpressionPlaceholder: "ex. sum(5, 6), 5 , 6, 4.2",
+		computedExpressionPlaceholder: "ex. sum(5 * 6)",
 		computedExpressionDocs: {
 			whatIsIt: "Qu'est-ce que c'est ?",
 			whatIsItBody:
-				"Un champ calculé est évalué automatiquement par le moteur à chaque enregistrement de la ligne. Le résultat est stocké sur la ligne et est strictement en lecture seule — il ne peut être ni modifié manuellement ni envoyé lors de la création/mise à jour d'enregistrements.",
+				"Une colonne calculée est recalculée par le moteur à chaque enregistrement de la ligne. Le résultat est stocké sur la ligne, est en lecture seule et ne peut jamais être envoyé lors de la création ou de la mise à jour d'enregistrements. Le préfixe et le suffixe ne changent que l'affichage.",
+			example: "Exemple concret — total de commande",
+			exampleBody:
+				"Donnez à la table un tableau `items` avec `quantity` (id 5) et `price` (id 6), puis ce champ calcule le total sur chaque élément :\n`total = sum(5 * 6)`\n`items: [{quantity: 2, price: 250}, {quantity: 1, price: 100}]`\n`→ total = (2 × 250) + (1 × 100) = 600`",
 			referencing: "Référencer des champs",
 			referencingBody:
-				"Référencez d'autres champs par leur identifiant numérique, affiché sous forme de #id sous le nom du champ. Ex. : `2 , 3` multiplie le champ #2 par le champ #3.",
+				"Chaque champ est référencé par le numéro entre parenthèses sous son nom — ex. `items.quantity (5)` désigne le champ #5, la ligne `quantity` dans `items`.\nUn nombre qui correspond à un id de champ EST ce champ ; un nombre qui ne correspond à aucun champ est un simple nombre. Ainsi `6 / 4` divise le champ #6 par le champ #4, alors que `314 / 100` divise par 100 (il n'existe pas de champ #100).",
 			operators: "Opérateurs",
 			operatorsBody:
-				"`+` addition, `-` soustraction, `,` multiplication, `/` division, `%` modulo, parenthèses `(...)` pour grouper.",
+				"`+` addition, `-` soustraction, `*` multiplication, `/` division, `%` modulo, `(...)` pour grouper.\n`* / %` lient plus fort que `+ -` : `2 * 3 + 4` vaut 10, `2 * (3 + 4)` vaut 14.",
 			functions: "Fonctions de tableau",
 			functionsBody:
-				"Agrègent les éléments d'un champ de type tableau d'objets : `sum(id)` total, `count(id)` nombre d'éléments, `avg(id)` moyenne, `min(id)` minimum, `max(id)` maximum.",
+				"`sum`, `count`, `avg`, `min` et `max` parcourent les éléments d'un champ tableau d'objets. L'argument est une expression complète évaluée une fois par élément, puis agrégée :\n`sum(5 * 6)` = somme de `quantité × prix` par élément ; `count(5)` = nombre d'éléments ; `avg(5)` = moyenne ; `min(5)` / `max(5)` = minimum / maximum.",
 			decimals: "Décimales",
 			decimalsBody:
-				"Il n'y a pas de nombres décimaux — `.` est réservé aux liens. Utilisez la division : `314 / 100` donne 3.14.",
-			tables: "Tables",
+				"Pas de littéraux décimaux — `.` est réservé aux liens, donc `3.14` est un chemin, jamais 3.14. Les résultats fractionnaires sont acceptés : `314 / 100` donne 3.14.",
+			tables: "Tables liées",
 			tablesBody:
-				"Référencez des champs à l'intérieur d'une table liée en utilisant `.` : `3.4` lit le champ #4 de la ligne liée par le champ #3.",
+				"Passez dans une table liée avec `.` : `3.4` lit le champ #4 de la ligne liée par le champ #3. Possible aussi dans une fonction : `sum(5 * 4.2)` = `quantité × product.price`.",
+			children: "Champs calculés enfants",
+			childrenBody:
+				"Un champ calculé sur un enfant d'une colonne de type tableau d'objets est recalculé une fois par élément. Référencez les champs de l'élément par leur id et traversez les tables liées avec `.` : avec `items.quantity` = 4 et `items.product` = 3 (les produits ont `price` = 2), `lineTotal = 4 * 3.2` calcule `quantité × product.price` pour chaque élément.\nUn opérande manquant ou nul écrit 0 au lieu d'échouer. La valeur de l'enfant est en lecture seule — l'envoyer lors de l'enregistrement est rejeté — et le champ enfant doit être `number`.\nDans un compteur de tableau de bord, choisissez le champ en pointillé (ex. `items.lineTotal`) avec l'opération Somme.",
 			notes: "Remarques",
 			notesBody:
-				"Un champ ne peut pas être calculé et requis / unique / regex en même temps — ces derniers sont effacés quand vous définissez une expression. Les champs calculés sont réévalués dans l'ordre de leurs dépendances, un champ calculé peut donc référencer un autre champ calculé.",
+				"Un champ ne peut pas être à la fois calculé et requis / unique / regex — ces derniers sont effacés quand vous définissez une expression. Les champs calculés sont évalués dans l'ordre de leurs dépendances, un champ calculé peut donc en utiliser un autre. Les expressions invalides sont rejetées lors de l'enregistrement du schéma.",
 		},
 		computedPrefix: "Préfixe",
 		computedSuffix: "Suffixe",
@@ -847,6 +867,7 @@ export default {
 		dashboardSettings: "Paramètres du tableau de bord",
 		editDashboard: "Modifier le tableau de bord",
 		createDashboard: "Créer un tableau de bord",
+		dashboardPreview: "Aperçu du tableau de bord",
 		widgets: "Widgets",
 		widget: "Widget",
 		addWidget: "Ajouter un widget",

@@ -21,6 +21,7 @@ import { LazyColumn, NFlex, NPerformantEllipsis } from "#components";
 import { getField } from "~/composables/fieldsList";
 import renderLabel from "~/composables/renderLabel";
 import { useDashboardData } from "~/composables/useDashboardData";
+import { resolveWidgetTable } from "~/composables/widgetSchema";
 
 const props = defineProps<{
 	widget: Widget;
@@ -30,7 +31,7 @@ const props = defineProps<{
 
 const dateRangeRef = toRef(props, "dateRangeOverride");
 
-const { data, loading, refresh } = useDashboardData(
+const { data, loading, fields } = useDashboardData(
 	props.widget,
 	props.databaseSlug,
 	dateRangeRef,
@@ -39,33 +40,14 @@ const { data, loading, refresh } = useDashboardData(
 const database = useState<Database>("database");
 
 const sourceTable = computed(() =>
-	database.value?.tables?.find((t) => t.slug === props.widget.table),
+	resolveWidgetTable(database.value?.tables, props.widget.table),
 );
 
-// Preferred columns: widget.columns (keys) → table.defaultTableColumns (ids)
-// → first 8 schema fields.
-const displayedFields = computed<Field[]>(() => {
-	const schema = sourceTable.value?.schema ?? [];
-	if (!schema.length) return [];
-
-	if (props.widget.columns?.length) {
-		const byKey = schema.filter((f) => props.widget.columns?.includes(f.key));
-		if (byKey.length) return byKey;
-	}
-
-	const defaultIds = sourceTable.value?.defaultTableColumns;
-	if (defaultIds?.length) {
-		const byId = defaultIds
-			.map((id) => schema.find((f) => f.id === id))
-			.filter((f): f is Field => !!f);
-		if (byId.length) return byId;
-	}
-
-	return schema.slice(0, 8);
-});
-
+// Preferred columns come from the composable (widget.columns field ids →
+// table.defaultTableColumns ids → first 8 schema fields); the fetch requests
+// exactly these columns, so rows only carry what's rendered.
 const columns = computed<DataTableColumns>(() =>
-	displayedFields.value.map((field) => ({
+	fields.value.map((field) => ({
 		title: () =>
 			h(NFlex, { wrap: false, align: "center", justify: "start" }, () => [
 				getField(field).icon(),
@@ -91,6 +73,4 @@ const tableWidth = computed(() =>
 		100,
 	),
 );
-
-onMounted(refresh);
 </script>

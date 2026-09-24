@@ -56,7 +56,7 @@
 							</NCard>
 						</template>
 						<NFlex vertical>
-							<NInputGroup>
+							<NFlex :reverse="Language === 'ar'" :wrap="false">
 								<NInput v-model:value="newTableSlug" @keydown.enter.prevent="createTable"
 									:placeholder="t('tableSlug')">
 									<template #suffix>
@@ -65,28 +65,31 @@
 										</NIcon>
 									</template>
 								</NInput>
-								<NTooltip :delay="600">
-									<template #trigger>
-										<NButton tertiary :type="showQuickSettings ? 'primary' : 'default'"
-											@click="toggleQuickSettings">
-											<template #icon>
-												<NIcon>
-													<Icon v-if="showQuickSettings" name="tabler:settings-off" />
-													<Icon v-else name="tabler:settings" />
-												</NIcon>
-											</template>
-										</NButton>
-									</template>
-									{{ t('quickSettings') }}
-								</NTooltip>
-								<NButton secondary type="primary" @click="createTable" :loading="Loading.Table">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:chevron-right" />
-										</NIcon>
-									</template>
-								</NButton>
-							</NInputGroup>
+								<NButtonGroup>
+									<NTooltip :delay="600">
+										<template #trigger>
+											<NButton tertiary :type="showQuickSettings ? 'primary' : 'default'"
+												@click="toggleQuickSettings">
+												<template #icon>
+													<NIcon>
+														<Icon v-if="showQuickSettings" name="tabler:settings-off" />
+														<Icon v-else name="tabler:settings" />
+													</NIcon>
+												</template>
+											</NButton>
+										</template>
+										{{ t('quickSettings') }}
+									</NTooltip>
+
+									<NButton secondary type="primary" @click="createTable" :loading="Loading.Table">
+										<template #icon>
+											<NIcon>
+												<Icon name="tabler:chevron-right" />
+											</NIcon>
+										</template>
+									</NButton>
+								</NButtonGroup>
+							</NFlex>
 							<template v-if="showQuickSettings">
 								<NDivider style="margin: 0" />
 								<NCheckbox v-model:checked="quickSettingsPrivate">
@@ -95,7 +98,8 @@
 								<template v-if="!quickSettingsPrivate">
 									<NFlex :reverse="Language === 'ar'" v-for="role of modelValue.roles" :key="role.id" align="center"
 										justify="space-between" :wrap="false">
-										<NText strong>{{ t(role.name) }} :</NText>
+										<NText strong>{{ t(role.name) }}</NText>
+										:
 										<NCheckboxGroup v-model:value="rolePermissions[role.id]" :disabled="role.id === config.public.idOne">
 											<NCheckbox value="c" :label="t('create')" />
 											<NCheckbox value="r" :label="t('read')" />

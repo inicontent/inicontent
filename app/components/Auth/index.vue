@@ -49,6 +49,7 @@
 	<NModal
 		v-model:show="showPasskeyEnrollment"
 		@esc="skipPasskeyEnrollment"
+		@mask-click="skipPasskeyEnrollment"
 		preset="card"
 		:title="t('passkey.enrollmentTitle')"
 		style="width: min(420px, calc(100vw - 32px));"

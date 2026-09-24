@@ -2,20 +2,20 @@
 	<NFlex item-style="width: 100%">
 		<template v-for="(item, index) in formatedItems">
 			<NInputGroup v-if="Array.isArray(item)" class="searchGroupInput">
-				<NCascader size="small" :consistent-menu-width="false" filterable :value="item[0]"
+				<NCascader :id="`input-group-1-${randomIdSuffix}-${index}`" size="small" :consistent-menu-width="false" filterable :value="item[0]"
 					@update:value="(v) => item[0] = v" :options="generateSearchInOptions(schema)"
-					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" />
+					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" :to="`#input-group-1-${randomIdSuffix}-${index}`" />
 				<template v-if="item[3]">
-					<NCascader size="small" filterable check-strategy="child" :value="item[1]"
+					<NCascader :id="`input-group-2-${randomIdSuffix}-${index}`" size="small" filterable check-strategy="child" :value="item[1]"
 						@update:value="(v) => item[1] = v" :options="getAvailableComparisonOperator(item[3])"
-						style="width:33.33%" />
+						style="width:33.33%" :to="`#input-group-2-${randomIdSuffix}-${index}`" />
 					<template v-if="isRelativeOperator(item[1])">
-						<NSelect size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
+						<NSelect :id="`input-group-3-${randomIdSuffix}-${index}`" size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
 							:value="(item[2] as string | null) ?? null"
 							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null, item[3])"
 							filterable remote clearable :on-search="(pattern) => handleRelativeSearch(index, pattern)"
 							tag @update:value="(v) => updateRelativeValue(item, v as string | null)"
-							@keydown.enter.prevent="() => callback && callback()" />
+							@keydown.enter.prevent="() => callback && callback()" :to="`#input-group-3-${randomIdSuffix}-${index}`" />
 					</template>
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
 						:field="getFieldFromItem(item)" />
@@ -46,6 +46,8 @@ import { Icon } from "#components"
 const { callback } = defineProps<{
 	callback?: CallableFunction
 }>()
+
+const randomIdSuffix = Date.now()
 
 const schema = defineModel<Table['schema']>("schema")
 

@@ -117,9 +117,11 @@
 				"
 			>
 				<template #header-extra>
-					<NTag size="small" :bordered="false" type="info">
-						{{ t(widget.type) }}
-					</NTag>
+					<DashboardWidgetSearchButton
+						v-if="widgetHasActiveFilter(widget)"
+						:schema="widgetSearchSchema(widget)"
+						v-model:array="widget.searchArray"
+					/>
 				</template>
 				<component
 					:is="widgetRenderer(widget.type)"
@@ -140,8 +142,11 @@ import {
 	DashboardWidgetCounter,
 	DashboardWidgetLineChart,
 	DashboardWidgetPieChart,
+	DashboardWidgetSearchButton,
 	DashboardWidgetTable,
 } from "#components";
+import { generateSearchString } from "~/composables/search";
+import { resolveWidgetTable } from "~/composables/widgetSchema";
 
 const props = defineProps<{
 	dashboard: Dashboard;
@@ -151,6 +156,20 @@ const props = defineProps<{
 }>();
 
 const editWidgets = defineModel<Widget[]>("widgets", { default: () => [] });
+
+const database = useState<Database>("database");
+
+// A widget gets a search affordance in its card header only when it carries
+// an active filter (non-empty searchArray). Reads `widget.searchArray`, so the
+// button appears/disappears reactively as the filter changes.
+function widgetHasActiveFilter(widget: Widget): boolean {
+	return !!generateSearchString(widget.searchArray, "display");
+}
+
+// Schema backing the widget's search builder: its source table's schema.
+function widgetSearchSchema(widget: Widget): Schema | undefined {
+	return resolveWidgetTable(database.value?.tables, widget.table)?.schema;
+}
 
 const dateRangeKey = computed(() => props.dateRangeOverride ?? "default");
 
@@ -189,8 +208,8 @@ function addWidget() {
 	pendingNewWidget.value = {
 		id: `w_${Date.now()}`,
 		type: "counter",
-		title: "",
-		table: "",
+		title: undefined,
+		table: undefined,
 		operation: "count",
 		size: "small",
 		dateRange: "all",

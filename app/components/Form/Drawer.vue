@@ -7,18 +7,15 @@
 			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
 			<NDrawerContent closable :native-scrollbar="false">
 				<template #header>
-					<span v-if="drawer.id">
-						{{ t(drawer.mode === 'view' ? 'view' : 'edit') }}
-						<NuxtLink
-							:to="tableUrl(drawer.table, `/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`)">
-							<NText type="primary">
-								{{ itemsLabels[index] }}
-								<NIcon size="small">
-									<Icon :name="drawer.mode === 'view' ? 'tabler:eye' : 'tabler:external-link'" />
-								</NIcon>
-							</NText>
-						</NuxtLink>
-					</span>
+					<NuxtLink v-if="drawer.id" @click="Drawers = []"
+						:to="tableUrl(drawer.table, `/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`)">
+						<NText type="primary">
+							{{ itemsLabels[index] }}
+							<NIcon >
+								<Icon name="tabler:external-link" />
+							</NIcon>
+						</NText>
+					</NuxtLink>
 					<span v-else>
 						{{ t('new') }} {{ t(drawer.table) }}
 					</span>
@@ -59,6 +56,7 @@
 						</NButton>
 					</NFlex>
 				</template>
+				
 				<div class="drawerSpin" v-if="isDrawerFormMode(drawer) && (!drawer.schema?.length || Loading.UPDATE || Loading.CREATE)">
 					<NSpin />
 				</div>
@@ -74,6 +72,8 @@
 						:value="drawer.data"
 						:schema="(getDrawerTable(drawer)?.schema ?? [])" />
 				</NSpin>
+
+				<LazyTableLogs v-if="getDrawerTable(drawer)?.config?.log && drawer.data" :id="drawer.data.id" />
 			</NDrawerContent>
 		</NDrawer>
 	</template>

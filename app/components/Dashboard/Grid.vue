@@ -199,6 +199,7 @@ const createDashboard = async () => {
 			window.$message.success(res.message);
 			newDashboardName.value = "";
 			showPopover.value = false;
+			await navigateTo(`${getDashboardUrl(res.result.id)}?edit=true`);
 		} else {
 			window.$message.error(res.message ?? t("error"));
 		}

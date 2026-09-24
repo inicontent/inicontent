@@ -1,5 +1,5 @@
 <template>
-	<NCollapse :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
+	<NCollapse class="table-search" :triggerAreas="['main', 'arrow']" accordion default-expanded-names="0">
 		<NCollapseItem v-for="(_items, condition, index) in modelValue" :key="condition" :name="index.toString()"
 			:title="t(`${condition}Group`)">
 			<template #header-extra>

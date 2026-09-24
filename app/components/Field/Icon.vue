@@ -70,8 +70,8 @@ watch(
 	searchQuery,
 	(newValue) => {
 		if (newValue !== modelValue.value) getIconsList(newValue)
+        if(!newValue) modelValue.value = undefined
 	},
-	{ immediate: true },
 )
 
 async function getIconsList(search?: string) {

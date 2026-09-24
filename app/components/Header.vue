@@ -201,7 +201,7 @@ const userDropdownOptions = computed(() => [
 		show: user.value?.role === config.public.idOne,
 	},
 	{
-		label: () => h(NFlex,{ justify: Language.value === "ar" ? "end" : "start", align: "center", style: { flexDirection: Language.value === "ar" ? 'row-reverse' : 'row' } }, () => [
+		label: () => h(NFlex,{ justify: Language.value === "ar" ? "end" : "start", align: "center",  reverse: Language.value === "ar"  }, () => [
 			t("billing"),
 			h(NIcon, { color: ThemeConfig.value.primaryColor}, () => h(Icon, { name: "tabler:external-link" }))
 		]),
