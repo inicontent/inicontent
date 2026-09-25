@@ -40,7 +40,7 @@
 					</NButton>
 				</NButtonGroup>
 			</template>
-			<TableSearchItems v-model="modelValue[condition]" v-model:schema="schema" :callback />
+			<TableSearchItems v-model="modelValue[condition]" v-model:schema="schema" :callback :inline="inline" />
 		</NCollapseItem>
 	</NCollapse>
 </template>
@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 import { Icon, NIcon } from "#components"
 
-const { callback } = defineProps<{ callback?: CallableFunction }>()
+const { callback,inline } = defineProps<{ callback?: CallableFunction, inline?: boolean }>()
 
 const table = useState<Table>("table")
 

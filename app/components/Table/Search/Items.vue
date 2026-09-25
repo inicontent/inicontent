@@ -2,20 +2,20 @@
 	<NFlex item-style="width: 100%">
 		<template v-for="(item, index) in formatedItems">
 			<NInputGroup v-if="Array.isArray(item)" class="searchGroupInput">
-				<NCascader :id="`input-group-1-${randomIdSuffix}-${index}`" size="small" :consistent-menu-width="false" filterable :value="item[0]"
+				<NCascader :id="inline ? `input-group-1-${randomIdSuffix}-${index}` : undefined" size="small" :consistent-menu-width="false" filterable :value="item[0]"
 					@update:value="(v) => item[0] = v" :options="generateSearchInOptions(schema)"
-					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" :to="`#input-group-1-${randomIdSuffix}-${index}`" />
+					:style="`width:${item[3] ? 33.33 : 100}%`" check-strategy="child" :to="inline ? `#input-group-1-${randomIdSuffix}-${index}` : undefined" />
 				<template v-if="item[3]">
-					<NCascader :id="`input-group-2-${randomIdSuffix}-${index}`" size="small" filterable check-strategy="child" :value="item[1]"
+					<NCascader :id="inline ? `input-group-2-${randomIdSuffix}-${index}` : undefined" size="small" filterable check-strategy="child" :value="item[1]"
 						@update:value="(v) => item[1] = v" :options="getAvailableComparisonOperator(item[3])"
-						style="width:33.33%" :to="`#input-group-2-${randomIdSuffix}-${index}`" />
+						style="width:33.33%" :to="inline ? `#input-group-2-${randomIdSuffix}-${index}` : undefined" />
 					<template v-if="isRelativeOperator(item[1])">
-						<NSelect :id="`input-group-3-${randomIdSuffix}-${index}`" size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
+						<NSelect :id="inline ? `input-group-3-${randomIdSuffix}-${index}` : undefined" size="small" style="width:33.33%" :placeholder="t('relativePlaceholder')"
 							:value="(item[2] as string | null) ?? null"
 							:options="relativeSelectOptions[index] ?? getRelativeSelectOptions('', item[2] as string | null, item[3])"
 							filterable remote clearable :on-search="(pattern) => handleRelativeSearch(index, pattern)"
 							tag @update:value="(v) => updateRelativeValue(item, v as string | null)"
-							@keydown.enter.prevent="() => callback && callback()" :to="`#input-group-3-${randomIdSuffix}-${index}`" />
+							@keydown.enter.prevent="() => callback && callback()" :to="inline ? `#input-group-3-${randomIdSuffix}-${index}` : undefined" />
 					</template>
 					<Field v-else :model-value="item[2]" @update:modelValue="(v) => updateFieldValue(item, v)"
 						:field="getFieldFromItem(item)" />
@@ -29,7 +29,7 @@
 					</template>
 				</NButton>
 			</NInputGroup>
-			<LazyTableSearch v-else v-model="(modelValue[index] as searchType)" v-model:schema="schema" :callback />
+			<LazyTableSearch v-else v-model="(modelValue[index] as searchType)" v-model:schema="schema" :callback :inline="inline" />
 		</template>
 	</NFlex>
 </template>
@@ -43,8 +43,9 @@ import {
 } from "inibase/utils"
 import { Icon } from "#components"
 
-const { callback } = defineProps<{
+const { callback, inline } = defineProps<{
 	callback?: CallableFunction
+	inline?: boolean
 }>()
 
 const randomIdSuffix = Date.now()

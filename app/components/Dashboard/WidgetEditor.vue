@@ -142,7 +142,7 @@
 		</NFormItem>
 
 		<NFormItem v-if="model.table" :label="t('filter')" path="searchArray">
-			<LazyTableSearch v-model="model.searchArray" v-model:schema="widgetSchema" />
+			<LazyTableSearch v-model="model.searchArray" v-model:schema="widgetSchema" inline />
 		</NFormItem>
 
 		<NFormItem :label="t('size')" path="size">
