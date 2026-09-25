@@ -1527,7 +1527,7 @@ const applyDatabase = async (message: Message, index: number) => {
 		if (databaseModel.value) databaseModel.value = created.result;
 		// Let the host refresh the database list it owns: the row was created
 		// outside that request.
-		emit("databaseCreated", created.result);
+		refreshNuxtData("databases");
 
 		messages.value.push({
 			sender: "AI",
