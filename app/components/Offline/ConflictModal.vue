@@ -6,18 +6,6 @@
 		:style="{ width: 'min(720px, calc(100vw - 32px))' }"
 		:mask-closable="false"
 	>
-		<template #header-extra>
-			<NButton
-				v-if="conflicts.length"
-				size="small"
-				type="error"
-				quaternary
-				@click="onDiscardAll"
-			>
-				{{ t('discardAll') }}
-			</NButton>
-		</template>
-
 		<!-- Explain why this popped up: an offline edit collided with the server -->
 		<NAlert
 			v-if="conflicts.length"
@@ -25,7 +13,7 @@
 			:show-icon="true"
 			style="margin-bottom: 16px"
 		>
-			{{ t('conflictModalIntro') }}
+			{{ t('offlineBlockedIntro') }}
 		</NAlert>
 
 		<NSpin :show="isSyncing">
@@ -39,7 +27,7 @@
 
 			<NFlex vertical :size="16">
 				<NCard
-					v-for="conflict in conflicts"
+					v-for="conflict in conflicts.slice(0, 1)"
 					:key="conflict.id"
 					:title="`${conflict.method} · ${conflict.table || conflict.database}`"
 					size="small"
@@ -51,9 +39,10 @@
 						</NTag>
 					</template>
 
+					<NAlert v-if="conflict.errorMessage" type="error" style="margin-bottom: 12px">{{ t(conflict.errorMessage) }}</NAlert>
 					<NDescriptions :column="1" size="small" label-placement="top">
 						<NDescriptionsItem :label="t('localVersion')">
-							<pre class="json">{{ pretty(conflict.conflictData?.local) }}</pre>
+							<NInput v-model:value="drafts[conflict.id]" type="textarea" :autosize="{ minRows: 5, maxRows: 16 }" :disabled="isSyncing" />
 						</NDescriptionsItem>
 						<NDescriptionsItem :label="t('serverVersion')">
 							<pre class="json">{{ pretty(conflict.conflictData?.server) }}</pre>
@@ -63,6 +52,7 @@
 					<template #footer>
 						<NFlex justify="end" :size="8">
 							<NButton
+								:disabled="isSyncing"
 								size="small"
 								type="error"
 								@click="keepServer(conflict.id)"
@@ -70,9 +60,10 @@
 								<template #icon>
 									<NIcon><Icon name="tabler:server" /></NIcon>
 								</template>
-								{{ t('keepServer') }}
+								{{ t('offlineDiscard') }}
 							</NButton>
 							<NButton
+								:disabled="isSyncing"
 								size="small"
 								type="primary"
 								@click="keepLocal(conflict.id)"
@@ -80,7 +71,7 @@
 								<template #icon>
 									<NIcon><Icon name="tabler:device-mobile" /></NIcon>
 								</template>
-								{{ t('keepLocal') }}
+								{{ t('offlineEditRetry') }}
 							</NButton>
 						</NFlex>
 					</template>
@@ -100,13 +91,13 @@ import {
 	NDescriptionsItem,
 	NFlex,
 	NIcon,
+	NInput,
 	NModal,
 	NSpin,
 	NTag,
 	NText,
 } from "#components";
 import {
-	discardAllConflicts,
 	resolveConflictKeepLocal,
 	resolveConflictKeepServer,
 	useOfflineSync,
@@ -166,22 +157,43 @@ function pretty(value: any): string {
 	return JSON.stringify(value, null, 2);
 }
 
+const drafts = reactive<Record<string, string>>({});
+watch(
+	conflicts,
+	(entries) => {
+		for (const entry of entries)
+			drafts[entry.id] = JSON.stringify(entry.body, null, 2);
+	},
+	{ immediate: true },
+);
+
 async function keepLocal(id: string) {
-	await resolveConflictKeepLocal(id);
+	let body: any;
+	try {
+		body = JSON.parse(drafts[id] ?? "null");
+	} catch {
+		window.$message?.error(t("offlineInvalidJson"));
+		return;
+	}
+	if (body !== null && (typeof body !== "object" || Array.isArray(body))) {
+		window.$message?.error(t("offlineInvalidJson"));
+		return;
+	}
+	try {
+		await resolveConflictKeepLocal(id, body);
+	} catch {
+		window.$message?.error(t("offlineSyncFailed"));
+	}
 	await refreshCounts();
-	window.$message?.success(t("changeQueuedForSync"));
 }
 
 async function keepServer(id: string) {
-	await resolveConflictKeepServer(id);
+	try {
+		await resolveConflictKeepServer(id);
+	} catch {
+		window.$message?.error(t("offlineSyncFailed"));
+	}
 	await refreshCounts();
-	window.$message?.info(t("localChangeDiscarded"));
-}
-
-async function onDiscardAll() {
-	await discardAllConflicts();
-	await refreshCounts();
-	window.$message?.info(t("allLocalChangesDiscarded"));
 }
 </script>
 

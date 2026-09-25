@@ -3,6 +3,7 @@ import {
 	saveDatabaseConfigLocally,
 } from "~/composables/useLocalDatabaseConfig";
 import { isJunkResponse, isNetworkError } from "~/composables/useOfflineFetch";
+import { getMutationsByScope } from "~/composables/useOfflineQueue";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");
@@ -69,6 +70,28 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		return true;
 	}
 
+	// Replay local schema drafts over cached/server metadata on every navigation.
+	if (import.meta.client) {
+		for (const mutation of await getMutationsByScope(currentDatabaseSlug)) {
+			if (
+				mutation.kind !== "schema" ||
+				!mutation.body ||
+				typeof mutation.body !== "object"
+			)
+				continue;
+			const index = database.value.tables?.findIndex(
+				(table) =>
+					table.slug === mutation.table ||
+					table.slug === (mutation.body as any).slug,
+			);
+			if (index !== undefined && index >= 0 && database.value.tables) {
+				database.value.tables[index] = {
+					...database.value.tables[index],
+					...mutation.body,
+				} as Table;
+			}
+		}
+	}
 	formatDatabase();
 
 	useState<ThemeConfig>("ThemeConfig", () => ({

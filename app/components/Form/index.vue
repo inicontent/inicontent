@@ -173,6 +173,15 @@ const oldModelValue = ref();
 let schemaFetchSequence = 0;
 // Fetch schema and data dynamically from the correct endpoint
 async function fetchSchemaAndData() {
+	if (typeof navigator !== "undefined" && navigator.onLine === false) {
+		const target = database.value.tables?.find(
+			({ slug }) =>
+				slug === (props.table ?? table.value?.slug ?? route.params.table),
+		);
+		if (target?.schema)
+			schema.value = target.schema.filter(filterDefaultColumns);
+		return;
+	}
 	const bodyContent = stripComputedKeys(schema.value, toRaw(modelValue.value));
 	const requestSequence = ++schemaFetchSequence;
 
@@ -449,7 +458,9 @@ async function DELETE() {
 		if (props.onAfterDelete) return props.onAfterDelete((data as any).result);
 
 		await navigateTo(
-			tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? "")),
+			tableUrl(
+				String(props.table ?? table.value?.slug ?? route.params.table ?? ""),
+			),
 		);
 		return;
 	}
@@ -498,13 +509,22 @@ async function CREATE() {
 			if (isOfflineQueuedResult(data)) {
 				window.$message.warning(t("queuedOfflineToast"));
 				useOfflineSync().refreshCounts();
+				if (props.onAfterCreate)
+					return props.onAfterCreate({
+						...bodyContent,
+						id: `pending__${data.queuedId}`,
+					});
 				// Re-read the (cached) table data so the new item shows up in
 				// the list — Table/index.vue merges queued creates into view.
 				await refreshNuxtData(
 					`${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 				);
 				return navigateTo(
-					tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? "")),
+					tableUrl(
+						String(
+							props.table ?? table.value?.slug ?? route.params.table ?? "",
+						),
+					),
 				);
 			}
 
@@ -524,7 +544,10 @@ async function CREATE() {
 			if (props.onAfterCreate) return props.onAfterCreate(data.result);
 
 			return navigateTo(
-				tableUrl(String(props.table ?? table.value?.slug ?? route.params.table ?? ""), `/${data.result.id}/edit`),
+				tableUrl(
+					String(props.table ?? table.value?.slug ?? route.params.table ?? ""),
+					`/${data.result.id}/edit`,
+				),
 			);
 		}
 		window.$message.error(t("inputsAreInvalid"));

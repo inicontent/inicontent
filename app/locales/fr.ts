@@ -945,11 +945,24 @@ export default {
 		},
 
 		// Offline / sync
+		offlineReconnect: "Connexion rétablie. Synchronisez vos modifications enregistrées.",
+		offlineBlockedIntro: "Cette modification bloque la synchronisation. Modifiez-la puis réessayez, ou abandonnez-la pour continuer.",
+		offlineDiscard: "Abandonner la modification",
+		offlineEditRetry: "Enregistrer et réessayer",
+		offlineInvalidJson: "Saisissez un objet JSON valide.",
+		offlineNoSearchColumns: "Cette table ne contient aucune colonne de recherche. Saisissez un identifiant ou configurez les colonnes de recherche.",
+		offlinePickManually: "Plusieurs résultats trouvés. Choisissez manuellement en saisissant l’identifiant exact.",
+		offlineReferenceNotFound: "Aucun résultat trouvé. Saisissez un identifiant ou corrigez le texte.",
+		offlineInvalidReference: "La référence n’a pas pu être résolue.",
+		offlineMissingDependency: "Un élément hors ligne référencé est introuvable. Remplacez son identifiant temporaire ou abandonnez cette modification.",
+		offlineDependencyCycle: "Les références hors ligne forment un cycle. Modifiez les références.",
+		offlineMissingCreatedId: "Le serveur n’a pas renvoyé l’identifiant créé. Vérifiez le serveur avant de réessayer.",
+		offlineSyncFailed: "Échec de la synchronisation. Vérifiez la modification puis réessayez.",
 		online: "En ligne",
 		offline: "Hors ligne",
 		onlineTooltip: "Connecté au serveur",
 		offlineTooltip:
-			"Vous êtes hors ligne. Vous pouvez continuer à consulter et modifier — les modifications sont enregistrées localement et synchronisées à la reconnexion.",
+			"Vous êtes hors ligne. Les modifications sont enregistrées localement. Lancez la synchronisation une fois connecté.",
 		syncingPending: "Synchronisation…",
 		pendingChanges: "{count} modification(s) en attente",
 		syncNow: "Synchroniser",
@@ -970,7 +983,7 @@ export default {
 		allLocalChangesDiscarded:
 			"Toutes les modifications locales ont été annulées",
 		queuedOfflineToast:
-			"Vous êtes hors ligne — votre modification a été enregistrée localement et sera synchronisée à la reconnexion.",
+			"Modification enregistrée localement. Lancez la synchronisation une fois connecté.",
 		createFailed: "Impossible de créer l'élément.",
 		updateFailed: "Impossible de mettre à jour l'élément.",
 		deleteFailed: "Impossible de supprimer l'élément.",

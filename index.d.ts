@@ -1,10 +1,10 @@
 import type {
 	ComparisonOperator,
 	Data,
-	TableObject,
 	Field as dbField,
 	FieldType as dbFieldType,
 	pageInfo,
+	TableObject,
 } from "inibase";
 import type { DataTableColumns, SelectOption } from "naive-ui";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
@@ -289,6 +289,7 @@ declare global {
 		schema?: Schema;
 		width?: number | string;
 		nestedWidthIncrements?: number[];
+		onCreated?: (item?: Item) => void;
 		mode?: "view" | "edit";
 	}[];
 
@@ -351,6 +352,7 @@ declare module "nuxt/schema" {
 }
 
 import type * as _LayerComposables from "./app/composables/index";
+
 /** All function exports from layer composables become available as Vue template globals */
 // biome-ignore lint/suspicious/noExplicitAny: required for TypeScript function-type discrimination in conditional mapped types
 type LayerComposables = {
@@ -366,28 +368,28 @@ declare module "vue" {
 }
 
 export type {
+	Asset,
+	apiResponse,
+	Backup,
 	CMS_FieldType,
+	Dashboard,
+	Database,
 	DB_FieldType,
+	DrawerRef,
 	Field,
+	FormRef,
+	Item,
+	LanguagesType,
 	Schema,
 	Table,
-	User,
-	Item,
-	Database,
-	Asset,
-	Backup,
-	apiResponse,
-	ThemeConfig,
-	LanguagesType,
-	TranslationsType,
 	TableRef,
-	FormRef,
-	DrawerRef,
 	TablesCookie,
-	WidgetType,
-	WidgetSize,
-	WidgetOperation,
-	WidgetDateRange,
+	ThemeConfig,
+	TranslationsType,
+	User,
 	Widget,
-	Dashboard,
+	WidgetDateRange,
+	WidgetOperation,
+	WidgetSize,
+	WidgetType,
 };

@@ -23,7 +23,10 @@ async function loadDrawer(index: number) {
 	if (drawer.id) {
 		const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 		const config = useRuntimeConfig();
-		const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+		const Language = useScopedCookie<LanguagesType>(
+			"language",
+			database.value?.slug,
+		);
 		const currentItem = useState<Item>("currentItem");
 
 		drawer.show = false;
@@ -66,6 +69,7 @@ export default function (
 	id?: string | number,
 	data: Partial<Item> = {},
 	mode: "view" | "edit" = "edit",
+	onCreated?: (item?: Item) => void,
 ) {
 	const Drawers = useState<DrawerRef>("drawers", () => []);
 	const defaultWidth = useCookie<number | string>("drawerWidth", {
@@ -92,8 +96,7 @@ export default function (
 						previousWidth + previousWidth * 0.1,
 					);
 					drawer.width = nextWidth;
-					if (!drawer.nestedWidthIncrements)
-						drawer.nestedWidthIncrements = [];
+					if (!drawer.nestedWidthIncrements) drawer.nestedWidthIncrements = [];
 					drawer.nestedWidthIncrements.push(nextWidth - previousWidth);
 				}
 			}
@@ -107,6 +110,7 @@ export default function (
 			schema: undefined,
 			width, // Set width based on nesting level
 			mode,
+			onCreated,
 		});
 
 		loadDrawer(Drawers.value.length - 1);

@@ -1,4 +1,6 @@
-import { enqueueMutation } from "./useOfflineQueue";
+import { isValidID } from "inibase/utils";
+import { mapOfflineReferences, temporaryReferences } from "./offlineReferences";
+import { enqueueMutation, getAllMutations } from "./useOfflineQueue";
 
 /** Bound for a single request so offline/hung connections fail fast instead of
  * spinning the loading UI forever. Set high enough that slow-but-working API
@@ -14,6 +16,8 @@ type OfflineFetchOptions = {
 	table?: string;
 	/** if true, this is a read-only request and should NOT be queued — it will just throw */
 	readonly?: boolean;
+	kind?: "item" | "schema";
+	tables?: any[];
 };
 
 /**
@@ -107,6 +111,7 @@ const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 export function useOfflineFetch<T = unknown>() {
 	const config = useRuntimeConfig();
 	const apiBase = config.public.apiBase;
+	const databaseState = useState<Database>("database");
 
 	function buildUrl(
 		path: string,
@@ -144,38 +149,59 @@ export function useOfflineFetch<T = unknown>() {
 		const offline = options.offline ?? {};
 		const { url, scopeDatabase } = buildUrl(pathOrUrl, offline.database);
 
+		const isMutation = MUTATION_METHODS.has(method) && !offline.readonly;
+		async function queue() {
+			const queued = await enqueueMutation({
+				method: method as Exclude<HTTPMethod, "GET">,
+				url,
+				body: options.body ?? null,
+				params: options.params ?? options.query,
+				database: offline.database ?? scopeDatabase ?? "inicontent",
+				table: offline.table ?? "",
+				kind: offline.kind ?? "item",
+				tables: JSON.parse(
+					JSON.stringify(offline.tables ?? databaseState.value?.tables ?? []),
+				),
+			});
+			await useOfflineSync().refreshCounts();
+			return { __offlineQueued: true, queuedId: queued.id } as unknown as T;
+		}
+		let unresolvedReference =
+			temporaryReferences(options.body).length > 0 || url.includes("pending__");
+		if (isMutation && offline.kind !== "schema") {
+			const schema =
+				(offline.tables ?? databaseState.value?.tables)?.find(
+					(table) => table.slug === offline.table,
+				)?.schema ?? [];
+			await mapOfflineReferences(options.body, schema, async (value) => {
+				if (
+					typeof value === "string" &&
+					!isValidID(value) &&
+					!/^\d+$/.test(value)
+				)
+					unresolvedReference = true;
+				return value;
+			});
+		}
+		// Once a queue exists, new writes join it until the user chooses to sync.
+		if (
+			isMutation &&
+			typeof window !== "undefined" &&
+			(navigator.onLine === false ||
+				unresolvedReference ||
+				(await getAllMutations()).length > 0)
+		)
+			return queue();
 		try {
+			const { offline: _metadata, ...fetchOptions } = options;
 			return await $fetch<T>(url, {
-				...options,
+				...fetchOptions,
+				retry: 0,
 				timeout: options.timeout ?? REQUEST_TIMEOUT_MS,
 			} as any);
 		} catch (error) {
-			const isMutation = MUTATION_METHODS.has(method);
-			const network = isNetworkError(error);
-
-			// Reads: just rethrow — UI handles the failure.
-			if (!isMutation || offline.readonly) throw error;
-
-			// Mutations: enqueue when offline / network error, otherwise rethrow
-			// (server errors must be surfaced to the user).
-			if (network) {
-				const queued = await enqueueMutation({
-					method: method as Exclude<HTTPMethod, "GET">,
-					url,
-					body:
-						typeof options.body === "string"
-							? options.body
-							: (options.body ?? null),
-					params: options.params ?? options.query,
-					database: offline.database ?? scopeDatabase ?? "inicontent",
-					table: offline.table ?? "",
-				});
-				return {
-					__offlineQueued: true,
-					queuedId: queued.id,
-					error,
-				} as unknown as T;
-			}
+			if (isMutation && (isNetworkError(error) || isJunkResponse(error)))
+				return queue();
 			throw error;
 		}
 	}

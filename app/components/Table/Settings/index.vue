@@ -208,7 +208,8 @@ async function pasteFieldsFromClipboard() {
 	}
 	expandedNames.value = [inserted[0].id as string];
 	setTimeout(
-		() => document.getElementById(`element-${inserted[0].id}`)?.scrollIntoView(),
+		() =>
+			document.getElementById(`element-${inserted[0].id}`)?.scrollIntoView(),
 		300,
 	);
 }
@@ -229,7 +230,10 @@ const tableCopy = ref<
 	displayAs: table.value.displayAs || "table",
 	schema: table.value.schema || [],
 });
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 function sanitizeSchema(schema: Schema): Schema {
 	return schema
 		.filter((field) => field.type !== "custom") // Remove custom fields
@@ -280,43 +284,66 @@ async function updateTable() {
 			if (bodyContent.schema)
 				bodyContent.schema = sanitizeSchema(bodyContent.schema);
 
-			const data = await $fetch<
-				apiResponse<Table & { localLabel?: { value: string; label: string }[] }>
-			>(
-				`${config.public.apiBase}inicontent/databases/${database.value.slug
-				}/${route.params.table ?? table.value.slug}`,
-				{
-					method: "PUT",
-					body: bodyContent,
-					params: {
-						locale: Language.value,
-						[`${database.value.slug}_sid`]: sessionID.value,
+			try {
+				const data = await useOfflineFetch<
+					apiResponse<
+						Table & { localLabel?: { value: string; label: string }[] }
+					>
+				>().request(
+					`${config.public.apiBase}inicontent/databases/${
+						database.value.slug
+					}/${route.params.table ?? table.value.slug}`,
+					{
+						method: "PUT",
+						offline: {
+							database: database.value.slug,
+							table: String(route.params.table ?? table.value.slug),
+							kind: "schema",
+						},
+						body: bodyContent,
+						params: {
+							locale: Language.value,
+							[`${database.value.slug}_sid`]: sessionID.value,
+						},
+						credentials: "include",
 					},
-					credentials: "include",
-				},
-			);
-			const tableIndex = database.value.tables?.findIndex(
-				({ slug }) => slug === (route.params.table ?? table.value.slug),
-			);
-			if (
-				tableIndex !== undefined &&
-				tableIndex !== -1 &&
-				database.value.tables &&
-				data?.result
-			) {
-				data.result.displayAs = data.result.displayAs || "table";
-				database.value.tables[tableIndex] = data.result;
-				table.value = data.result;
-				tableCopy.value = data.result;
+				);
+				if (isOfflineQueuedResult(data)) {
+					const index = database.value.tables?.findIndex(
+						({ slug }) => slug === (route.params.table ?? table.value.slug),
+					);
+					if (index !== undefined && index >= 0 && database.value.tables)
+						database.value.tables[index] = { ...tableCopy.value };
+					table.value = { ...tableCopy.value };
+					window.$message.warning(t("queuedOfflineToast"));
+					Loading.value.updateTable = false;
+					return;
+				}
+				const tableIndex = database.value.tables?.findIndex(
+					({ slug }) => slug === (route.params.table ?? table.value.slug),
+				);
+				if (
+					tableIndex !== undefined &&
+					tableIndex !== -1 &&
+					database.value.tables &&
+					data?.result
+				) {
+					data.result.displayAs = data.result.displayAs || "table";
+					database.value.tables[tableIndex] = data.result;
+					table.value = data.result;
+					tableCopy.value = data.result;
 
-				if ((route.params.table ?? table.value.slug) !== data.result.slug)
-					router.replace({
-						params: { table: data.result.slug },
-					});
-				window.$message.success(data?.message ?? t("success"));
-			} else window.$message.error(data?.message ?? t("error"));
-
-			Loading.value.updateTable = false;
+					if ((route.params.table ?? table.value.slug) !== data.result.slug)
+						router.replace({
+							params: { table: data.result.slug },
+						});
+					window.$message.success(data?.message ?? t("success"));
+				} else window.$message.error(data?.message ?? t("error"));
+			} catch {
+				window.$message.error(t("updateFailed"));
+			} finally {
+				Loading.value.updateTable = false;
+			}
 		} else window.$message.error(t("inputsAreInvalid"));
 	});
 }
@@ -328,7 +355,8 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${config.public.apiBase}inicontent/databases/${database.value.slug
+		`${config.public.apiBase}inicontent/databases/${
+			database.value.slug
 		}/${route.params.table ?? table.value.slug}`,
 		{
 			method: "DELETE",
@@ -371,22 +399,22 @@ watch(
 		tableCopy.value.localLabel =
 			view !== "kanban"
 				? tableCopy.value.label
-					?.split(/(@\w+)/g)
-					.filter((value: string) => value.trim() !== "")
-					.map((label: string) => {
-						if (label.startsWith("@"))
+						?.split(/(@\w+)/g)
+						.filter((value: string) => value.trim() !== "")
+						.map((label: string) => {
+							if (label.startsWith("@"))
+								return {
+									label:
+										flattenCopySchema.value.find(
+											({ id }) => String(id) === label.slice(1),
+										)?.key ?? "",
+									value: label,
+								};
 							return {
-								label:
-									flattenCopySchema.value.find(
-										({ id }) => String(id) === label.slice(1),
-									)?.key ?? "",
+								label,
 								value: label,
 							};
-						return {
-							label,
-							value: label,
-						};
-					})
+						})
 				: undefined;
 	},
 	{ immediate: true },
@@ -427,7 +455,7 @@ function renderSingleLabel(
 		{
 			type:
 				labelObject.value.startsWith("@") &&
-					isNumber(labelObject.value.slice(1))
+				isNumber(labelObject.value.slice(1))
 					? "primary"
 					: "default",
 			closable: true,
@@ -470,8 +498,8 @@ const generalSettingsSchema = reactive<Schema>([
 		required: true,
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -481,8 +509,8 @@ const generalSettingsSchema = reactive<Schema>([
 		subType: "icon",
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -498,8 +526,8 @@ const generalSettingsSchema = reactive<Schema>([
 		],
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 3,
 	},
@@ -510,8 +538,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "compression.description",
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 6,
 	},
@@ -521,8 +549,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "cacheDescription",
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 6,
 	},
@@ -532,8 +560,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "recentItemsAppearAtTheTop",
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 6,
 	},
@@ -543,8 +571,8 @@ const generalSettingsSchema = reactive<Schema>([
 		description: "disableIdEncryption",
 		inputProps: isUnDeletable.value
 			? {
-				disabled: true,
-			}
+					disabled: true,
+				}
 			: {},
 		width: 6,
 	},

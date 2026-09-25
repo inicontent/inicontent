@@ -1,7 +1,7 @@
 <template>
 	<FieldWrapper :field :rule v-model="modelValue">
 		<NSelect :placeholder="t(field.key)" :value="selectValue" @update:value="onUpdateSelectValue" :options="options" remote
-			clearable :filterable="!!searchIn && searchIn.length > 0" :loading="loading" :reset-menu-on-options-change="false"
+			clearable :filterable="!isOnline || (!!searchIn && searchIn.length > 0)" :tag="!isOnline" :loading="loading" :reset-menu-on-options-change="false"
 			:multiple="!!field.isArray" consistent-menu-width max-tag-count="responsive"
 			@update:show="(show) => show && loadOptions()" @scroll="handleScroll" @search="debouncedLoadOptions" v-bind="field.inputProps
 				? typeof field.inputProps === 'function'
@@ -10,7 +10,7 @@
 				: {}">
 			<template #action v-if="table?.allowedMethods?.includes('c')">
 				<NFlex justify="center">
-					<NButton round strong secondary type="primary" @click="() => openDrawer(field.table as string)">
+					<NButton round strong secondary type="primary" @click="createReferencedItem">
 						<template #icon>
 							<Icon name="tabler:plus" />
 						</template>
@@ -29,9 +29,10 @@ import type { FormItemRule } from "naive-ui";
 import { debounce } from "~/composables";
 
 const { field } = defineProps<{ field: Field }>();
-const modelValue = defineModel<Item | Item[]>();
+const modelValue = defineModel<string | Item | (string | Item)[]>();
 const options = ref<tableOption[] | undefined>();
 const loading = ref(false);
+const { isOnline } = useOfflineSync();
 const loadingMore = ref(false);
 const database = useState<Database>("database");
 
@@ -59,7 +60,10 @@ watch(
 			.map((entry) => String(entry).trim())
 			.filter(Boolean);
 
-		if (idEntries.length) referenced.register(idEntries);
+		if (isOnline.value && idEntries.length)
+			referenced.register(
+				idEntries.filter((id) => !id.startsWith("pending__")),
+			);
 
 		// Resolved entries become select options: id-strings via the cache,
 		// objects as-is.
@@ -118,16 +122,23 @@ const selectValue = computed<null | string | string[]>(() => {
 	return toID(Array.isArray(value) ? value[0] : value) ?? null;
 });
 
-const rule: FormItemRule = {
+const rule = computed<FormItemRule>(() => ({
 	trigger: ["blur", "change"],
 	type: !field.isArray ? "string" : "array",
-	required: field.required,
-	min: field.isArray ? field.min : undefined,
+	required: isOnline.value && field.required,
+	min: isOnline.value && field.isArray ? field.min : undefined,
 	validator: async () => {
 		await nextTick();
+		if (
+			!isOnline.value &&
+			(modelValue.value == null ||
+				modelValue.value === "" ||
+				(Array.isArray(modelValue.value) && !modelValue.value.length))
+		)
+			return;
 		return fieldValidator(field, modelValue.value);
 	},
-};
+}));
 
 const config = useRuntimeConfig();
 
@@ -151,8 +162,8 @@ async function onUpdateSelectValue(
 ) {
 	modelValue.value = option
 		? Array.isArray(option)
-			? option.map(({ raw }) => raw)
-			: option.raw
+			? option.map(({ raw, value }) => raw ?? value)
+			: (option.raw ?? _id)
 		: undefined;
 	await nextTick();
 	if (
@@ -165,11 +176,23 @@ async function onUpdateSelectValue(
 		);
 }
 
-const searchIn = table?.defaultSearchableColumns
-	? table.defaultSearchableColumns.map((columnID) =>
-			getPath(table.schema ?? [], columnID),
-		)
-	: field.searchIn;
+function createReferencedItem() {
+	openDrawer(String(field.table), undefined, {}, "edit", (item) => {
+		if (!item) return;
+		modelValue.value = field.isArray
+			? [...([] as any[]).concat(modelValue.value ?? []), item]
+			: item;
+		options.value = [...(options.value ?? []), singleOption(item)];
+	});
+}
+
+const searchIn =
+	field.searchIn ??
+	(table?.defaultSearchableColumns
+		? table.defaultSearchableColumns.map((columnID) =>
+				getPath(table.schema ?? [], columnID),
+			)
+		: undefined);
 
 const pagination = ref<pageInfo>();
 const where = ref<string>();
@@ -181,6 +204,21 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function loadOptions(searchValue?: string | number) {
+	if (!isOnline.value) {
+		const pending = await getPendingCreates(
+			database.value.slug,
+			String(field.table),
+		);
+		const all = [
+			...(options.value ?? []),
+			...Object.values(referenced.items.value).map(singleOption),
+			...pending.map(singleOption),
+		];
+		options.value = [
+			...new Map(all.map((option) => [option.value, option])).values(),
+		];
+		return;
+	}
 	const seq = ++requestSeq;
 	const searchOrObject =
 		searchValue &&
@@ -294,6 +332,7 @@ function handleScroll(e: Event) {
 }
 
 async function loadMoreOptions() {
+	if (!isOnline.value) return;
 	if (
 		loading.value ||
 		loadingMore.value ||

@@ -1,9 +1,21 @@
+import Inison from "inison";
+import { nextOfflineMutation } from "./offlineOrder";
 import {
+	mapOfflineReferences,
+	resolveOfflineReference,
+	temporaryReferences,
+} from "./offlineReferences";
+import {
+	loadDatabaseConfigLocally,
+	saveDatabaseConfigLocally,
+} from "./useLocalDatabaseConfig";
+import {
+	completeMutation,
+	getAllMutations,
 	getConflicts,
 	getPendingCount,
-	getPendingMutations,
-	incrementRetry,
 	markConflict,
+	type PendingMutation,
 	removeMutation,
 	requeueMutation,
 } from "./useOfflineQueue";
@@ -12,196 +24,188 @@ type SyncResult = {
 	id: string;
 	method: string;
 	url: string;
-	status: "success" | "conflict" | "error" | "skipped";
+	status: "success" | "conflict" | "error";
 	message?: string;
 };
-
-const MAX_RETRIES = 5;
-
-/** Bound for a single mutation/conflict request so a hung request can never
- * block the sync loop forever (navigator.onLine can stay true even when the
- * device has no real route to the API). Generous enough that slow-but-working
- * API calls are NOT mistaken for offline failures. */
 const REQUEST_TIMEOUT_MS = 30_000;
-
 let initialized = false;
 
-/**
- * Manages background sync of offline-queued mutations. On reconnect (or when
- * explicitly triggered) it drains the queue in order, re-sending each mutation
- * to the remote API. Conflicted writes are parked for manual resolution.
- *
- * Shared state is stored in Nuxt `useState` so every consumer (Header badge,
- * conflict drawer, etc.) observes the same values.
- */
+/** Manual replay only. Every failure remains a durable barrier until edited or discarded. */
 export function useOfflineSync() {
-	const isOnline = useState<boolean>("offline_isOnline", () =>
-		typeof navigator === "undefined" ? true : navigator.onLine !== false,
+	const isOnline = useState<boolean>(
+		"offline_isOnline",
+		() => typeof navigator === "undefined" || navigator.onLine !== false,
 	);
 	const isSyncing = useState<boolean>("offline_isSyncing", () => false);
 	const syncResults = useState<SyncResult[]>("offline_syncResults", () => []);
-	const conflicts = useState<any[]>("offline_conflicts", () => []);
+	const conflicts = useState<PendingMutation[]>("offline_conflicts", () => []);
 	const pendingCount = useState<number>("offline_pendingCount", () => 0);
+	const database = useState<Database>("database");
 
 	async function refreshCounts() {
 		pendingCount.value = await getPendingCount();
 		conflicts.value = await getConflicts();
 	}
 
-	/**
-	 * Send a single queued mutation to the API.
-	 * @returns true on success, 'conflict' on 409/4xx conflict, false on transient failure
-	 */
-	async function sendMutation(mutation: any): Promise<boolean | "conflict"> {
-		const fetchOptions: Record<string, any> = {
+	async function sendMutation(
+		mutation: PendingMutation,
+		queue: PendingMutation[],
+	) {
+		const tables = mutation.tables ?? database.value?.tables ?? [];
+		let body = mutation.body;
+		if (mutation.kind !== "schema") {
+			body = await mapOfflineReferences(
+				body,
+				tables.find((table) => table.slug === mutation.table)?.schema ?? [],
+				async (value, field) => {
+					const url = new URL(mutation.url);
+					const parts = url.pathname.split("/");
+					const index = parts.lastIndexOf(mutation.database);
+					if (index < 0) throw new Error("offlineInvalidReference");
+					url.pathname = [...parts.slice(0, index + 1), field.table].join("/");
+					return resolveOfflineReference(
+						value,
+						field,
+						tables.find((table) => table.slug === field.table),
+						(where, page) =>
+							$fetch(url.href, {
+								credentials: "include",
+								retry: 0,
+								timeout: REQUEST_TIMEOUT_MS,
+								params: {
+									...mutation.params,
+									return: undefined,
+									where,
+									options: Inison.stringify({ page, perPage: 100 }),
+								},
+							}),
+						getPath,
+					);
+				},
+			);
+		}
+		const response: any = await $fetch(mutation.url, {
 			method: mutation.method,
 			credentials: "include",
+			retry: 0,
 			timeout: REQUEST_TIMEOUT_MS,
-		};
-		if (mutation.method !== "DELETE") {
-			fetchOptions.body = mutation.body ?? undefined;
+			body: mutation.method === "DELETE" ? undefined : (body ?? undefined),
+			params: {
+				...mutation.params,
+				...(mutation.method === "POST" ? { return: true } : {}),
+			},
+		});
+		if (
+			!response ||
+			typeof response !== "object" ||
+			response.result == null ||
+			response.result === false ||
+			response.code === "CONFLICT" ||
+			Number(response.code) >= 400
+		) {
+			throw new Error(response?.message || "offlineSyncFailed");
 		}
-		if (mutation.params && Object.keys(mutation.params).length > 0) {
-			fetchOptions.params = mutation.params;
+		const realId = response.result?.id;
+		const temp = `pending__${mutation.id}`;
+		if (
+			mutation.method === "POST" &&
+			!realId &&
+			queue.some(
+				(entry) =>
+					temporaryReferences(entry.body).includes(temp) ||
+					entry.url.includes(temp),
+			)
+		) {
+			throw new Error("offlineMissingCreatedId");
 		}
-
-		try {
-			const res = await $fetch(mutation.url, fetchOptions);
-			// Some endpoints return a response with .code on conflict-like states
-			if (res && typeof res === "object" && "code" in res) {
-				const code = (res as any).code;
-				if (code === 409 || code === "409" || code === "CONFLICT") {
-					return "conflict";
-				}
+		if (
+			mutation.kind === "schema" &&
+			database.value?.slug === mutation.database &&
+			response.result &&
+			typeof response.result === "object"
+		) {
+			const index = database.value.tables?.findIndex(
+				(table) =>
+					table.slug === mutation.table || table.slug === response.result.slug,
+			);
+			if (index !== undefined && index >= 0 && database.value.tables) {
+				database.value.tables[index] = response.result;
+				saveDatabaseConfigLocally(mutation.database, database.value);
 			}
-			// A response means it worked — remove from queue.
-			await removeMutation(mutation.id);
-			return true;
-		} catch (error: any) {
-			const status = error?.response?.status ?? error?.status;
-			// Treat 4xx (except network) as conflict, not retryable.
-			if (status && status >= 400 && status < 500) {
-				return "conflict";
-			}
-			// 5xx / network errors: retryable
-			return false;
 		}
+		await completeMutation(
+			mutation,
+			realId == null ? undefined : String(realId),
+		);
 	}
 
-	async function syncPendingMutations(): Promise<SyncResult[]> {
-		if (isSyncing.value) return syncResults.value;
-		isSyncing.value = true;
+	async function drain(): Promise<SyncResult[]> {
 		const results: SyncResult[] = [];
-
 		try {
-			const mutations = await getPendingMutations();
-			if (mutations.length === 0) {
-				return results;
-			}
-
-			// Nothing to do if the user is explicitly offline (e.g. "Sync now"
-			// clicked while offline) — every request would fail. The online
-			// event listener re-triggers sync automatically on reconnect.
-			if (typeof navigator !== "undefined" && !navigator.onLine) {
-				return results;
-			}
-
-			for (const mutation of mutations) {
-				// Stop if we've gone offline mid-sync
-				if (typeof navigator !== "undefined" && !navigator.onLine) break;
-
-				let outcome: boolean | "conflict" = false;
-				let attempts = 0;
-				while (attempts <= MAX_RETRIES) {
-					outcome = await sendMutation(mutation);
-					if (outcome === true || outcome === "conflict") break;
-					await incrementRetry(mutation.id);
-					attempts++;
-					await new Promise((r) => setTimeout(r, 500 * Math.min(attempts, 4)));
-				}
-
-				if (outcome === true) {
+			while (isOnline.value && navigator.onLine !== false) {
+				const queue = await getAllMutations();
+				let mutation = queue[0];
+				if (!mutation) break;
+				try {
+					mutation = nextOfflineMutation(queue)!;
+					if (mutation.status === "conflict") break;
+					await sendMutation(mutation, queue);
 					results.push({
 						id: mutation.id,
 						method: mutation.method,
 						url: mutation.url,
 						status: "success",
 					});
-				} else if (outcome === "conflict") {
-					// Fetch current server value to present to the resolution UI.
-					let serverData: any = null;
-					try {
-						const serverRes = await $fetch(mutation.url, {
-							method: "GET",
-							credentials: "include",
-							timeout: REQUEST_TIMEOUT_MS,
-						});
-						serverData = serverRes;
-					} catch {
-						serverData = null;
-					}
-					await markConflict(mutation.id, serverData);
-					results.push({
-						id: mutation.id,
-						method: mutation.method,
-						url: mutation.url,
-						status: "conflict",
-					});
-				} else {
+				} catch (error: any) {
+					const message =
+						error?.data?.message ?? error?.message ?? "offlineSyncFailed";
+					await markConflict(mutation.id, error?.data ?? null, message);
 					results.push({
 						id: mutation.id,
 						method: mutation.method,
 						url: mutation.url,
 						status: "error",
-						message: "Max retries reached",
+						message,
 					});
+					break;
 				}
 			}
-
-			syncResults.value = results;
-			return results;
-		} catch (error) {
-			// Never let an unexpected failure wedge the sync flag — the finally
-			// below resets it, but log so we can trace what interrupted the sync.
-			console.warn("[OfflineSync] Sync interrupted:", error);
 			return results;
 		} finally {
-			// Always clear the flag so the UI can never show an endless spinner.
+			syncResults.value = results;
 			isSyncing.value = false;
-
-			// Refresh any cached Nuxt data so the UI shows the synced state.
-			try {
+			await refreshCounts();
+			if (results.some((result) => result.status === "success"))
 				await refreshNuxtData();
-			} catch (error) {
-				console.warn("[OfflineSync] refreshNuxtData failed:", error);
-			}
-			try {
-				await refreshCounts();
-			} catch (error) {
-				console.warn("[OfflineSync] refreshCounts failed:", error);
-			}
+		}
+	}
+
+	async function syncPendingMutations(): Promise<SyncResult[]> {
+		if (isSyncing.value || typeof window === "undefined")
+			return syncResults.value;
+		isSyncing.value = true;
+		// A second open tab must not replay the same queue concurrently.
+		try {
+			if (navigator.locks)
+				return await navigator.locks.request("inicontent-offline-sync", drain);
+			return await drain();
+		} finally {
+			isSyncing.value = false;
 		}
 	}
 
 	function initSync() {
-		if (initialized) return;
+		if (initialized || typeof window === "undefined") return;
 		initialized = true;
-
-		if (typeof window !== "undefined") {
-			window.addEventListener("online", () => {
-				isOnline.value = true;
-				syncPendingMutations();
-			});
-			window.addEventListener("offline", () => {
-				isOnline.value = false;
-			});
-
-			// Kick off the initial queue count (runs once, independent of any
-			// component lifecycle so callers can invoke it anywhere).
-			refreshCounts().then(() => {});
-		}
+		isOnline.value = navigator.onLine !== false;
+		window.addEventListener("online", () => {
+			isOnline.value = true;
+		});
+		window.addEventListener("offline", () => {
+			isOnline.value = false;
+		});
+		void refreshCounts();
 	}
-
 	return {
 		isOnline,
 		isSyncing,
@@ -214,22 +218,38 @@ export function useOfflineSync() {
 	};
 }
 
-// Convenience exports for components that only need conflict management
-export async function resolveConflictKeepLocal(id: string) {
-	await requeueMutation(id);
-	// Immediately try to sync it
+export async function resolveConflictKeepLocal(
+	id: string,
+	body?: PendingMutation["body"],
+) {
 	const state = useOfflineSync();
+	if (state.isSyncing.value) return;
+	await requeueMutation(id, body);
 	await state.syncPendingMutations();
+	await state.refreshCounts();
 }
 
 export async function resolveConflictKeepServer(id: string) {
+	const state = useOfflineSync();
+	if (state.isSyncing.value) return;
+	const database = useState<Database>("database");
+	const mutation = (await getAllMutations()).find((entry) => entry.id === id);
 	await removeMutation(id);
-}
-
-/** Discard ALL local changes (server wins for everything). */
-export async function discardAllConflicts() {
-	const all = await getConflicts();
-	for (const c of all) {
-		await removeMutation(c.id);
+	if (
+		mutation?.kind === "schema" &&
+		database.value?.slug === mutation.database
+	) {
+		const saved = loadDatabaseConfigLocally(mutation.database)?.tables?.find(
+			(table) => table.slug === mutation.table,
+		);
+		const index = database.value.tables?.findIndex(
+			(table) =>
+				table.slug === mutation.table ||
+				table.slug === (mutation.body as any)?.slug,
+		);
+		if (saved && index !== undefined && index >= 0 && database.value.tables)
+			database.value.tables[index] = saved;
 	}
+	await state.syncPendingMutations();
+	await state.refreshCounts();
 }

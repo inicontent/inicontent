@@ -1,9 +1,14 @@
 import type { IDBPDatabase } from "idb";
 import { openDB } from "idb";
+import {
+	mapOfflineReferences,
+	replaceTemporaryReference,
+} from "./offlineReferences";
 
 const DB_NAME = "inicontent-offline-queue";
 const STORE_NAME = "pending-mutations";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
+const ID_MAP_STORE = "resolved-ids";
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -31,6 +36,9 @@ export type PendingMutation = {
 	/** populated when status === 'conflict': what the server currently has */
 	conflictData?: { local: any; server: any } | null;
 	errorMessage?: string | null;
+	kind?: "item" | "schema";
+	/** Snapshot needed to resolve references even after a reload. */
+	tables?: any[];
 };
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -39,6 +47,8 @@ function initDB(): Promise<IDBPDatabase> {
 	if (!dbPromise) {
 		dbPromise = openDB(DB_NAME, DB_VERSION, {
 			upgrade(db) {
+				if (!db.objectStoreNames.contains(ID_MAP_STORE))
+					db.createObjectStore(ID_MAP_STORE);
 				if (!db.objectStoreNames.contains(STORE_NAME)) {
 					const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
 					store.createIndex("timestamp", "timestamp", { unique: false });
@@ -72,7 +82,7 @@ export async function enqueueMutation(
 			try {
 				safeBody = JSON.parse(JSON.stringify(safeBody)) as typeof safeBody;
 			} catch {
-				safeBody = null;
+				throw new Error("Cannot persist this change");
 			}
 		}
 	}
@@ -85,12 +95,59 @@ export async function enqueueMutation(
 		retryCount: 0,
 		status: "pending",
 	};
-	try {
-		const db = await initDB();
-		await db.put(STORE_NAME, record);
-	} catch (error) {
-		console.warn("[OfflineQueue] Failed to enqueue mutation:", error);
+	const records: PendingMutation[] = [];
+	async function prepare(entry: PendingMutation): Promise<void> {
+		if (entry.kind !== "schema") {
+			const schema =
+				entry.tables?.find((table) => table.slug === entry.table)?.schema ?? [];
+			entry.body = await mapOfflineReferences(
+				entry.body,
+				schema,
+				async (value, field) => {
+					if (!value || typeof value !== "object") return value;
+					if (value.id != null) return value.id;
+					const target = entry.tables?.find(
+						(table) => table.slug === field.table,
+					);
+					if (!target) throw new Error("offlineInvalidReference");
+					const url = new URL(entry.url);
+					const segments = url.pathname.split("/");
+					const dbIndex = segments.lastIndexOf(entry.database);
+					if (dbIndex < 0) throw new Error("offlineInvalidReference");
+					url.pathname = [...segments.slice(0, dbIndex + 1), field.table].join(
+						"/",
+					);
+					const child: PendingMutation = {
+						...entry,
+						id: randomID(),
+						method: "POST",
+						url: url.href,
+						table: field.table,
+						body: value,
+					};
+					await prepare(child);
+					return `pending__${child.id}`;
+				},
+			);
+		}
+		records.push(entry);
 	}
+	await prepare(record);
+	const db = await initDB();
+	const tx = db.transaction([STORE_NAME, ID_MAP_STORE], "readwrite");
+	const store = tx.objectStore(STORE_NAME);
+	const idMap = (await tx.objectStore(ID_MAP_STORE).get(record.database)) ?? {};
+	const all = await store.getAll();
+	let timestamp = Math.max(Date.now(), ...all.map((m) => m.timestamp + 1));
+	for (const entry of records) {
+		entry.timestamp = timestamp++;
+		for (const [temp, id] of Object.entries(idMap)) {
+			entry.body = replaceTemporaryReference(entry.body, temp, String(id));
+			entry.url = replaceUrlReference(entry.url, temp, String(id));
+		}
+		await store.put(entry);
+	}
+	await tx.done;
 	return record;
 }
 
@@ -116,7 +173,7 @@ export async function getAllMutations(): Promise<PendingMutation[]> {
 		return all.sort((a, b) => a.timestamp - b.timestamp);
 	} catch (error) {
 		console.warn("[OfflineQueue] Failed to read mutations:", error);
-		return [];
+		throw error;
 	}
 }
 
@@ -129,12 +186,7 @@ export async function getMutationsByScope(
 		const db = await initDB();
 		const all = await db.getAll(STORE_NAME);
 		return all
-			.filter(
-				(m) =>
-					m.database === database &&
-					(!table || m.table === table) &&
-					m.status !== "conflict",
-			)
+			.filter((m) => m.database === database && (!table || m.table === table))
 			.sort((a, b) => a.timestamp - b.timestamp);
 	} catch (error) {
 		console.warn("[OfflineQueue] Failed to read scoped mutations:", error);
@@ -149,6 +201,7 @@ export async function removeMutation(id: string): Promise<void> {
 		await db.delete(STORE_NAME, id);
 	} catch (error) {
 		console.warn(`[OfflineQueue] Failed to remove mutation ${id}:`, error);
+		throw error;
 	}
 }
 
@@ -156,6 +209,7 @@ export async function removeMutation(id: string): Promise<void> {
 export async function markConflict(
 	id: string,
 	serverData: any,
+	errorMessage?: string,
 ): Promise<PendingMutation | undefined> {
 	try {
 		const db = await initDB();
@@ -164,13 +218,14 @@ export async function markConflict(
 		const updated: PendingMutation = {
 			...existing,
 			status: "conflict",
+			errorMessage,
 			conflictData: { local: existing.body, server: serverData },
 		};
 		await db.put(STORE_NAME, updated);
 		return updated;
 	} catch (error) {
 		console.warn(`[OfflineQueue] Failed to mark conflict for ${id}:`, error);
-		return undefined;
+		throw error;
 	}
 }
 
@@ -191,7 +246,10 @@ export async function incrementRetry(id: string): Promise<void> {
 }
 
 /** Re-queue a conflicted mutation (user chose "keep local"). */
-export async function requeueMutation(id: string): Promise<void> {
+export async function requeueMutation(
+	id: string,
+	body?: PendingMutation["body"],
+): Promise<void> {
 	try {
 		const db = await initDB();
 		const existing = await db.get(STORE_NAME, id);
@@ -199,11 +257,14 @@ export async function requeueMutation(id: string): Promise<void> {
 		await db.put(STORE_NAME, {
 			...existing,
 			status: "pending",
+			body: body === undefined ? existing.body : body,
+			errorMessage: null,
 			retryCount: 0,
 			conflictData: null,
 		});
 	} catch (error) {
 		console.warn(`[OfflineQueue] Failed to requeue mutation ${id}:`, error);
+		throw error;
 	}
 }
 
@@ -283,7 +344,7 @@ export async function getPendingCreates(
 	try {
 		const mutations = await getMutationsByScope(database, table);
 		return mutations
-			.filter((m) => m.method === "POST")
+			.filter((m) => m.method === "POST" && m.kind !== "schema")
 			.map((m) => {
 				const body =
 					m.body && typeof m.body === "object" && !Array.isArray(m.body)
@@ -299,4 +360,38 @@ export async function getPendingCreates(
 		console.warn("[OfflineQueue] Failed to build pending creates:", error);
 		return [];
 	}
+}
+
+/** Substitute ids and remove the child in one durable transaction. */
+function replaceUrlReference(url: string, temp: string, id: string) {
+	return url
+		.split("/")
+		.map((part) =>
+			decodeURIComponent(part) === temp ? encodeURIComponent(id) : part,
+		)
+		.join("/");
+}
+
+export async function completeMutation(
+	mutation: PendingMutation,
+	realId?: string,
+) {
+	const db = await initDB();
+	const tx = db.transaction([STORE_NAME, ID_MAP_STORE], "readwrite");
+	const store = tx.objectStore(STORE_NAME);
+	if (realId) {
+		const temp = `pending__${mutation.id}`;
+		const maps = tx.objectStore(ID_MAP_STORE);
+		const mapping = (await maps.get(mutation.database)) ?? {};
+		mapping[temp] = realId;
+		await maps.put(mapping, mutation.database);
+		for (const entry of await store.getAll()) {
+			if (entry.database !== mutation.database) continue;
+			entry.body = replaceTemporaryReference(entry.body, temp, realId);
+			entry.url = replaceUrlReference(entry.url, temp, realId);
+			await store.put(entry);
+		}
+	}
+	await store.delete(mutation.id);
+	await tx.done;
 }

@@ -61,9 +61,9 @@
 					<NSpin />
 				</div>
 
-				<slot v-if="isDrawerFormMode(drawer)" @after-create="() => onAfterUpdateCreate(index)" @after-update="() => onAfterUpdateCreate(index)">
+				<slot v-if="isDrawerFormMode(drawer)" @after-create="(item) => onAfterUpdateCreate(index, item)" @after-update="() => onAfterUpdateCreate(index)">
 					<Form :ref="(el: any) => formRefs[index] = el" v-model="drawer.data" :table="drawer.table"
-						@after-create="() => onAfterUpdateCreate(index)"
+						@after-create="(item) => onAfterUpdateCreate(index, item)"
 						@after-update="() => onAfterUpdateCreate(index)" v-model:schema="drawer.schema"></Form>
 				</slot>
 
@@ -81,7 +81,10 @@
 
 <script setup lang="ts">
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const { tableUrl } = useTableUrl();
 
@@ -117,7 +120,9 @@ function isDrawerFormMode(drawer?: DrawerRef[number]) {
 }
 
 function canEditDrawer(drawer?: DrawerRef[number]) {
-	return !!(drawer?.id && getDrawerTable(drawer)?.allowedMethods?.includes("u"));
+	return !!(
+		drawer?.id && getDrawerTable(drawer)?.allowedMethods?.includes("u")
+	);
 }
 
 function switchDrawerToEdit(index: number) {
@@ -141,7 +146,8 @@ function onUpdateShow(index: number, show: boolean) {
 	}
 }
 
-async function onAfterUpdateCreate(index: number) {
+async function onAfterUpdateCreate(index: number, item?: Item) {
+	if (item) Drawers.value[index]?.onCreated?.(item);
 	onUpdateShow(index, false);
 	const drawer = Drawers.value[index];
 	if (!drawer) return;

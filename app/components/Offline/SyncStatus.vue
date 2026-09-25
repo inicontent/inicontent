@@ -7,6 +7,8 @@
 		:style="{ maxWidth: '280px' }"
 	>
 		<template #trigger>
+			<NTooltip :show="reconnectHint" trigger="manual">
+			<template #trigger><span>
 			<NBadge
 				v-if="badgeCount > 0"
 				:value="badgeCount"
@@ -29,6 +31,9 @@
 					</NIcon>
 				</template>
 			</NButton>
+			</span></template>
+			{{ t("offlineReconnect") }}
+			</NTooltip>
 		</template>
 
 		<NFlex vertical justify="center" :size="6" style="min-width: 200px">
@@ -70,7 +75,7 @@
 					<NText depth="2" style="font-size: 12px">
 						{{ t("pendingChanges", { count: pendingCount }) }}
 					</NText>
-					<NButton size="tiny" type="primary" tertiary @click="onOpenSync">
+					<NButton size="tiny" type="primary" tertiary :disabled="!isOnline || conflictCount > 0" @click="onOpenSync">
 						{{ t("syncNow") }}
 					</NButton>
 				</NFlex>
@@ -160,6 +165,18 @@ const {
 	initSync,
 } = useOfflineSync();
 const show = ref(false);
+const reconnectHint = ref(false);
+let hintTimer: ReturnType<typeof setTimeout> | undefined;
+watch(isOnline, (online, wasOnline) => {
+	clearTimeout(hintTimer);
+	reconnectHint.value =
+		online && !wasOnline && pendingCount.value + conflicts.value.length > 0;
+	if (reconnectHint.value)
+		hintTimer = setTimeout(() => {
+			reconnectHint.value = false;
+		}, 2000);
+});
+onUnmounted(() => clearTimeout(hintTimer));
 
 // Reactive $pwa instance injected by the vite-pwa Nuxt client plugin.
 const { $pwa } = useNuxtApp() as any;
@@ -208,7 +225,9 @@ function onInstall() {
 }
 
 function onOpenSync() {
-	syncPendingMutations();
+	void syncPendingMutations().catch(() =>
+		window.$message?.error(t("offlineSyncFailed")),
+	);
 }
 
 // The conflict resolution UI lives as a global modal (mounted in the layout);
