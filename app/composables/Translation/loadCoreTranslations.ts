@@ -2,7 +2,6 @@ import defineTranslation from "./define"
 
 // Track which languages have been loaded
 const loadedLanguages = new Set<string>()
-
 const locales = import.meta.glob("../../locales/*.ts")
 
 /**

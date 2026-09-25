@@ -183,6 +183,10 @@ a {
     margin-bottom: 20px;
 }
 
+.message-row .n-card-header__main {
+    font-size: var(--n-font-size);
+}
+
 /* Transition */
 .chatbot-panel-enter-active,
 .chatbot-panel-leave-active {

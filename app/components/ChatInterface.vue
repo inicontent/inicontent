@@ -10,10 +10,16 @@
 				</NButton>
 
 				<NCard :bordered="true" class="message-card">
-					<template
-						#header
-						v-if="message.action && (['database_approval_pending', 'roles_defined', 'tables_naming_pending', 'tables_approval_pending', 'structure_generated', 'data_approval_pending', 'translation_approval_pending', 'dashboards_approval_pending', 'dashboards_delete_pending']).includes(message.action)"
-					>
+					<template v-if="message.sender === 'AI'" #header>
+						<div class="message-text">
+							{{ message.text }}
+						</div>
+					</template>
+					<div v-if="message.sender === 'User'" class="message-text">
+						{{ message.text }}
+					</div>
+
+					<template v-if="message.action && (['database_approval_pending', 'roles_defined', 'tables_naming_pending', 'tables_approval_pending', 'structure_generated', 'data_approval_pending', 'translation_approval_pending', 'dashboards_approval_pending', 'dashboards_delete_pending']).includes(message.action)">
 						<NFlex align="center" :wrap="true">
 							<NTag v-if="message.action === 'database_approval_pending' && getMessageDatabasePlan(message)" size="small" round type="success">
 								<template #icon><NIcon><Icon name="tabler:database-plus" /></NIcon></template>
@@ -366,9 +372,6 @@
 						</NTable>
 					</template>
 
-					<div class="message-text">
-						{{ message.text }}
-					</div>
 					<NFlex
 						v-if="message.translationResults?.length"
 						vertical
@@ -459,7 +462,7 @@
 		<NFlex align="center" class="message-input">
 			<NInput ref="inputRef" type="textarea" :rows="1" style="flex: 1; max-height: 200px; overflow-y: auto"
 				:autosize="{ minRows: 2, maxRows: 5 }" v-model:value="currentMessage" :placeholder="dynamicPlaceholder"
-				@keyup.enter="handleEnterKey" :disabled="loading" clearable />
+				@keydown.enter="handleEnterKey" :disabled="loading" clearable />
 			<NButton :loading type="primary" secondary @click="sendMessage"
 				:disabled="!currentMessage.trim() || loading">
 				<template #icon>
@@ -545,6 +548,7 @@
 
 <script setup lang="ts">
 import type { DataTableColumns } from "naive-ui";
+import { buildChatGenerationMessage, buildChatRoutingMessage, redirectChat } from "../utils/chatRouting";
 import { Icon, LazyColumn, NFlex } from "#components";
 
 const props = defineProps<{
@@ -552,7 +556,7 @@ const props = defineProps<{
 	persistKey?: string;
 	resetNonce?: number;
 }>();
-const emit = defineEmits<{ skip: [] }>();
+const emit = defineEmits<{ skip: []; databaseCreated: [database: Database] }>();
 const databaseModel = defineModel<Database>("database");
 const route = useRoute();
 const { hasActiveSubscription, loadSubscriptionData } = useSubscription();
@@ -570,7 +574,8 @@ type MessageAction =
 	| "error"
 	| "roles_defined"
 	| "redirect"
-	| "structure_generated";
+	| "structure_generated"
+	| "completed";
 
 type TableResponse = {
 	slug: string;
@@ -1520,6 +1525,9 @@ const applyDatabase = async (message: Message, index: number) => {
 		message.applied = true;
 		chatDatabaseContext.value = created.result;
 		if (databaseModel.value) databaseModel.value = created.result;
+		// Let the host refresh the database list it owns: the row was created
+		// outside that request.
+		emit("databaseCreated", created.result);
 
 		messages.value.push({
 			sender: "AI",
@@ -1671,7 +1679,10 @@ const applyTables = async (message: Message, index: number) => {
 
 		const normalized = data.result ?? data;
 
-		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (!Array.isArray(normalized.results) || !normalized.results.length) {
+			throw new Error("The server did not confirm any changes. Refresh before retrying.");
+		}
+		const failed = normalized.results.filter((r) => r.success !== true);
 		if (failed.length) {
 			messages.value.push({
 				sender: "AI",
@@ -1762,6 +1773,9 @@ const continueToSchema = async (message: Message, index: number) => {
 						slug: name.slug,
 						label: name.label,
 						icon: name.icon,
+						id: name.id,
+						oldSlug: name.oldSlug,
+						isNew: name.isNew,
 					})),
 					existingTables: (activeDatabase.value?.tables || [])
 						.filter(
@@ -1891,7 +1905,10 @@ const applyData = async (message: Message, index: number) => {
 		});
 
 		const normalized = data.result ?? data;
-		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (!Array.isArray(normalized.results) || !normalized.results.length) {
+			throw new Error("The server did not confirm any changes. Refresh before retrying.");
+		}
+		const failed = normalized.results.filter((r) => r.success !== true);
 		if (failed.length) {
 			messages.value.push({
 				sender: "AI",
@@ -1973,7 +1990,10 @@ const applyTranslation = async (message: Message, index: number) => {
 		});
 
 		const normalized = data.result ?? data;
-		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (!Array.isArray(normalized.results) || !normalized.results.length) {
+			throw new Error("The server did not confirm any changes. Refresh before retrying.");
+		}
+		const failed = normalized.results.filter((r) => r.success !== true);
 		if (failed.length) {
 			messages.value.push({
 				sender: "AI",
@@ -2061,7 +2081,10 @@ const applyDashboards = async (message: Message, index: number) => {
 		});
 
 		const normalized = data.result ?? data;
-		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (!Array.isArray(normalized.results) || !normalized.results.length) {
+			throw new Error("The server did not confirm any changes. Refresh before retrying.");
+		}
+		const failed = normalized.results.filter((r) => r.success !== true);
 		if (failed.length) {
 			messages.value.push({
 				sender: "AI",
@@ -2135,7 +2158,10 @@ const applyDashboardDeletes = async (message: Message, index: number) => {
 		});
 
 		const normalized = data.result ?? data;
-		const failed = (normalized.results || []).filter((r) => !r.success);
+		if (!Array.isArray(normalized.results) || !normalized.results.length) {
+			throw new Error("The server did not confirm any changes. Refresh before retrying.");
+		}
+		const failed = normalized.results.filter((r) => r.success !== true);
 		if (failed.length) {
 			messages.value.push({
 				sender: "AI",
@@ -2462,7 +2488,7 @@ const fetchExistingDashboards = async (): Promise<Dashboard[] | undefined> => {
 
 const sendMessage = async () => {
 	const originalUserText = currentMessage.value.trim();
-	if (originalUserText === "") return;
+	if (originalUserText === "" || loading.value) return;
 	const requestSnapshot = requestVersion.value;
 
 	loading.value = true;
@@ -2473,6 +2499,11 @@ const sendMessage = async () => {
 	if (!userHasScrolledUp.value) await scrollToBottom();
 
 	let responseIdForPayload = responseID.value;
+	// Reclassify every user turn; a schema assistant cannot insert data or
+	// build pages. Keep its response chain only if the router selects it again.
+	let requestEndpoint = "";
+	const routingMessage = buildChatRoutingMessage(userMessageToPush, currentEndpoint.value,
+		messages.value.slice(0, -1).slice(-2));
 
 	let keepTrying = true;
 	let maxRedirects = 3;
@@ -2498,13 +2529,13 @@ const sendMessage = async () => {
 				secondaryLanguages?: string[];
 				primaryLanguage?: string;
 			} = {
-				message: userMessageToPush,
-				responseID: responseIdForPayload || undefined,
+				message: requestEndpoint ? buildChatGenerationMessage(userMessageToPush) : routingMessage,
+				responseID: requestEndpoint ? responseIdForPayload || undefined : undefined,
 			};
 
 			// Step selection for the tables endpoint: propose names first on
 			// fresh build flows, then design schemas once names are approved.
-			if (currentEndpoint.value === "tables") {
+			if (requestEndpoint === "tables") {
 				payload.step = shouldUseNamesStep() ? "names" : "schema";
 			}
 
@@ -2512,10 +2543,10 @@ const sendMessage = async () => {
 			// pages or dashboards endpoint (dashboards need them to validate
 			// widget table/field references).
 			if (
-				(currentEndpoint.value === "tables" ||
-					currentEndpoint.value === "data" ||
-					currentEndpoint.value === "pages" ||
-					currentEndpoint.value === "dashboards") &&
+				(requestEndpoint === "tables" ||
+					requestEndpoint === "data" ||
+					requestEndpoint === "pages" ||
+					requestEndpoint === "dashboards") &&
 				activeDatabase.value?.tables?.length
 			) {
 				const systemTables = ["sessions", "assets", "translations"];
@@ -2537,12 +2568,12 @@ const sendMessage = async () => {
 
 			// Included existing dashboards context so the assistant can edit
 			// stored dashboards and cannot duplicate names.
-			if (currentEndpoint.value === "dashboards") {
+			if (requestEndpoint === "dashboards") {
 				payload.existingDashboards = await fetchExistingDashboards();
 			}
 
 			// Include language context when targeting the translate endpoint
-			if (currentEndpoint.value === "translate") {
+			if (requestEndpoint === "translate") {
 				if (activeDatabase.value?.secondaryLanguages?.length)
 					payload.secondaryLanguages = activeDatabase.value
 						.secondaryLanguages as string[];
@@ -2558,7 +2589,7 @@ const sendMessage = async () => {
 
 			const data = await $fetch<AIHttpEnvelope>(
 				`${config.public.apiBase}${activeDatabaseSlug.value}/ai${
-					currentEndpoint.value ? `/${currentEndpoint.value}` : ""
+					requestEndpoint ? `/${requestEndpoint}` : ""
 				}`,
 				{
 					method: "POST",
@@ -2571,8 +2602,10 @@ const sendMessage = async () => {
 
 			const normalized = resolveAIHttpEnvelope(data);
 			if (requestSnapshot !== requestVersion.value) return;
-			responseID.value = normalized.responseID ?? "";
-			responseIdForPayload = normalized.responseID ?? "";
+			if (requestEndpoint) {
+				responseID.value = normalized.responseID ?? "";
+				responseIdForPayload = normalized.responseID ?? "";
+			}
 
 			const response = normalized.response;
 			if (!response || typeof response.action !== "string") {
@@ -2580,13 +2613,11 @@ const sendMessage = async () => {
 			}
 
 			if (response.action === "redirect" && response.target) {
-				const switchedEndpoint = currentEndpoint.value !== response.target;
-				currentEndpoint.value = response.target;
-				if (switchedEndpoint) {
-					// Start a fresh chain for the specialized assistant so its own system prompt is applied.
-					responseID.value = "";
-					responseIdForPayload = "";
-				}
+				const next = redirectChat(currentEndpoint.value, responseIdForPayload, response.target);
+				currentEndpoint.value = next.endpoint;
+				requestEndpoint = next.endpoint;
+				responseID.value = next.responseID;
+				responseIdForPayload = next.responseID;
 				keepTrying = true;
 			} else {
 				if (
@@ -2773,6 +2804,10 @@ const sendMessage = async () => {
 							response.message ||
 							"Review the dashboards to delete before confirming.",
 					});
+				} else if (response.action === "completed") {
+					// A generation response is never evidence that a write occurred.
+					messages.value.push({ sender: "AI", text: response.action ?? t("chatNoChangesApplied") });
+					responseID.value = "";
 				} else if (response.message) {
 					messages.value.push({
 						sender: "AI",

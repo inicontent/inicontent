@@ -239,7 +239,7 @@ const filteredTables = computed(() =>
 	modelValue.value.tables
 		?.filter(
 			({ allowedMethods, show, slug }) =>
-				allowedMethods?.includes("r") && show !== false && slug !== "dashboards",
+				allowedMethods?.includes("r") && show !== false && slug !== "dashboards" && slug !== "backups",
 		)
 		.sort(
 			(a, b) =>

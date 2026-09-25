@@ -615,6 +615,7 @@ export default {
 		reorderFields: "Réorganiser les champs",
 
 		// Chatbot IA
+		chatNoChangesApplied: "Cette réponse n’a appliqué aucune modification. Vérifiez et appliquez une proposition pour enregistrer les changements.",
 		chatbot: "Assistant IA",
 		chatWelcomeDefault:
 			"Bonjour ! Je peux vous aider à créer de nouvelles tables de base de données ou à modifier celles qui existent. Décrivez ce dont vous avez besoin et je générerai les schémas pour vous.",

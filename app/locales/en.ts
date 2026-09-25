@@ -270,6 +270,7 @@ export default {
 			"Automatically compress and optimize uploaded files for better performance",
 
 		// AI Chatbot
+		chatNoChangesApplied: "No changes were applied by this reply. Review and apply a proposal to save changes.",
 		chatbot: "AI Assistant",
 		chatWelcomeDefault:
 			"Hi! I can help you create new database tables or modify existing ones. Describe what you need and I'll generate the schemas for you.",
