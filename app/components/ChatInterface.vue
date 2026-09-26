@@ -19,6 +19,29 @@
 						{{ message.text }}
 					</div>
 
+					<!-- Database picker: context switch, not an approval, so it has no action buttons. -->
+					<NFlex
+						v-if="message.action === 'database_selection_needed' && !message.selectedDatabase"
+						align="center"
+						:wrap="true"
+						:size="8"
+						style="margin-top: 8px;"
+					>
+						<NButton
+							v-for="option in message.databases ?? []"
+							:key="option.slug"
+							size="small"
+							round
+							:loading="switchingDatabaseSlug === option.slug"
+							@click="selectDatabaseForPendingRequest(message, option)"
+						>
+							<template #icon>
+								<NIcon><Icon name="tabler:database" /></NIcon>
+							</template>
+							{{ option.label }}
+						</NButton>
+					</NFlex>
+
 					<template v-if="message.action && (['database_approval_pending', 'roles_defined', 'tables_naming_pending', 'tables_approval_pending', 'structure_generated', 'data_approval_pending', 'translation_approval_pending', 'dashboards_approval_pending', 'dashboards_delete_pending']).includes(message.action)">
 						<NFlex align="center" :wrap="true">
 							<NTag v-if="message.action === 'database_approval_pending' && getMessageDatabasePlan(message)" size="small" round type="success">
@@ -548,7 +571,7 @@
 
 <script setup lang="ts">
 import type { DataTableColumns } from "naive-ui";
-import { buildChatGenerationMessage, buildChatRoutingMessage, redirectChat } from "../utils/chatRouting";
+import { buildChatGenerationMessage, buildChatRoutingMessage, buildCreateDatabaseMessage, redirectChat } from "../utils/chatRouting";
 import { Icon, LazyColumn, NFlex } from "#components";
 
 const props = defineProps<{
@@ -561,8 +584,17 @@ const databaseModel = defineModel<Database>("database");
 const route = useRoute();
 const { hasActiveSubscription, loadSubscriptionData } = useSubscription();
 
+type DatabaseOption = {
+	slug: string;
+	label: string;
+	primaryLanguage?: string;
+	secondaryLanguages?: string[];
+	primaryColor?: string;
+};
+
 type MessageAction =
 	| "clarification_needed"
+	| "database_selection_needed"
 	| "database_approval_pending"
 	| "tables_naming_pending"
 	| "tables_approval_pending"
@@ -686,6 +718,11 @@ type AIResponsePayload = {
 	items?: DataItem[] | TranslationPlanItem[];
 	remainingTables?: string[];
 	database?: DatabasePlan;
+	databases?: DatabaseOption[];
+	// Named `targetDatabase` rather than `target`: `target` is already the
+	// string routing label a `redirect` action carries.
+	targetDatabase?: { slug: string; label: string };
+	canCreate?: boolean;
 	reusableBlocks?: ReusableBlockProposal[];
 	dashboards?: DashboardProposal[];
 	deleteIDs?: Array<string | number>;
@@ -703,6 +740,9 @@ type AIHttpEnvelope = {
 	pages?: PageResponse[];
 	items?: DataItem[];
 	database?: DatabasePlan;
+	databases?: DatabaseOption[];
+	targetDatabase?: { slug: string; label: string };
+	canCreate?: boolean;
 	reusableBlocks?: ReusableBlockProposal[];
 	message?: string;
 	result?: {
@@ -716,6 +756,9 @@ type AIHttpEnvelope = {
 		pages?: PageResponse[];
 		items?: DataItem[];
 		database?: DatabasePlan;
+		databases?: DatabaseOption[];
+		targetDatabase?: { slug: string; label: string };
+		canCreate?: boolean;
 		reusableBlocks?: ReusableBlockProposal[];
 		message?: string;
 	};
@@ -734,6 +777,10 @@ type Message = {
 	superseded?: boolean;
 	/** A names card the user already continued to the schema step. */
 	continued?: boolean;
+	/** Databases offered by a `database_selection_needed` card. */
+	databases?: DatabaseOption[];
+	/** Set once the user picks one, so the card stops offering a choice. */
+	selectedDatabase?: string;
 	translationResults?: TranslationResult[];
 	/** Data-agent tables the AI still has to generate for this message, auto-fetched next. */
 	remainingTables?: string[];
@@ -1254,6 +1301,79 @@ const isNestedDatabaseContext = computed(() => {
 	return !!slug && slug !== "inicontent";
 });
 
+/**
+ * A database-scoped request made from the inicontent workspace. Held so that
+ * picking (or creating) a database can replay the user's original message
+ * against it instead of losing the request.
+ */
+type PendingDatabaseRequest = {
+	endpoint: string;
+	/** The user's original wording, replayed verbatim after a context switch. */
+	originalMessage: string;
+	databases: DatabaseOption[];
+};
+const pendingDatabaseRequest = ref<PendingDatabaseRequest | null>(null);
+const switchingDatabaseSlug = ref<string | null>(null);
+
+/** Load a database so `activeDatabase` can supply its tables to the agent. */
+const loadDatabaseForChat = async (slug: string): Promise<Database | null> => {
+	try {
+		const fetched = await $fetch<apiResponse<Database>>(
+			`${config.public.apiBase}inicontent/databases/${encodeURIComponent(slug)}`,
+			{
+				credentials: "include",
+				query: buildRequestParams("inicontent"),
+			},
+		);
+		return fetched?.result ?? null;
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Switch the chat to a real database and replay the pending request against it.
+ * The response id is cleared because the conversation was routed against the
+ * workspace, and its tables/dashboards are a different scope.
+ */
+const switchChatToDatabase = async (slug: string) => {
+	const pending = pendingDatabaseRequest.value;
+	if (!pending) return;
+
+	switchingDatabaseSlug.value = slug;
+	try {
+		// The chat usually already holds this database; only pay for a fetch
+		// when the context switch targets one it has never seen.
+		const loaded = findKnownDatabase(slug) ?? (await loadDatabaseForChat(slug));
+		if (!loaded?.slug) {
+			messages.value.push({
+				sender: "AI",
+				action: "error",
+				text: `Could not open the database "${slug}".`,
+			});
+			return;
+		}
+
+		chatDatabaseContext.value = loaded;
+		if (databaseModel.value) databaseModel.value = loaded;
+		responseID.value = "";
+		pendingDatabaseRequest.value = null;
+
+		// Replay the original request now that a real database is in context.
+		await sendMessage(pending.originalMessage);
+	} finally {
+		switchingDatabaseSlug.value = null;
+	}
+};
+
+const selectDatabaseForPendingRequest = async (
+	message: Message,
+	option: DatabaseOption,
+) => {
+	message.selectedDatabase = option.slug;
+	await switchChatToDatabase(option.slug);
+};
+
 const getWelcomeMessage = () => {
 	if (isNestedDatabaseContext.value) {
 		return t("chatWelcomeScopedDatabase");
@@ -1419,6 +1539,23 @@ const activeDatabaseSlug = computed(
 const activeDatabase = computed(
 	() => chatDatabaseContext.value ?? databaseModel.value ?? database.value,
 );
+
+/**
+ * Resolve a database by slug, preferring the copy the chat already holds. A
+ * context switch must not depend on an extra round trip, and the object the
+ * chat holds is the one whose tables the agent will see.
+ */
+const findKnownDatabase = (slug: string): Database | null => {
+	const candidates = [
+		chatDatabaseContext.value,
+		databaseModel.value,
+		database.value,
+	];
+	for (const candidate of candidates) {
+		if (candidate?.slug === slug) return candidate;
+	}
+	return null;
+};
 
 const buildRequestParams = (targetSlug: string) => {
 	const scopedSession = useScopedCookie<string>("sid", targetSlug);
@@ -2311,6 +2448,8 @@ const resetChat = async () => {
 	currentEndpoint.value = props.endpoint;
 	currentMessage.value = "";
 	chatDatabaseContext.value = null;
+	pendingDatabaseRequest.value = null;
+	switchingDatabaseSlug.value = null;
 	selectedTable.value = null;
 	showTableModal.value = false;
 	showPageModal.value = false;
@@ -2486,8 +2625,8 @@ const fetchExistingDashboards = async (): Promise<Dashboard[] | undefined> => {
 	}
 };
 
-const sendMessage = async () => {
-	const originalUserText = currentMessage.value.trim();
+const sendMessage = async (explicitText?: string) => {
+	const originalUserText = (explicitText ?? currentMessage.value).trim();
 	if (originalUserText === "" || loading.value) return;
 	const requestSnapshot = requestVersion.value;
 
@@ -2613,11 +2752,26 @@ const sendMessage = async () => {
 			}
 
 			if (response.action === "redirect" && response.target) {
+				// A "create it" reply to the database picker: the databases agent
+				// needs the original request to name and scope the new database,
+				// not the bare confirmation.
+				const createMessage = pendingDatabaseRequest.value
+					? buildCreateDatabaseMessage(pendingDatabaseRequest.value.originalMessage)
+					: undefined;
+
 				const next = redirectChat(currentEndpoint.value, responseIdForPayload, response.target);
 				currentEndpoint.value = next.endpoint;
 				requestEndpoint = next.endpoint;
 				responseID.value = next.responseID;
 				responseIdForPayload = next.responseID;
+				pendingDatabaseRequest.value = null;
+
+				if (createMessage) {
+					messages.value.push({ sender: "User", text: createMessage });
+					await sendMessage(createMessage);
+					return;
+				}
+
 				keepTrying = true;
 			} else {
 				if (
@@ -2627,6 +2781,35 @@ const sendMessage = async () => {
 					messages.value.push({
 						sender: "AI",
 						text: response.questions.map((q, i) => `${i + 1}. ${q}`).join("\n"),
+					});
+				} else if (response.action === "database_selection_needed") {
+					// The API resolved one unambiguous database on its own: switch
+					// context and replay rather than asking the user to choose.
+					if (response.targetDatabase?.slug) {
+						await switchChatToDatabase(response.targetDatabase.slug);
+						return;
+					}
+
+					const databases = Array.isArray(response.databases)
+						? response.databases.filter(
+								(option): option is DatabaseOption =>
+									typeof option?.slug === "string" && !!option.slug,
+							)
+						: [];
+
+					pendingDatabaseRequest.value = {
+						endpoint: requestEndpoint,
+						originalMessage: originalUserText,
+						databases,
+					};
+
+					messages.value.push({
+						sender: "AI",
+						action: "database_selection_needed",
+						databases,
+						text:
+							response.message ||
+							'Which database should I use? You can also reply "create it" to create a new one.',
 					});
 				} else if (response.action === "database_approval_pending") {
 					const databasePlan = isDatabasePlan(response.database)

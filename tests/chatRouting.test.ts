@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import {
 	buildChatRoutingMessage,
+	buildCreateDatabaseMessage,
 	redirectChat,
 } from "../app/utils/chatRouting.ts";
 
@@ -45,4 +46,12 @@ test("current intent precedes bounded history, including after long prior messag
 	assert.ok(result.length < 700);
 	assert.ok(result.includes("previous assistant was tables"));
 	assert.equal(buildChatRoutingMessage(request), request);
+});
+test("create-database prompt carries the original request, not just the confirmation", () => {
+	const original = "add a products table with name and price";
+	const result = buildCreateDatabaseMessage(original);
+	// The databases agent can only name and scope the new database if the
+	// request it was triggered by survives into the prompt.
+	assert.ok(result.startsWith(original));
+	assert.ok(result.includes("tablesPrompt"));
 });

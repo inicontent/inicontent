@@ -34,6 +34,16 @@ export function redirectChat(
 	};
 }
 
+/**
+ * Turn a database-scoped request plus a "create it" confirmation into the
+ * prompt the databases agent needs. Without the original request inlined the
+ * agent would only see the confirmation and could not name or scope the new
+ * database.
+ */
+export function buildCreateDatabaseMessage(originalRequest: string): string {
+	return `${originalRequest}\n\nThe user chose to create a new database for this request instead of using an existing one. Propose the new database (slug, primary language, color) and set "tablesPrompt" to a concise instruction covering the original request above, so the tables assistant can build it right after the database is created.`;
+}
+
 /** Generation endpoints only prepare proposals; writes use separate approval requests. */
 export function buildChatGenerationMessage(message: string): string {
 	return `${message}\n\nPrepare a proposal for review. This request does not execute changes. Return the appropriate approval-pending action and structured payload (items for data, tables for schemas, pages for websites, dashboards for analytics). Preserve explicitly supplied values. Never claim that records or resources were saved, inserted, updated, or published by this generation request.`;
