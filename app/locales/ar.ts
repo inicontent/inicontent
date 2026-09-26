@@ -625,6 +625,17 @@ export default {
 
 		// AI Chatbot
 		chatNoChangesApplied: "لم يتم تطبيق أي تغييرات بهذه الإجابة. راجع المقترح وطبّقه لحفظ التغييرات.",
+		chatAddAttachment: "إرفاق ملف",
+		chatRemoveAttachment: "إزالة المرفق",
+		chatAttachmentOnlyRequest: "اعمل انطلاقًا من الملف المرفق.",
+		chatAttachmentTooLarge: "يجب أن يكون حجم المرفقات {size} أو أقل.",
+		chatAttachmentsTooMany: "يمكنك إرفاق {count} ملفات كحد أقصى في كل رسالة.",
+		chatAttachmentsTotalTooLarge:
+			"يجب أن يبلغ إجمالي حجم مرفقات الرسالة {size} أو أقل.",
+		chatAttachmentUnsupported:
+			"لا يستطيع المساعد قراءة ملفات «{extension}»، لذلك لم يتم إرفاق {name}.",
+		chatAttachmentEmpty: "{name} فارغ، لذلك لم يتم إرفاقه.",
+		chatAttachmentUploadFailed: "تعذّر رفع {name}. حاول مرة أخرى.",
 		chatbot: "المساعد الذكي",
 		chatWelcomeDefault:
 			"مرحباً! يمكنني مساعدتك في إنشاء جداول قاعدة بيانات جديدة أو تعديل الجداول الموجودة. صف ما تحتاجه وسأقوم بإنشاء المخططات لك.",

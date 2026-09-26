@@ -19,6 +19,27 @@
 						{{ message.text }}
 					</div>
 
+					<!-- Chips on the sent turn, so the thread records what was shared. -->
+					<NFlex
+						v-if="message.sender === 'User' && message.attachments?.length"
+						:wrap="true"
+						:size="6"
+						class="sent-attachments"
+					>
+						<NTag
+							v-for="sent in message.attachments"
+							:key="sent.url ?? sent.name"
+							size="small"
+							round
+							quaternary
+						>
+							<NIcon size="13" style="margin-inline-end: 4px;">
+								<Icon :name="isImageAttachment(sent) ? 'tabler:photo' : 'tabler:file-text'" />
+							</NIcon>
+							{{ sent.name }} · {{ formatAttachmentSize(sent.size) }}
+						</NTag>
+					</NFlex>
+
 					<!-- Database picker: context switch, not an approval, so it has no action buttons. -->
 					<NFlex
 						v-if="message.action === 'database_selection_needed' && !message.selectedDatabase"
@@ -482,12 +503,74 @@
 				</NButton>
 			</NFlex>
 		</div>
-		<NFlex align="center" class="message-input">
+		<NFlex vertical :size="8" class="attachment-bar" v-if="attachments.length > 0">
+			<div
+				v-for="attachment in attachments"
+				:key="attachment.id"
+				class="attachment-chip"
+				:class="{ 'attachment-chip--error': attachment.error }"
+			>
+				<NIcon size="16" class="attachment-chip__icon">
+					<Icon
+						:name="
+							attachment.error
+								? 'tabler:alert-triangle'
+								: isImageAttachment(attachment)
+									? 'tabler:photo'
+									: 'tabler:file-text'
+						"
+					/>
+				</NIcon>
+				<span class="attachment-chip__name">{{ attachment.name }}</span>
+				<NProgress
+					v-if="!attachment.error && !attachment.url"
+					type="line"
+					:percentage="Math.round(attachment.progress ?? 0)"
+					:height="2"
+					:show-indicator="false"
+					class="attachment-chip__progress"
+				/>
+				<span v-else class="attachment-chip__size">
+					{{ formatAttachmentSize(attachment.size) }}
+				</span>
+				<NButton
+					text
+					size="tiny"
+					circle
+					:disabled="loading"
+					:aria-label="t('chatRemoveAttachment')"
+					@click="removeChatAttachment(attachment.id)"
+				>
+					<template #icon><NIcon><Icon name="tabler:x" /></NIcon></template>
+				</NButton>
+			</div>
+		</NFlex>
+		<NFlex align="center" class="message-input" @paste.capture="handlePaste">
+			<input
+				ref="filePickerRef"
+				type="file"
+				multiple
+				class="attachment-picker"
+				tabindex="-1"
+				aria-hidden="true"
+				@change="handleAttachmentPicked"
+			/>
+			<NButton
+				secondary
+				circle
+				:disabled="loading"
+				:aria-label="t('chatAddAttachment')"
+				@click="filePickerRef?.click()"
+			>
+				<template #icon>
+					<NIcon><Icon name="tabler:paperclip" /></NIcon>
+				</template>
+			</NButton>
 			<NInput ref="inputRef" type="textarea" :rows="1" style="flex: 1; max-height: 200px; overflow-y: auto"
 				:autosize="{ minRows: 2, maxRows: 5 }" v-model:value="currentMessage" :placeholder="dynamicPlaceholder"
 				@keydown.enter="handleEnterKey" :disabled="loading" clearable />
 			<NButton :loading type="primary" secondary @click="sendMessage"
-				:disabled="!currentMessage.trim() || loading">
+				:disabled="(!currentMessage.trim() && !hasSendableAttachment) || attachmentsUploading || loading">
 				<template #icon>
 					<NIcon>
 						<Icon name="tabler:send" />
@@ -571,8 +654,32 @@
 
 <script setup lang="ts">
 import type { DataTableColumns } from "naive-ui";
-import { buildChatGenerationMessage, buildChatRoutingMessage, buildCreateDatabaseMessage, redirectChat } from "../utils/chatRouting";
 import { Icon, LazyColumn, NFlex } from "#components";
+import { CHAT_ATTACHMENT_FALLBACK_SLUG } from "../composables/useChatAttachments";
+import type {
+	AttachmentRejection,
+	ChatAttachmentPayload,
+} from "../utils/chatAttachments";
+import {
+	attachmentExtension,
+	buildAttachmentMessage,
+	createPastedTextFile,
+	formatAttachmentSize,
+	imagesFromClipboard,
+	isImageAttachment,
+	MAX_CHAT_ATTACHMENT_BYTES,
+	MAX_CHAT_ATTACHMENTS,
+	MAX_CHAT_ATTACHMENTS_TOTAL_BYTES,
+	shouldConvertPasteToFile,
+	toAttachmentPayload,
+	uploadedAttachments,
+} from "../utils/chatAttachments";
+import {
+	buildChatGenerationMessage,
+	buildChatRoutingMessage,
+	buildCreateDatabaseMessage,
+	redirectChat,
+} from "../utils/chatRouting";
 
 const props = defineProps<{
 	endpoint?: string;
@@ -767,6 +874,8 @@ type AIHttpEnvelope = {
 type Message = {
 	sender: "User" | "AI";
 	text: string;
+	/** Files the user attached to this turn, kept for the sent-message chips. */
+	attachments?: ChatAttachmentPayload[];
 	action?: MessageAction;
 	response?: unknown;
 	responseID?: string;
@@ -2416,6 +2525,84 @@ const getPermissionIcon = (
 const currentMessage = ref("");
 const responseID = ref("");
 
+const {
+	attachments,
+	uploading: attachmentsUploading,
+	addFiles: addChatAttachments,
+	removeAttachment: removeChatAttachment,
+	clearAttachments: clearChatAttachments,
+} = useChatAttachments();
+const filePickerRef = ref<HTMLInputElement>();
+
+/** A finished upload is what makes an attachment-only turn sendable. */
+const hasSendableAttachment = computed(
+	() => uploadedAttachments(attachments.value).length > 0,
+);
+
+const notifyAttachmentRejected = (
+	reason: AttachmentRejection,
+	file: File,
+) => {
+	const reasons: Record<AttachmentRejection, string> = {
+		tooLarge: t("chatAttachmentTooLarge", {
+			size: humanFileSize(MAX_CHAT_ATTACHMENT_BYTES),
+		}),
+		totalTooLarge: t("chatAttachmentsTotalTooLarge", {
+			size: humanFileSize(MAX_CHAT_ATTACHMENTS_TOTAL_BYTES),
+		}),
+		tooMany: t("chatAttachmentsTooMany", { count: MAX_CHAT_ATTACHMENTS }),
+		unsupportedType: t("chatAttachmentUnsupported", {
+			name: file.name,
+			extension: attachmentExtension(file.name) || file.type,
+		}),
+		empty: t("chatAttachmentEmpty", { name: file.name }),
+		uploadFailed: t("chatAttachmentUploadFailed", { name: file.name }),
+	};
+	window.$message.error(reasons[reason]);
+};
+
+/** The tenant whose asset storage receives the upload. */
+const attachmentSlug = computed(
+	() => activeDatabaseSlug.value || CHAT_ATTACHMENT_FALLBACK_SLUG,
+);
+
+const uploadAttachments = (files: File[]) =>
+	addChatAttachments(files, {
+		slug: attachmentSlug.value,
+		params: buildRequestParams(attachmentSlug.value),
+		reject: notifyAttachmentRejected,
+	});
+
+const handleAttachmentPicked = async (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	const files = Array.from(input.files ?? []);
+	// Reset first: without this, re-picking the same file fires no change event.
+	input.value = "";
+	if (files.length > 0) await uploadAttachments(files);
+};
+
+/**
+ * Clipboard paste. An image becomes an attachment; a long text becomes a `.txt`
+ * attachment, because a pasted CSV or log is the request and the short reply is
+ * the instruction. Short text falls through to the textarea as usual.
+ */
+const handlePaste = async (event: ClipboardEvent) => {
+	const images = imagesFromClipboard(event.clipboardData);
+	if (images.length > 0) {
+		event.preventDefault();
+		await uploadAttachments(images);
+		return;
+	}
+
+	const text = event.clipboardData?.getData("text/plain") ?? "";
+	if (!shouldConvertPasteToFile(text)) return;
+
+	event.preventDefault();
+	await uploadAttachments([createPastedTextFile(text)]);
+	// The pasted text is the file now; start the reply from a clean prompt.
+	currentMessage.value = "";
+};
+
 const loading = ref(false);
 const requestVersion = ref(0);
 
@@ -2627,13 +2814,27 @@ const fetchExistingDashboards = async (): Promise<Dashboard[] | undefined> => {
 
 const sendMessage = async (explicitText?: string) => {
 	const originalUserText = (explicitText ?? currentMessage.value).trim();
-	if (originalUserText === "" || loading.value) return;
+	// A turn can be attachment-only ("build a page like this screenshot").
+	const pendingAttachments = toAttachmentPayload(attachments.value);
+	if (
+		(!originalUserText && pendingAttachments.length === 0) ||
+		loading.value ||
+		// Never send a half-uploaded set: the file would silently not go.
+		attachmentsUploading.value
+	)
+		return;
 	const requestSnapshot = requestVersion.value;
 
 	loading.value = true;
 	const userMessageToPush = originalUserText; // Store before clearing
 	currentMessage.value = "";
-	messages.value.push({ sender: "User", text: userMessageToPush });
+	clearChatAttachments();
+	messages.value.push({
+		sender: "User",
+		text: userMessageToPush,
+		// Left off entirely for a text-only turn, to keep persisted state lean.
+		attachments: pendingAttachments.length ? pendingAttachments : undefined,
+	});
 
 	if (!userHasScrolledUp.value) await scrollToBottom();
 
@@ -2641,8 +2842,16 @@ const sendMessage = async (explicitText?: string) => {
 	// Reclassify every user turn; a schema assistant cannot insert data or
 	// build pages. Keep its response chain only if the router selects it again.
 	let requestEndpoint = "";
-	const routingMessage = buildChatRoutingMessage(userMessageToPush, currentEndpoint.value,
-		messages.value.slice(0, -1).slice(-2));
+	// An attachment-only turn still needs something to route on. Only the names
+	// travel: a file called `q3-sales.csv` is a real hint towards the data
+	// agent, and the router still never pays to open a file.
+	const requestText =
+		userMessageToPush || t("chatAttachmentOnlyRequest");
+	const routingMessage = buildChatRoutingMessage(
+		buildAttachmentMessage(requestText, pendingAttachments),
+		currentEndpoint.value,
+		messages.value.slice(0, -1).slice(-2),
+	);
 
 	let keepTrying = true;
 	let maxRedirects = 3;
@@ -2661,6 +2870,7 @@ const sendMessage = async (explicitText?: string) => {
 				message: string;
 				step?: "names" | "schema";
 				responseID?: string;
+				attachments?: ChatAttachmentPayload[];
 				existingTables?:
 					| Record<string, string[]>
 					| Array<{ id?: string; slug: string; keys?: string[]; schema?: Schema }>;
@@ -2668,9 +2878,20 @@ const sendMessage = async (explicitText?: string) => {
 				secondaryLanguages?: string[];
 				primaryLanguage?: string;
 			} = {
-				message: requestEndpoint ? buildChatGenerationMessage(userMessageToPush) : routingMessage,
+				message: requestEndpoint
+					? buildChatGenerationMessage(
+							buildAttachmentMessage(requestText, pendingAttachments),
+						)
+					: routingMessage,
 				responseID: requestEndpoint ? responseIdForPayload || undefined : undefined,
 			};
+
+			// Only the specialist reads the files. The routing hop exists to
+			// classify, truncates to 120 words and must not pay vision cost for
+			// inputs the chosen agent is about to read anyway.
+			if (requestEndpoint && pendingAttachments.length > 0) {
+				payload.attachments = pendingAttachments;
+			}
 
 			// Step selection for the tables endpoint: propose names first on
 			// fresh build flows, then design schemas once names are approved.

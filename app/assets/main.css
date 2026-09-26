@@ -183,6 +183,52 @@ a {
     margin-bottom: 20px;
 }
 
+/* Chat attachments */
+.attachment-picker {
+    display: none;
+}
+
+.attachment-bar {
+    margin-bottom: 8px;
+}
+
+.attachment-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 4px 6px 4px 8px;
+    border: 1px solid var(--n-border-color, rgba(128, 128, 128, 0.2));
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.attachment-chip--error {
+    border-color: var(--n-error-color, #d03050);
+    color: var(--n-error-color, #d03050);
+}
+
+.attachment-chip__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+}
+
+.attachment-chip__size {
+    opacity: 0.6;
+    white-space: nowrap;
+}
+
+.attachment-chip__progress {
+    width: 48px;
+    flex: 0 0 48px;
+}
+
+.sent-attachments {
+    margin-top: 6px;
+}
+
 .message-row .n-card-header__main {
     font-size: var(--n-font-size);
 }

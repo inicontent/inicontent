@@ -616,6 +616,18 @@ export default {
 
 		// Chatbot IA
 		chatNoChangesApplied: "Cette réponse n’a appliqué aucune modification. Vérifiez et appliquez une proposition pour enregistrer les changements.",
+		chatAddAttachment: "Joindre un fichier",
+		chatRemoveAttachment: "Retirer la pièce jointe",
+		chatAttachmentOnlyRequest: "Travaillez à partir du fichier joint.",
+		chatAttachmentTooLarge: "Les pièces jointes doivent faire {size} ou moins.",
+		chatAttachmentsTooMany:
+			"Vous pouvez joindre jusqu’à {count} fichiers par message.",
+		chatAttachmentsTotalTooLarge:
+			"Les pièces jointes d’un message doivent peser {size} au total ou moins.",
+		chatAttachmentUnsupported:
+			"L’assistant ne peut pas lire les fichiers « {extension} », donc {name} n’a pas été joint.",
+		chatAttachmentEmpty: "{name} est vide, il n’a donc pas été joint.",
+		chatAttachmentUploadFailed: "Impossible d’envoyer {name}. Réessayez.",
 		chatbot: "Assistant IA",
 		chatWelcomeDefault:
 			"Bonjour ! Je peux vous aider à créer de nouvelles tables de base de données ou à modifier celles qui existent. Décrivez ce dont vous avez besoin et je générerai les schémas pour vous.",

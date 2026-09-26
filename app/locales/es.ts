@@ -611,6 +611,18 @@ export default {
 		custom: "Personalizado",
 
 		// Chatbot IA
+		chatAddAttachment: "Adjuntar un archivo",
+		chatRemoveAttachment: "Quitar el archivo adjunto",
+		chatAttachmentOnlyRequest: "Trabaja a partir del archivo adjunto.",
+		chatAttachmentTooLarge: "Los archivos adjuntos deben pesar {size} o menos.",
+		chatAttachmentsTooMany:
+			"Puedes adjuntar hasta {count} archivos por mensaje.",
+		chatAttachmentsTotalTooLarge:
+			"Los archivos adjuntos de un mensaje deben sumar {size} en total o menos.",
+		chatAttachmentUnsupported:
+			"El asistente no puede leer archivos «{extension}», por lo que {name} no se adjuntó.",
+		chatAttachmentEmpty: "{name} está vacío, por lo que no se adjuntó.",
+		chatAttachmentUploadFailed: "No se pudo subir {name}. Inténtalo de nuevo.",
 		chatbot: "Asistente IA",
 		chatWelcomeDefault:
 			"¡Hola! Puedo ayudarte a crear nuevas tablas de base de datos o modificar las existentes. Describe lo que necesitas y generaré los esquemas por ti.",

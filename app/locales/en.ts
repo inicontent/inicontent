@@ -271,6 +271,17 @@ export default {
 
 		// AI Chatbot
 		chatNoChangesApplied: "No changes were applied by this reply. Review and apply a proposal to save changes.",
+		chatAddAttachment: "Attach a file",
+		chatRemoveAttachment: "Remove attachment",
+		chatAttachmentOnlyRequest: "Work from the attached file.",
+		chatAttachmentTooLarge: "Attachments must be {size} or smaller.",
+		chatAttachmentsTooMany: "You can attach up to {count} files per message.",
+		chatAttachmentsTotalTooLarge:
+			"Attachments for one message must total {size} or less.",
+		chatAttachmentUnsupported:
+			"The assistant cannot read “{extension}” files, so {name} was not attached.",
+		chatAttachmentEmpty: "{name} is empty, so it was not attached.",
+		chatAttachmentUploadFailed: "Could not upload {name}. Try again.",
 		chatbot: "AI Assistant",
 		chatWelcomeDefault:
 			"Hi! I can help you create new database tables or modify existing ones. Describe what you need and I'll generate the schemas for you.",
