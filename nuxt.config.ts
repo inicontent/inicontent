@@ -48,7 +48,14 @@ const explicitOfflineIcons = [
 // THIS repo only; layer consumers don't install it, so every explicit icon
 // would fail to resolve in their builds (dev warning, and a hard `nuxt
 // prepare` / `nuxt build` failure). Restrict the explicit list to the source
-// app — consumers fall back to `scan` and the Iconify API instead.
+// app — consumers rely on `scan` alone, which covers their static usages.
+//
+// NOTE: this gate is only about the *client* bundle. The server bundle
+// (`/_nuxt_icon/*`) is a separate code path and is NOT gated here, because
+// `provider: "server"` means there is no Iconify API fallback for it — it
+// must serve the collection from disk. modules/icon-collections.ts keeps that
+// path working for consumers in dev. Do not "fix" a broken server bundle by
+// touching this gate.
 const isSourceApp =
 	realpathSync(process.cwd()) ===
 	realpathSync(dirname(fileURLToPath(import.meta.url)));
@@ -77,7 +84,9 @@ export default defineNuxtConfig({
 		// (computed/ternary names) that scanning can't see, i.e. exactly what
 		// the offline status UI needs. That explicit list only applies when
 		// building the source app itself — layer consumers don't have the
-		// `@iconify-json/tabler` package the icons are resolved from.
+		// `@iconify-json/tabler` package the icons are resolved from, and
+		// scan alone is enough for their statically-named usages (the rest
+		// fall through to the server bundle, see isSourceApp above).
 		clientBundle: {
 			scan: true,
 			sizeLimitKb: 512,
