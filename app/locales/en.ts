@@ -514,7 +514,9 @@ export default {
 		// JSON Field
 
 		// Dashboards
+		databases: "Databases",
 		createDatabase: "Create database",
+		create: "Create",
 		basicInformation: "Basic information",
 		basicInformationDescription: "Set database details and default locale.",
 		buildTables: "Build tables",

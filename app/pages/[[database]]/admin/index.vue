@@ -1,5 +1,7 @@
 <template>
-	<NFlex style="width: 100%;" vertical :size="24">
+	<LazyDashboard v-if="database.slug === 'inicontent'" />
+
+	<NFlex v-else style="width: 100%;" vertical :size="24">
 		<NCard :title="t('tables')" style="background:none" :bordered="false">
 			<LazyTableGrid v-model="database" />
 		</NCard>
@@ -16,8 +18,8 @@ definePageMeta({
 })
 
 const database = useState<Database>("database")
-const user = useState<User>("user");
-const config = useRuntimeConfig();
+const user = useState<User | null>("user", () => null)
+const config = useRuntimeConfig()
 
 useHead({
 	title: `${t(database.value.slug)} | ${t("dashboard")}`,
