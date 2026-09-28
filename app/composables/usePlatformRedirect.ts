@@ -1,11 +1,8 @@
-export type PlatformFeature = "pages" | "blocks" | "templates" | "billing";
+export type PlatformFeature = "templates" | "billing";
 
 const platformFeaturePaths: Record<PlatformFeature, string> = {
-	pages: "/admin/tables/pages",
-	// Blocks are managed inside the page builder on the platform (the builder
-	// writes/reads the `/blocks` API) — there is no dedicated blocks admin
-	// surface yet, so point there until one exists.
-	blocks: "/admin/tables/pages",
+	// Email templates still live on the platform until the email builder moves
+	// into the layer (Phase 2) — only pages/blocks shipped in Phase 1.
 	templates: "/admin/tables/templates",
 	billing: "/admin/billing",
 };

@@ -17,6 +17,9 @@
         v-model="modelValue" :field />
     <LazyFieldColor v-else-if="detectedFieldType === 'color'" v-model="modelValue" :field />
     <LazyFieldUrl v-else-if="detectedFieldType === 'url'" v-model="modelValue" :field />
+    <!-- Builder-only field: page picker (type "page" is only used by the page
+        builder block schemas, so this never impacts url fields in the CMS). -->
+    <LazyFieldPageLink v-else-if="detectedFieldType === 'page'" v-model="modelValue" :field />
     <LazyFieldEmail v-else-if="detectedFieldType === 'email'" v-model="modelValue" :field />
     <LazyFieldHtml v-else-if="detectedFieldType === 'html'" v-model="modelValue" :field />
     <LazyFieldNumber v-else-if="detectedFieldType === 'number'" v-model="modelValue" :field />

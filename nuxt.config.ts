@@ -1,6 +1,8 @@
 import { realpathSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
 
 // The SPA app shell is served by the node server at "/" (there is no static
 // index.html in .output/public), so workbox's navigateFallback has nothing to
@@ -56,14 +58,18 @@ const explicitOfflineIcons = [
 // must serve the collection from disk. modules/icon-collections.ts keeps that
 // path working for consumers in dev. Do not "fix" a broken server bundle by
 // touching this gate.
-const isSourceApp =
-	realpathSync(process.cwd()) ===
-	realpathSync(dirname(fileURLToPath(import.meta.url)));
+const isSourceApp = realpathSync(process.cwd()) === realpathSync(currentDir);
 
 export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
 	telemetry: false,
+	// Global stylesheet for the page builder. `.contents` is the block stack
+	// wrapper: a flex column with `container-type: inline-size` so block designs
+	// lay themselves out with container queries instead of viewport media
+	// queries (the same markup is served inside the editor's device preview,
+	// where the viewport is not the page's viewport).
+	css: [join(currentDir, "app/assets/builder.css")],
 	modules: [
 		"@vite-pwa/nuxt",
 		"@nuxtjs/device",

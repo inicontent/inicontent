@@ -1,0 +1,14 @@
+.contents {
+	display: flex;
+	flex-direction: column;
+	background-color: #ffffff;
+	container-type: inline-size;
+}
+
+.dark .contents {
+	background-color: #404040;
+}
+
+.previewDesignWrapper .n-card-cover img {
+	width: unset;
+}

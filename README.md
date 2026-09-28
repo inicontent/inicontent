@@ -24,9 +24,11 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 - **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
   build on. It ships `CONTEXT.md`, the AI-agent build context: authentication, the REST API,
   the query language, table schemas & flows, and custom-route registration.
+- **[`@inicontent/mcp`](https://github.com/inicontent/mcp)** — the MCP server that connects code
+  agents (ChatGPT, Claude, Cursor, OpenCode, …) to a database: REST tools, context resources,
+  and starter scaffolding. This replaced the in-app AI assistant and chatbot.
 - **`inicontent/api (private)`** — the server behind
-  `https://api.inicontent.com/`: REST CRUD per table, authentication, assets, and the built-in
-  AI-assistant endpoints (`{db}/ai`, `{db}/ai/tables`, …).
+  `https://api.inicontent.com/`: REST CRUD per table, authentication, assets.
 
 ## REST API & authentication (short version)
 
@@ -38,8 +40,8 @@ Every database gets a public REST API at `https://api.inicontent.com/{databaseSl
   Inison-stringified `options` query param and filters in `where`.
 - Structure: `GET/POST/PUT/DELETE inicontent/databases/{db}[/{table}]` for metadata, schemas,
   flows (`onRequest`/`onResponse`), and table CRUD.
-- AI assistant: `POST {db}/ai` (router), then `POST/PUT {db}/ai/tables`, `{db}/ai/data`,
-  `{db}/ai/pages` … to design schemas, roles and demo data.
+- AI access goes through the `@inicontent/mcp` server (there are no in-app `/ai` endpoints): its
+  `inicontent_*` tools wrap the endpoints above and scaffold `inicontent/starter` for custom code.
 
 See the `CONTEXT.md` shipped with `inicontent/starter` for the full reference (query language,
 schema field types, flows, routing).

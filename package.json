@@ -13,7 +13,7 @@
 	"bugs": {
 		"url": "https://github.com/inicontent/inicontent/issues"
 	},
-	"description": "A modern, offline-first content management platform built with Nuxt 4, featuring page and email builder, file and data management, and AI-powered document processing",
+	"description": "A modern, offline-first content management platform built with Nuxt 4, featuring page and email builder, file and data management, and client-side document processing",
 	"funding": "https://github.com/sponsors/inicontent",
 	"keywords": [
 		"nuxt",
@@ -28,7 +28,6 @@
 		"tiptap",
 		"editor",
 		"document-processing",
-		"ai",
 		"ocr",
 		"speech-to-text",
 		"file-management"
