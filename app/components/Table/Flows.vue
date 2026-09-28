@@ -3,34 +3,36 @@
 	:header-style="{ paddingRight: 0, paddingLeft: 0 }" content-style="padding: 0"
 	:class="`table_${table.slug}`" id="tableCard">
 		<template #header-extra>
-			<NTabs size="small" style="min-width: 350px;" type="segment" animated v-model:value="currentFlow">
-				<NTab v-for="flowName of flowNames" :name="flowName" />
-				<template #suffix>
-					<NButtonGroup>
-						<NTooltip :delay="1500">
-							<template #trigger>
-								<NButton :type="reorderEnabled ? 'success' : 'default'" secondary round
-									@click="reorderEnabled = !reorderEnabled">
-									<template #icon>
-										<NIcon>
-											<Icon name="tabler:arrows-move" />
-										</NIcon>
-									</template>
-								</NButton>
-							</template>
-							{{ t('reorderFlows') }}
-						</NTooltip>
-						<NButton secondary type="primary" :disabled="Loading.updateTable" :loading="Loading.updateTable" @click="saveFlow">
-							<template #icon>
-								<NIcon :size="18">
-									<Icon name="tabler:device-floppy" />
-								</NIcon>
-							</template>
-							{{ t('save') }}
-						</NButton>
-					</NButtonGroup>
-				</template>
-			</NTabs>
+			<NFlex>
+				<NTabs size="small" style="min-width: 350px;" type="segment" animated v-model:value="currentFlow">
+					<NTab v-for="flowName of flowNames" :name="flowName" />
+					<template #suffix>
+						<NButtonGroup>
+							<NTooltip :delay="1500">
+								<template #trigger>
+									<NButton :type="reorderEnabled ? 'success' : 'default'" secondary round
+										@click="reorderEnabled = !reorderEnabled">
+										<template #icon>
+											<NIcon>
+												<Icon name="tabler:arrows-move" />
+											</NIcon>
+										</template>
+									</NButton>
+								</template>
+								{{ t('reorderFlows') }}
+							</NTooltip>
+							<NButton secondary type="primary" :disabled="Loading.updateTable" :loading="Loading.updateTable" @click="saveFlow">
+								<template #icon>
+									<NIcon :size="18">
+										<Icon name="tabler:device-floppy" />
+									</NIcon>
+								</template>
+								{{ t('save') }}
+							</NButton>
+						</NButtonGroup>
+					</template>
+				</NTabs>
+			</NFlex>
 		</template>
 		<VueDraggable v-model="tableCopy[currentFlow]" ghost-class="flowCardGhost"
 			class="masonry">
