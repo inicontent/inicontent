@@ -76,7 +76,10 @@
 							...(typeof child.inputProps === 'function' ? { inputProps: child.inputProps(index) } : {}),
 							...(typeof child.labelProps === 'function' ? { labelProps: child.labelProps(index) } : {}),
 							...(typeof child.render === 'function' ? { render: child.render(index) } : {})
-						}))" />
+						}))"
+						:table="tableSlug"
+						:element-index="index"
+						:array-key="field.key" />
 					</div>
 				</NCollapseItem>
 			</NCollapse>
@@ -129,10 +132,15 @@ import {
 } from "#components";
 
 const database = useState<Database>("database");
+const route = useRoute();
 
 const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
 
 const { field } = defineProps<{ field: Field }>();
+
+// Table the array column belongs to — needed to resolve computed children that
+// link into another table.
+const tableSlug = computed(() => String(route.params.table ?? ""));
 
 const modelValue = defineModel<(string | number | Item)[]>();
 const parentExpanded = ref<string[]>();

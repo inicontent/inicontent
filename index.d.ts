@@ -104,6 +104,26 @@ declare global {
 		label?: any;
 	};
 	type Schema = Field[];
+
+	/**
+	 * Shared between the field set that owns a row's computed preview and the
+	 * nested field sets that render computed children of array-of-objects
+	 * columns. A compiled expression addresses field ids from the *whole* schema,
+	 * so a computed child inside `components/Field/Array.vue` (which holds one
+	 * element as its row) reads the owner's preview instead of evaluating the
+	 * element on its own.
+	 */
+	type ComputedPreviewContext = {
+		/** Previewed values keyed by dotted column key (`total`, `items.lineTotal`). */
+		preview: Ref<Record<string, number | number[]>>;
+		/**
+		 * Value to display for a field. Computed children hold one preview entry
+		 * per array element, so `elementIndex` selects among them; top-level
+		 * columns omit it.
+		 */
+		displayValue: (field: Field, elementIndex?: number) => any;
+	};
+
 	type FlowType = (
 		| [
 				"set",

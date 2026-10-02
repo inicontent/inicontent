@@ -1,7 +1,11 @@
 <template>
 	<NForm :model="modelValue" ref="formValidationRef">
 		<slot :data="modelValue" :schema>
-			<FieldS v-model="modelValue" v-model:schema="schema" />
+			<FieldS
+				v-model="modelValue"
+				v-model:schema="schema"
+				:table="props.table ?? table.value?.slug ?? String(route.params.table ?? '')"
+			/>
 		</slot>
 	</NForm>
 </template>

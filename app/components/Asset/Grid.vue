@@ -83,12 +83,17 @@
 			</template>
 			{{ deleteConfirmMessage }}
 		</NPopconfirm>
+		<NModal v-model:show="showRenameModal" preset="card" :title="renameTitle" style="max-width:420px">
+			<NInput ref="renameInputElRef" v-model:value="renameValue" :placeholder="t('newName')"
+				:loading="renameLoading" @keydown.enter="renameCurrentAsset" />
+		</NModal>
 	</template>
 	<NEmpty v-else />
 </template>
 
 <script lang="ts" setup>
 import { Icon, NIcon } from "#components";
+import type { InputInst } from "naive-ui";
 import { imageExtensions, officeExtensions, videoExtensions } from "~/composables";
 import { useAssetPreview } from "~/composables/useAssetPreview";
 
@@ -156,10 +161,10 @@ const dropdownOptions = computed(() => [
 	{
 		label: t("rename"),
 		key: "rename",
-		disabled: true,
-		show:
-			table?.allowedMethods?.includes("u") &&
-			CurrentAsset.value?.type === "dir",
+		// Folders carry type "dir", files carry their MIME type — every asset
+		// row has one, so the only gate is the table's update permission,
+		// which is also what the rename endpoint requires.
+		show: table?.allowedMethods?.includes("u") && !!CurrentAsset.value?.type,
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:pencil" })),
 	},
 	{
@@ -189,8 +194,77 @@ function dropdownOnSelect(key: string) {
 			showDrawer.value = true;
 			showDropdown.value = false;
 			break;
+		case "rename":
+			showDropdown.value = false;
+			renameAsset.value = CurrentAsset.value ?? null;
+			// Pre-filled with the current name. `extension` is stored on its own
+			// field and is not renameable, so it is deliberately left out.
+			renameValue.value = CurrentAsset.value?.name ?? "";
+			showRenameModal.value = true;
+			setTimeout(() => renameInputElRef.value?.focus(), 100);
+			break;
 		default:
 			break;
+	}
+}
+
+const showRenameModal = ref(false);
+const renameAsset = ref<Asset | null>(null);
+const renameValue = ref("");
+const renameInputElRef = ref<InputInst>();
+const renameLoading = ref(false);
+
+const renameTitle = computed(() =>
+	renameAsset.value?.type === "dir" ? t("renameFolder") : t("renameAsset"),
+);
+
+async function renameCurrentAsset() {
+	const asset = renameAsset.value;
+	if (!asset || renameLoading.value) return;
+
+	const nextName = renameValue.value.trim();
+
+	// A name is a single path segment: an empty one or one containing a slash
+	// would forge a folder path. The endpoint rejects both too.
+	if (!nextName) return window.$message.error(t("assetNameRequired"));
+	if (nextName.includes("/"))
+		return window.$message.error(t("assetNameInvalid"));
+	if (nextName === asset.name)
+		return window.$message.error(t("assetNameUnchanged"));
+
+	renameLoading.value = true;
+	try {
+		// The endpoint requires the full parent path, so it renames the row and
+		// moves the stored object server-side, returning the updated asset with
+		// its new publicURL — no re-upload.
+		const data = await $fetch<apiResponse<Asset>>(
+			`${config.public.apiBase}${database.value.slug}/assets/rename${path.value ?? ""}/${asset.id}`,
+			{
+				method: "POST",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
+				body: { name: nextName },
+			},
+		);
+
+		if (data?.result) {
+			asset.name = data.result.name ?? nextName;
+			asset.publicURL = data.result.publicURL ?? asset.publicURL;
+			if (modelValue.value)
+				modelValue.value = modelValue.value.map((value) =>
+					value.id === asset.id ? asset : value,
+				);
+			if (CurrentAsset.value?.id === asset.id) CurrentAsset.value = asset;
+			showRenameModal.value = false;
+			window.$message.success(data?.message ?? t("assetRenamedSuccessfully"));
+		} else window.$message.error(data?.message ?? t("assetRenameFailed"));
+	} catch {
+		window.$message.error(t("assetRenameFailed"));
+	} finally {
+		renameLoading.value = false;
 	}
 }
 

@@ -435,6 +435,14 @@ export default {
 		video: "فيديو",
 		gallery: "قائمة الملفات",
 		assetLink: "رابط الملف",
+		renameFolder: "إعادة تسمية المجلد",
+		renameAsset: "إعادة تسمية الملف",
+		newName: "الاسم الجديد",
+		assetRenamedSuccessfully: "تمت إعادة التسمية بنجاح",
+		assetRenameFailed: "تعذّرت إعادة تسمية هذا العنصر",
+		assetNameRequired: "الاسم مطلوب",
+		assetNameInvalid: "لا يمكن أن يحتوي الاسم على \"/\"",
+		assetNameUnchanged: "هذا هو الاسم الحالي بالفعل",
 
 		// Search / Filters
 		convert_to_and_group: "تحويل إلى مجموعة و",

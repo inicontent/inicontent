@@ -73,7 +73,7 @@
 						:schema="(getDrawerTable(drawer)?.schema ?? [])" />
 				</NSpin>
 
-				<LazyTableLogs v-if="getDrawerTable(drawer)?.config?.log && drawer.data" :id="drawer.data.id" />
+				<LazyTableLogs v-if="getDrawerTable(drawer)?.config?.log && drawer.data?.id" :id="drawer.data.id" />
 			</NDrawerContent>
 		</NDrawer>
 	</template>
