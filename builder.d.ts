@@ -29,7 +29,48 @@ declare global {
 		? C
 		: never;
 
-	type Blocks = keyof BlocksMap;
+	// Block names are `keyof BlocksMap` for the built-ins, but custom blocks are
+	// declared at runtime in `app/components/Block/customBlocks.ts`, so the union
+	// keeps the built-in names as autocomplete suggestions while still accepting
+	// any string. The `string & {}` arm is what preserves the suggestions; a bare
+	// `| string` would collapse the union to `string`.
+	type Blocks = keyof BlocksMap | (string & {});
+
+	// A user- or AI-declared block type, authored in
+	// `app/components/Block/customBlocks.ts` and merged into `blockTypes` at
+	// build time. Unlike a built-in block there is no `.vue` component per
+	// design: the design is selected by index into `templates`, and the markup is
+	// a Liquid template rendered to a string.
+	//
+	// `schema` is the same `Schema` vocabulary the built-ins use, which is what
+	// lets custom blocks reuse the generic config editor and the positional
+	// array storage in the `blocks` table for free. Because that storage is
+	// positional, new keys must be APPENDED to the end of the schema.
+	//
+	// Templates are Liquid (see `app/composables/blockTemplate.ts`). They come
+	// from a repo file and are therefore trusted like a Vue component; the values
+	// interpolated into them are not — those are escaped unless piped through
+	// `| raw`.
+	type CustomBlock = {
+		/**
+		 * Block name. Stored as `"<type>/<design>"`, so it must not contain `/`
+		 * and must not shadow a built-in block type (the registry throws on a
+		 * collision).
+		 */
+		type: string;
+		/** Number of designs/variants. Defaults to 1. */
+		total?: number;
+		/** Config fields, edited with the generic schema-driven editor. */
+		schema: Schema;
+		/** Inline Liquid template, used when `templates` has no entry for a design. */
+		template?: string;
+		/** One template per design; index 0 is design 1. Takes precedence over `template`. */
+		templates?: string[];
+		/** Liquid template loaded via a `?raw` import by `customBlocks.ts`. */
+		file?: string;
+		/** CSS injected once and scoped to this block type via `data-block="<type>"`. */
+		style?: string;
+	};
 
 	// A builder link value. Pages selected from the page list are stored by
 	// their ID so links stay locale-independent and can be resolved to the
@@ -297,10 +338,13 @@ declare global {
 		theme?: "dark" | "light";
 	};
 
-	// Content type for individual blocks
+	// Content type for individual blocks. The `Record` arm covers custom block
+	// types, whose config shape is only known at runtime.
 	type Content = Item & {
 		name: string;
-		config?: BlocksMap[ExtractBlock<Content["block"]>];
+		config?:
+			| BlocksMap[ExtractBlock<Content["block"]>]
+			| Record<string, unknown>;
 		hideOn?: Exclude<Devices, "none">[];
 	};
 	type Page = Item & {
@@ -324,6 +368,7 @@ export type {
 	Button,
 	Content,
 	Cta,
+	CustomBlock,
 	DataTableBlock,
 	Devices,
 	ExtractBlock,

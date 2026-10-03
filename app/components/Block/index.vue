@@ -13,6 +13,11 @@
 		<LazyBlockForm v-else-if="block === 'Form'" v-model:design="design" v-model="resolvedConfig" />
 		<LazyBlockProduct v-else-if="block === 'Product'" v-model:design="design" v-model="resolvedConfig" />
 		<LazyBlockCta v-else-if="block === 'Cta'" v-model:design="design" v-model="resolvedConfig" />
+		<!-- Fallback for block types declared in app/components/Block/customBlocks.ts.
+		     Deliberately last: the branch above is an explicit chain, so an unknown
+		     type that reached here would otherwise render nothing. -->
+		<LazyBlockCustom v-else-if="customBlock" :definition="customBlock" :design="design"
+			:config="(modelValue.config as Record<string, unknown>)" />
 	</template>
 </template>
 
@@ -39,7 +44,7 @@ watchEffect(() => {
 	)
 		modelValue.value.config = convertArrayToObject(
 			modelValue.value.config,
-			blockTypes[block.value].schema,
+			blockTypes[block.value]?.schema,
 		);
 });
 
@@ -57,6 +62,10 @@ function isHidden(hideOn?: Content["hideOn"]): boolean {
 // notation is resolved against it. Non-dynamic pages (and the Builder) render
 // the raw config unchanged.
 const templateItem = useState<Item | null>("templateItem", () => null);
+
+// Set for block types declared in `app/components/Block/customBlocks.ts`, which
+// have no `.vue` component and are rendered from a Liquid template instead.
+const customBlock = computed(() => blockTypes[block.value ?? ""]?.custom);
 
 const resolvedConfig = computed<
 	Content["config"] | Record<string, unknown> | undefined

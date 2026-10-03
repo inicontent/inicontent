@@ -40,7 +40,7 @@
 								</template>
 								<NGrid :x-gap="12" :y-gap="12" :cols="selectedDevice === 'desktop' ? 1 : 2">
 									<NGridItem
-										v-for="(_, index) in Array(blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks].total)"
+										v-for="(_, index) in Array(blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks]?.total ?? 0)"
 										:key="index"
 										@click="updateBlock(modelValue.content[currentElementIndex].name, index + 1)">
 										<LazyPreview class="previewBox"
@@ -97,7 +97,7 @@
 										v-model="modelValue.content[currentElementIndex].config" />
 									<LazyFieldS
 										v-else
-										:schema="[...blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks].schema, { key: 'hideOn', type: 'array', options: ['mobile', 'tablet', 'desktop'] }]"
+										:schema="[...(blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks]?.schema ?? []), { key: 'hideOn', type: 'array', options: ['mobile', 'tablet', 'desktop'] }]"
 										v-model="modelValue.content[currentElementIndex].config" />
 								</div>
 							</NCollapseItem>
@@ -337,7 +337,7 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema, isArrayOfObjects } from "inibase/utils";
+import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
 import type { FormInst } from "naive-ui";
 import { type DraggableEvent, VueDraggable } from "vue-draggable-plus";
@@ -372,7 +372,7 @@ if (modelValue.value.content)
 			? Array.isArray(item.config)
 				? convertArrayToObject(
 						item.config,
-						blockTypes[item.name.split("/")[0] as Blocks].schema,
+						blockTypes[item.name.split("/")[0] as Blocks]?.schema,
 					)
 				: item.config
 			: {},
@@ -875,7 +875,7 @@ async function loadBlocks() {
 				...block,
 				config: convertArrayToObject(
 					block.config,
-					blockTypes[String(block.name).split("/")[0] as Blocks].schema,
+					blockTypes[String(block.name).split("/")[0] as Blocks]?.schema,
 				),
 			}))
 			.sort((a, b) => {
@@ -1097,7 +1097,7 @@ async function SaveAdd() {
 								...block,
 								config: convertObjectToArray(
 									block.config,
-									blockTypes[block.name.split("/")[0] as Blocks].schema,
+									blockTypes[block.name.split("/")[0] as Blocks]?.schema,
 								),
 							})),
 							params: {
@@ -1131,7 +1131,7 @@ async function SaveAdd() {
 									...block,
 									config: convertObjectToArray(
 										block.config,
-										blockTypes[block.name.split("/")[0] as Blocks].schema,
+										blockTypes[block.name.split("/")[0] as Blocks]?.schema,
 									),
 								})),
 							params: {
@@ -1479,29 +1479,11 @@ async function findSlugCollision(
 	}
 }
 
-function convertObjectToArray(obj: any, schema: Schema): any[] | undefined {
-	if (typeof obj !== "object" || obj === null) return undefined; // Base case for recursion
-
-	return schema?.map((field) => {
-		const key = field.key;
-		if (!obj[key]) return undefined;
-
-		if (field.table === "assets") {
-			if (Array.isArray(obj[key]))
-				return obj[key].map((item) => item.publicURL);
-			else return obj[key].publicURL;
-		}
-
-		if (isArrayOfObjects(field.children))
-			return Array.isArray(obj[key])
-				? obj[key].map((item) =>
-						convertObjectToArray(item, field.children as Schema),
-					)
-				: convertObjectToArray(obj[key], field.children);
-
-		return obj[key];
-	});
-}
+// `convertObjectToArray` is the auto-imported composable from
+// `app/composables/`. It used to be duplicated verbatim here, which shadowed the
+// import and left two copies of the positional-array serialization to keep in
+// sync — the one part of this repo that silently corrupts stored data if it
+// drifts.
 function onEnd(evt: DraggableEvent) {
 	if (
 		currentElementIndex.value === undefined ||

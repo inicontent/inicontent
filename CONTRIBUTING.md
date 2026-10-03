@@ -40,9 +40,12 @@ Inicontent API and the `inicontent` database. See
 
 This repository contains the **client layer only** — the Inicontent REST API
 behind `https://api.inicontent.com/` (`inicontent/api`) is proprietary and not
-included here. Contributions are limited to the client side; the API surface you
-develop against is documented in `CONTEXT.md`, shipped with
-[`inicontent/starter`](https://github.com/inicontent/starter).
+included here. Contributions are limited to the client side.
+
+The API surface you develop against — the query language, schema field types,
+table flows, routing — is served as context resources by the
+[`@inicontent/mcp`](https://github.com/inicontent/mcp) server, which is also how
+code agents connect to a database.
 
 Optional environment variables (see the
 [README](README.md#environment-variables) for the full table):
@@ -85,7 +88,7 @@ app/
 │   ├── Api/                     # API schema/config management UI
 │   ├── Offline/                 # offline status and sync UI
 │   ├── Form/                    # shared drawer/form scaffolding
-│   └── …                        # Header, Chat*, FloatingChatbot, platform landing
+│   └── …                        # Header, platform landing
 ├── composables/                 # auto-imported logic (use* / camelCase files)
 │   ├── useOffline*.ts           # offline cache, sync queue, warm-up, item access
 │   ├── useAsset*.ts, useOcr.ts, useScanner.ts, use{Pdf,Video}Compressor.ts
@@ -99,9 +102,16 @@ app/
 ├── locales/                     # UI translations: ar.ts, en.ts, es.ts, fr.ts
 └── assets/main.css              # global styles
 
-modules/naiveui.ts               # custom Nuxt modules (Naive UI setup)
+modules/                         # custom Nuxt modules, auto-registered as a layer
+│   ├── naiveui.ts               # Naive UI setup
+│   ├── icon-collections.ts      # fixes icon resolution for layer consumers
+│   ├── custom-blocks.ts         # lets a layer consumer declare its own blocks
+│   └── vite-optimize-deps.ts
 public/                          # static assets (PWA icons, etc.)
-index.d.ts                       # shared type declarations
+AGENTS.md                        # constraints + conventions for coding agents
+index.d.ts                       # shared CMS type declarations
+builder.d.ts                     # page-builder type declarations (must stay at root)
+tests/                           # node:test unit tests
 nuxt.config.ts                   # app config; parts (e.g. the offline icon list)
                                  # apply only when built as the source app, not
                                  # when consumed as a Nuxt layer
@@ -154,9 +164,26 @@ When you add or change a user-facing string, update **all four** files in
 
 ## Testing
 
-There is no automated test suite yet. Please verify your changes manually with
-`pnpm run dev` and describe what you checked (and tested on) in the PR
-description — browsers, offline/PWA behavior, and which databases you exercised.
+Unit tests run on Node's built-in runner — no test framework dependency:
+
+```bash
+pnpm test                      # tests/*.ts
+node --test tests/foo.test.ts  # a single file
+```
+
+They use `node:test` and `node:assert`. Two conventions matter:
+
+- Import app modules with an **explicit `.ts` extension**
+  (`../app/composables/foo.ts`) — that is what makes them loadable under Node's
+  type stripping, which is why `pnpm test` requires Node `20.19+` / `22.12+`.
+- Keep pure logic in a composable rather than inside a component, so it stays
+  testable outside Vue. See `tests/block-template.test.ts` and
+  `app/composables/blockTemplate.ts` for the pattern.
+
+Tests do not cover Vue components or anything browser-dependent. For those,
+verify manually with `pnpm run dev` and describe what you checked (and tested on)
+in the PR description — browsers, offline/PWA behavior, and which databases you
+exercised.
 
 ## Pull Requests
 

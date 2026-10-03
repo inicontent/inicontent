@@ -134,7 +134,7 @@ const sortedBlocks = computed(() => {
 				config: Array.isArray(row.config)
 					? convertArrayToObject(
 							row.config,
-							blockTypes[type].schema,
+							blockTypes[type]?.schema,
 						)
 					: row.config,
 			};

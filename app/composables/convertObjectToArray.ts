@@ -10,7 +10,10 @@ import { isArrayOfObjects } from "inibase/utils";
  */
 export function convertObjectToArray(
 	obj: any,
-	schema: Schema,
+	// Optional for the same reason as `convertArrayToObject`: the registry can
+	// miss an unknown (or removed) block type. Already handled by the
+	// `schema?.map` below, which returns undefined for an unset schema.
+	schema?: Schema,
 ): any[] | undefined {
 	if (typeof obj !== "object" || obj === null) return undefined; // Base case for recursion
 

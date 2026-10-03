@@ -1,6 +1,10 @@
 export function convertArrayToObject(
 	array: any[],
-	schema: Schema,
+	// Defaults to empty: the block registry is keyed by any string now that
+	// custom blocks can be declared (see `customBlockRegistry.ts`), so a lookup
+	// for an unknown type yields undefined rather than a compile error. An empty
+	// schema returns `{}` instead of throwing.
+	schema: Schema = [],
 ): Record<string, any> {
 	if (!Array.isArray(array)) return array || undefined; // Base case for recursion
 

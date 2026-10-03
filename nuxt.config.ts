@@ -113,6 +113,19 @@ export default defineNuxtConfig({
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
+	// `app/components/Block/customBlocks.ts` is the custom block registry, not a
+	// component. Without this the components scan registers its default export
+	// as `BlockCustomBlocks` / `LazyBlockCustomBlocks`, which is dead weight and
+	// implies a lazy chunk that never exists.
+	components: {
+		dirs: [
+			{
+				path: "~/components",
+				pathPrefix: true,
+				ignore: ["**/customBlocks.ts"],
+			},
+		],
+	},
 	app: {
 		head: {
 			viewport: "width=device-width, initial-scale=1, maximum-scale=1",

@@ -1,3 +1,16 @@
+// Custom blocks are declared in `app/components/Block/customBlocks.ts` (default:
+// an empty array) and merged into the registry at the bottom of this file, so
+// every consumer of `blockTypes` — the builder's type picker, design picker and
+// config editor, the admin blocks list, the reuse panel, `ClonePageModal`,
+// `useTranslationOverlay`, and the renderer — picks them up without knowing they
+// exist.
+//
+// The import goes through `#inicontent/custom-blocks` rather than a relative path
+// so `modules/custom-blocks.ts` can redirect it to a layer consumer's own copy;
+// a relative import would always resolve to this layer's file.
+import customBlocks from "#inicontent/custom-blocks";
+import { mergeCustomBlocks } from "./customBlockRegistry";
+
 // Builder-only link field kind rendered by `Field/PageLink` (see
 // `app/components/Field/index.vue`). Deliberately not part of the shared CMS
 // `Field` type union so this stays page-builder-only — cast locally.
@@ -27,7 +40,7 @@ const AggregateSourceSchema: Schema = [
 	},
 ];
 
-type BlockObject = { total: number; schema: Schema };
+type BlockObject = { total: number; schema: Schema; custom?: CustomBlock };
 const HeadingSchema: Schema = [
 	{
 		key: "preHeadingLink",
@@ -641,17 +654,25 @@ const Cta: BlockObject = {
 		},
 	],
 };
-export default {
-	Header,
-	Footer,
-	Hero,
-	Pricing,
-	Testimonials,
-	FAQs,
-	Features,
-	Loop,
-	Table,
-	Form,
-	Product,
-	Cta,
-} as const satisfies Record<Blocks, BlockObject>;
+// `Record<string, BlockObject>` rather than `Record<Blocks, …>`: a custom block
+// type is a plain string chosen by the author, so it can't be a key of the
+// compile-time `BlocksMap`. Widening `Blocks` keeps autocomplete for the
+// built-ins, but a `satisfies` check against it can no longer prove this object
+// has an entry per known block — so the built-in set is asserted separately.
+export default mergeCustomBlocks(
+	{
+		Header,
+		Footer,
+		Hero,
+		Pricing,
+		Testimonials,
+		FAQs,
+		Features,
+		Loop,
+		Table,
+		Form,
+		Product,
+		Cta,
+	} satisfies Record<string, BlockObject>,
+	customBlocks,
+);

@@ -132,7 +132,7 @@ test("computed fields evaluate in dependency order", async () => {
 	assert.equal(out.total, 2000);
 });
 
-test("CONTEXT §8.3 order total: sum(quantity × price) over every item", async () => {
+test("order total: sum(quantity × price) over every item", async () => {
 	const schema: Schema = [
 		{
 			id: 1,
@@ -366,7 +366,9 @@ test("a top-level null operand fails, but an element child reads it as 0", async
 		(e: any) => e.code === "COMPUTED_FIELD_ARITHMETIC",
 	);
 
-	// Element child: the same missing operand yields 0 (CONTEXT §8.4).
+	// Element child: unlike a top-level computed field, which throws
+	// COMPUTED_FIELD_ARITHMETIC on a missing operand (asserted above), a missing
+	// operand on an element child yields 0.
 	const lenient: Schema = [
 		{
 			id: 1,

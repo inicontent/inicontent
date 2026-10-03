@@ -19,14 +19,30 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 - **PWA-ready** out of the box.
 - **Drop-in as a Nuxt Layer**, or clone and customize directly.
 
+### Custom blocks
+
+Block types don't have to ship with the CMS. Declare one in
+`app/components/Block/customBlocks.ts` — a config `schema`, a
+[Liquid](https://liquidjs.com) template, and optional CSS — and it appears in the
+builder's block picker, the design picker, the config editor, and page rendering,
+with no component to write and no registry to edit.
+
+Templates can read their own config fields (`{{ heading }}`), the row a dynamic
+page matched (`{{ item.column }}`), and loop over table rows (`{% for %}`).
+Output is HTML-escaped unless you pipe through `| raw`.
+
+See [AGENTS.md](AGENTS.md#custom-blocks-no-component-needed) for the full
+contract.
+
 ## Ecosystem
 
 - **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
-  build on. It ships `CONTEXT.md`, the AI-agent build context: authentication, the REST API,
-  the query language, table schemas & flows, and custom-route registration.
+  build on: a starting point with routing and the project wiring already done.
 - **[`@inicontent/mcp`](https://github.com/inicontent/mcp)** — the MCP server that connects code
-  agents (ChatGPT, Claude, Cursor, OpenCode, …) to a database: REST tools, context resources,
-  and starter scaffolding. This replaced the in-app AI assistant and chatbot.
+  agents (ChatGPT, Claude, Cursor, OpenCode, …) to a database: REST tools, context resources
+  (the query language, table schemas and flows, authentication, custom-route registration), and
+  starter scaffolding. This replaced the in-app AI assistant and chatbot, and is where the
+  AI-agent context now lives.
 - **`inicontent/api (private)`** — the server behind
   `https://api.inicontent.com/`: REST CRUD per table, authentication, assets.
 
@@ -43,8 +59,9 @@ Every database gets a public REST API at `https://api.inicontent.com/{databaseSl
 - AI access goes through the `@inicontent/mcp` server (there are no in-app `/ai` endpoints): its
   `inicontent_*` tools wrap the endpoints above and scaffold `inicontent/starter` for custom code.
 
-See the `CONTEXT.md` shipped with `inicontent/starter` for the full reference (query language,
-schema field types, flows, routing).
+For the full reference — query language, schema field types, flows, routing —
+connect a client to the [`@inicontent/mcp`](https://github.com/inicontent/mcp)
+server, which serves it as context resources.
 
 ## Usage
 
