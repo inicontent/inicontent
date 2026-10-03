@@ -987,6 +987,8 @@ export default {
 		syncNow: "Sincronizar ahora",
 		conflictsPending: "{count} conflicto(s) por resolver",
 		updateAvailable: "Actualización disponible",
+		updateAvailableHint:
+			"Hay una nueva versión lista. Actualiza para obtener las últimas correcciones.",
 		installApp: "Instalar aplicación",
 		resolveConflicts: "Resolver conflictos",
 		conflictModalIntro:
@@ -1005,6 +1007,8 @@ export default {
 		createFailed: "No se pudo crear el elemento.",
 		updateFailed: "No se pudo actualizar el elemento.",
 		deleteFailed: "No se pudo eliminar el elemento.",
+		logoutLocalOnly:
+			"Sesión cerrada en este dispositivo, pero el servidor no pudo confirmarlo.",
 		errorFetchingSchema: "No se pudo obtener el esquema de la tabla.",
 
 		// Document scanner

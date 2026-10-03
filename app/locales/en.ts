@@ -659,6 +659,8 @@ export default {
 		syncNow: "Sync now",
 		conflictsPending: "{count} conflict(s) to resolve",
 		updateAvailable: "Update available",
+		updateAvailableHint:
+			"A new version is ready. Update to get the latest fixes.",
 		installApp: "Install app",
 		resolveConflicts: "Resolve conflicts",
 		conflictModalIntro:
@@ -677,6 +679,8 @@ export default {
 		createFailed: "Could not create the item.",
 		updateFailed: "Could not update the item.",
 		deleteFailed: "Could not delete the item.",
+		logoutLocalOnly:
+			"Signed out on this device, but the server could not confirm it.",
 		errorFetchingSchema: "Could not fetch the table schema.",
 
 		// Document scanner

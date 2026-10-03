@@ -6,6 +6,7 @@ import {
 	replaceTemporaryReference,
 	resolveOfflineReference,
 } from "../app/composables/offlineReferences.ts";
+import { shouldShowSyncStatus } from "../app/composables/offlineStatus.ts";
 
 const mutation = (
 	id: string,
@@ -148,4 +149,54 @@ test("array references collect all matching ids across pages", async () => {
 	);
 	assert.deepEqual(result, ["1", "2"]);
 	assert.deepEqual(pages, [1, 2]);
+});
+
+test("the sync button stays hidden while there is nothing to sync", () => {
+	assert.equal(
+		shouldShowSyncStatus({
+			isOnline: true,
+			isSyncing: false,
+			pendingCount: 0,
+			conflictCount: 0,
+		}),
+		false,
+	);
+});
+test("the sync button appears only for real sync work", () => {
+	assert.equal(
+		shouldShowSyncStatus({
+			isOnline: false,
+			isSyncing: false,
+			pendingCount: 0,
+			conflictCount: 0,
+		}),
+		true,
+	);
+	assert.equal(
+		shouldShowSyncStatus({
+			isOnline: true,
+			isSyncing: true,
+			pendingCount: 0,
+			conflictCount: 0,
+		}),
+		true,
+	);
+	assert.equal(
+		shouldShowSyncStatus({
+			isOnline: true,
+			isSyncing: false,
+			pendingCount: 2,
+			conflictCount: 0,
+		}),
+		true,
+	);
+	assert.equal(
+		shouldShowSyncStatus({
+			isOnline: true,
+			isSyncing: false,
+			pendingCount: 0,
+			conflictCount: 1,
+		}),
+		true,
+	);
 });

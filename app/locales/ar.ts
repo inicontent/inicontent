@@ -994,6 +994,7 @@ export default {
 		syncNow: "زامن الآن",
 		conflictsPending: "{count} تعارض بحاجة إلى حل",
 		updateAvailable: "يتوفر تحديث",
+		updateAvailableHint: "إصدار جديد جاهز. حدّث للحصول على آخر الإصلاحات.",
 		installApp: "تثبيت التطبيق",
 		resolveConflicts: "حل التعارضات",
 		conflictModalIntro:
@@ -1012,6 +1013,7 @@ export default {
 		createFailed: "تعذر إنشاء العنصر.",
 		updateFailed: "تعذر تحديث العنصر.",
 		deleteFailed: "تعذر حذف العنصر.",
+		logoutLocalOnly: "تم تسجيل الخروج من هذا الجهاز، لكن لم يؤكد الخادم ذلك.",
 		errorFetchingSchema: "تعذر جلب مخطط الجدول.",
 
 		// Document scanner

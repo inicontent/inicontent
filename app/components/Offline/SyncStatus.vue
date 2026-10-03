@@ -92,40 +92,6 @@
 					</NButton>
 				</NFlex>
 			</template>
-
-			<!-- PWA actions -->
-			<template v-if="showPwa && (pwa?.needRefresh || pwa?.showInstallPrompt)">
-				<NDivider style="margin: 6px 0" />
-				<NButton
-					v-if="pwa?.showInstallPrompt"
-					size="tiny"
-					block
-					secondary
-					@click="onInstall"
-				>
-					<template #icon>
-						<NIcon>
-							<Icon name="tabler:download" />
-						</NIcon>
-					</template>
-					{{ t("installApp") }}
-				</NButton>
-				<NButton
-					v-if="pwa?.needRefresh"
-					size="tiny"
-					block
-					type="primary"
-					secondary
-					@click="onUpdate"
-				>
-					<template #icon>
-						<NIcon>
-							<Icon name="tabler:refresh-alert" />
-						</NIcon>
-					</template>
-					{{ t("updateAvailable") }}
-				</NButton>
-			</template>
 		</NFlex>
 	</NPopover>
 </template>
@@ -135,16 +101,12 @@ import {
 	Icon,
 	NBadge,
 	NButton,
-	NDivider,
 	NFlex,
 	NIcon,
 	NText,
 } from "#components";
+import { shouldShowSyncStatus } from "~/composables/offlineStatus";
 import { useOfflineSync } from "~/composables/useOfflineSync";
-
-const props = defineProps<{
-	showPwa?: boolean;
-}>();
 
 const database = useState<Database>("database");
 const Language = useScopedCookie<LanguagesType>(
@@ -178,23 +140,21 @@ watch(isOnline, (online, wasOnline) => {
 });
 onUnmounted(() => clearTimeout(hintTimer));
 
-// Reactive $pwa instance injected by the vite-pwa Nuxt client plugin.
-const { $pwa } = useNuxtApp() as any;
-const pwa = ref($pwa);
-
 const conflictCount = computed(() => conflicts.value.length);
 const badgeCount = computed(() => pendingCount.value + conflictCount.value);
 
 // Hide the network status button entirely when everything is fine: online,
-// nothing pending, no conflicts, no PWA update/install prompt. It only appears
-// when there is something the user should be aware of (offline, syncing, queued
-// changes, conflicts) or can act on (PWA prompt).
-const buttonVisible = computed(
-	() =>
-		!isOnline.value ||
-		isSyncing.value ||
-		badgeCount.value > 0 ||
-		!!(pwa.value?.needRefresh || pwa.value?.showInstallPrompt),
+// nothing pending, no conflicts. It only appears when there is something the
+// user should be aware of (offline, syncing, queued changes, conflicts). App
+// updates and install prompts are a separate concern with their own button
+// (Offline/PwaStatus.vue) — they must never make a sync button show up.
+const buttonVisible = computed(() =>
+	shouldShowSyncStatus({
+		isOnline: isOnline.value,
+		isSyncing: isSyncing.value,
+		pendingCount: pendingCount.value,
+		conflictCount: conflictCount.value,
+	}),
 );
 
 const buttonIcon = computed(() =>
@@ -211,18 +171,6 @@ const buttonType = computed(() => {
 	if (!isOnline.value) return "error";
 	return "default";
 });
-
-async function onUpdate() {
-	show.value = false;
-	await $pwa.updateServiceWorker();
-	$pwa.cancelPrompt();
-	window.location.reload();
-}
-
-function onInstall() {
-	show.value = false;
-	$pwa.install();
-}
 
 function onOpenSync() {
 	void syncPendingMutations().catch(() =>

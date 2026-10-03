@@ -989,6 +989,8 @@ export default {
 		syncNow: "Synchroniser",
 		conflictsPending: "{count} conflit(s) à résoudre",
 		updateAvailable: "Mise à jour disponible",
+		updateAvailableHint:
+			"Une nouvelle version est prête. Mettez à jour pour obtenir les derniers correctifs.",
 		installApp: "Installer l'application",
 		resolveConflicts: "Résoudre les conflits",
 		conflictModalIntro:
@@ -1008,6 +1010,8 @@ export default {
 		createFailed: "Impossible de créer l'élément.",
 		updateFailed: "Impossible de mettre à jour l'élément.",
 		deleteFailed: "Impossible de supprimer l'élément.",
+		logoutLocalOnly:
+			"Déconnecté sur cet appareil, mais le serveur n'a pas pu le confirmer.",
 		errorFetchingSchema: "Impossible de récupérer le schéma de la table.",
 
 		// Document scanner

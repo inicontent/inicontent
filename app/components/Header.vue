@@ -31,7 +31,8 @@
         </template>
         <template #extra>
 			<NButtonGroup>
-				<LazyOfflineSyncStatus show-pwa />
+				<LazyPwaStatus />
+				<LazyOfflineSyncStatus />
 				<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
 						<template #trigger>
 							<NButton secondary round size="small">{{ humanFileSize(totalSize) }}</NButton>
@@ -255,7 +256,60 @@ const userDropdownOptions = computed(() => [
 ]);
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+const platformSessionID = useScopedCookie<string | undefined>("sid", "inicontent");
 const { platformUrl } = usePlatformRedirect();
+
+/**
+ * Sign out, and never let the network decide whether it happened.
+ *
+ * The local session is dropped FIRST — the scoped `{db}_sid` cookie is the
+ * credential every other part of the app re-authenticates with, so leaving it
+ * in place after a failed request makes `middleware/user.ts` log the user
+ * straight back in and `middleware/dashboard.ts` bounce `/auth` to `/admin`:
+ * logout silently undone. The remote calls are then best effort — a failure is
+ * reported, but the user still ends up signed out locally.
+ */
+async function logout() {
+	const slug = database.value?.slug ?? "inicontent";
+	const currentSessionID = sessionID.value;
+	// A tenant app can hold two independent sessions: its own `{db}_sid` and the
+	// platform's `inicontent_sid` (ingested when bouncing to billing, templates
+	// or pages). `middleware/user.ts` falls back to the platform session, so
+	// leaving it behind signs the user straight back in — both must end here.
+	// On the platform database they are the same cookie, so only one call is made.
+	const endedSessions = [
+		{ slug, sessionID: currentSessionID },
+		...(platformSessionID.value &&
+		platformSessionID.value !== currentSessionID
+			? [{ slug: "inicontent", sessionID: platformSessionID.value }]
+			: []),
+	];
+
+	sessionID.value = undefined;
+	platformSessionID.value = undefined;
+	redirectTo.value = undefined;
+	user.value = undefined;
+
+	let signedOutRemotely = true;
+	for (const session of endedSessions) {
+		try {
+			await $fetch(`${config.public.apiBase}${session.slug}/auth/signout`, {
+				credentials: "include",
+				params: {
+					locale: Language.value,
+					[`${session.slug}_sid`]: session.sessionID,
+				},
+			});
+		} catch {
+			signedOutRemotely = false;
+		}
+	}
+
+	await navigateTo(
+		`${route.params.database ? `/${route.params.database}` : ""}/auth`,
+	);
+	if (!signedOutRemotely) window.$message?.warning(t("logoutLocalOnly"));
+}
 
 async function onSelectUserDropdown(v: string) {
 	switch (v) {
@@ -279,23 +333,7 @@ async function onSelectUserDropdown(v: string) {
 			Theme.value = Theme.value === "dark" ? "light" : "dark";
 			break;
 		case "logout":
-			await $fetch(
-				`${config.public.apiBase}${
-					database.value?.slug ?? "inicontent"
-				}/auth/signout`,
-				{
-					credentials: "include",
-					params: {
-						locale: Language.value,
-						[`${database.value.slug}_sid`]: sessionID.value,
-					},
-				},
-			);
-			redirectTo.value = undefined;
-			user.value = undefined;
-			await navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/auth`,
-			);
+			await logout();
 			break;
 		case "clearCache":
 			await clearAllCache();
