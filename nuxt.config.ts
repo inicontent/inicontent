@@ -120,7 +120,13 @@ export default defineNuxtConfig({
 	components: {
 		dirs: [
 			{
-				path: "~/components",
+				// Resolve `~` explicitly through this config file's real location.
+				// When the layer is consumed as an npm package (pnpm/Vercel), the
+				// symlinked `node_modules/inicontent` directory defeats the
+				// components scan for `~/components` and the layer's components
+				// silently fail to register ("failed to find LazyX imported from
+				// '#components'").
+				path: join(currentDir, "app/components"),
 				pathPrefix: true,
 				ignore: ["**/customBlocks.ts"],
 			},
