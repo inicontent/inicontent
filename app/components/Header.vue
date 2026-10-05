@@ -30,61 +30,63 @@
             </NBreadcrumb>
         </template>
         <template #extra>
-			<NButtonGroup>
-				<LazyPwaStatus />
+			<NFlex>
+				<LazyOfflinePwaStatus />
 				<LazyOfflineSyncStatus />
-				<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
-						<template #trigger>
-							<NButton secondary round size="small">{{ humanFileSize(totalSize) }}</NButton>
-						</template>
-						<div v-if="barSegments.length > 0"
-							style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: rgba(128,128,128,.2); margin-block-end: 10px;">
-							<div v-for="table in barSegments" :key="table.slug"
-								:style="{ width: `${((table.size ?? 0) / totalSize) * 100}%`, backgroundColor: tableColor(table) }" />
-						</div>
-						<NFlex v-for="(table, index) in sortedTables" :key="table.slug" justify="space-between" align="center">
-							<NFlex align="center" :size="6">
-								<span :style="{
-									width: '8px',
-									height: '8px',
-									borderRadius: '50%',
-									// Tables under the 5% bar threshold have no segment, so
-									// their dot renders grey — signaling 'too small to draw'.
-									backgroundColor: barSegments.some((t) => t.slug === table.slug)
-										? tableColor(table)
-										: 'rgba(128,128,128,.5)',
-									flexShrink: 0,
-								}" />
-								<LazyTableIcon :table="table" />
-								<NText>{{ t(table.slug) }}</NText>
+				<NButtonGroup>
+					<NPopover v-if="user?.role === config.public.idOne" :delay="600" scrollable style="max-height: 240px;">
+							<template #trigger>
+								<NButton secondary round size="small">{{ humanFileSize(totalSize) }}</NButton>
+							</template>
+							<div v-if="barSegments.length > 0"
+								style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: rgba(128,128,128,.2); margin-block-end: 10px;">
+								<div v-for="table in barSegments" :key="table.slug"
+									:style="{ width: `${((table.size ?? 0) / totalSize) * 100}%`, backgroundColor: tableColor(table) }" />
+							</div>
+							<NFlex v-for="(table, index) in sortedTables" :key="table.slug" justify="space-between" align="center">
+								<NFlex align="center" :size="6">
+									<span :style="{
+										width: '8px',
+										height: '8px',
+										borderRadius: '50%',
+										// Tables under the 5% bar threshold have no segment, so
+										// their dot renders grey — signaling 'too small to draw'.
+										backgroundColor: barSegments.some((t) => t.slug === table.slug)
+											? tableColor(table)
+											: 'rgba(128,128,128,.5)',
+										flexShrink: 0,
+									}" />
+									<LazyTableIcon :table="table" />
+									<NText>{{ t(table.slug) }}</NText>
+								</NFlex>
+								<NText depth="3">{{ humanFileSize(table?.size) }}</NText>
 							</NFlex>
-							<NText depth="3">{{ humanFileSize(table?.size) }}</NText>
-						</NFlex>
-				</NPopover>
-				<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
-					@select="(v) => Language = v">
-					<NButton secondary round size="small">
-						<template #icon>
-							<NIcon>
-								<Icon name="tabler:language" />
-							</NIcon>
-						</template>
-					</NButton>
-				</NDropdown>
-				<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
-					<NButton secondary type="primary" round size="small">
-						<template #icon>
-							<NIcon>
-								<Icon name="tabler:user" />
-							</NIcon>
-						</template>
-						<template v-if="user">
-							<NText strong>{{ user.username.charAt(0).toUpperCase() +
-								user.username.slice(1) }}</NText>
-						</template>
-					</NButton>
-				</NDropdown>
-			</NButtonGroup>
+					</NPopover>
+					<NDropdown v-if="languagesDropdownOptions?.length > 1" :value="Language" :options="languagesDropdownOptions"
+						@select="(v) => Language = v">
+						<NButton secondary round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:language" />
+								</NIcon>
+							</template>
+						</NButton>
+					</NDropdown>
+					<NDropdown :options="userDropdownOptions" @select="onSelectUserDropdown">
+						<NButton secondary type="primary" round size="small">
+							<template #icon>
+								<NIcon>
+									<Icon name="tabler:user" />
+								</NIcon>
+							</template>
+							<template v-if="user">
+								<NText strong>{{ user.username.charAt(0).toUpperCase() +
+									user.username.slice(1) }}</NText>
+							</template>
+						</NButton>
+					</NDropdown>
+				</NButtonGroup>
+			</NFlex>
 		</template>
     </NPageHeader>
 </template>
@@ -273,9 +275,9 @@ async function logout() {
 	const slug = database.value?.slug ?? "inicontent";
 	const currentSessionID = sessionID.value;
 	// A tenant app can hold two independent sessions: its own `{db}_sid` and the
-	// platform's `inicontent_sid` (ingested when bouncing to billing, templates
-	// or pages). `middleware/user.ts` falls back to the platform session, so
-	// leaving it behind signs the user straight back in — both must end here.
+	// platform's `inicontent_sid` (ingested when bouncing to billing or pages).
+	// `middleware/user.ts` falls back to the platform session, so leaving it
+	// behind signs the user straight back in — both must end here.
 	// On the platform database they are the same cookie, so only one call is made.
 	const endedSessions = [
 		{ slug, sessionID: currentSessionID },
