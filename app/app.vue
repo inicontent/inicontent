@@ -7,7 +7,7 @@
 
 <script lang="ts" setup>
 import { useOsTheme } from "naive-ui";
-import { debounce, loadCoreTranslations } from "./composables";
+import { debounce, loadTranslations } from "./composables";
 import { saveDatabaseConfigLocally } from "./composables/useLocalDatabaseConfig";
 
 const database = useState<Database>("database");
@@ -16,12 +16,23 @@ const Language = useScopedCookie<LanguagesType>(
 	database.value?.slug,
 );
 
-// Load core translations with the initial language
-loadCoreTranslations(Language.value);
+// Load translations with the initial language: this layer's own `app/locales`
+// plus, when an app extends this repo as a layer, that app's own — see
+// `modules/layer-locales.ts`.
+//
+// Awaited on purpose. Every component below reads `t()` while rendering, and
+// `NuxtRoot` wraps the tree in a `<Suspense>`, so awaiting here suspends the
+// initial mount rather than painting the app with the fallback keys and
+// re-rendering a moment later. It is also why this lives here rather than in a
+// plugin: `app:created` (which runs the initial navigation, and with it the
+// `database` middleware) has already resolved `database.value?.slug` by mount
+// time, so the database-scoped language cookie above is read with the right
+// key. A plugin runs before that and would resolve the `inicontent_` fallback.
+await loadTranslations(Language.value);
 
 // Watch for language changes and load translations dynamically
 watch(Language, async (newLang, oldLang) => {
-	if (newLang) await loadCoreTranslations(newLang, oldLang);
+	if (newLang) await loadTranslations(newLang, oldLang);
 });
 
 const Theme = useCookie<"light" | "dark">("theme", { sameSite: true });

@@ -6,6 +6,8 @@ export { default as translationLanguages } from "./Translation/languages";
 export { default as defineTranslation } from "./Translation/define";
 export { default as fetchTranslation } from "./Translation/fetch";
 export { default as t } from "./Translation/translate";
+export { default as loadTranslations } from "./Translation/loadTranslations";
+// Deprecated alias of `loadTranslations`, kept for existing importers.
 export { default as loadCoreTranslations } from "./Translation/loadCoreTranslations";
 
 // Add a small deepClone helper

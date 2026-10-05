@@ -201,3 +201,48 @@ repo as a layer can declare its own at the same relative path;
 `modules/custom-blocks.ts` redirects the `#inicontent/custom-blocks` import to
 it. The consumer's list **replaces** this one rather than merging — two lists
 would declare the same types, and the registry throws on collisions.
+
+## Layer translations
+
+An app that extends this repo as a layer gets its translations merged
+automatically. Drop files in the app's own `app/locales/` — one per language,
+`export default { en: { … } }` — and `loadTranslations` picks them up. No
+composable, no plugin, no wiring per app.
+
+That is the whole point of `modules/layer-locales.ts`: a relative
+`import.meta.glob` only ever sees files next to this layer's own source, so the
+two directories are exposed as aliases instead.
+
+| Specifier                   | Points at                                              |
+| --------------------------- | ------------------------------------------------------ |
+| `#inicontent/core-locales`  | always this layer's `app/locales`                      |
+| `#inicontent/layer-locales` | the app's `app/locales`, or a path that doesn't exist   |
+
+The app's directory wins on a collision, because order *is* precedence:
+`defineTranslation` merges the incoming object over the existing state, and
+`loadTranslations` loads core first and the app's second. Both files are read —
+the app's file does not replace the core one, it overrides the keys they share.
+
+Things to know before changing this:
+
+- **Keep both specifiers pointing at directories, not files.** A directory is
+  what makes `import.meta.glob("<specifier>/*.ts")` resolve; Vite passes
+  `#`-prefixed patterns to `resolveId`, so the alias is applied first.
+- **The empty case is a missing directory, not a flag.** When the app has no
+  `app/locales`, the alias points at a path that doesn't exist and the glob
+  resolves to `{}`. The same mechanism keeps this repo from loading its own files
+  twice when it *is* the app — the directories are compared with `realpathSync`,
+  because a symlinked `node_modules` makes the same directory look like two.
+- **Locale files are matched by basename, not by glob key.** Keys are not
+  comparable across the two maps (root-relative inside the app, `../`-prefixed
+  outside it), so `resolveLocaleLoaders` compares `<lang>.ts` and dedupes on the
+  key it did match. That pure function is what `tests/layer-translations.test.ts`
+  covers.
+- **Loading is triggered from `app/app.vue`, not a plugin.** A plugin runs before
+  the initial navigation, so `database.value?.slug` is still null and the
+  language cookie resolves under the wrong `inicontent_` prefix. In `app.vue` the
+  `database` middleware has already run. It is also `await`ed, so the first paint
+  is translated rather than flashing fallback keys (`NuxtRoot` wraps the tree in
+  a `<Suspense>`).
+- `loadCoreTranslations` is a deprecated re-export of `loadTranslations`, kept
+  only so existing importers keep working. Don't use it in new code.
