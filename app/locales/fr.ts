@@ -556,6 +556,78 @@ export default {
 				"Envoie le modèle actuel (même non enregistré) à l'adresse ci-dessous.",
 			testRecipient: "E-mail du destinataire",
 		},
+		emailTemplatesUi: {
+			settings: "Paramètres du modèle",
+			name: "Nom",
+			namePlaceholder: "ex. welcome",
+			subject: "Objet",
+			subjectPlaceholder: "ex. Bienvenue {{@user.username}} !",
+			content: "Contenu",
+			nameRequired: "Un nom de modèle est requis",
+			saveFailed: "Échec de l'enregistrement",
+			back: "Retour",
+			new: "Nouveau modèle",
+			empty:
+				"Aucun modèle d'e-mail pour l'instant. Créez le premier pour l'utiliser dans vos règles d'e-mail de flux.",
+			rowsHint:
+				"Référencé par les règles de flux — le nom est utilisé dans votre automatisation.",
+		},
+		mjmlBuilder: {
+			visual: "Visuel",
+			code: "Code",
+			addBlock: "Ajouter un bloc",
+			props: "Réglages du bloc",
+			categories: {
+				basic: "Éléments de base",
+				layout: "Mise en page",
+				sections: "Sections",
+			},
+			blocks: {
+				text: "Texte",
+				heading: "Titre",
+				image: "Image",
+				video: "Vidéo",
+				button: "Bouton",
+				divider: "Séparateur",
+				spacer: "Espacement",
+				columns: "Deux colonnes",
+				emailHero: "En-tête",
+				emailHeader: "Header",
+				emailFeatures: "Fonctionnalités",
+				emailCta: "Appel à l'action",
+				emailSocial: "Réseaux sociaux",
+				emailFooter: "Pied de page",
+				emailLogos: "Logos",
+				emailQuote: "Citation",
+				emailTicket: "Billet",
+				raw: "Balisage personnalisé",
+			},
+			variant: "Design",
+			drag: "Glisser pour réorganiser",
+			socialLinks: "liens",
+			previewHidden: "Aperçu masqué — choisissez un appareil pour l'afficher.",
+			thumbnailLoading: "Rendu…",
+			thumbnailEmpty: "Aucun aperçu",
+			moveUp: "Monter",
+			moveDown: "Descendre",
+			addAbove: "Insérer au-dessus",
+			addBelow: "Insérer en dessous",
+			delete: "Supprimer",
+			cancel: "Annuler",
+			deleteConfirm: "Supprimer ce bloc ?",
+			empty:
+				"Votre e-mail est vide — choisissez un bloc dans la palette pour commencer.",
+			columnEmpty: "Colonne vide",
+			columnHint:
+				"Les blocs ajoutés depuis la palette sont insérés dans cette colonne.",
+			rawSummary: "Balisage personnalisé conservé tel quel",
+			codeHint:
+				"Collez ou modifiez le balisage MJML. Revenir au mode Visuel reconstruit les blocs à partir de ce code.",
+			duplicate: "Dupliquer",
+			fullPreview: "Aperçu de l'e-mail complet",
+			backToEditor: "Retour à l'éditeur",
+			previewSample: "Données d'exemple",
+		},
 
 		// Database settings
 		translationSettings: "Paramètres de Traduction",
@@ -623,7 +695,8 @@ export default {
 		reorderFields: "Réorganiser les champs",
 
 		// Chatbot IA
-		chatNoChangesApplied: "Cette réponse n’a appliqué aucune modification. Vérifiez et appliquez une proposition pour enregistrer les changements.",
+		chatNoChangesApplied:
+			"Cette réponse n’a appliqué aucune modification. Vérifiez et appliquez une proposition pour enregistrer les changements.",
 		chatAddAttachment: "Joindre un fichier",
 		chatRemoveAttachment: "Retirer la pièce jointe",
 		chatAttachmentOnlyRequest: "Travaillez à partir du fichier joint.",
@@ -966,19 +1039,28 @@ export default {
 		},
 
 		// Offline / sync
-		offlineReconnect: "Connexion rétablie. Synchronisez vos modifications enregistrées.",
-		offlineBlockedIntro: "Cette modification bloque la synchronisation. Modifiez-la puis réessayez, ou abandonnez-la pour continuer.",
+		offlineReconnect:
+			"Connexion rétablie. Synchronisez vos modifications enregistrées.",
+		offlineBlockedIntro:
+			"Cette modification bloque la synchronisation. Modifiez-la puis réessayez, ou abandonnez-la pour continuer.",
 		offlineDiscard: "Abandonner la modification",
 		offlineEditRetry: "Enregistrer et réessayer",
 		offlineInvalidJson: "Saisissez un objet JSON valide.",
-		offlineNoSearchColumns: "Cette table ne contient aucune colonne de recherche. Saisissez un identifiant ou configurez les colonnes de recherche.",
-		offlinePickManually: "Plusieurs résultats trouvés. Choisissez manuellement en saisissant l’identifiant exact.",
-		offlineReferenceNotFound: "Aucun résultat trouvé. Saisissez un identifiant ou corrigez le texte.",
+		offlineNoSearchColumns:
+			"Cette table ne contient aucune colonne de recherche. Saisissez un identifiant ou configurez les colonnes de recherche.",
+		offlinePickManually:
+			"Plusieurs résultats trouvés. Choisissez manuellement en saisissant l’identifiant exact.",
+		offlineReferenceNotFound:
+			"Aucun résultat trouvé. Saisissez un identifiant ou corrigez le texte.",
 		offlineInvalidReference: "La référence n’a pas pu être résolue.",
-		offlineMissingDependency: "Un élément hors ligne référencé est introuvable. Remplacez son identifiant temporaire ou abandonnez cette modification.",
-		offlineDependencyCycle: "Les références hors ligne forment un cycle. Modifiez les références.",
-		offlineMissingCreatedId: "Le serveur n’a pas renvoyé l’identifiant créé. Vérifiez le serveur avant de réessayer.",
-		offlineSyncFailed: "Échec de la synchronisation. Vérifiez la modification puis réessayez.",
+		offlineMissingDependency:
+			"Un élément hors ligne référencé est introuvable. Remplacez son identifiant temporaire ou abandonnez cette modification.",
+		offlineDependencyCycle:
+			"Les références hors ligne forment un cycle. Modifiez les références.",
+		offlineMissingCreatedId:
+			"Le serveur n’a pas renvoyé l’identifiant créé. Vérifiez le serveur avant de réessayer.",
+		offlineSyncFailed:
+			"Échec de la synchronisation. Vérifiez la modification puis réessayez.",
 		online: "En ligne",
 		offline: "Hors ligne",
 		onlineTooltip: "Connecté au serveur",
@@ -1353,6 +1435,36 @@ export default {
 		},
 		pageLink: {
 			dynamicHint: "Page dynamique — segments remplis depuis l'élément :",
+		},
+		marketingLayout: {
+			emailBuilder: "Générateur d'e-mails",
+			newLabel: "Nouveau",
+		},
+		homePageUi: {
+			emailBuilderItems: {
+				mjmlTitle: "Modeles bases sur MJML",
+				mjmlText:
+					"Concevez des e-mails responsifs avec du markup MJML ou du texte brut, reutilisables depuis n'importe quel flux.",
+				variablesTitle: "Variables contextuelles",
+				variablesText:
+					"Utilisez {{@user.field}} pour l'utilisateur actuel et {{@data.field}} pour l'enregistrement declencheur — remplaces automatiquement a l'envoi.",
+				previewTitle: "Apercu live en bac a sable",
+				previewText:
+					"Rendez un apercu securise de votre modele avec des donnees d'exemple avant d'envoyer.",
+				flowTitle: "Envois pilotes par les flux",
+				flowText:
+					"Declenchez des e-mails depuis vos regles d'automatisation a la creation ou la modification d'enregistrements — sans code.",
+				testTitle: "Tests en un clic",
+				testText:
+					"Envoyez le modele actuel — meme non enregistre — a n'importe quelle adresse pour verifier le rendu final.",
+				meteredTitle: "Comptage a l'usage equitable",
+				meteredText:
+					"1 000 e-mails inclus chaque mois. Au-dela, vous payez une fraction de centime par e-mail — les envois ne sont jamais bloques.",
+			},
+			emailBuilderSubtitle:
+				"Concevez une fois des modeles d'e-mails reutilisables et declenchez-les depuis vos flux. Inclus dans chaque abonnement — seuls les e-mails au-dela de votre allocation mensuelle sont factures au compteur.",
+			emailBuilderTitle:
+				"Des e-mails transactionnels et automatises qui fonctionnent",
 		},
 	},
 } as const;

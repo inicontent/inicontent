@@ -45,7 +45,6 @@ const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 const { platformHost, platformUrl } = usePlatformRedirect();
 
 const featureIcons: Record<PlatformFeature, string> = {
-	templates: "tabler:template",
 	billing: "tabler:credit-card",
 };
 const featureIcon = computed(() => featureIcons[props.feature]);

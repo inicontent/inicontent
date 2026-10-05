@@ -253,8 +253,7 @@ export default {
 
 		compression: {
 			label: "Compression",
-			description:
-				"Compression reduces used space but might slow down results",
+			description: "Compression reduces used space but might slow down results",
 			videoLarge:
 				"Large video detected ({size}). We'll optimize it locally before uploading.",
 			videoHuge:
@@ -270,7 +269,8 @@ export default {
 			"Automatically compress and optimize uploaded files for better performance",
 
 		// AI Chatbot
-		chatNoChangesApplied: "No changes were applied by this reply. Review and apply a proposal to save changes.",
+		chatNoChangesApplied:
+			"No changes were applied by this reply. Review and apply a proposal to save changes.",
 		chatAddAttachment: "Attach a file",
 		chatRemoveAttachment: "Remove attachment",
 		chatAttachmentOnlyRequest: "Work from the attached file.",
@@ -634,20 +634,98 @@ export default {
 				"Sends the current template (even unsaved) to the email address below.",
 			testRecipient: "Recipient email",
 		},
+		emailTemplatesUi: {
+			settings: "Template settings",
+			name: "Name",
+			namePlaceholder: "e.g. welcome",
+			subject: "Subject",
+			subjectPlaceholder: "e.g. Welcome {{@user.username}}!",
+			content: "Content",
+			nameRequired: "A template name is required",
+			saveFailed: "Save failed",
+			back: "Back",
+			new: "New template",
+			empty:
+				"No email templates yet. Create your first one to use it in flow email rules.",
+			rowsHint:
+				"Referenced by flow email rules — the name is used in your automation.",
+		},
+		mjmlBuilder: {
+			visual: "Visual",
+			code: "Code",
+			addBlock: "Add block",
+			props: "Block settings",
+			categories: {
+				basic: "Basics",
+				layout: "Layout",
+				sections: "Sections",
+			},
+			blocks: {
+				text: "Text",
+				heading: "Heading",
+				image: "Image",
+				video: "Video",
+				button: "Button",
+				divider: "Divider",
+				spacer: "Spacer",
+				columns: "Two columns",
+				emailHero: "Hero",
+				emailHeader: "Header",
+				emailFeatures: "Features",
+				emailCta: "Call to action",
+				emailSocial: "Social links",
+				emailFooter: "Footer",
+				emailLogos: "Logos",
+				emailQuote: "Quote",
+				emailTicket: "Ticket",
+				raw: "Custom markup",
+			},
+			variant: "Design",
+			drag: "Drag to reorder",
+			socialLinks: "links",
+			previewHidden: "Preview hidden — pick a device to show it.",
+			thumbnailLoading: "Rendering…",
+			thumbnailEmpty: "No preview",
+			moveUp: "Move up",
+			moveDown: "Move down",
+			addAbove: "Add above",
+			addBelow: "Add below",
+			delete: "Delete",
+			cancel: "Cancel",
+			deleteConfirm: "Delete this block?",
+			empty: "Your email is empty — pick a block from the palette to start.",
+			columnEmpty: "Empty column",
+			columnHint:
+				"Blocks you add from the palette are inserted into this column.",
+			rawSummary: "Custom markup kept as-is",
+			codeHint:
+				"Paste or edit MJML markup. Switching back to Visual rebuilds the blocks from this code.",
+			duplicate: "Duplicate",
+			fullPreview: "Full-email preview",
+			backToEditor: "Back to editor",
+			previewSample: "Sample data",
+		},
 
 		// Offline / sync
 		offlineReconnect: "Connection restored. Sync your saved changes now.",
-		offlineBlockedIntro: "Sync is blocked by this change. Edit and retry it, or discard it to continue.",
+		offlineBlockedIntro:
+			"Sync is blocked by this change. Edit and retry it, or discard it to continue.",
 		offlineDiscard: "Discard change",
 		offlineEditRetry: "Save and retry",
 		offlineInvalidJson: "Enter a valid JSON object.",
-		offlineNoSearchColumns: "This reference table has no searchable columns. Enter an ID or configure searchable columns.",
-		offlinePickManually: "Multiple matches found. Pick manually by entering the exact item ID.",
-		offlineReferenceNotFound: "No matching item found. Enter an ID or correct the search text.",
+		offlineNoSearchColumns:
+			"This reference table has no searchable columns. Enter an ID or configure searchable columns.",
+		offlinePickManually:
+			"Multiple matches found. Pick manually by entering the exact item ID.",
+		offlineReferenceNotFound:
+			"No matching item found. Enter an ID or correct the search text.",
 		offlineInvalidReference: "The reference could not be resolved.",
-		offlineMissingDependency: "A referenced offline item is missing. Replace its temporary ID or discard this change.",
-		offlineDependencyCycle: "Offline items reference each other in a cycle. Edit their references.",
-		offlineMissingCreatedId: "The server did not return the created item ID. Check the server before retrying.",
+		offlineMissingDependency:
+			"A referenced offline item is missing. Replace its temporary ID or discard this change.",
+		offlineDependencyCycle:
+			"Offline items reference each other in a cycle. Edit their references.",
+		offlineMissingCreatedId:
+			"The server did not return the created item ID. Check the server before retrying.",
 		offlineSyncFailed: "Sync failed. Review the change and retry.",
 		online: "Online",
 		offline: "Offline",
@@ -674,8 +752,7 @@ export default {
 		changeQueuedForSync: "Change queued for sync",
 		localChangeDiscarded: "Local change discarded",
 		allLocalChangesDiscarded: "All local changes discarded",
-		queuedOfflineToast:
-			"Change saved locally. Use Sync now when connected.",
+		queuedOfflineToast: "Change saved locally. Use Sync now when connected.",
 		createFailed: "Could not create the item.",
 		updateFailed: "Could not update the item.",
 		deleteFailed: "Could not delete the item.",
@@ -1047,6 +1124,35 @@ export default {
 		},
 		pageLink: {
 			dynamicHint: "Dynamic page — segments filled from the item:",
+		},
+		marketingLayout: {
+			emailBuilder: "Email Builder",
+			newLabel: "New",
+		},
+		homePageUi: {
+			emailBuilderItems: {
+				mjmlTitle: "MJML-Based Templates",
+				mjmlText:
+					"Design responsive email templates with MJML markup or plain text and reuse them from any flow.",
+				variablesTitle: "Context-Aware Variables",
+				variablesText:
+					"Use {{@user.field}} for the current user and {{@data.field}} for the triggering record — replaced automatically at send time.",
+				previewTitle: "Live Sandboxed Preview",
+				previewText:
+					"Render a safe, sandboxed preview of your template with sample data before you ever hit send.",
+				flowTitle: "Flow-Driven Sends",
+				flowText:
+					"Trigger emails from your automation rules when records are created or updated — no code required.",
+				testTitle: "Send Tests in One Click",
+				testText:
+					"Send the current template — even unsaved — to any address to check final rendering in real inboxes.",
+				meteredTitle: "Fair Usage Metering",
+				meteredText:
+					"1,000 emails are included every month. Beyond that, you pay only a fraction of a cent per email — sends are never blocked.",
+			},
+			emailBuilderSubtitle:
+				"Design reusable email templates once and trigger them from your flows. Included with every subscription — only emails beyond your monthly allowance are metered.",
+			emailBuilderTitle: "Transactional & Flow Emails That Just Work",
 		},
 	},
 } as const;

@@ -441,7 +441,7 @@ export default {
 		assetRenamedSuccessfully: "تمت إعادة التسمية بنجاح",
 		assetRenameFailed: "تعذّرت إعادة تسمية هذا العنصر",
 		assetNameRequired: "الاسم مطلوب",
-		assetNameInvalid: "لا يمكن أن يحتوي الاسم على \"/\"",
+		assetNameInvalid: 'لا يمكن أن يحتوي الاسم على "/"',
 		assetNameUnchanged: "هذا هو الاسم الحالي بالفعل",
 
 		// Search / Filters
@@ -570,6 +570,72 @@ export default {
 				"يرسل القالب الحالي (حتى لو لم يُحفظ) إلى عنوان البريد أدناه.",
 			testRecipient: "بريد المستلم",
 		},
+		emailTemplatesUi: {
+			settings: "إعدادات القالب",
+			name: "الاسم",
+			namePlaceholder: "مثال: welcome",
+			subject: "الموضوع",
+			subjectPlaceholder: "مثال: مرحبًا {{@user.username}}!",
+			content: "المحتوى",
+			nameRequired: "اسم القالب مطلوب",
+			saveFailed: "فشل الحفظ",
+			back: "رجوع",
+			new: "قالب جديد",
+			empty:
+				"لا توجد قوالب بريد بعد. أنشئ أول قالب لاستخدامه في قواعد البريد الخاصة بالتدفقات.",
+			rowsHint:
+				"يُشار إليه في قواعد التدفق — يُستخدم الاسم في الأتمتة الخاصة بك.",
+		},
+		mjmlBuilder: {
+			visual: "مرئي",
+			code: "كود",
+			addBlock: "إضافة كتلة",
+			props: "إعدادات الكتلة",
+			categories: {
+				basic: "أساسيات",
+				layout: "تخطيط",
+				sections: "أقسام",
+			},
+			blocks: {
+				text: "نص",
+				heading: "عنوان",
+				image: "صورة",
+				video: "فيديو",
+				button: "زر",
+				divider: "فاصل",
+				spacer: "مسافة",
+				columns: "عمودان",
+				emailHero: "الترويسة",
+				emailHeader: "الرأس",
+				emailFeatures: "المزايا",
+				emailCta: "دعوة لاتخاذ إجراء",
+				emailSocial: "روابط التواصل",
+				emailFooter: "التذييل",
+				emailLogos: "الشعارات",
+				emailQuote: "اقتباس",
+				emailTicket: "تذكرة",
+				raw: "ترميز مخصص",
+			},
+			variant: "التصميم",
+			drag: "اسحب لإعادة الترتيب",
+			socialLinks: "روابط",
+			previewHidden: "المعاينة مخفية — اختر جهازًا لعرضها.",
+			thumbnailLoading: "جارٍ العرض…",
+			thumbnailEmpty: "لا توجد معاينة",
+			moveUp: "تحريك لأعلى",
+			moveDown: "تحريك لأسفل",
+			addAbove: "إضافة أعلاه",
+			addBelow: "إضافة أدناه",
+			delete: "حذف",
+			cancel: "إلغاء",
+			deleteConfirm: "حذف هذه الكتلة؟",
+			empty: "بريدك فارغ — اختر كتلة من اللوحة للبدء.",
+			columnEmpty: "عمود فارغ",
+			columnHint: "تُدرج الكتل التي تضيفها من اللوحة في هذا العمود.",
+			rawSummary: "ترميز مخصص مُحتفظ به كما هو",
+			codeHint:
+				"الصق أو عدّل ترميز MJML. العودة إلى الوضع المرئي تعيد بناء الكتل من هذا الكود.",
+		},
 
 		// Database settings
 		translationSettings: "إعدادات الترجمة",
@@ -632,7 +698,8 @@ export default {
 		custom: "مخصص",
 
 		// AI Chatbot
-		chatNoChangesApplied: "لم يتم تطبيق أي تغييرات بهذه الإجابة. راجع المقترح وطبّقه لحفظ التغييرات.",
+		chatNoChangesApplied:
+			"لم يتم تطبيق أي تغييرات بهذه الإجابة. راجع المقترح وطبّقه لحفظ التغييرات.",
 		chatAddAttachment: "إرفاق ملف",
 		chatRemoveAttachment: "إزالة المرفق",
 		chatAttachmentOnlyRequest: "اعمل انطلاقًا من الملف المرفق.",
@@ -972,17 +1039,23 @@ export default {
 
 		// Offline / sync
 		offlineReconnect: "عاد الاتصال. زامن التغييرات المحفوظة الآن.",
-		offlineBlockedIntro: "هذا التغيير يمنع المزامنة. عدّله وأعد المحاولة أو تجاهله للمتابعة.",
+		offlineBlockedIntro:
+			"هذا التغيير يمنع المزامنة. عدّله وأعد المحاولة أو تجاهله للمتابعة.",
 		offlineDiscard: "حذف التغيير المحلي",
 		offlineEditRetry: "حفظ وإعادة المحاولة",
 		offlineInvalidJson: "أدخل كائن JSON صالحًا.",
-		offlineNoSearchColumns: "لا يحتوي الجدول المرجعي على أعمدة بحث. أدخل معرّفًا أو اضبط أعمدة البحث.",
-		offlinePickManually: "عُثر على عدة نتائج. اختر يدويًا بإدخال معرّف العنصر الدقيق.",
-		offlineReferenceNotFound: "لم يُعثر على عنصر مطابق. أدخل معرّفًا أو صحّح نص البحث.",
+		offlineNoSearchColumns:
+			"لا يحتوي الجدول المرجعي على أعمدة بحث. أدخل معرّفًا أو اضبط أعمدة البحث.",
+		offlinePickManually:
+			"عُثر على عدة نتائج. اختر يدويًا بإدخال معرّف العنصر الدقيق.",
+		offlineReferenceNotFound:
+			"لم يُعثر على عنصر مطابق. أدخل معرّفًا أو صحّح نص البحث.",
 		offlineInvalidReference: "تعذّر تحديد المرجع.",
-		offlineMissingDependency: "عنصر محلي مرجعي مفقود. استبدل معرّفه المؤقت أو احذف هذا التغيير.",
+		offlineMissingDependency:
+			"عنصر محلي مرجعي مفقود. استبدل معرّفه المؤقت أو احذف هذا التغيير.",
 		offlineDependencyCycle: "تشكّل المراجع المحلية حلقة. عدّل المراجع.",
-		offlineMissingCreatedId: "لم يُرجع الخادم معرّف العنصر المنشأ. تحقّق من الخادم قبل إعادة المحاولة.",
+		offlineMissingCreatedId:
+			"لم يُرجع الخادم معرّف العنصر المنشأ. تحقّق من الخادم قبل إعادة المحاولة.",
 		offlineSyncFailed: "فشلت المزامنة. راجع التغيير وأعد المحاولة.",
 		online: "متصل",
 		offline: "غير متصل",
@@ -1008,8 +1081,7 @@ export default {
 		changeQueuedForSync: "تمت إضافة التغيير إلى قائمة المزامنة",
 		localChangeDiscarded: "تم تجاهل التغيير المحلي",
 		allLocalChangesDiscarded: "تم تجاهل جميع التغييرات المحلية",
-		queuedOfflineToast:
-			"حُفظ التغيير محليًا. اضغط المزامنة عند الاتصال.",
+		queuedOfflineToast: "حُفظ التغيير محليًا. اضغط المزامنة عند الاتصال.",
 		createFailed: "تعذر إنشاء العنصر.",
 		updateFailed: "تعذر تحديث العنصر.",
 		deleteFailed: "تعذر حذف العنصر.",
@@ -1337,6 +1409,34 @@ export default {
 		},
 		pageLink: {
 			dynamicHint: "صفحة ديناميكية — تُملأ المقاطع من العنصر:",
+		},
+		marketingLayout: {
+			emailBuilder: "منشئ البريد",
+			newLabel: "جديد",
+		},
+		homePageUi: {
+			emailBuilderItems: {
+				mjmlTitle: "قوالب مبنية على MJML",
+				mjmlText:
+					"صمم قوالب بريد متجاوبة باستخدام ترميز MJML أو نص عادي، وأعد استخدامها من أي تدفق.",
+				variablesTitle: "متغيرات سياقية",
+				variablesText:
+					"استخدم {{@user.field}} للمستخدم الحالي و {{@data.field}} للسجل المفعّل — تُستبدل تلقائيًا عند الإرسال.",
+				previewTitle: "معاينة مباشرة ومعزولة",
+				previewText: "اعرض معاينة آمنة لقالبك مع بيانات تجريبية قبل الإرسال.",
+				flowTitle: "إرسال مدفوع بالتدفقات",
+				flowText:
+					"فعّل رسائل البريد من قواعد الأتمتة عند إنشاء السجلات أو تحديثها — بدون كتابة كود.",
+				testTitle: "إرسال تجريبي بنقرة واحدة",
+				testText:
+					"أرسل القالب الحالي — حتى لو لم يُحفظ — إلى أي عنوان للتحقق من العرض النهائي.",
+				meteredTitle: "احتساب استخدام عادل",
+				meteredText:
+					"1,000 بريد شهريًا مشمولة. وما بعدها تدفع فقط جزءًا بسيطًا من السنت لكل بريد — ولا يتم حظر الإرسال أبدًا.",
+			},
+			emailBuilderSubtitle:
+				"صمم قوالب بريد قابلة لإعادة الاستخدام مرة واحدة وفعّلها من تدفقاتك. مضمّنة مع كل اشتراك — ولا تُحصى إلا الرسائل التي تتجاوز حصتك الشهرية.",
+			emailBuilderTitle: "بريد معاملات وتدفقات يعمل بسلاسة",
 		},
 	},
 } as const;

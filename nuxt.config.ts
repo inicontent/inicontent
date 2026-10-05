@@ -285,6 +285,20 @@ export default defineNuxtConfig({
 		enabled: false,
 	},
 	vite: {
+		resolve: {
+			alias: [
+				{
+					// mjml-core eagerly requires htmlnano (for its optional `minify`
+					// feature, which the email editor never enables). htmlnano drags
+					// cosmiconfig -> env-paths into the client bundle and env-paths
+					// calls `os.homedir()` at module-eval time, which crashes the
+					// lazily-loaded MJML chunk in the browser (all previews empty).
+					// See stubs/htmlnano-browser.mjs — a faithful no-op for minify.
+					find: /^htmlnano$/,
+					replacement: join(currentDir, "stubs/htmlnano-browser.mjs"),
+				},
+			],
+		},
 		server: {
 			ws: { clientPort: 3434 },
 		},

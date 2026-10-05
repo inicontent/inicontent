@@ -554,6 +554,74 @@ export default {
 				"Envía la plantilla actual (aunque no esté guardada) a la dirección indicada.",
 			testRecipient: "Correo del destinatario",
 		},
+		emailTemplatesUi: {
+			settings: "Ajustes de la plantilla",
+			name: "Nombre",
+			namePlaceholder: "p. ej. welcome",
+			subject: "Asunto",
+			subjectPlaceholder: "p. ej. ¡Bienvenido {{@user.username}}!",
+			content: "Contenido",
+			nameRequired: "Se requiere un nombre de plantilla",
+			saveFailed: "Error al guardar",
+			back: "Atrás",
+			new: "Nueva plantilla",
+			empty:
+				"Aún no hay plantillas de correo. Crea la primera para usarla en tus reglas de correo de flujo.",
+			rowsHint:
+				"Referenciada por las reglas de flujo — el nombre se usa en tu automatización.",
+		},
+		mjmlBuilder: {
+			visual: "Visual",
+			code: "Código",
+			addBlock: "Añadir bloque",
+			props: "Ajustes del bloque",
+			categories: {
+				basic: "Básicos",
+				layout: "Diseño",
+				sections: "Secciones",
+			},
+			blocks: {
+				text: "Texto",
+				heading: "Título",
+				image: "Imagen",
+				video: "Vídeo",
+				button: "Botón",
+				divider: "Divisor",
+				spacer: "Espaciado",
+				columns: "Dos columnas",
+				emailHero: "Hero",
+				emailHeader: "Encabezado",
+				emailFeatures: "Características",
+				emailCta: "Llamada a la acción",
+				emailSocial: "Redes sociales",
+				emailFooter: "Pie de página",
+				emailLogos: "Logotipos",
+				emailQuote: "Cita",
+				emailTicket: "Entrada",
+				raw: "Marcado personalizado",
+			},
+			variant: "Diseño",
+			drag: "Arrastra para reordenar",
+			socialLinks: "enlaces",
+			previewHidden:
+				"Vista previa oculta: elige un dispositivo para mostrarla.",
+			thumbnailLoading: "Renderizando…",
+			thumbnailEmpty: "Sin vista previa",
+			moveUp: "Mover arriba",
+			moveDown: "Mover abajo",
+			addAbove: "Añadir arriba",
+			addBelow: "Añadir abajo",
+			delete: "Eliminar",
+			cancel: "Cancelar",
+			deleteConfirm: "¿Eliminar este bloque?",
+			empty: "Tu correo está vacío: elige un bloque de la paleta para empezar.",
+			columnEmpty: "Columna vacía",
+			columnHint:
+				"Los bloques que añadas desde la paleta se insertan en esta columna.",
+			rawSummary: "Marcado personalizado conservado tal cual",
+			codeHint:
+				"Pega o edita el marcado MJML. Volver al modo Visual reconstruye los bloques desde este código.",
+		},
 
 		// Database settings
 		translationSettings: "Configuración de Traducción",
@@ -964,18 +1032,26 @@ export default {
 		},
 
 		// Offline / sync
-		offlineReconnect: "Conexión restablecida. Sincroniza los cambios guardados.",
-		offlineBlockedIntro: "Este cambio bloquea la sincronización. Edítalo y reintenta, o descártalo para continuar.",
+		offlineReconnect:
+			"Conexión restablecida. Sincroniza los cambios guardados.",
+		offlineBlockedIntro:
+			"Este cambio bloquea la sincronización. Edítalo y reintenta, o descártalo para continuar.",
 		offlineDiscard: "Descartar cambio",
 		offlineEditRetry: "Guardar y reintentar",
 		offlineInvalidJson: "Introduce un objeto JSON válido.",
-		offlineNoSearchColumns: "Esta tabla no tiene columnas de búsqueda. Introduce un ID o configura las columnas.",
-		offlinePickManually: "Se encontraron varias coincidencias. Elige manualmente introduciendo el ID exacto.",
-		offlineReferenceNotFound: "No se encontró ningún elemento. Introduce un ID o corrige el texto.",
+		offlineNoSearchColumns:
+			"Esta tabla no tiene columnas de búsqueda. Introduce un ID o configura las columnas.",
+		offlinePickManually:
+			"Se encontraron varias coincidencias. Elige manualmente introduciendo el ID exacto.",
+		offlineReferenceNotFound:
+			"No se encontró ningún elemento. Introduce un ID o corrige el texto.",
 		offlineInvalidReference: "No se pudo resolver la referencia.",
-		offlineMissingDependency: "Falta un elemento sin conexión referenciado. Sustituye su ID temporal o descarta este cambio.",
-		offlineDependencyCycle: "Las referencias sin conexión forman un ciclo. Edita las referencias.",
-		offlineMissingCreatedId: "El servidor no devolvió el ID creado. Comprueba el servidor antes de reintentar.",
+		offlineMissingDependency:
+			"Falta un elemento sin conexión referenciado. Sustituye su ID temporal o descarta este cambio.",
+		offlineDependencyCycle:
+			"Las referencias sin conexión forman un ciclo. Edita las referencias.",
+		offlineMissingCreatedId:
+			"El servidor no devolvió el ID creado. Comprueba el servidor antes de reintentar.",
 		offlineSyncFailed: "Error de sincronización. Revisa el cambio y reintenta.",
 		online: "En línea",
 		offline: "Sin conexión",
@@ -1350,6 +1426,35 @@ export default {
 		},
 		pageLink: {
 			dynamicHint: "Página dinámica: segmentos rellenados desde el elemento:",
+		},
+		marketingLayout: {
+			emailBuilder: "Editor de correos",
+			newLabel: "Nuevo",
+		},
+		homePageUi: {
+			emailBuilderItems: {
+				mjmlTitle: "Plantillas basadas en MJML",
+				mjmlText:
+					"Diseña correos responsive con markup MJML o texto plano, reutilizables desde cualquier flujo.",
+				variablesTitle: "Variables contextuales",
+				variablesText:
+					"Usa {{@user.field}} para el usuario actual y {{@data.field}} para el registro que dispara la acción — se reemplazan automáticamente al enviar.",
+				previewTitle: "Vista previa en vivo aislada",
+				previewText:
+					"Renderiza una vista previa segura de tu plantilla con datos de ejemplo antes de enviar.",
+				flowTitle: "Envíos impulsados por flujos",
+				flowText:
+					"Dispara correos desde tus reglas de automatización al crear o actualizar registros — sin código.",
+				testTitle: "Pruebas en un clic",
+				testText:
+					"Envía la plantilla actual — incluso sin guardar — a cualquier dirección para verificar el renderizado final.",
+				meteredTitle: "Medición justa del uso",
+				meteredText:
+					"1 000 correos incluidos cada mes. Más allá de eso, pagas solo una fracción de centavo por correo — los envíos nunca se bloquean.",
+			},
+			emailBuilderSubtitle:
+				"Diseña plantillas de correo reutilizables una sola vez y actívalas desde tus flujos. Incluido con cada suscripción — solo se cobran los correos que superan tu asignación mensual.",
+			emailBuilderTitle: "Correos transaccionales y de flujo que funcionan",
 		},
 	},
 } as const;

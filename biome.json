@@ -13,9 +13,10 @@
 		"indentStyle": "tab"
 	},
 	"linter": {
-		"enabled": true,
 		"rules": {
-			"recommended": true
+			"style": {
+				"useVueMultiWordComponentNames": "off"
+			}
 		}
 	},
 	"javascript": {

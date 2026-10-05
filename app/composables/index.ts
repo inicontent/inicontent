@@ -352,12 +352,12 @@ export function getPath(
 	listNumbers?: number | number[],
 	currentPath?: string,
 ): string {
-	if (!id) return "";
+	if (id === undefined) return "";
 
 	for (const item of schema) {
 		const newPath = currentPath ? `${currentPath}.${item.key}` : item.key;
 
-		if (item.id === id) return newPath;
+		if (String(item.id) === String(id)) return newPath;
 
 		if (
 			item.type === "array" &&

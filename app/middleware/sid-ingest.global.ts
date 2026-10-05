@@ -1,6 +1,6 @@
 // Global middleware that restores sessions passed across deployments as URL
 // query params. When the tenant app redirects to the platform app (pages,
-// blocks, templates, billing), cookies cannot travel cross-origin, so the
+// blocks, billing), cookies cannot travel cross-origin, so the
 // redirect URL carries `?{db}_sid=...&inicontent_sid=...` (see
 // usePlatformRedirect). This middleware writes them back into the scoped
 // cookies so the target boots already signed in. It runs before the route

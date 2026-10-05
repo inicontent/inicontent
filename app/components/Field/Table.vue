@@ -186,13 +186,12 @@ function createReferencedItem() {
 	});
 }
 
-const searchIn =
+const searchIn = computed(() => 
 	field.searchIn ??
 	(table?.defaultSearchableColumns
-		? table.defaultSearchableColumns.map((columnID) =>
-				getPath(table.schema ?? [], columnID),
-			)
-		: undefined);
+		? table.defaultSearchableColumns.map((columnID) => getPath(table.schema ?? [], columnID))
+		: undefined)
+);
 
 const pagination = ref<pageInfo>();
 const where = ref<string>();
@@ -203,7 +202,7 @@ const debouncedLoadOptions = debounce(async (searchValue) => {
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-async function loadOptions(searchValue?: string | number) {
+async function loadOptions(searchValue?: string | number) {	
 	if (!isOnline.value) {
 		const pending = await getPendingCreates(
 			database.value.slug,
@@ -223,8 +222,8 @@ async function loadOptions(searchValue?: string | number) {
 	const searchOrObject =
 		searchValue &&
 		(typeof searchValue !== "string" || searchValue.trim().length) &&
-		searchIn
-			? (searchIn.reduce((result, searchKey) => {
+		searchIn.value
+			? (searchIn.value.reduce((result, searchKey) => {
 					Object.assign(result, {
 						[searchKey]: `*%${searchValue}%`,
 					});
