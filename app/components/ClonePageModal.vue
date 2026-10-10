@@ -137,7 +137,7 @@ async function postBlockCopy(block: Content): Promise<Content | null> {
 	const dbSlug = database.value.slug;
 	const { id: _id, ...rest } = block;
 	const req = await $fetch<apiResponse<Content[]>>(
-		`${config.public.apiBase}${dbSlug}/blocks`,
+		`${useApiBase()}${dbSlug}/blocks`,
 		{
 			method: "POST",
 			body: [{ ...rest, config: serializeConfig(block) }],
@@ -197,7 +197,7 @@ async function onConfirm() {
 
 		// Resolve a unique slug.
 		const existingPages = await $fetch<apiResponse<Page[]>>(
-			`${config.public.apiBase}${dbSlug}/pages`,
+			`${useApiBase()}${dbSlug}/pages`,
 			{
 				params: {
 					locale,
@@ -218,7 +218,7 @@ async function onConfirm() {
 
 		// Create the new page referencing the cloned blocks.
 		const pageReq = await $fetch<apiResponse<Page>>(
-			`${config.public.apiBase}${dbSlug}/pages`,
+			`${useApiBase()}${dbSlug}/pages`,
 			{
 				method: "POST",
 				body: {

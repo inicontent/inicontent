@@ -257,7 +257,7 @@ const dbSlug = computed(
 const authDocsUrl = computed(() => `${basePath.value}/admin/api/auth`);
 
 const realtimeWsUrl = computed(() => {
-	const apiBase = config.public.apiBase as string;
+	const apiBase = useApiBase() as string;
 	if (apiBase.startsWith("http")) {
 		const url = new URL(apiBase);
 		const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
@@ -491,7 +491,7 @@ const jsonLd = computed(() => ({
 	"@type": "WebAPI",
 	name: `${currentTable.value?.slug ?? ""} API`,
 	description: `CRUD API endpoints for the ${currentTable.value?.slug ?? ""} table`,
-	baseUrl: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug ?? ""}`,
+	baseUrl: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug ?? ""}`,
 	endpoints: [
 		...(hasMethod("r")
 			? [
@@ -499,13 +499,13 @@ const jsonLd = computed(() => ({
 						"@type": "EntryPoint",
 						name: "List items",
 						httpMethod: "GET",
-						urlTemplate: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug}`,
+						urlTemplate: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug}`,
 					},
 					{
 						"@type": "EntryPoint",
 						name: "Get item",
 						httpMethod: "GET",
-						urlTemplate: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
+						urlTemplate: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
 					},
 				]
 			: []),
@@ -515,7 +515,7 @@ const jsonLd = computed(() => ({
 						"@type": "EntryPoint",
 						name: "Create item",
 						httpMethod: "POST",
-						urlTemplate: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug}`,
+						urlTemplate: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug}`,
 					},
 				]
 			: []),
@@ -525,7 +525,7 @@ const jsonLd = computed(() => ({
 						"@type": "EntryPoint",
 						name: "Update item",
 						httpMethod: "PUT",
-						urlTemplate: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
+						urlTemplate: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
 					},
 				]
 			: []),
@@ -535,7 +535,7 @@ const jsonLd = computed(() => ({
 						"@type": "EntryPoint",
 						name: "Delete item",
 						httpMethod: "DELETE",
-						urlTemplate: `${config.public.apiBase}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
+						urlTemplate: `${useApiBase()}${dbSlug.value}/${currentTable.value?.slug}/{id}`,
 					},
 				]
 			: []),

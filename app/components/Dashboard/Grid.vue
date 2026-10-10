@@ -110,7 +110,7 @@ const ensureDashboardsTable = async () => {
 	if (user.value?.role !== config.public.idOne) return false;
 	try {
 		const res = await $fetch<apiResponse<Table>>(
-			`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/dashboards`,
+			`${useApiBase()}inicontent/databases/${modelValue.value.slug}/dashboards`,
 			{
 				method: "POST",
 				body: {
@@ -151,7 +151,7 @@ const fetchDashboards = async () => {
 	}
 	try {
 		const res = await $fetch<apiResponse<Dashboard[]>>(
-			`${config.public.apiBase}${modelValue.value.slug}/dashboards`,
+			`${useApiBase()}${modelValue.value.slug}/dashboards`,
 			{
 				params: {
 					locale: Language.value,
@@ -180,7 +180,7 @@ const createDashboard = async () => {
 	Loading.value.Dashboard = true;
 	try {
 		const res = await $fetch<apiResponse<Dashboard>>(
-			`${config.public.apiBase}${modelValue.value.slug}/dashboards`,
+			`${useApiBase()}${modelValue.value.slug}/dashboards`,
 			{
 				method: "POST",
 				body: {
@@ -212,7 +212,7 @@ const createDashboard = async () => {
 const deleteDashboard = async (id: string | number) => {
 	try {
 		const res = await $fetch<apiResponse<any>>(
-			`${config.public.apiBase}${modelValue.value.slug}/dashboards/${id}`,
+			`${useApiBase()}${modelValue.value.slug}/dashboards/${id}`,
 			{
 				method: "DELETE",
 				params: {

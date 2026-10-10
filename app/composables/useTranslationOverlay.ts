@@ -55,7 +55,7 @@ export function useTranslationOverlay() {
 		if (!database.value?.slug) return [];
 		try {
 			const res = await $fetch<apiResponse<TranslationRow[]>>(
-				`${config.public.apiBase}${database.value.slug}/translations`,
+				`${useApiBase()}${database.value.slug}/translations`,
 				{
 					params: {
 						where: Inison.stringify(where),
@@ -234,7 +234,7 @@ export function useTranslationOverlay() {
 		existingId?: string | number | null;
 	}): Promise<string | number | undefined> {
 		if (!database.value?.slug) return undefined;
-		const url = `${config.public.apiBase}${database.value.slug}/translations`;
+		const url = `${useApiBase()}${database.value.slug}/translations`;
 		if (record.existingId !== undefined && record.existingId !== null) {
 			await $fetch(`${url}/${String(record.existingId)}`, {
 				method: "PUT",
@@ -270,7 +270,7 @@ export function useTranslationOverlay() {
 	async function removeTranslation(id: string | number, locale: string) {
 		if (!database.value?.slug) return;
 		await $fetch(
-			`${config.public.apiBase}${database.value.slug}/translations/${String(id)}`,
+			`${useApiBase()}${database.value.slug}/translations/${String(id)}`,
 			{
 				method: "DELETE",
 				params: sidParams(locale),

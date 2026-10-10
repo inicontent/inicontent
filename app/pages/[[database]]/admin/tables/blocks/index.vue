@@ -155,7 +155,7 @@ const sortedBlocks = computed(() => {
 
 async function duplicateBlock(block: Content) {
 	const data = await $fetch<apiResponse<Content[]>>(
-		`${config.public.apiBase}${database.value.slug}/blocks`,
+		`${useApiBase()}${database.value.slug}/blocks`,
 		{
 			method: "POST",
 			body: [{ name: block.name, config: block.config }],

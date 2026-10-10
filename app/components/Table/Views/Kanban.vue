@@ -174,7 +174,7 @@ async function executeFetch() {
 			[(field as Field).key]: column.key === UNSET_KEY ? "" : column.key,
 		})
 		const _data = await $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value?.slug}`,
+			`${useApiBase()}${database.value.slug}/${table.value?.slug}`,
 			{
 				query: {
 					where: searchString.value
@@ -217,7 +217,7 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 
 	/* API call ------------------------------------------------------ */
 	const _data = await $fetch<apiResponse>(
-		`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${card.id}`,
+		`${useApiBase()}${database.value.slug}/${table.value.slug}/${card.id}`,
 		{
 			method: "PUT",
 			body: { [field.key]: toKey === UNSET_KEY ? "" : toKey },

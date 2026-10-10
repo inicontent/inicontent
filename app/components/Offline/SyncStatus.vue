@@ -66,7 +66,7 @@
 				depth="3"
 				style="font-size: 12px; line-height: 1.4; white-space: normal"
 			>
-				{{ t("offlineTooltip") }}
+				{{ t("offlinePersistenceDisabled") }}
 			</NText>
 
 			<!-- Pending changes + sync now -->

@@ -212,7 +212,7 @@ async function fetchSchemaAndData() {
 			Loading.value.SCHEMA = true;
 
 			response = await $fetch<apiResponse<{ schema: Schema; data: Item }>>(
-				`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
+				`${useApiBase()}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}/schema`,
 				{
 					method: bodyContent?.id ? "PUT" : "POST",
 					body: bodyContent,
@@ -371,7 +371,7 @@ async function UPDATE() {
 			Loading.value.UPDATE = true;
 			const data = await useOfflineFetch()
 				.request(
-					`${config.public.apiBase}${database.value.slug}/${
+					`${useApiBase()}${database.value.slug}/${
 						props.table ?? table.value?.slug ?? route.params.table
 					}/${bodyContent?.id}`,
 					{
@@ -425,7 +425,7 @@ async function DELETE() {
 	Loading.value.DELETE = true;
 	const data = await useOfflineFetch()
 		.request(
-			`${config.public.apiBase}${database.value.slug}/${
+			`${useApiBase()}${database.value.slug}/${
 				props.table ?? table.value?.slug ?? route.params.table
 			}/${bodyContent?.id}`,
 			{
@@ -488,7 +488,7 @@ async function CREATE() {
 			Loading.value.CREATE = true;
 			const data = await useOfflineFetch()
 				.request(
-					`${config.public.apiBase}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
+					`${useApiBase()}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 					{
 						method: "POST",
 						body: bodyContent,
@@ -626,7 +626,7 @@ async function postTranslationsForNewItem(
 		const value = normalizeValue(field, raw);
 		if (!value) continue;
 		ops.push(
-			$fetch(`${config.public.apiBase}${database.value.slug}/translations`, {
+			$fetch(`${useApiBase()}${database.value.slug}/translations`, {
 				method: "POST",
 				body: {
 					translation: value,

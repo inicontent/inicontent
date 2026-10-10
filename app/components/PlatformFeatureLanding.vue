@@ -48,7 +48,13 @@ const featureIcons: Record<PlatformFeature, string> = {
 	billing: "tabler:credit-card",
 };
 const featureIcon = computed(() => featureIcons[props.feature]);
-const redirectUrl = computed(() => platformUrl(props.feature));
+// Handoff codes are minted against the API, so the href is resolved once the
+// component mounts; each code is single-use, so the link is refreshed
+// before being reused.
+const redirectUrl = ref<string>(platformHost.value);
+onMounted(async () => {
+	redirectUrl.value = await platformUrl(props.feature);
+});
 </script>
 
 <style scoped>

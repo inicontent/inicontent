@@ -91,7 +91,7 @@ export function useAggregation(
 					[productColumnKey.value]: productId.value,
 				});
 			const request = await $fetch<apiResponse<Item[]>>(
-				`${runtimeConfig.public.apiBase}${database.value?.slug}/${tableSlug.value}`,
+				`${useApiBase()}${database.value?.slug}/${tableSlug.value}`,
 				{ params, credentials: "include" },
 			);
 			rows.value = request.result ?? [];

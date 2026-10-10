@@ -976,6 +976,17 @@ td[data-col-key=actions] {
 	text-align: center !important;
 }
 
+.builderContents {
+	display: flex;
+	flex-direction: column;
+	background-color: #ffffff;
+	container-type: inline-size;
+}
+
+.dark .builderContents {
+	background-color: #404040;
+}
+
 @media (max-width: 768px) {
 	#tableCard>.n-card-header {
 		flex-direction: column;

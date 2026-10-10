@@ -212,7 +212,7 @@ const createTable = async () => {
 		const quickSettingsFlows = generateQuickSettingsFlows()
 
 		const data = await $fetch<apiResponse<Table>>(
-			`${config.public.apiBase}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
+			`${useApiBase()}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
 				body: quickSettingsFlows.length ? { onRequest: quickSettingsFlows } : undefined,

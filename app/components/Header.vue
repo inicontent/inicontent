@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { isValidID } from "inibase/utils";
-import { Icon, NIcon, NTag, NText, NFlex } from "#components";
+import { Icon, NFlex, NIcon, NTag, NText } from "#components";
 
 const config = useRuntimeConfig();
 const route = useRoute();
@@ -101,9 +101,15 @@ const { tableUrl } = useTableUrl();
 const user = useState<User | undefined>("user");
 const database = useState<Database>("database");
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const Theme = useCookie<"light" | "dark">("theme", { sameSite: true });
-const redirectTo = useScopedCookie<string | null>("redirectTo", database.value?.slug);
+const redirectTo = useScopedCookie<string | null>(
+	"redirectTo",
+	database.value?.slug,
+);
 
 const ThemeConfig = useState<ThemeConfig>("ThemeConfig", () => ({
 	primaryColor: "#FF9800",
@@ -204,10 +210,21 @@ const userDropdownOptions = computed(() => [
 		show: user.value?.role === config.public.idOne,
 	},
 	{
-		label: () => h(NFlex,{ justify: Language.value === "ar" ? "end" : "start", align: "center",  reverse: Language.value === "ar"  }, () => [
-			t("billing"),
-			h(NIcon, { color: ThemeConfig.value.primaryColor}, () => h(Icon, { name: "tabler:external-link" }))
-		]),
+		label: () =>
+			h(
+				NFlex,
+				{
+					justify: Language.value === "ar" ? "end" : "start",
+					align: "center",
+					reverse: Language.value === "ar",
+				},
+				() => [
+					t("billing"),
+					h(NIcon, { color: ThemeConfig.value.primaryColor }, () =>
+						h(Icon, { name: "tabler:external-link" }),
+					),
+				],
+			),
 		key: "billing",
 		icon: () => h(NIcon, () => h(Icon, { name: "tabler:credit-card" })),
 		show:
@@ -258,7 +275,10 @@ const userDropdownOptions = computed(() => [
 ]);
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
-const platformSessionID = useScopedCookie<string | undefined>("sid", "inicontent");
+const platformSessionID = useScopedCookie<string | undefined>(
+	"sid",
+	"inicontent",
+);
 const { platformUrl } = usePlatformRedirect();
 
 /**
@@ -272,6 +292,7 @@ const { platformUrl } = usePlatformRedirect();
  * reported, but the user still ends up signed out locally.
  */
 async function logout() {
+	useState<boolean>("containment_loggingOut").value = true;
 	const slug = database.value?.slug ?? "inicontent";
 	const currentSessionID = sessionID.value;
 	// A tenant app can hold two independent sessions: its own `{db}_sid` and the
@@ -281,8 +302,7 @@ async function logout() {
 	// On the platform database they are the same cookie, so only one call is made.
 	const endedSessions = [
 		{ slug, sessionID: currentSessionID },
-		...(platformSessionID.value &&
-		platformSessionID.value !== currentSessionID
+		...(platformSessionID.value && platformSessionID.value !== currentSessionID
 			? [{ slug: "inicontent", sessionID: platformSessionID.value }]
 			: []),
 	];
@@ -295,7 +315,9 @@ async function logout() {
 	let signedOutRemotely = true;
 	for (const session of endedSessions) {
 		try {
-			await $fetch(`${config.public.apiBase}${session.slug}/auth/signout`, {
+			await $fetch(`${useApiBase()}${session.slug}/auth/signout`, {
+				method: "POST",
+				body: {},
 				credentials: "include",
 				params: {
 					locale: Language.value,
@@ -311,6 +333,7 @@ async function logout() {
 		`${route.params.database ? `/${route.params.database}` : ""}/auth`,
 	);
 	if (!signedOutRemotely) window.$message?.warning(t("logoutLocalOnly"));
+	window.dispatchEvent(new Event("inicontent-session-ended"));
 }
 
 async function onSelectUserDropdown(v: string) {
@@ -324,7 +347,7 @@ async function onSelectUserDropdown(v: string) {
 			navigateTo(tableUrl("users", `/${(user.value as User).id}/edit`));
 			break;
 		case "billing":
-			navigateTo(platformUrl("billing"), { external: true });
+			platformUrl("billing").then((url) => navigateTo(url, { external: true }));
 			break;
 		case "settings":
 			navigateTo(

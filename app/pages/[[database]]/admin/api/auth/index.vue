@@ -38,7 +38,8 @@
 
 			<ApiEndpointCard
 				:endpoint="signoutEndpoint"
-				method="GET"
+				method="POST"
+				request-example="{}"
 				:description="t('apiDocs.auth.signoutDescription')"
 				:response-example="signoutResponse"
 			/>
@@ -105,7 +106,7 @@ const dbSlug = computed(
 		"inicontent",
 );
 
-const apiBase = computed(() => config.public.apiBase);
+const apiBase = computed(() => useApiBase());
 
 const usersTable = computed(() =>
 	database.value?.tables?.find((table) => table.slug === "users"),
@@ -252,7 +253,7 @@ const jsonLd = computed(() => ({
 		{
 			"@type": "EntryPoint",
 			name: "Sign out",
-			httpMethod: "GET",
+			httpMethod: "POST",
 			urlTemplate: `${apiBase.value}${dbSlug.value}/auth/signout`,
 		},
 		{

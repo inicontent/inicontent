@@ -50,7 +50,7 @@ export function usePageLanguages() {
 		const request = (async () => {
 			try {
 				const res = await $fetch<apiResponse<{ locale?: string }[]>>(
-					`${config.public.apiBase}${databaseSlug}/translations`,
+					`${useApiBase()}${databaseSlug}/translations`,
 					{
 						params: {
 							where: Inison.stringify({ table: pagesTableId, item: pageId }),
@@ -109,7 +109,7 @@ export function usePageLanguages() {
 		if (!database.value?.slug) return undefined;
 		try {
 			const res = await $fetch<apiResponse<Page>>(
-				`${config.public.apiBase}${database.value.slug}/pages/${String(pageId)}`,
+				`${useApiBase()}${database.value.slug}/pages/${String(pageId)}`,
 				{
 					params: {
 						locale: lang,

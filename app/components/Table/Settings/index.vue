@@ -290,7 +290,7 @@ async function updateTable() {
 						Table & { localLabel?: { value: string; label: string }[] }
 					>
 				>().request(
-					`${config.public.apiBase}inicontent/databases/${
+					`${useApiBase()}inicontent/databases/${
 						database.value.slug
 					}/${route.params.table ?? table.value.slug}`,
 					{
@@ -355,7 +355,7 @@ const isUnDeletable = computed(() =>
 async function deleteTable() {
 	Loading.value.deleteTable = true;
 	const data = await $fetch<apiResponse>(
-		`${config.public.apiBase}inicontent/databases/${
+		`${useApiBase()}inicontent/databases/${
 			database.value.slug
 		}/${route.params.table ?? table.value.slug}`,
 		{

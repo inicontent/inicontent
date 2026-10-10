@@ -39,14 +39,13 @@ const isTemplatePatternURL = urlSegments.some(isTemplatePattern);
 const { data: page } = isTemplatePatternURL
 	? { data: ref<Page>() }
 	: await useFetch<Page>(
-			`${config.public.apiBase}${database.value.slug}/pages`,
+			`${useApiBase()}${database.value.slug}/pages`,
 			{
 				query: {
 					where: Inison.stringify({
 						slug: urlSegments.join("/"),
 					}),
 					locale: Language,
-					[`${database.value.slug}_sid`]: sessionID,
 				},
 				watch: [Language],
 				transform: (res) => res.result?.[0],

@@ -268,7 +268,7 @@ export function usePageTemplate() {
 	): Promise<{ page: Page; capture: Record<string, string> } | null> {
 		if (!database.value?.slug) return null;
 		const res = await $fetch<apiResponse<Page[]>>(
-			`${config.public.apiBase}${database.value.slug}/pages`,
+			`${useApiBase()}${database.value.slug}/pages`,
 			{
 				params: {
 					options: Inison.stringify({
@@ -348,7 +348,7 @@ export function usePageTemplate() {
 
 		try {
 			const res = await $fetch<apiResponse<Item[]>>(
-				`${config.public.apiBase}${database.value.slug}/${table}`,
+				`${useApiBase()}${database.value.slug}/${table}`,
 				{
 					params: {
 						...params,

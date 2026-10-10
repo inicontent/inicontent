@@ -185,7 +185,6 @@ const builtinVariables = [
 	"@user.role",
 ];
 
-const CUSTOM_VARIABLES_KEY = "emailTemplates.customVariables";
 
 // Sample values used only for the preview and test emails — never sent.
 const sampleValues: Record<string, string> = {
@@ -199,16 +198,6 @@ const sampleValues: Record<string, string> = {
 const PLACEHOLDER_PATTERN = /\{\{([@\w][\w.-]*)\}\}/g;
 
 const customVariables = ref<string[]>([]);
-function loadCustomVariables() {
-	if (!import.meta.client) return;
-	try {
-		const raw = localStorage.getItem(CUSTOM_VARIABLES_KEY);
-		if (raw) customVariables.value = JSON.parse(raw);
-	} catch {
-		customVariables.value = [];
-	}
-}
-loadCustomVariables();
 
 const allVariables = computed(() => [
 	...new Set([...builtinVariables, ...customVariables.value]),
@@ -221,24 +210,12 @@ const variableTag = (key: string) => `{{${key}}}`;
 const showAddVariable = ref(false);
 const newVariable = ref("");
 
-function persistCustomVariables() {
-	if (!import.meta.client) return;
-	try {
-		localStorage.setItem(
-			CUSTOM_VARIABLES_KEY,
-			JSON.stringify(customVariables.value),
-		);
-	} catch {
-		// localStorage unavailable — keep in-memory list
-	}
-}
 
 function addCustomVariable() {
 	const key = newVariable.value.trim().replace(/[{}]/g, "");
 	if (!key) return;
 	if (!customVariables.value.includes(key)) {
 		customVariables.value.push(key);
-		persistCustomVariables();
 	}
 	newVariable.value = "";
 	showAddVariable.value = false;
@@ -249,7 +226,6 @@ function removeCustomVariable(key: string) {
 	customVariables.value = customVariables.value.filter(
 		(variable) => variable !== key,
 	);
-	persistCustomVariables();
 }
 
 const inputRef = ref();
@@ -320,7 +296,7 @@ async function refreshPreview() {
 		const response = await $fetch<
 			apiResponse<{ html: string; subject: string; text: string }>
 		>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/email/preview`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/email/preview`,
 			{
 				method: "POST",
 				credentials: "include",
@@ -367,7 +343,7 @@ async function sendTest() {
 	Loading.value.testEmail = true;
 	try {
 		const data = await $fetch<apiResponse>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/email/test`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/email/test`,
 			{
 				method: "POST",
 				credentials: "include",

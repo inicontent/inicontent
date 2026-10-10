@@ -152,7 +152,7 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 const hasLogs = ref(true)
 
 const { data, execute, refresh } = await useLazyFetch<apiResponse<Log[]>>(
-	() => `${config.public.apiBase}${database.value.slug}/${table.value.slug}/logs`,
+	() => `${useApiBase()}${database.value.slug}/${table.value.slug}/logs`,
 	{
 		query: {
 			where: id ? `{item:${id}}` : undefined,
@@ -334,7 +334,7 @@ async function executeRevert() {
 
 	try {
 		const response = await $fetch<apiResponse<Item>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${id}/revert`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/${id}/revert`,
 			{
 				method: "POST",
 				body: { logId: pendingRevertLog.value.id },

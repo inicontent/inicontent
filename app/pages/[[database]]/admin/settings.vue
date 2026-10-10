@@ -355,7 +355,7 @@ async function loadDatabaseExportStatus() {
 	if (!canExportDatabase.value) return;
 	try {
 		const response = await $fetch<apiResponse<DatabaseExportStatus | null>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/export`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/export`,
 			exportRequestOptions(),
 		);
 		exportStatus.value = response.result ?? undefined;
@@ -368,7 +368,7 @@ async function startDatabaseExport() {
 	Loading.value.databaseExport = true;
 	try {
 		const response = await $fetch<apiResponse<DatabaseExportStatus>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/export`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/export`,
 			{ ...exportRequestOptions(), method: "POST" },
 		);
 		if (!response.result) throw new Error(response.message);
@@ -388,7 +388,7 @@ async function downloadDatabaseExport() {
 	Loading.value.downloadDatabaseExport = true;
 	try {
 		const response = await $fetch<apiResponse<{ url: string }>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/export/download`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/export/download`,
 			exportRequestOptions(),
 		);
 		if (!response.result?.url) throw new Error(response.message);
@@ -439,7 +439,7 @@ async function updateDatabase(showSuccess = true) {
 	Loading.value.updateDatabase = true;
 	try {
 		const data = await $fetch<apiResponse<Database>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}`,
 			{
 				method: "PUT",
 				body: bodyContent,
@@ -477,7 +477,7 @@ async function sendTestEmail() {
 	Loading.value.testEmail = true;
 	try {
 		const data = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/email/test`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/email/test`,
 			{
 				method: "POST",
 				body: { email: testRecipient.value },
@@ -497,7 +497,7 @@ async function sendTestEmail() {
 async function deleteDatabase() {
 	Loading.value.deleteDatabase = true;
 	const data = await $fetch<apiResponse>(
-		`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
+		`${useApiBase()}inicontent/databases/${database.value.slug}`,
 		{
 			method: "DELETE",
 			credentials: "include",

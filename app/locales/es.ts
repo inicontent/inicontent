@@ -1,5 +1,7 @@
 export default {
 	es: {
+		offlinePersistenceDisabled: "No se puede guardar sin conexión. Vuelve a conectarte antes de guardar; los cambios que fallen no se pondrán en cola.",
+		offlineQuarantineNotice: "Los cambios sin sincronizar de una versión anterior se conservan en este dispositivo y no pueden reenviarse de forma segura. Contacta con tu administrador para recuperarlos antes de borrar los datos del sitio.",
 		// Actions
 		edit: "Editar",
 		create: "Crear",
@@ -991,6 +993,7 @@ export default {
 		allTime: "Todo el tiempo",
 		limit: "Límite",
 		noData: "Sin datos",
+		otherSlices: "Otros",
 		columnsToDisplay: "Columnas a mostrar",
 		sortField: "Ordenar por",
 		sortOrder: "Orden de clasificación",

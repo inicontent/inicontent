@@ -231,7 +231,7 @@ async function fetchItemTranslations() {
 	try {
 		const result = (
 			await $fetch<apiResponse<Item[]>>(
-				`${config.public.apiBase}${database.value.slug}/translations`,
+				`${useApiBase()}${database.value.slug}/translations`,
 				{
 					params: {
 						where: Inison.stringify({
@@ -286,7 +286,7 @@ async function fetchMainLanguageItem() {
 
 	try {
 		const res = await $fetch<apiResponse<Item>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${props.item.id}`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/${props.item.id}`,
 			{
 				params: {
 					locale: primary,
@@ -307,7 +307,7 @@ async function saveTranslations() {
 	if (!props.item?.id) return;
 	saving.value = true;
 
-	const baseUrl = `${config.public.apiBase}${database.value.slug}/translations`;
+	const baseUrl = `${useApiBase()}${database.value.slug}/translations`;
 	const sidLang = {
 		locale: Language.value,
 		[`${database.value.slug}_sid`]: sessionID.value,
@@ -464,7 +464,7 @@ async function saveOriginal(field: Field) {
 	originalSaving.value = true;
 	const ops: Promise<any>[] = [
 		$fetch(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/${props.item.id}`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/${props.item.id}`,
 			{
 				method: "PUT",
 				body: { [fieldKey]: bodyValue },

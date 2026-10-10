@@ -46,7 +46,7 @@ export function useRealtimeSync(
 		isConnecting.value = true;
 
 		try {
-			const apiBase = config.public.apiBase;
+			const apiBase = useApiBase();
 			let wsUrl: string;
 			if (apiBase.startsWith("http")) {
 				const url = new URL(apiBase);

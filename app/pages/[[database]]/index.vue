@@ -16,12 +16,11 @@ const currentPage = useState<Page | null>("currentPage", () => null);
 if (database.value.slug === "inicontent") await navigateTo("/");
 
 const { data: page } = await useFetch<Page>(
-	`${config.public.apiBase}${database.value.slug}/pages`,
+	`${useApiBase()}${database.value.slug}/pages`,
 	{
 		query: {
 			where: Inison.stringify({ slug: "/" }),
 			locale: Language,
-			[`${database.value.slug}_sid`]: sessionID,
 		},
 		watch: [Language],
 		transform: (res) => res.result?.[0],

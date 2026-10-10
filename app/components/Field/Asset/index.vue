@@ -16,7 +16,7 @@
 		</template>
 		<NUpload ref="uploadRef" directory-dnd :max="!field.isArray ? 1 : undefined" :multiple="!!field.isArray"
 			:accept="acceptedFileType"
-			:action="`${config.public.apiBase}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
+			:action="`${useApiBase()}${database.slug ?? 'inicontent'}/assets${field.suffix ? renderLabel({ ...table, label: field.suffix }, currentItem) : ''}`"
 			:fileList @update:file-list="setModelValue" :custom-request @remove="handleRemoveUpload"
 			:list-type="!field.isTable ? 'image' : 'image-card'" :renderIcon :shouldUseThumbnailUrl="() => false">
 			<NUploadDragger v-if="compressionIndicator">
@@ -170,7 +170,7 @@ async function handleRemoveUpload({
 					)
 				: "";
 			await $fetch(
-				`${config.public.apiBase}${database.value.slug}/assets${path}/${uploadedAssetId}`,
+				`${useApiBase()}${database.value.slug}/assets${path}/${uploadedAssetId}`,
 				{
 					method: "DELETE",
 					params: {

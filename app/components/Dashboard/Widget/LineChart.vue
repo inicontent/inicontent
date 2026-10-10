@@ -1,5 +1,8 @@
 <template>
-	<NSpin :show="loading">
+	<!-- See PieChart.vue: the chart has no intrinsic width, so the flex-item
+	     root must be anchored to 100% or echarts initializes with a 0px
+	     canvas. -->
+	<NSpin :show="loading" style="width: 100%">
 		<div style="height: 250px">
 			<VChart v-if="timeSeries.length" :option="chartOption" autoresize />
 			<NEmpty v-else :description="t('noData')" />

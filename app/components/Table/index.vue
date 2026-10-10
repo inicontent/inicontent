@@ -212,7 +212,7 @@ const tablesConfig = computed({
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v };
 		$fetch(
-			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			`${useApiBase()}${database.value.slug}/users/${user.value?.id}`,
 			{
 				method: "PUT",
 				body: user.value,
@@ -250,7 +250,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 	Loading.value.data = true;
 	const deleteResponse = await useOfflineFetch()
 		.request(
-			`${config.public.apiBase}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
+			`${useApiBase()}${database.value.slug}/${table.value?.slug}${!id || Array.isArray(id) ? "" : `/${id}`}`,
 			{
 				method: "DELETE",
 				query: {
@@ -281,7 +281,7 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 	Loading.value.data = false;
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+			`${useApiBase()}${database.value.slug}/${table.value?.slug as string}`,
 			{
 				credentials: "include",
 				query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -475,7 +475,7 @@ provide("isSlotSet", isSlotSet);
 
 if (isSlotSet("default") && !table.value.displayAs)
 	data.value = await $fetch<apiResponse<Item[]>>(
-		`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+		`${useApiBase()}${database.value.slug}/${table.value?.slug as string}`,
 		{
 			credentials: "include",
 			query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -494,7 +494,7 @@ function clearJobTimer() {
 async function refreshTableAfterImport() {
 	if (isSlotSet("default") && !table.value.displayAs)
 		data.value = await $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}`,
 			{
 				credentials: "include",
 				query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -506,7 +506,7 @@ async function refreshTableAfterImport() {
 function uploadImportFile(file: File) {
 	return new Promise<apiResponse<TableImportStatus>>((resolve, reject) => {
 		const url = new URL(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/import`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/${table.value.slug}/import`,
 			window.location.origin,
 		);
 		if (sessionID.value)
@@ -623,7 +623,7 @@ async function jobNotification() {
 		try {
 			const result = (
 				await $fetch<apiResponse<number | TableImportStatus>>(
-					`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/${job}`,
+					`${useApiBase()}inicontent/databases/${database.value.slug}/${table.value.slug}/${job}`,
 					{
 						credentials: "include",
 						query: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -668,7 +668,7 @@ async function jobNotification() {
 								type: "primary",
 								onClick: () => {
 									window.open(
-										`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
+										`${useApiBase()}inicontent/databases/${database.value.slug}/${table.value.slug}/export/download?${`${database.value.slug}_sid`}=${sessionID.value}`,
 									);
 									notificationRef.value?.destroy();
 									notificationRef.value = undefined;
@@ -804,7 +804,7 @@ async function toolsDropdownOnSelect(
 		}
 		case "exportAllData": {
 			await $fetch(
-				`${config.public.apiBase}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
+				`${useApiBase()}inicontent/databases/${database.value.slug}/${table.value?.slug}/export`,
 				{
 					method: "POST",
 					credentials: "include",

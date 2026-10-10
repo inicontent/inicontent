@@ -1,5 +1,7 @@
 export default {
 	ar: {
+		offlinePersistenceDisabled: "الحفظ دون اتصال غير متاح. أعد الاتصال قبل الحفظ؛ لن تُضاف التغييرات التي فشل حفظها إلى قائمة الانتظار.",
+		offlineQuarantineNotice: "حُفظت على هذا الجهاز تغييرات غير متزامنة من إصدار سابق ولا يمكن إرسالها بأمان تلقائيًا. تواصل مع المسؤول لاستعادتها قبل مسح بيانات الموقع.",
 		// Actions
 		edit: "تعديل",
 		create: "إنشاء",
@@ -1002,6 +1004,7 @@ export default {
 		allTime: "كل الوقت",
 		limit: "الحد",
 		noData: "لا توجد بيانات",
+		otherSlices: "أخرى",
 		columnsToDisplay: "الأعمدة المعروضة",
 		sortField: "ترتيب حسب",
 		sortOrder: "اتجاه الترتيب",

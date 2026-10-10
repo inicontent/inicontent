@@ -1,5 +1,5 @@
-import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
+import { groupItemsByField } from "~/composables/groupLabels";
 import renderLabel from "~/composables/renderLabel";
 import { generateSearchString } from "~/composables/search";
 import {
@@ -148,44 +148,35 @@ export function useDashboardData(
 			.map(([date, value]) => ({ date, value }));
 	}
 
-	function getFieldLabel(item: Item, field: string): string {
-		const raw = item[field];
-		if (raw == null) return "unknown";
-		if (typeof raw === "object") {
-			const schema = sourceTable.value?.schema
-				? flattenSchema(sourceTable.value.schema as any)
-				: [];
-			const fieldDef = schema.find((f: Field) => f.key === field);
-			if (fieldDef?.table) {
-				const refTable = database.value?.tables?.find(
-					(t) => t.slug === fieldDef.table,
-				);
-				return renderLabel(refTable, raw as Item) || String(raw);
-			}
-			return String(raw);
-		}
-		return String(raw);
+	/** Resolve the bar/pie grouping field. The widget editor only offers
+	 *  top-level schema fields, so those are matched first — `flattenSchema`
+	 *  drops a parent whose `children` is an inline array-of-objects schema,
+	 *  which would otherwise lose the field (or collide with a child id). */
+	function resolveGroupField(
+		fieldRef: string | number | undefined,
+	): Field | undefined {
+		if (fieldRef == null) return undefined;
+		const top = sourceTable.value?.schema?.find(
+			(f) => Number(f.id) === Number(fieldRef),
+		);
+		return top ?? resolveWidgetField(sourceTable.value, fieldRef);
 	}
 
-	function groupByField(items: Item[], field: string) {
-		const map = new Map<string, number>();
-		for (const item of items) {
-			const val = getFieldLabel(item, field);
-			map.set(val, (map.get(val) ?? 0) + 1);
-		}
-		return Array.from(map.entries())
-			.sort(([, a], [, b]) => b - a)
-			.map(([name, value]) => ({ name, value }));
-	}
-
-	function getColumnsForField(field: string): string[] {
-		if (!sourceTable.value?.columns) return [field];
+	function getColumnsForField(field: string, fieldDef?: Field): string[] {
 		// Find dot-path columns that start with this field (e.g. "المساحة.name")
-		const nested = sourceTable.value.columns.filter(
+		const nested = (sourceTable.value?.columns ?? []).filter(
 			(col) => col.startsWith(`${field}.`) || col === `${field}.*`,
 		);
 		// Always include the field itself + any nested sub-columns for label rendering
-		return nested.length ? [field, ...nested] : [field];
+		if (nested.length) return [field, ...nested];
+		// A relation grouped by in a bar/pie widget renders one slice per
+		// related row, so the labels need the expanded rows — ask for every
+		// sub-column when the table has no configured label columns for it
+		// (the same `field.*` wildcard formatDatabase derives for tables).
+		if (fieldDef?.table && fieldDef.table !== "assets") {
+			return [field, `${field}.*`];
+		}
+		return [field];
 	}
 
 	function isRecord(value: unknown): value is Record<string, unknown> {
@@ -242,7 +233,7 @@ export function useDashboardData(
 				? ""
 				: `${databaseSlug}/`;
 		return $fetch<apiResponse<Item[]>>(
-			`${config.public.apiBase}${slug}${sourceTable.value?.slug}`,
+			`${useApiBase()}${slug}${sourceTable.value?.slug}`,
 			{
 				params: {
 					locale: Language.value,
@@ -283,7 +274,7 @@ export function useDashboardData(
 				? ""
 				: `${databaseSlug}/`;
 		const res = await $fetch<apiResponse<number>>(
-			`${config.public.apiBase}${slug}${sourceTable.value?.slug}/sum`,
+			`${useApiBase()}${slug}${sourceTable.value?.slug}/sum`,
 			{
 				params: {
 					locale: Language.value,
@@ -392,18 +383,23 @@ export function useDashboardData(
 				case "bar":
 				case "pie": {
 					const fieldRef = widget.groupBy ?? widget.field;
-					const field =
-						fieldRef == null
-							? undefined
-							: resolveWidgetField(sourceTable.value, fieldRef)?.key;
+					const fieldDef = resolveGroupField(fieldRef);
+					const field = fieldDef?.key;
 					if (!field) break;
 					const res = await fetchItems({
 						perPage: 1000,
-						columns: getColumnsForField(field),
+						columns: getColumnsForField(field, fieldDef),
 						where,
 					});
 					data.value = res.result ?? [];
-					groups.value = groupByField(data.value, field);
+					// Array-valued fields (relations, inline arrays) contribute one
+					// label per element, so a row with several diagnostics counts in
+					// several slices.
+					groups.value = groupItemsByField(data.value, field, {
+						fieldDef,
+						tables: database.value?.tables,
+						renderLabel,
+					});
 					break;
 				}
 				case "table": {

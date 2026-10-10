@@ -117,7 +117,7 @@ const {
 	status,
 	refresh,
 } = await useLazyFetch<apiResponse<Database[]>>(
-	`${config.public.apiBase}inicontent/databases`,
+	`${useApiBase()}inicontent/databases`,
 	{
 		key: "databases",
 		onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
@@ -201,7 +201,7 @@ async function createDatabase() {
 		const bodyContent = toRaw(DatabaseModal.value);
 		Loading.value.Database = true;
 		const data = await $fetch<apiResponse>(
-			`${config.public.apiBase}inicontent/databases/${bodyContent.slug}`,
+			`${useApiBase()}inicontent/databases/${bodyContent.slug}`,
 			{
 				method: "POST",
 				body: bodyContent,

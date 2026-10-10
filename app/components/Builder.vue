@@ -18,7 +18,7 @@
 						<div v-for="block in blocks" :key="block.id"
 							class="block-item previewBox" @click="insertBlock(block)">
 							<LazyPreview class="previewBox">
-								<div class="contents">
+								<div class="builderContents">
 									<LazyBlock :model-value="block" />
 								</div>
 							</LazyPreview>
@@ -45,7 +45,7 @@
 										@click="updateBlock(modelValue.content[currentElementIndex].name, index + 1)">
 										<LazyPreview class="previewBox"
 											:style="getPreviewStyle(modelValue.content[currentElementIndex].name, index + 1)">
-											<div class="contents">
+											<div class="builderContents">
 												<LazyBlock
 													:model-value="getRenderModel(modelValue.content[currentElementIndex].name, index + 1)" />
 											</div>
@@ -110,7 +110,7 @@
 								<NGridItem v-for="key in (Object.keys(blockTypes) as Blocks[])"
 									@click="(modelValue.content[currentElementIndex] = { name: `${key}/1`, config: {} }, expandedNames = 'style')">
 									<LazyPreview class="previewBox">
-										<div class="contents">
+										<div class="builderContents">
 											<LazyBlock :model-value="getRenderModel(`${key}/1`, 1)" />
 										</div>
 									</LazyPreview>
@@ -258,7 +258,7 @@
 			</NCard>
 		</NLayoutSider>
 		<NLayoutContent class="Editor" position="absolute">
-			<VueDraggable v-if="modelValue.content && modelValue.content.length" class="contents" :class="{ currentlyEditing: !isMenuCollapsed }"
+			<VueDraggable v-if="modelValue.content && modelValue.content.length" class="builderContents" :class="{ currentlyEditing: !isMenuCollapsed }"
 				v-model="modelValue.content" group="content" :itemKey="'id'" :disabled="isTranslationMode" @end="onEnd">
 				<template v-for="(element,index) in modelValue.content">
 					<div class="parentElement" v-if="element.name"
@@ -547,7 +547,7 @@ async function loadCanonicalAndRebuild() {
 	}
 	try {
 		const res = await $fetch<apiResponse<Page>>(
-			`${config.public.apiBase}${database.value.slug}/pages/${modelValue.value.id}`,
+			`${useApiBase()}${database.value.slug}/pages/${modelValue.value.id}`,
 			{
 				params: {
 					locale: primaryLanguage.value,
@@ -853,7 +853,7 @@ async function loadBlocks() {
 	blocksLoading.value = true;
 	try {
 		const data = await $fetch<apiResponse<Content[]>>(
-			`${config.public.apiBase}${database.value.slug}/blocks`,
+			`${useApiBase()}${database.value.slug}/blocks`,
 			{
 				params: {
 					locale: Language.value,
@@ -939,7 +939,7 @@ async function syncPageTemplate() {
 		};
 		if (!templateBlockId) {
 			const req = await $fetch<apiResponse<Content[]>>(
-				`${config.public.apiBase}${database.value.slug}/blocks`,
+				`${useApiBase()}${database.value.slug}/blocks`,
 				{
 					method: "POST",
 					body: [{ name: "Template", config: targetConfig }],
@@ -962,7 +962,7 @@ async function syncPageTemplate() {
 			JSON.stringify(originalModelValue.template)
 		) {
 			await $fetch<apiResponse<Content[]>>(
-				`${config.public.apiBase}${database.value.slug}/blocks/${String(templateBlockId)}`,
+				`${useApiBase()}${database.value.slug}/blocks/${String(templateBlockId)}`,
 				{
 					method: "PUT",
 					body: { name: "Template", config: targetConfig },
@@ -986,7 +986,7 @@ async function syncPageTemplate() {
 		if (templateBlockId) {
 			// Binding removed — clean up the stored row (best-effort).
 			await $fetch<apiResponse<boolean>>(
-				`${config.public.apiBase}${database.value.slug}/blocks/${String(templateBlockId)}`,
+				`${useApiBase()}${database.value.slug}/blocks/${String(templateBlockId)}`,
 				{
 					method: "DELETE",
 					params: {
@@ -1090,7 +1090,7 @@ async function SaveAdd() {
 				);
 				if (existingChangedBlocks.length) {
 					const existingChangedBlocksReq = await $fetch<apiResponse<Content[]>>(
-						`${config.public.apiBase}${database.value.slug}/blocks`,
+						`${useApiBase()}${database.value.slug}/blocks`,
 						{
 							method: "PUT",
 							body: existingChangedBlocks.map((block) => ({
@@ -1122,7 +1122,7 @@ async function SaveAdd() {
 					.filter(String) as number[];
 				if (newBlockIndexes?.length) {
 					const newBlockIdsReq = await $fetch<apiResponse<Content[]>>(
-						`${config.public.apiBase}${database.value.slug}/blocks`,
+						`${useApiBase()}${database.value.slug}/blocks`,
 						{
 							method: "POST",
 							body: rawModelValue?.content
@@ -1163,7 +1163,7 @@ async function SaveAdd() {
 					JSON.stringify(originalModelValue.seo)
 			) {
 				const pageReq = await $fetch<apiResponse<Page>>(
-					`${config.public.apiBase}${database.value.slug}/pages${rawModelValue.id ? `/${rawModelValue.id}` : ""}`,
+					`${useApiBase()}${database.value.slug}/pages${rawModelValue.id ? `/${rawModelValue.id}` : ""}`,
 					{
 						method: rawModelValue.id ? "PUT" : "POST",
 						body: {
@@ -1228,7 +1228,7 @@ async function deleteBlockDropdownOnSelect(
 		if (!block.id) return;
 		Loading.value.deleteBlock = true;
 		const data = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}${database.value.slug}/blocks/${block.id}`,
+			`${useApiBase()}${database.value.slug}/blocks/${block.id}`,
 			{
 				method: "DELETE",
 				params: {
@@ -1461,7 +1461,7 @@ async function findSlugCollision(
 	if (!database.value?.slug) return false;
 	try {
 		const res = await $fetch<apiResponse<Page[]>>(
-			`${config.public.apiBase}${database.value.slug}/pages`,
+			`${useApiBase()}${database.value.slug}/pages`,
 			{
 				params: {
 					where: Inison.stringify({ slug }),

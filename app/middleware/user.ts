@@ -14,9 +14,11 @@ export default defineNuxtRouteMiddleware(async () => {
 		try {
 			user.value = (
 				await $fetch<apiResponse<User>>(
-					`${config.public.apiBase}${database.value.slug}/auth/current`,
+					`${useApiBase()}${database.value.slug}/auth/current`,
 					{
 						credentials: "include",
+						method: "POST",
+						body: {},
 						query: sessionID.value ? { [`${database.value.slug}_sid`]: sessionID.value } : { "inicontent_sid": platformSessionID.value },
 					},
 				)

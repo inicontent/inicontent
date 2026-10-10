@@ -199,7 +199,7 @@ async function updateFavoriteFilters(filters: any[]) {
         };
 
         await $fetch(
-            `${config.public.apiBase}${database.value.slug}/users/${user.value.id}`,
+            `${useApiBase()}${database.value.slug}/users/${user.value.id}`,
             {
                 method: "PUT",
                 body: updatedUser,

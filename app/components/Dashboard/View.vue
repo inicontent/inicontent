@@ -145,6 +145,10 @@ import {
 	DashboardWidgetSearchButton,
 	DashboardWidgetTable,
 } from "#components";
+import {
+	computePlacements,
+	type WidgetPlacement,
+} from "~/composables/dashboardLayout";
 import { generateSearchString } from "~/composables/search";
 import { resolveWidgetTable } from "~/composables/widgetSchema";
 
@@ -266,160 +270,6 @@ function widgetRenderer(
 	type: Widget["type"],
 ): (typeof widgetRenderers)[keyof typeof widgetRenderers] | null {
 	return widgetRenderers[type] ?? null;
-}
-
-function getSpan(widget: Widget): number {
-	switch (widget.size) {
-		case "large":
-			return 24;
-		case "medium":
-			return 16;
-		default:
-			return 8;
-	}
-}
-
-// Tall widgets (charts/tables) height exceeds a counter, so the layout lets
-// short widgets stack in the free columns beside them.
-function isTall(widget: Widget): boolean {
-	return widget.type !== "counter";
-}
-
-const MAX_STACKED_SHORTS = 4;
-
-type WidgetPlacement = {
-	colStart: number;
-	rowStart: number;
-	colSpan: number;
-	rowSpan: number;
-};
-
-// Explicit 24-column layout. A tall widget (chart/table) and the short
-// widgets that fit in its remaining width form one block: the tall spans
-// one row per stacked short, and the shorts stack one-per-row on the free
-// side — regardless of whether they come before or after the tall in the
-// list, and direction-safe (RTL/LTR use logical columns).
-function computePlacements(widgets: Widget[]): Record<string, WidgetPlacement> {
-	const result: Record<string, WidgetPlacement> = {};
-	const n = widgets.length;
-
-	// Place a run of widgets on successive flow lines, left to right
-	// (logical), wrapping when a line overflows 24 columns.
-	const placeFlow = (items: Widget[], startRow: number): number => {
-		let row = startRow;
-		let col = 1;
-		for (const item of items) {
-			const span = getSpan(item);
-			if (col + span - 1 > 24) {
-				row += 1;
-				col = 1;
-			}
-			result[item.id] = {
-				colStart: col,
-				rowStart: row,
-				colSpan: span,
-				rowSpan: 1,
-			};
-			col += span;
-		}
-		return row + 1;
-	};
-
-	let cursorRow = 1;
-	let i = 0;
-	while (i < n) {
-		const widget = widgets[i];
-
-		if (!isTall(widget)) {
-			// Collect a contiguous run of shorts that fit on one flow line.
-			const run = [widget];
-			let runWidth = getSpan(widget);
-			let j = i + 1;
-			while (
-				j < n &&
-				!isTall(widgets[j]) &&
-				runWidth + getSpan(widgets[j]) <= 24
-			) {
-				run.push(widgets[j]);
-				runWidth += getSpan(widgets[j]);
-				j += 1;
-			}
-
-			// A tall widget right after the run can host it: stack the run
-			// in its own column and let the tall span the hosting rows.
-			if (j < n && isTall(widgets[j])) {
-				const tall = widgets[j];
-				const remaining = 24 - getSpan(tall);
-				if (remaining > 0 && run.every((s) => getSpan(s) <= remaining)) {
-					const rowSpan = Math.max(2, Math.min(run.length, MAX_STACKED_SHORTS));
-					const assignCount = Math.min(run.length, rowSpan);
-					const maxShortSpan = Math.max(
-						...run.slice(0, assignCount).map(getSpan),
-					);
-					run.slice(0, assignCount).forEach((s, t) => {
-						result[s.id] = {
-							colStart: 1,
-							rowStart: cursorRow + t,
-							colSpan: getSpan(s),
-							rowSpan: 1,
-						};
-					});
-					result[tall.id] = {
-						colStart: 1 + maxShortSpan,
-						rowStart: cursorRow,
-						colSpan: getSpan(tall),
-						rowSpan,
-					};
-					cursorRow += rowSpan;
-					const leftover = run.slice(assignCount);
-					if (leftover.length) cursorRow = placeFlow(leftover, cursorRow);
-					i = j + 1;
-					continue;
-				}
-			}
-
-			// Unhosted shorts: flow normally.
-			cursorRow = placeFlow(run, cursorRow);
-			i = j;
-			continue;
-		}
-
-		// Tall widget, possibly followed by shorts that fit beside it.
-		const remaining = 24 - getSpan(widget);
-		const shorts: Widget[] = [];
-		let j = i + 1;
-		while (
-			j < n &&
-			!isTall(widgets[j]) &&
-			remaining > 0 &&
-			getSpan(widgets[j]) <= remaining
-		) {
-			shorts.push(widgets[j]);
-			j += 1;
-		}
-		const rowSpan = Math.max(2, Math.min(shorts.length, MAX_STACKED_SHORTS));
-		const assignCount = Math.min(shorts.length, rowSpan);
-		result[widget.id] = {
-			colStart: 1,
-			rowStart: cursorRow,
-			colSpan: getSpan(widget),
-			rowSpan,
-		};
-		shorts.slice(0, assignCount).forEach((s, t) => {
-			result[s.id] = {
-				colStart: 1 + getSpan(widget),
-				rowStart: cursorRow + t,
-				colSpan: getSpan(s),
-				rowSpan: 1,
-			};
-		});
-		cursorRow += rowSpan;
-		const leftover = shorts.slice(assignCount);
-		if (leftover.length) cursorRow = placeFlow(leftover, cursorRow);
-		i = j;
-	}
-
-	return result;
 }
 
 // While a drag is in progress the layout is frozen: vue-draggable-plus would

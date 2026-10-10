@@ -76,7 +76,7 @@ export function useLoop(modelValue: Ref<Loop>) {
 		loading.value = true;
 		try {
 			const request = await $fetch<apiResponse<Item[]>>(
-				`${runtimeConfig.public.apiBase}${database.value.slug}/${tableSlug.value}`,
+				`${useApiBase()}${database.value.slug}/${tableSlug.value}`,
 				{
 					params: {
 						options: Inison.stringify({

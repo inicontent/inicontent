@@ -1,5 +1,7 @@
 export default {
 	fr: {
+		offlinePersistenceDisabled: "L’enregistrement hors ligne est indisponible. Reconnectez-vous avant d’enregistrer ; un échec n’est pas mis en attente.",
+		offlineQuarantineNotice: "Des modifications non synchronisées d’une ancienne version sont conservées sur cet appareil et ne peuvent pas être renvoyées en toute sécurité. Contactez votre administrateur pour les récupérer avant d’effacer les données du site.",
 		// Actions
 		edit: "Modifier",
 		create: "Créer",
@@ -999,6 +1001,7 @@ export default {
 		allTime: "Tout le temps",
 		limit: "Limite",
 		noData: "Aucune donnée",
+		otherSlices: "Autres",
 		columnsToDisplay: "Colonnes à afficher",
 		sortField: "Trier par",
 		sortOrder: "Ordre de tri",

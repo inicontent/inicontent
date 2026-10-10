@@ -74,7 +74,7 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug)
 async function importAsset() {
     Loading.value.import = true
     const data = await $fetch<apiResponse<Asset | Asset[]>>(
-        `${config.public.apiBase}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID.value}`,
+        `${useApiBase()}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID.value}`,
         {
             method: "POST",
             headers: {

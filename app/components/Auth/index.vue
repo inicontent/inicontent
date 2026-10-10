@@ -210,7 +210,7 @@ async function handleSuccessfulLogin(
 	user.value = data.result;
 	database.value = (
 		await $fetch<apiResponse<Database>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}`,
 			{
 				credentials: "include",
 				params: {
@@ -258,7 +258,7 @@ async function SigninSubmit(e: Event) {
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
 				const data = await $fetch<LoginResponse>(
-					`${config.public.apiBase}${database.value.slug}/auth/signin`,
+					`${useApiBase()}${database.value.slug}/auth/signin`,
 					{
 						method: "PUT",
 						body: bodyContent,
@@ -317,7 +317,7 @@ async function requestPasswordReset(event: Event) {
 	Loading.value.PasswordResetRequest = true;
 	try {
 		const data = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}${database.value.slug}/auth/reset`,
+			`${useApiBase()}${database.value.slug}/auth/reset`,
 			{
 				method: "POST",
 				body: toRaw(ResetRequestForm.value),

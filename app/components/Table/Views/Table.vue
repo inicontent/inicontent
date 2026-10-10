@@ -60,7 +60,7 @@ const tablesConfig = computed({
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v };
 		$fetch(
-			`${config.public.apiBase}${database.value.slug}/users/${user.value?.id}`,
+			`${useApiBase()}${database.value.slug}/users/${user.value?.id}`,
 			{
 				method: "PUT",
 				body: user.value,
@@ -244,7 +244,7 @@ const queryOptions = computed(() =>
 );
 
 const { data: _data } = await useLazyFetch<apiResponse<Item[]>>(
-	`${config.public.apiBase}${database.value.slug}/${table.value?.slug as string}`,
+	`${useApiBase()}${database.value.slug}/${table.value?.slug as string}`,
 	{
 		key: `${database.value.slug}/${table.value?.slug as string}`,
 		query: {
@@ -1154,7 +1154,7 @@ async function setColumns(skipVisualWidths = false) {
 											row[field.key] = value;
 											await refreshVisualWidths();
 											const __data = await $fetch<apiResponse<Item | boolean>>(
-												`${config.public.apiBase}${database.value.slug}/${
+												`${useApiBase()}${database.value.slug}/${
 													table.value?.slug
 												}/${row.id}`,
 												{

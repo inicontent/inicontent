@@ -1,20 +1,43 @@
+import { resolvePlatformFeatureHost } from "./platformFeatureHost.ts";
+
 export type PlatformFeature = "billing";
 
 const platformFeaturePaths: Record<PlatformFeature, string> = {
 	billing: "/admin/billing",
 };
 
+async function mintHandoffCode(
+	apiBase: string,
+	slug: string,
+	sid: string | null | undefined,
+): Promise<string | null> {
+	if (!sid) return null;
+	const target = `${apiBase}${encodeURIComponent(slug)}/auth/handoff`;
+	try {
+		const response = await $fetch<{ code?: string }>(target, {
+			method: "POST",
+			body: {},
+			headers: { Authorization: `Bearer ${sid}` },
+		});
+		return response?.code ?? null;
+	} catch {
+		return null;
+	}
+}
+
 /**
  * Resolves where a platform-level workspace (billing) actually lives for the
  * current database: the tenant's own
- * `https://<slug>.inicontent.com` subdomain, or the custom domain attached to
- * the database when one is pointed (`database.domains`). The platform
+ * `https://<slug>.inicontent.com` subdomain. Custom domains are excluded
+ * because platform billing only trusts platform hosts. The platform
  * database itself lives at the bare `https://inicontent.com` host.
  *
- * The current sessions are appended as query params (`?{db}_sid=...` and
- * `?inicontent_sid=...`) because cookies are domain-scoped and cannot be
- * copied cross-origin by JavaScript — the `sid-ingest` global middleware
- * writes them back into cookies on the target.
+ * Sessions cross origins as short-lived, single-use handoff codes
+ * (`?{db}_handoff=...`) minted against the API — the target exhales them
+ * through the sid-ingest middleware. The long-lived SID never appears in
+ * the URL, browser history, or Referer headers. If minting fails the URL
+ * is returned without credentials: the user lands signed-out, never
+ * exposed.
  */
 export function usePlatformRedirect() {
 	const config = useRuntimeConfig();
@@ -28,32 +51,35 @@ export function usePlatformRedirect() {
 	const databaseSessionID = useScopedCookie<string>("sid", databaseSlug.value);
 	const platformSessionID = useScopedCookie<string>("sid", "inicontent");
 
-	const platformHost = computed(() => {
-		const customDomain = database.value?.domains
-			?.map((domain) =>
-				String(domain)
-					.replace(/^https?:\/\//, "")
-					.replace(/\/+$/, ""),
-			)
-			.find(Boolean);
-		if (customDomain) return `https://${customDomain}`;
-		return databaseSlug.value === "inicontent"
-			? "https://inicontent.com"
-			: `https://${databaseSlug.value}.inicontent.com`;
-	});
+	const platformHost = computed(() =>
+		resolvePlatformFeatureHost(databaseSlug.value),
+	);
 
-	function platformUrl(feature: PlatformFeature) {
+	async function platformUrl(feature: PlatformFeature): Promise<string> {
 		const url = new URL(platformFeaturePaths[feature], platformHost.value);
-		// On the platform database the database session IS the platform
-		// session, so the database key would duplicate the platform key.
-		if (databaseSlug.value !== "inicontent" && databaseSessionID.value) {
-			url.searchParams.set(
-				`${databaseSlug.value}_sid`,
-				databaseSessionID.value,
+		const apiBase = useApiBase();
+
+		const jobs: Array<Promise<[string, string | null]>> = [];
+		if (databaseSlug.value !== "inicontent") {
+			jobs.push(
+				mintHandoffCode(
+					apiBase,
+					databaseSlug.value,
+					databaseSessionID.value,
+				).then(
+					(code) =>
+						[`${databaseSlug.value}_handoff`, code] as [string, string | null],
+				),
 			);
 		}
-		if (platformSessionID.value) {
-			url.searchParams.set("inicontent_sid", platformSessionID.value);
+		jobs.push(
+			mintHandoffCode(apiBase, "inicontent", platformSessionID.value).then(
+				(code) => ["inicontent_handoff", code] as [string, string | null],
+			),
+		);
+
+		for (const [key, code] of await Promise.all(jobs)) {
+			if (code) url.searchParams.set(key, code);
 		}
 		return url.toString();
 	}

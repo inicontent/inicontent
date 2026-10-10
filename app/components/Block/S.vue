@@ -1,5 +1,5 @@
 <template>
-	<div v-if="modelValue" class="contents">
+	<div v-if="modelValue" class="builderContents">
 		<LazyBlock v-for="(_, index) in modelValue" v-model="modelValue[index]" />
 	</div>
 	<div v-else class="not-found-wrapper">

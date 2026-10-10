@@ -64,12 +64,6 @@ export default defineNuxtConfig({
 	ssr: false,
 	sourcemap: false,
 	telemetry: false,
-	// Global stylesheet for the page builder. `.contents` is the block stack
-	// wrapper: a flex column with `container-type: inline-size` so block designs
-	// lay themselves out with container queries instead of viewport media
-	// queries (the same markup is served inside the editor's device preview,
-	// where the viewport is not the page's viewport).
-	css: [join(currentDir, "app/assets/builder.css")],
 	modules: [
 		"@vite-pwa/nuxt",
 		"@nuxtjs/device",
@@ -137,6 +131,19 @@ export default defineNuxtConfig({
 			viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 		},
 	},
+	// Two rules that keep the offline-first PWA out of the dev server's way.
+	// Both have been broken before and the failure is silent — the dev origin
+	// serves stale code and only an incognito window looks right:
+	//
+	// 1. `devOptions.enabled` must stay OFF (it is the default). Turning it on
+	//    registers a real worker on `localhost:3434` that survives the option
+	//    being removed — nothing unregisters it — and its navigateFallback +
+	//    CacheFirst rules then freeze the dev origin until it is removed by
+	//    hand (see app/plugins/dev-pwa-reset.client.ts, which cleans up
+	//    whatever it can find but cannot run inside a shell it doesn't ship in).
+	// 2. Never serve a build (`.output`, `nuxt preview`) on the dev origin.
+	//    That shell contains NO dev code at all, so no in-app cleanup is
+	//    possible — `pnpm preview` is pinned to port 4343 for exactly this.
 	pwa: {
 		manifest: {
 			name: "Inicontent",
@@ -185,7 +192,7 @@ export default defineNuxtConfig({
 			globPatterns: [
 				"_nuxt/**/*.{js,css,woff,woff2}",
 				"_fonts/**/*.{woff,woff2}",
-				"**/*.{png,ico,svg,webmanifest,json}",
+				"manifest.webmanifest", "pwa-192x192.png", "pwa-512x512.png",
 			],
 			// Let the newly-installed SW control the current page immediately so a
 			// single online visit populates the runtime caches (without this, the
@@ -195,92 +202,20 @@ export default defineNuxtConfig({
 			// manifest manually (see appShellRevision above) — otherwise offline
 			// navigation has nothing to serve and the app can never load.
 			additionalManifestEntries: [{ url: "/", revision: appShellRevision }],
-			runtimeCaching: [
-				{
-					// Icons are served by the Nuxt app's own /_nuxt_icon endpoint
-					// (same origin). The clientBundle above covers the statically
-					// used + network-state icons; this route saves any other icon
-					// (icon-picker choices, per-item/table icons) the first time
-					// it's fetched while online, then serves it from cache
-					// offline. Revalidate in the background so collections stay
-					// fresh while online.
-					urlPattern: ({ url }) => url.pathname.includes("_nuxt_icon/"),
-					handler: "StaleWhileRevalidate",
-					options: {
-						cacheName: "inicontent-icon-cache",
-						expiration: {
-							maxEntries: 400,
-							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-						},
-						cacheableResponse: {
-							statuses: [0, 200],
-						},
-					},
-				},
-				{
-					// Database metadata, dashboard definitions and other
-					// rarely-changing configuration. Serve from cache instantly,
-					// revalidate in the background.
-					urlPattern: ({ url, request }) =>
-						url.hostname.endsWith("inicontent.com") &&
-						request.method === "GET" &&
-						/\/databases\/|\/translations$|\/schema$/i.test(url.pathname),
-					handler: "StaleWhileRevalidate",
-					options: {
-						cacheName: "inicontent-config-cache",
-						expiration: {
-							maxEntries: 200,
-							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-						},
-						cacheableResponse: {
-							statuses: [0, 200],
-						},
-					},
-				},
-				{
-					// All other API reads (table data, items, searches). Try the
-					// network first, fall back to cache when offline.
-					urlPattern: ({ url, request }) =>
-						url.hostname.endsWith("inicontent.com") && request.method === "GET",
-					handler: "NetworkFirst",
-					options: {
-						cacheName: "inicontent-api-cache",
-						networkTimeoutSeconds: 3,
-						expiration: {
-							maxEntries: 500,
-							maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-						},
-						cacheableResponse: {
-							statuses: [0, 200],
-						},
-					},
-				},
-				{
-					// Runtime-cache static assets (in case a build asset isn't
-					// precached). Cache-first, so they load fast offline.
-					urlPattern: ({ request }) =>
-						request.destination === "style" ||
-						request.destination === "script" ||
-						request.destination === "font" ||
-						request.destination === "image",
-					handler: "CacheFirst",
-					options: {
-						cacheName: "inicontent-static-cache",
-						expiration: {
-							maxEntries: 500,
-							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-						},
-						cacheableResponse: {
-							statuses: [0, 200],
-						},
-					},
-				},
-			],
+			// A3: only the precached build shell is available offline.
+			cacheId: "inicontent-shell-v1",
+			importScripts: ["/inicontent-containment-v1.js"],
+			runtimeCaching: [],
 		},
 	},
-	devServer: {
-		port: 3434, // "INIc" in binary
-	},
+	// "INIc" in binary. Gated on isSourceApp: every app that extends this repo
+	// as a layer inherits this value, so without the gate all of them fight for
+	// 3434 — get-port gives it to whichever dev server started first and the
+	// loser silently moves to another port, so opening 3434 then shows a
+	// DIFFERENT app and your edits appear to do nothing. The source app keeps
+	// 3434; layer apps fall back to Nuxt's normal port selection, which their
+	// terminal prints.
+	...(isSourceApp ? { devServer: { port: 3434 } } : {}),
 	devtools: {
 		enabled: false,
 	},
@@ -298,9 +233,6 @@ export default defineNuxtConfig({
 					replacement: join(currentDir, "stubs/htmlnano-browser.mjs"),
 				},
 			],
-		},
-		server: {
-			ws: { clientPort: 3434 },
 		},
 		optimizeDeps: {
 			exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],

@@ -38,7 +38,7 @@
 		"build": "nuxt build",
 		"dev": "nuxt dev",
 		"generate": "nuxt generate",
-		"preview": "nuxt preview",
+		"preview": "nuxt preview --port 4343",
 		"test": "node --test \"tests/*.test.ts\"",
 		"postinstall": "nuxt prepare"
 	},

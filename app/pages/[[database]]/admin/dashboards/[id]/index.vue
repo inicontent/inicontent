@@ -195,6 +195,22 @@ function cancelEdit() {
 
 const editingNow = computed(() => editMode.value && !!draft.value);
 
+function handleKeydown(e: KeyboardEvent) {
+	if (!editingNow.value) return;
+	if (
+		!(
+			(e.ctrlKey || e.metaKey) &&
+			(e.key.toLowerCase() === "s" || e.key === "س")
+		)
+	)
+		return;
+	e.preventDefault();
+	if (!saving.value) save();
+}
+
+onMounted(() => document.addEventListener("keydown", handleKeydown));
+onBeforeUnmount(() => document.removeEventListener("keydown", handleKeydown));
+
 async function save() {
 	if (!draft.value?.name) {
 		window.$message.error(t("inputsAreInvalid"));
@@ -204,7 +220,7 @@ async function save() {
 	try {
 		const slug = databaseSlug.value ? `${databaseSlug.value}/` : "";
 		const res = await $fetch<apiResponse<Dashboard>>(
-			`${config.public.apiBase}${slug}dashboards/${route.params.id}`,
+			`${useApiBase()}${slug}dashboards/${route.params.id}`,
 			{
 				method: "PUT",
 				body: {
@@ -239,7 +255,7 @@ onMounted(async () => {
 	try {
 		const slug = databaseSlug.value ? `${databaseSlug.value}/` : "";
 		const res = await $fetch<apiResponse<Dashboard>>(
-			`${config.public.apiBase}${slug}dashboards/${route.params.id}`,
+			`${useApiBase()}${slug}dashboards/${route.params.id}`,
 			{
 				params: {
 					locale: Language.value,

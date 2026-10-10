@@ -2546,7 +2546,7 @@ export const SAMPLE_VALUES: Record<string, string> = {
 	"@user.role": "1",
 };
 
-/** localStorage key shared with the layer's editor so variables persist. */
+/** Legacy storage key, retained for migration/reference only; editors no longer persist it. */
 export const CUSTOM_VARIABLES_KEY = "emailTemplates.customVariables";
 
 /** Unique placeholder keys found across the given sources. */

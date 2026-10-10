@@ -47,7 +47,7 @@ export function usePasskeyAuth() {
 
 	async function beginPasskeySignIn(identifier: string) {
 		const beginResponse = await $fetch<PasskeyBeginResponse>(
-			`${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/begin`,
+			`${useApiBase()}${database.value.slug}/auth/passkey/authenticate/begin`,
 			{
 				method: "PUT",
 				credentials: "include",
@@ -79,7 +79,7 @@ export function usePasskeyAuth() {
 		}
 
 		return $fetch<LoginResponse>(
-			`${config.public.apiBase}${database.value.slug}/auth/passkey/authenticate/complete`,
+			`${useApiBase()}${database.value.slug}/auth/passkey/authenticate/complete`,
 			{
 				method: "PUT",
 				credentials: "include",
@@ -99,7 +99,7 @@ export function usePasskeyAuth() {
 
 	async function registerCurrentUserPasskey() {
 		const beginResponse = await $fetch<PasskeyBeginResponse>(
-			`${config.public.apiBase}${database.value.slug}/auth/passkey/register/begin`,
+			`${useApiBase()}${database.value.slug}/auth/passkey/register/begin`,
 			{
 				method: "PUT",
 				credentials: "include",
@@ -131,7 +131,7 @@ export function usePasskeyAuth() {
 		}
 
 		return $fetch<PasskeyRegisterResponse>(
-			`${config.public.apiBase}${database.value.slug}/auth/passkey/register/complete`,
+			`${useApiBase()}${database.value.slug}/auth/passkey/register/complete`,
 			{
 				method: "PUT",
 				credentials: "include",

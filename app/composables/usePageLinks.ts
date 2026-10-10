@@ -50,7 +50,7 @@ export function usePageLinks() {
 			loading.value = true;
 			try {
 				const res = await $fetch<apiResponse<Page[]>>(
-					`${config.public.apiBase}${database.value.slug}/pages`,
+					`${useApiBase()}${database.value.slug}/pages`,
 					{
 						params: {
 							options: Inison.stringify({

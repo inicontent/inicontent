@@ -37,7 +37,7 @@ async function loadDrawer(index: number) {
 			({ slug }) => slug === drawer.table,
 		);
 		const response = await $fetch<apiResponse>(
-			`${config.public.apiBase}${database.value.slug}/${drawer.table}/${drawer.id}`,
+			`${useApiBase()}${database.value.slug}/${drawer.table}/${drawer.id}`,
 			{
 				params: {
 					options: Inison.stringify({

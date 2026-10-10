@@ -120,7 +120,7 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-		`${config.public.apiBase}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
+		`${useApiBase()}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
 		{
 			method: "DELETE",
 			params: {
@@ -238,7 +238,7 @@ async function renameCurrentAsset() {
 		// moves the stored object server-side, returning the updated asset with
 		// its new publicURL — no re-upload.
 		const data = await $fetch<apiResponse<Asset>>(
-			`${config.public.apiBase}${database.value.slug}/assets/rename${path.value ?? ""}/${asset.id}`,
+			`${useApiBase()}${database.value.slug}/assets/rename${path.value ?? ""}/${asset.id}`,
 			{
 				method: "POST",
 				params: {

@@ -68,7 +68,7 @@ async function submitReset(event: Event) {
 	Loading.value.PasswordReset = true;
 	try {
 		const data = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}${database.value.slug}/auth/reset`,
+			`${useApiBase()}${database.value.slug}/auth/reset`,
 			{
 				method: "PUT",
 				body: { token: token.value, password: form.value.password },

@@ -104,7 +104,7 @@ async function fetchByIds(tableSlug: string, ids: string[]) {
 	const version = cacheVersion;
 	const requestedLocale = language.value;
 	const request = await $fetch<apiResponse<Item[]>>(
-		`${config.public.apiBase}${database.value.slug}/${tableSlug}`,
+		`${useApiBase()}${database.value.slug}/${tableSlug}`,
 		{
 			params: {
 				where: Inison.stringify({ id: `[]${ids.join(",")}` }),

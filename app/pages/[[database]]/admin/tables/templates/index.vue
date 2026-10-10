@@ -132,11 +132,10 @@ const newPath = `${tablePath}/new`;
 const editPath = (name: string) => `${tablePath}/${encodeURIComponent(name)}`;
 
 const { data: templates, pending } = await useFetch<EmailTemplate[]>(
-	`${config.public.apiBase}${database.value.slug}/templates`,
+	`${useApiBase()}${database.value.slug}/templates`,
 	{
 		params: {
 			locale: Language.value,
-			[`${database.value.slug}_sid`]: sessionID.value,
 			options: Inison.stringify({ perPage: 1000 }),
 		},
 		transform: (res) => res.result ?? [],
@@ -146,7 +145,7 @@ const { data: templates, pending } = await useFetch<EmailTemplate[]>(
 
 async function remove(template: EmailTemplate) {
 	const res = await $fetch<apiResponse<boolean>>(
-		`${config.public.apiBase}${database.value.slug}/templates/${template.id}`,
+		`${useApiBase()}${database.value.slug}/templates/${template.id}`,
 		{
 			method: "DELETE",
 			params: {

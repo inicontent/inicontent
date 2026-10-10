@@ -273,7 +273,7 @@ async function loadOptions(searchValue?: string | number) {
 	loadingMore.value = false;
 
 	const request = await $fetch<apiResponse<tableOption[]>>(
-		`${config.public.apiBase}${database.value.slug}/${field.table}`,
+		`${useApiBase()}${database.value.slug}/${field.table}`,
 		{
 			params: {
 				where: where.value,
@@ -347,7 +347,7 @@ async function loadMoreOptions() {
 	const seq = requestSeq;
 
 	const request = await $fetch<apiResponse<tableOption[]>>(
-		`${config.public.apiBase}${database.value.slug}/${field.table}`,
+		`${useApiBase()}${database.value.slug}/${field.table}`,
 		{
 			params: {
 				where: where.value,

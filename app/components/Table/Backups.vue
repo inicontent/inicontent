@@ -214,7 +214,7 @@ const restoreForm = reactive({
 });
 
 const apiBase = computed(
-	() => `${config.public.apiBase}${database.value.slug}/backups`,
+	() => `${useApiBase()}${database.value.slug}/backups`,
 );
 
 const tableOptions = computed<SelectOption[]>(() =>

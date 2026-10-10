@@ -58,7 +58,7 @@ const shouldRedirect = await useAsyncData("api-doc-auth", async () => {
 	if (!database.value?.slug || !sessionID.value) return false;
 	try {
 		const data = await $fetch<{ result: boolean }>(
-			`${config.public.apiBase}${database.value.slug}/auth/current`,
+			`${useApiBase()}${database.value.slug}/auth/current`,
 			{
 				credentials: "include",
 				query: {
@@ -87,7 +87,7 @@ const publicTables = computed(() =>
 		)
 		.map((tableItem) => {
 			const baseSlug = database.value?.slug ?? "inicontent";
-			const basePath = `${config.public.apiBase}${baseSlug}/${tableItem.slug}`;
+			const basePath = `${useApiBase()}${baseSlug}/${tableItem.slug}`;
 			return {
 				...tableItem,
 				http: "GET",

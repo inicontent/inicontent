@@ -99,7 +99,7 @@ export function useComputedPreview() {
 					// and let the preview fall back to the stored value.
 					try {
 						const response = await $fetch<apiResponse<Record<string, any>>>(
-							`${config.public.apiBase}${database.value.slug}/${target}/${id}`,
+							`${useApiBase()}${database.value.slug}/${target}/${id}`,
 							{
 								params: {
 									options: Inison.stringify({ columns: [column] }),

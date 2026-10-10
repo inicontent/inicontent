@@ -26,12 +26,11 @@ const pageSlug = ([] as string[]).concat(route.params.slug || "/").join("/");
 const isTemplatePatternSlug = isTemplatePattern(pageSlug);
 
 const { data: page } = await useFetch<Page>(
-	`${config.public.apiBase}${database.value.slug}/pages`,
+	`${useApiBase()}${database.value.slug}/pages`,
 	{
 		params: isTemplatePatternSlug
 			? {
 					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
 					options: Inison.stringify({
 						perPage: 1000,
 						columns: ["*"],
@@ -39,7 +38,6 @@ const { data: page } = await useFetch<Page>(
 				}
 			: {
 					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
 					where: Inison.stringify({ slug: pageSlug }),
 				},
 		transform: (res) =>

@@ -341,7 +341,7 @@ async function previewResolvedPayload() {
 	previewing.value = true
 	try {
 		const response = await $fetch<apiResponse<Record<string, unknown>>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/preview`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/preview`,
 			{
 				method: "POST",
 				body: {
@@ -403,7 +403,7 @@ async function loadSchedules() {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<Schedules[]>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`,
 			{
 				params: {
 					...getRequestParams(),
@@ -473,8 +473,8 @@ async function saveSchedule() {
 		}
 
 		const endpoint = editingSchedule.value?.id
-				? `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
-				: `${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`
+				? `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
+				: `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`
 		const method = editingSchedule.value?.id ? "PUT" : "POST"
 		const response = await $fetch<apiResponse<Schedules>>(endpoint, {
 			method,
@@ -503,7 +503,7 @@ async function runScheduleNow(schedule: Schedules) {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
 			{
 				method: "POST",
 				params: getRequestParams(),
@@ -532,7 +532,7 @@ async function runAllActiveSchedules() {
 
 	try {
 		const response = await $fetch<apiResponse<Schedules[]>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`,
 			{
 				params: {
 					...getRequestParams(),
@@ -553,7 +553,7 @@ async function runAllActiveSchedules() {
 		for (const schedule of activeSchedules) {
 			try {
 				const runResponse = await $fetch<apiResponse<boolean>>(
-					`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
+					`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
 					{
 						method: "POST",
 						params: getRequestParams(),
@@ -588,7 +588,7 @@ async function removeSchedule(schedule: Schedules) {
 	loading.value = true
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
-			`${config.public.apiBase}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}`,
+			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}`,
 			{
 				method: "DELETE",
 				params: getRequestParams(),

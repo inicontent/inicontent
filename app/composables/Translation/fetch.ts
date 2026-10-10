@@ -32,7 +32,7 @@ export default async function (onlyTableTranslations = false) {
 	try {
 		const result = (
 			await $fetch<apiResponse<Item[]>>(
-				`${config.public.apiBase}${database.value.slug
+				`${useApiBase()}${database.value.slug
 				}/translations`,
 				{
 					params: {

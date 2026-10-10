@@ -376,7 +376,7 @@ onMounted(() => {
 	}
 	// Load template names for flow email action
 	$fetch<apiResponse>(
-		`${config.public.apiBase}${database.value.slug}/templates`,
+		`${useApiBase()}${database.value.slug}/templates`,
 		{
 			params: { columns: "name", perPage: 100, locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value },
 			credentials: "include",
@@ -418,7 +418,7 @@ async function saveFlow() {
 	}
 
 	const data = await $fetch<apiResponse>(
-		`${config.public.apiBase}inicontent/databases/${database.value.slug
+		`${useApiBase()}inicontent/databases/${database.value.slug
 		}/${table.value.slug}`,
 		{
 			method: "PUT",

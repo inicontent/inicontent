@@ -35,12 +35,11 @@ const templateName = ([] as string[]).concat(route.params.slug || []).join("/");
 const isTemplatePatternName = isTemplatePattern(templateName);
 
 const { data: template } = await useFetch<EmailTemplate>(
-	`${config.public.apiBase}${database.value.slug}/templates`,
+	`${useApiBase()}${database.value.slug}/templates`,
 	{
 		params: isTemplatePatternName
 			? {
 					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
 					options: Inison.stringify({
 						perPage: 1000,
 						columns: ["*"],
@@ -48,7 +47,6 @@ const { data: template } = await useFetch<EmailTemplate>(
 				}
 			: {
 					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
 					where: Inison.stringify({ name: templateName }),
 				},
 		transform: (res) =>

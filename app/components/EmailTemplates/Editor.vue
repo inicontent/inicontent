@@ -65,7 +65,7 @@ async function save() {
 
 	saving.value = true;
 	try {
-		const url = `${config.public.apiBase}${database.value.slug}/templates${draft.id ? `/${draft.id}` : ""}`;
+		const url = `${useApiBase()}${database.value.slug}/templates${draft.id ? `/${draft.id}` : ""}`;
 		const res = await $fetch<apiResponse<EmailTemplate>>(url, {
 			method: draft.id ? "PUT" : "POST",
 			body: {

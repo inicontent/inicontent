@@ -257,7 +257,7 @@ export function useForm(modelValue: Ref<Form>) {
 		submitting.value = true;
 		try {
 			const response = await $fetch<apiResponse<Item>>(
-				`${runtimeConfig.public.apiBase}${database.value.slug}/${tableSlug.value}`,
+				`${useApiBase()}${database.value.slug}/${tableSlug.value}`,
 				{
 					method: "POST",
 					body: payload(values),

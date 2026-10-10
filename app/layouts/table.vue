@@ -80,7 +80,7 @@ const fetchDashboards = async () => {
 	}
 	try {
 		const res = await $fetch<apiResponse<Dashboard[]>>(
-			`${config.public.apiBase}${database.value.slug}/dashboards`,
+			`${useApiBase()}${database.value.slug}/dashboards`,
 			{
 				params: {
 					locale: Language.value,

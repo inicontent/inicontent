@@ -51,7 +51,7 @@ async function checkAuth() {
 
 	try {
 		const data = await $fetch<{ result: boolean }>(
-			`${config.public.apiBase}${database.value.slug}/auth/current`,
+			`${useApiBase()}${database.value.slug}/auth/current`,
 			{
 				credentials: "include",
 				query: {

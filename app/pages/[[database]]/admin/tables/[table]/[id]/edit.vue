@@ -96,7 +96,7 @@ async function registerPasskey() {
 
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const itemUrl = `${config.public.apiBase}${database.value.slug}/${
+const itemUrl = `${useApiBase()}${database.value.slug}/${
 	table.value.slug
 }/${route.params.id}`;
 const queryParams = {

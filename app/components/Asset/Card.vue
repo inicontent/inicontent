@@ -104,7 +104,7 @@
 						<LazyTableSearchButton v-model:string="searchString" v-model:array="searchArray" :schema
 							size="small" />
 						<NUpload v-if="table?.allowedMethods?.includes('c')" ref="uploadRef" multiple abstract
-							:action="`${config.public.apiBase}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
+							:action="`${useApiBase()}${database.slug}/assets${currentPath}?${database.slug}_sid=${sessionID}`"
 							@update:file-list="onUpdateFileList" :custom-request @remove="onRemoveUpload">
 							<NPopover trigger="manual" placement="top-end" :show="UploadProgress > 0" scrollable
 								style="max-height: 160px">
@@ -308,7 +308,7 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 if (!assetsTable.value || assetsTable.value.slug !== "assets")
 	assetsTable.value = (
 		await $fetch<apiResponse<Table>>(
-			`${config.public.apiBase}inicontent/databases/${database.value.slug}/assets`,
+			`${useApiBase()}inicontent/databases/${database.value.slug}/assets`,
 			{
 				credentials: "include",
 				params: {
@@ -404,7 +404,7 @@ async function deleteSelectedAssets() {
 		await runWithConcurrency(selectedAssets.value, 4, async (asset) => {
 			try {
 				await $fetch<apiResponse>(
-					`${config.public.apiBase}${database.value.slug}/assets${currentPath.value}/${asset.type === "dir" ? asset.name : asset.id}`,
+					`${useApiBase()}${database.value.slug}/assets${currentPath.value}/${asset.type === "dir" ? asset.name : asset.id}`,
 					{
 						method: "DELETE",
 						params: {
@@ -466,7 +466,7 @@ async function fetchAllAssetsInPath(apiPath: string): Promise<Asset[]> {
 	let page = 1;
 	while (true) {
 		const data = await $fetch<apiResponse<Asset[]>>(
-			`${config.public.apiBase}${database.value.slug}/assets${apiPath}`,
+			`${useApiBase()}${database.value.slug}/assets${apiPath}`,
 			{
 				credentials: "include",
 				params: {
@@ -755,7 +755,7 @@ const queryOptions = computed(() =>
 
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
 	() =>
-		`${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
+		`${useApiBase()}${database.value.slug}/assets${currentPath.value}`,
 	{
 		onRequest: () => {
 			Loading.value.AssetData = true;
@@ -973,7 +973,7 @@ async function onRemoveUpload({ file }: { file: Required<UploadFileInfo> }) {
 		return false;
 	}
 	const data = await $fetch<apiResponse<Asset>>(
-			`${config.public.apiBase}${
+			`${useApiBase()}${
 				database.value.slug
 			}/assets${currentPath.value}/${file.name}`,
 			{
@@ -1077,7 +1077,7 @@ async function createFolder() {
 	if (folder.value) {
 		currentPath.value += `/${folder.value}`;
 		await $fetch<apiResponse>(
-			`${config.public.apiBase}${database.value.slug}/assets${currentPath.value}`,
+			`${useApiBase()}${database.value.slug}/assets${currentPath.value}`,
 			{
 				method: "POST",
 				credentials: "include",
@@ -1174,7 +1174,7 @@ async function uploadFileToPath(file: File, targetPath: string) {
 
 	const { name, extension } = getFileNameAndExtension(fileToUpload.name);
 	const mimeType = fileToUpload.type || file.type;
-	const action = `${config.public.apiBase}${database.value.slug}/assets${targetPath}?${database.value.slug}_sid=${sessionID.value}`;
+	const action = `${useApiBase()}${database.value.slug}/assets${targetPath}?${database.value.slug}_sid=${sessionID.value}`;
 
 	const { result } = await $fetch<apiResponse<Asset>>(action, {
 		method: "POST",
@@ -1204,7 +1204,7 @@ async function uploadFileToPath(file: File, targetPath: string) {
 async function ensureFolderExists(folderPath: string) {
 	try {
 		await $fetch<apiResponse>(
-			`${config.public.apiBase}${database.value.slug}/assets${folderPath}`,
+			`${useApiBase()}${database.value.slug}/assets${folderPath}`,
 			{
 				method: "POST",
 				credentials: "include",
