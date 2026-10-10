@@ -10,13 +10,14 @@ async function mintHandoffCode(
 	apiBase: string,
 	slug: string,
 	sid: string | null | undefined,
+	destination?: string,
 ): Promise<string | null> {
 	if (!sid) return null;
 	const target = `${apiBase}${encodeURIComponent(slug)}/auth/handoff`;
 	try {
 		const response = await $fetch<{ code?: string }>(target, {
 			method: "POST",
-			body: {},
+			body: destination ? { destination } : {},
 			headers: { Authorization: `Bearer ${sid}` },
 		});
 		return response?.code ?? null;
@@ -57,6 +58,9 @@ export function usePlatformRedirect() {
 
 	async function platformUrl(feature: PlatformFeature): Promise<string> {
 		const url = new URL(platformFeaturePaths[feature], platformHost.value);
+		// Bind every minted code to the exact origin it will be redeemed on, so
+		// a code can never be replayed against another deployment.
+		const destination = url.origin;
 		const apiBase = useApiBase();
 
 		const jobs: Array<Promise<[string, string | null]>> = [];
@@ -66,6 +70,7 @@ export function usePlatformRedirect() {
 					apiBase,
 					databaseSlug.value,
 					databaseSessionID.value,
+					destination,
 				).then(
 					(code) =>
 						[`${databaseSlug.value}_handoff`, code] as [string, string | null],
@@ -73,7 +78,12 @@ export function usePlatformRedirect() {
 			);
 		}
 		jobs.push(
-			mintHandoffCode(apiBase, "inicontent", platformSessionID.value).then(
+			mintHandoffCode(
+				apiBase,
+				"inicontent",
+				platformSessionID.value,
+				destination,
+			).then(
 				(code) => ["inicontent_handoff", code] as [string, string | null],
 			),
 		);

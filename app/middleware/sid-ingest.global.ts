@@ -23,9 +23,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		const code = to.query[key];
 		if (typeof code !== "string" || !code.trim()) return;
 		try {
+			// Bind redemption to the app's own origin so a code minted for a
+			// different deployment is refused (and burned) server-side.
+			const destination =
+				typeof window !== "undefined" ? window.location.origin : undefined;
 			const response = await $fetch<{ sessionID?: string }>(
 				`${useApiBase()}${slug === "inicontent" ? "inicontent" : slug}/auth/handoff/redeem`,
-				{ method: "POST", body: { code } },
+				{ method: "POST", body: { code, destination } },
 			);
 			const sid = response?.sessionID;
 			if (sid) {

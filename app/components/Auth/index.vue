@@ -48,8 +48,8 @@
 
 	<NModal
 		v-model:show="showPasskeyEnrollment"
-		@esc="skipPasskeyEnrollment"
-		@mask-click="skipPasskeyEnrollment"
+		@esc="onPasskeyEnrollmentClose"
+		:mask-closable="!passkeyEnrollmentForced"
 		preset="card"
 		:title="t('passkey.enrollmentTitle')"
 		style="width: min(420px, calc(100vw - 32px));"
@@ -57,7 +57,11 @@
 		<NFlex vertical :size="16">
 			<NText>{{ t("passkey.enrollmentPrompt") }}</NText>
 			<NFlex justify="end">
-				<NButton :disabled="Loading.PasskeyRegistration" @click="skipPasskeyEnrollment">
+				<NButton
+					v-if="!passkeyEnrollmentForced"
+					:disabled="Loading.PasskeyRegistration"
+					@click="skipPasskeyEnrollment"
+				>
 					{{ t("passkey.notNow") }}
 				</NButton>
 				<NButton
@@ -161,8 +165,14 @@ const isSafeRedirect = (value?: string) =>
 	!value.endsWith("/auth") &&
 	!value.includes("/auth?");
 
-type LoginPayload = User & { sessionID: string; hasPasskey?: boolean };
+type LoginPayload = User & {
+	sessionID: string;
+	hasPasskey?: boolean;
+	enrollmentRequired?: boolean;
+};
 type LoginResponse = apiResponse<LoginPayload>;
+
+const passkeyEnrollmentForced = ref(false);
 
 function promptForPasskeyEnrollment() {
 	showPasskeyEnrollment.value = true;
@@ -173,6 +183,7 @@ function promptForPasskeyEnrollment() {
 
 async function finishPasskeyEnrollment() {
 	showPasskeyEnrollment.value = false;
+	passkeyEnrollmentForced.value = false;
 	await nextTick();
 	resolvePasskeyEnrollment?.();
 	resolvePasskeyEnrollment = undefined;
@@ -180,6 +191,13 @@ async function finishPasskeyEnrollment() {
 
 function skipPasskeyEnrollment() {
 	finishPasskeyEnrollment();
+}
+
+function onPasskeyEnrollmentClose() {
+	// A server-mandated enrollment (passkeyRequired role) cannot be dismissed:
+	// the user must register a passkey before the session is usable.
+	if (passkeyEnrollmentForced.value) return;
+	skipPasskeyEnrollment();
 }
 
 async function registerPasskeyAfterLogin() {
@@ -204,6 +222,7 @@ async function registerPasskeyAfterLogin() {
 async function handleSuccessfulLogin(
 	data: LoginResponse,
 	offerPasskeyEnrollment = false,
+	forcedEnrollment = false,
 ) {
 	sessionID.value = data.result.sessionID;
 	window.$message.success(data.message);
@@ -229,8 +248,10 @@ async function handleSuccessfulLogin(
 		offerPasskeyEnrollment &&
 		isPasskeySupported.value &&
 		!data.result.hasPasskey
-	)
+	) {
+		passkeyEnrollmentForced.value = forcedEnrollment;
 		await promptForPasskeyEnrollment();
+	}
 
 	const queryRedirectTo =
 		typeof route.query.redirectTo === "string"
@@ -269,7 +290,11 @@ async function SigninSubmit(e: Event) {
 					},
 				);
 				if (data.result?.id) {
-					await handleSuccessfulLogin(data, true);
+					await handleSuccessfulLogin(
+						data,
+						true,
+						data.result?.enrollmentRequired === true,
+					);
 				} else window.$message.error(data.message);
 				Loading.value.Signin = false;
 			}
