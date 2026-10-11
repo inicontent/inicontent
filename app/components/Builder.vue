@@ -663,7 +663,10 @@ const isMenuCollapsed = ref(false);
 const currentElementIndex = ref<number>();
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const route = useRoute();

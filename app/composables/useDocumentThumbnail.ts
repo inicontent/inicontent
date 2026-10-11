@@ -1,12 +1,12 @@
 import {
-	getCachedThumbnail,
-	cacheThumbnail,
-} from "~/composables/useThumbnailCache";
-import {
-	wordExtensions,
-	spreadsheetExtensions,
 	officeExtensions,
+	spreadsheetExtensions,
+	wordExtensions,
 } from "~/composables";
+import {
+	cacheThumbnail,
+	getCachedThumbnail,
+} from "~/composables/useThumbnailCache";
 
 const MAX_FILE_SIZE_RENDER = 10 * 1024 * 1024; // 10MB limit for Tier 2 rendering
 const THUMBNAIL_SIZE = 200;
@@ -56,9 +56,7 @@ async function extractEmbeddedThumbnail(
 				const file = zip.file(filePath);
 				if (file) {
 					const blob = await file.async("blob");
-					const mimeType = lower.endsWith(".png")
-						? "image/png"
-						: "image/jpeg";
+					const mimeType = lower.endsWith(".png") ? "image/png" : "image/jpeg";
 					return await blobToThumbnailDataUrl(blob, mimeType);
 				}
 			}

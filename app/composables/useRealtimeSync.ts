@@ -53,7 +53,8 @@ export function useRealtimeSync(
 				const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
 				wsUrl = `${wsProtocol}//${url.host}/realtime`;
 			} else {
-				const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+				const wsProtocol =
+					window.location.protocol === "https:" ? "wss:" : "ws:";
 				wsUrl = `${wsProtocol}//${window.location.host}/realtime`;
 			}
 			websocket.value = new WebSocket(wsUrl);

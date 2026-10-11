@@ -91,7 +91,10 @@ onBeforeRouteLeave((route) => {
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const pagination = reactive({

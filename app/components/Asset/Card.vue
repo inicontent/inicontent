@@ -318,7 +318,10 @@ if (!assetsTable.value || assetsTable.value.slug !== "assets")
 		)
 	).result;
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
 const assets = ref<Asset[]>();
 const selectedAssetIds = ref<Asset["id"][]>([]);
@@ -741,8 +744,7 @@ async function onUpdatePageSize(currentPageSize: number) {
 		perPage: pagination.pageSize,
 		page: pagination.page,
 	};
-	if (isAssetRoute)
-		router.push({ query: Query });
+	if (isAssetRoute) router.push({ query: Query });
 	return refresh();
 }
 
@@ -754,8 +756,7 @@ const queryOptions = computed(() =>
 );
 
 const { refresh } = await useLazyFetch<apiResponse<Asset[]>>(
-	() =>
-		`${useApiBase()}${database.value.slug}/assets${currentPath.value}`,
+	() => `${useApiBase()}${database.value.slug}/assets${currentPath.value}`,
 	{
 		onRequest: () => {
 			Loading.value.AssetData = true;

@@ -69,43 +69,45 @@
 </template>
 
 <script lang="ts" setup>
-import type { pageInfo } from "inibase"
-import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils"
-import Inison from "inison"
-import type { TagColor } from "naive-ui/es/tag/src/common-props"
-import { VueDraggable } from "vue-draggable-plus"
+import type { pageInfo } from "inibase";
+import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
+import Inison from "inison";
+import type { TagColor } from "naive-ui/es/tag/src/common-props";
+import { VueDraggable } from "vue-draggable-plus";
 
-const { tableUrl } = useTableUrl()
+const { tableUrl } = useTableUrl();
 
 const props = defineProps<{
-	slots: any
-}>()
+	slots: any;
+}>();
 
 type columnType = {
-	label: string
-	key: string | number
-	items: Item[]
-	pagination?: pageInfo
-	color?: TagColor
-	loading?: boolean
-}
+	label: string;
+	key: string | number;
+	items: Item[];
+	pagination?: pageInfo;
+	color?: TagColor;
+	loading?: boolean;
+};
 
 // const dataModel = defineModel<apiResponse<Item[]>>("data")
-const data = ref<columnType[]>()
-const searchString = defineModel<string>("searchString")
+const data = ref<columnType[]>();
+const searchString = defineModel<string>("searchString");
 
-const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode
+const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
 
-const config = useRuntimeConfig()
-const { isMobile } = useDevice()
+const config = useRuntimeConfig();
+const { isMobile } = useDevice();
 
-const database = useState<Database>("database")
-const table = useState<Table>("table")
-const field = table.value?.schema?.find(({ id }) => id === table.value?.groupBy)
+const database = useState<Database>("database");
+const table = useState<Table>("table");
+const field = table.value?.schema?.find(
+	({ id }) => id === table.value?.groupBy,
+);
 
-const UNSET_KEY = "__unset__" // internal sentinel
+const UNSET_KEY = "__unset__"; // internal sentinel
 
-const visibleColumns = ref()
+const visibleColumns = ref();
 
 if (field?.options) {
 	if (isArrayOfArrays(field.options))
@@ -117,26 +119,26 @@ if (field?.options) {
 				items: [],
 				loading: true,
 			}),
-		)
+		);
 	else if (isArrayOfObjects(field.options))
 		data.value = (
 			field.options as {
-				label: string
-				value: string | number
+				label: string;
+				value: string | number;
 			}[]
 		).map(({ label, value }) => ({
 			label: t(label),
 			key: value,
 			items: [],
 			loading: true,
-		}))
+		}));
 	else
 		data.value = (field.options as string[]).map((value) => ({
 			label: t(value),
 			key: value,
 			items: [],
 			loading: true,
-		}))
+		}));
 
 	const unsetColumn: columnType = {
 		label: t("unspecified"),
@@ -144,35 +146,32 @@ if (field?.options) {
 		items: [],
 		loading: true,
 		color: { color: "#f0f0f0", textColor: "#606060" } satisfies TagColor,
-	}
+	};
 
 	nextTick(() => {
 		if (data.value) {
-			data.value.push(unsetColumn)
+			data.value.push(unsetColumn);
 			visibleColumns.value = data.value.filter(
 				(c) => c && (c.key !== UNSET_KEY || c.items.length > 0),
-			)
+			);
 		}
-		nextTick(executeFetch)
-	})
+		nextTick(executeFetch);
+	});
 }
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 // Watch searchString changes and refetch data for Kanban view
-watch(
-	searchString,
-	(value) => {
-		if (data.value) executeFetch()
-	}
-)
+watch(searchString, (value) => {
+	if (data.value) executeFetch();
+});
 
 async function executeFetch() {
 	for await (const column of data.value as columnType[]) {
-		column.loading = true
+		column.loading = true;
 		const columnWhere = Inison.stringify({
 			[(field as Field).key]: column.key === UNSET_KEY ? "" : column.key,
-		})
+		});
 		const _data = await $fetch<apiResponse<Item[]>>(
 			`${useApiBase()}${database.value.slug}/${table.value?.slug}`,
 			{
@@ -184,36 +183,39 @@ async function executeFetch() {
 				},
 				credentials: "include",
 			},
-		)
-		column.items = _data.result || []
-		column.pagination = _data.options
-		column.loading = false
+		);
+		column.items = _data.result || [];
+		column.pagination = _data.options;
+		column.loading = false;
 	}
 }
 
 const calculateHeight = computed(() => {
-	const baseHeight = 50 // Base height for skeleton
-	const lineHeight = 20 // Height per line
-	const maxHeight = 200 // Maximum height limit
+	const baseHeight = 50; // Base height for skeleton
+	const lineHeight = 20; // Height per line
+	const maxHeight = 200; // Maximum height limit
 
-	const lineBreaks = (table.value?.label?.match(/\n/g) || []).length
-	const calculatedHeight = baseHeight + lineBreaks * lineHeight
-	return `${Math.min(calculatedHeight, maxHeight)}px`
-})
+	const lineBreaks = (table.value?.label?.match(/\n/g) || []).length;
+	const calculatedHeight = baseHeight + lineBreaks * lineHeight;
+	return `${Math.min(calculatedHeight, maxHeight)}px`;
+});
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
 const onItemDrop = async (evt: any, targetColumn: columnType) => {
-	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return
+	if (!evt.added || !field?.key || !data.value || !table.value?.slug) return;
 
-	const card = evt.added.element as Item
-	const fromKey = card[field.key] // old column key
-	const toKey = targetColumn.key // new column key
-	if (fromKey === toKey) return
+	const card = evt.added.element as Item;
+	const fromKey = card[field.key]; // old column key
+	const toKey = targetColumn.key; // new column key
+	if (fromKey === toKey) return;
 
 	/* optimistic UI ------------------------------------------------- */
-	card[field.key] = toKey
-	adjustTotals(fromKey, toKey)
+	card[field.key] = toKey;
+	adjustTotals(fromKey, toKey);
 
 	/* API call ------------------------------------------------------ */
 	const _data = await $fetch<apiResponse>(
@@ -228,27 +230,29 @@ const onItemDrop = async (evt: any, targetColumn: columnType) => {
 			},
 			credentials: "include",
 		},
-	)
+	);
 	if (!_data.result) {
 		/* rollback ---------------------------------------------------- */
-		card[field.key] = fromKey
-		adjustTotals(toKey, fromKey) // undo the optimistic counts
+		card[field.key] = fromKey;
+		adjustTotals(toKey, fromKey); // undo the optimistic counts
 
 		/* put card back visually */
-		const origin = data.value.find((c) => c.key === fromKey)
+		const origin = data.value.find((c) => c.key === fromKey);
 		if (origin)
-			origin.items.push(targetColumn.items.splice(evt.added.newIndex, 1)[0] as Item)
+			origin.items.push(
+				targetColumn.items.splice(evt.added.newIndex, 1)[0] as Item,
+			);
 
-		window.$message.error(_data.message)
+		window.$message.error(_data.message);
 	}
-}
+};
 
 function adjustTotals(from: any, to: any) {
-	const dec = data.value?.find((c) => c.key === from)
-	const inc = data.value?.find((c) => c.key === to)
+	const dec = data.value?.find((c) => c.key === from);
+	const inc = data.value?.find((c) => c.key === to);
 	if (dec?.pagination)
-		dec.pagination.total = Math.max((dec.pagination.total ?? 1) - 1, 0)
-	if (inc?.pagination) inc.pagination.total = (inc.pagination.total ?? 0) + 1
+		dec.pagination.total = Math.max((dec.pagination.total ?? 1) - 1, 0);
+	if (inc?.pagination) inc.pagination.total = (inc.pagination.total ?? 0) + 1;
 }
 </script>
 

@@ -10,7 +10,10 @@ const inFlight = new Map<string, Promise<string[]>>();
 export function usePageLanguages() {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 	const currentPage = useState<Page | null>("currentPage", () => null);
 	const route = useRoute();

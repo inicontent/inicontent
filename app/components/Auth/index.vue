@@ -92,7 +92,7 @@
 import type { FormInst, TabsInst } from "naive-ui";
 import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
 
-const props = defineProps<{onLoggedIn?: () => void}>()
+const props = defineProps<{ onLoggedIn?: () => void }>();
 
 const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
@@ -105,7 +105,10 @@ const route = useRoute();
 const tabsInstRef = ref<TabsInst | null>(null);
 const tabsValue = ref((route.query.tab as string) ?? "signin"); // Default tab
 const database = useState<Database>("database");
-const redirectTo = useScopedCookie<string | null>("redirectTo", database.value?.slug);
+const redirectTo = useScopedCookie<string | null>(
+	"redirectTo",
+	database.value?.slug,
+);
 const table = useState<Table>("table");
 const user = useState<User>("user");
 const SignupForm = useState(() => ({
@@ -149,7 +152,10 @@ const ResetRequestColumns: Schema = [
 	},
 ];
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 function onAfterSignup(data?: Item) {
 	SigninForm.value.username = data?.username || "";
 	tabsValue.value = "signin";
@@ -239,8 +245,8 @@ async function handleSuccessfulLogin(
 		)
 	).result;
 
-	if (!!props?.onLoggedIn) {
-		props.onLoggedIn()
+	if (props?.onLoggedIn) {
+		props.onLoggedIn();
 		return;
 	}
 

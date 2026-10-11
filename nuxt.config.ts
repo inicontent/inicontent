@@ -192,7 +192,9 @@ export default defineNuxtConfig({
 			globPatterns: [
 				"_nuxt/**/*.{js,css,woff,woff2}",
 				"_fonts/**/*.{woff,woff2}",
-				"manifest.webmanifest", "pwa-192x192.png", "pwa-512x512.png",
+				"manifest.webmanifest",
+				"pwa-192x192.png",
+				"pwa-512x512.png",
 			],
 			// Let the newly-installed SW control the current page immediately so a
 			// single online visit populates the runtime caches (without this, the

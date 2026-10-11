@@ -16,7 +16,10 @@ definePageMeta({ middleware: ["database", "user"] });
 const route = useRoute();
 const database = useState<Database>("database");
 const config = useRuntimeConfig();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 // The item a dynamic page renders (bound via the page's "Template" block).
@@ -38,20 +41,17 @@ const isTemplatePatternURL = urlSegments.some(isTemplatePattern);
 //    to be stored without placeholders).
 const { data: page } = isTemplatePatternURL
 	? { data: ref<Page>() }
-	: await useFetch<Page>(
-			`${useApiBase()}${database.value.slug}/pages`,
-			{
-				query: {
-					where: Inison.stringify({
-						slug: urlSegments.join("/"),
-					}),
-					locale: Language,
-				},
-				watch: [Language],
-				transform: (res) => res.result?.[0],
-				credentials: "include",
+	: await useFetch<Page>(`${useApiBase()}${database.value.slug}/pages`, {
+			query: {
+				where: Inison.stringify({
+					slug: urlSegments.join("/"),
+				}),
+				locale: Language,
 			},
-		);
+			watch: [Language],
+			transform: (res) => res.result?.[0],
+			credentials: "include",
+		});
 
 // 2. Dynamic-page fallback: match the URL against template pages whose slug
 //    contains `[segment]` slots, then load the matching item.

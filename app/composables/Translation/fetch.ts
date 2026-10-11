@@ -9,8 +9,14 @@ type TableTranslationOverlay = {
 export default async function (onlyTableTranslations = false) {
 	const config = useRuntimeConfig();
 	const database = useState<Database>("database");
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
-	const translationsState = useState<TranslationsType>("translations", () => ({}));
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
+	const translationsState = useState<TranslationsType>(
+		"translations",
+		() => ({}),
+	);
 	const tableOverlays = useState<
 		Record<string, Record<string, TableTranslationOverlay>>
 	>("tableTranslationOverlays", () => ({}));
@@ -32,17 +38,20 @@ export default async function (onlyTableTranslations = false) {
 	try {
 		const result = (
 			await $fetch<apiResponse<Item[]>>(
-				`${useApiBase()}${database.value.slug
-				}/translations`,
+				`${useApiBase()}${database.value.slug}/translations`,
 				{
 					params: {
 						where: Inison.stringify({
 							locale,
 							original: "!=",
-							...(table.value ? (onlyTableTranslations ? {table: table.value.id, field: 0} : {
-								table: { or: [table.value.id, null] },
-								field: 0,
-							}) : { table: null }),
+							...(table.value
+								? onlyTableTranslations
+									? { table: table.value.id, field: 0 }
+									: {
+											table: { or: [table.value.id, null] },
+											field: 0,
+										}
+								: { table: null }),
 						}),
 						[`${database.value.slug}_sid`]: sessionID.value,
 						options: Inison.stringify({
@@ -60,7 +69,8 @@ export default async function (onlyTableTranslations = false) {
 		console.error("[Translation] fetch global translations error", e);
 	}
 
-	if (!translationsState.value) translationsState.value = {} as TranslationsType;
+	if (!translationsState.value)
+		translationsState.value = {} as TranslationsType;
 	if (!translationsByLocale[locale]) translationsByLocale[locale] = {};
 	const currentTranslations = languageTranslations();
 
@@ -92,7 +102,7 @@ export default async function (onlyTableTranslations = false) {
 		const overlays: Record<string, TableTranslationOverlay> = {};
 		for (const [key, value] of Object.entries(merged)) {
 			overlays[key] = {
-				hadPrevious: Object.prototype.hasOwnProperty.call(currentTranslations, key),
+				hadPrevious: Object.hasOwn(currentTranslations, key),
 				previous: currentTranslations[key],
 				applied: value,
 			};

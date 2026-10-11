@@ -12,7 +12,10 @@ export function usePageLinks() {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
 	const route = useRoute();
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	const cacheKey = computed(

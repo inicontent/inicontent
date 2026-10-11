@@ -22,7 +22,16 @@
 
 <script setup lang="ts">
 import type { MenuOption } from "naive-ui";
-import { Icon, LazyTableIcon, NButton, NButtonGroup, NIcon, NPopover, NEllipsis, NuxtLink } from "#components";
+import {
+	Icon,
+	LazyTableIcon,
+	NButton,
+	NButtonGroup,
+	NEllipsis,
+	NIcon,
+	NPopover,
+	NuxtLink,
+} from "#components";
 
 interface TableAction {
 	key: string;
@@ -33,7 +42,10 @@ interface TableAction {
 }
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const isMenuOpen = useScopedCookie<boolean>("isMenuOpen", database.value?.slug);
 
 const config = useRuntimeConfig();
@@ -95,7 +107,7 @@ const fetchDashboards = async () => {
 	}
 };
 
-watch(table, () => fetchTranslation(true))
+watch(table, () => fetchTranslation(true));
 
 watch(
 	() => [database.value?.slug, sessionID.value, Language.value],
@@ -154,7 +166,13 @@ function getTableActions(tbl: Table): TableAction[] {
 }
 
 function renderActionsPopover(
-	items: { key: string; to: string; icon: string; title: string; active: boolean }[]
+	items: {
+		key: string;
+		to: string;
+		icon: string;
+		title: string;
+		active: boolean;
+	}[],
 ) {
 	if (!items.length) return undefined;
 	return h(
@@ -172,16 +190,18 @@ function renderActionsPopover(
 						size: "small",
 					},
 					{
-						icon: () => h(NIcon, { size: 16 }, () => h(Icon, { name: "tabler:dots" })),
-					}
+						icon: () =>
+							h(NIcon, { size: 16 }, () => h(Icon, { name: "tabler:dots" })),
+					},
 				),
 			default: () =>
 				h(
 					NButtonGroup,
 					{ vertical: true },
 					items.map((item) =>
-						h(NButton,
-							{ 
+						h(
+							NButton,
+							{
 								style: { justifyContent: "start" },
 								secondary: true,
 								type: item.active ? "primary" : "default",
@@ -192,10 +212,12 @@ function renderActionsPopover(
 									e.preventDefault();
 									navigateTo(item.to);
 								},
-							}, {
+							},
+							{
 								default: () => item.title,
-								icon: () => h(NIcon, { size: 18 }, () => h(Icon, { name: item.icon }))
-							}
+								icon: () =>
+									h(NIcon, { size: 18 }, () => h(Icon, { name: item.icon })),
+							},
 						),
 					),
 				),
@@ -212,30 +234,28 @@ function renderTableExtra(tbl: Table) {
 			icon: action.icon,
 			title: t(action.labelKey),
 			active: defaultValue.value === action.key,
-		}))
+		})),
 	);
 }
 
 function renderDashboardsExtra() {
 	const dashboardsUrl = `${adminBase.value}/admin/dashboards`;
-	return renderActionsPopover(
-		[
-			{
-				key: "dashboards",
-				to: dashboardsUrl,
-				icon: "tabler:chart-bar",
-				title: t("showAll"),
-				active: defaultValue.value === "dashboards",
-			},
-			...dashboards.value.map((dashboard) => ({
-				key: String(dashboard.id),
-				to: `${dashboardsUrl}/${dashboard.id}`,
-				icon: dashboard.icon ? `tabler:${dashboard.icon}` : "tabler:chart-bar",
-				title: dashboard.name?.trim() || t("dashboard"),
-				active: defaultValue.value === String(dashboard.id),
-			})),
-		]
-	);
+	return renderActionsPopover([
+		{
+			key: "dashboards",
+			to: dashboardsUrl,
+			icon: "tabler:chart-bar",
+			title: t("showAll"),
+			active: defaultValue.value === "dashboards",
+		},
+		...dashboards.value.map((dashboard) => ({
+			key: String(dashboard.id),
+			to: `${dashboardsUrl}/${dashboard.id}`,
+			icon: dashboard.icon ? `tabler:${dashboard.icon}` : "tabler:chart-bar",
+			title: dashboard.name?.trim() || t("dashboard"),
+			active: defaultValue.value === String(dashboard.id),
+		})),
+	]);
 }
 
 function renderMenuExtra(option: { key?: string | number }) {
@@ -243,7 +263,9 @@ function renderMenuExtra(option: { key?: string | number }) {
 	const key = String(option.key ?? "");
 	if (key === "backups") return undefined;
 	if (key === "dashboards") return renderDashboardsExtra();
-	const tbl = database.value?.tables?.find((candidate) => candidate.slug === key);
+	const tbl = database.value?.tables?.find(
+		(candidate) => candidate.slug === key,
+	);
 	if (tbl) return renderTableExtra(tbl);
 	return undefined;
 }
@@ -270,7 +292,12 @@ function renderSingleItem(tbl: Table): MenuOption {
 				{
 					to: tableUrl(tbl.slug),
 				},
-				{ default: () => h(NEllipsis, { tooltip: false, style: { maxWidth: '130px' } }, () => t(tbl.slug)) },
+				{
+					default: () =>
+						h(NEllipsis, { tooltip: false, style: { maxWidth: "130px" } }, () =>
+							t(tbl.slug),
+						),
+				},
 			),
 		key: isMenuOpen.value ? tbl.slug : `${tbl.slug}Group`,
 		icon: () => h(LazyTableIcon, { table: tbl }),
@@ -299,53 +326,52 @@ function renderDashboardItem(): MenuOption {
 				{ default: () => t("dashboards") },
 			),
 		key: isMenuOpen.value ? "dashboards" : "dashboardsGroup",
-		icon: () =>
-			h(NIcon, () => h(Icon, { name: "tabler:layout-dashboard" })),
+		icon: () => h(NIcon, () => h(Icon, { name: "tabler:layout-dashboard" })),
 		children: isMenuOpen.value
 			? undefined
 			: [
-			{
-				type: "group",
-				label: t("dashboards"),
-				key: "dashboards-menu",
-				children: [
 					{
-						label: () =>
-							h(
-								NuxtLink,
-								{
-									to: dashboardsUrl,
-								},
-								{ default: () => t("showAll") },
-							),
-						key: "dashboards",
-						icon: () =>
-							h(NIcon, () => h(Icon, { name: "tabler:chart-bar" })),
+						type: "group",
+						label: t("dashboards"),
+						key: "dashboards-menu",
+						children: [
+							{
+								label: () =>
+									h(
+										NuxtLink,
+										{
+											to: dashboardsUrl,
+										},
+										{ default: () => t("showAll") },
+									),
+								key: "dashboards",
+								icon: () =>
+									h(NIcon, () => h(Icon, { name: "tabler:chart-bar" })),
+							},
+							...dashboards.value.map((dashboard) => ({
+								label: () =>
+									h(
+										NuxtLink,
+										{
+											to: `${dashboardsUrl}/${dashboard.id}`,
+										},
+										{
+											default: () => dashboard.name?.trim() || t("dashboard"),
+										},
+									),
+								key: String(dashboard.id),
+								icon: () =>
+									h(NIcon, () =>
+										h(Icon, {
+											name: dashboard.icon
+												? `tabler:${dashboard.icon}`
+												: "tabler:chart-bar",
+										}),
+									),
+							})),
+						],
 					},
-					...dashboards.value.map((dashboard) => ({
-						label: () =>
-							h(
-								NuxtLink,
-								{
-									to: `${dashboardsUrl}/${dashboard.id}`,
-								},
-								{
-									default: () => dashboard.name?.trim() || t("dashboard"),
-								},
-							),
-						key: String(dashboard.id),
-						icon: () =>
-							h(NIcon, () =>
-								h(Icon, {
-									name: dashboard.icon
-										? `tabler:${dashboard.icon}`
-										: "tabler:chart-bar",
-								}),
-							),
-					})),
 				],
-			},
-		],
 	};
 }
 
@@ -375,11 +401,23 @@ function renderBackupsItem(): MenuOption {
 	};
 }
 
-const SECONDARY_SLUGS = ["users", "sessions", "assets", "translations", "pages", "blocks", "templates"];
+const SECONDARY_SLUGS = [
+	"users",
+	"sessions",
+	"assets",
+	"translations",
+	"pages",
+	"blocks",
+	"templates",
+];
 const EXCLUDED_SLUGS = [...SECONDARY_SLUGS, "dashboards", "backups"];
 
 function isTableVisible(tbl: Table) {
-	return !!tbl.allowedMethods && tbl.allowedMethods.trim() !== "" && tbl.show !== false;
+	return (
+		!!tbl.allowedMethods &&
+		tbl.allowedMethods.trim() !== "" &&
+		tbl.show !== false
+	);
 }
 
 const primaryTables = computed(() => {
@@ -399,7 +437,8 @@ const secondaryTables = computed(() => {
 const menuOptions = computed(() => {
 	const primaryTableOptions = primaryTables.value.map(renderSingleItem) ?? [];
 
-	const secondaryTableOptions = secondaryTables.value.map(renderSingleItem) ?? [];
+	const secondaryTableOptions =
+		secondaryTables.value.map(renderSingleItem) ?? [];
 
 	const options: MenuOption[] = [...primaryTableOptions];
 

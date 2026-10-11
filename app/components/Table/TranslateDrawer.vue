@@ -91,7 +91,10 @@ const emit = defineEmits<(e: "update:show", v: boolean) => void>();
 
 const database = useState<Database>("database");
 const config = useRuntimeConfig();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const table = useState<Table>("table");
 

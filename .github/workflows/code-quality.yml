@@ -10,9 +10,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # biome --changed needs the base ref present in history.
+          fetch-depth: 0
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
           version: 2.5.14
-      - name: Run Biome
-        run: biome ci .
+      # Only files changed by this push/PR are checked. The repository has a
+      # pre-existing biome baseline (see AGENTS.md: "pnpm lint currently
+      # reports pre-existing errors on main"), so a wholesale `biome ci .`
+      # would fail every run without ever being actionable.
+      - name: Run Biome (changed files)
+        run: |
+          base="${{ github.event.pull_request.base.sha || github.event.before }}"
+          # The first push of a branch has an all-zero "before" ref.
+          if [[ "$base" == "0000000000000000000000000000000000000000" ]]; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+          fi
+          # biome exits 1 when nothing changed -- skip instead of failing.
+          if ! git diff --quiet "$base" HEAD; then
+            biome ci --changed --since="$base"
+          else
+            echo "No changed files; skipping biome."
+          fi

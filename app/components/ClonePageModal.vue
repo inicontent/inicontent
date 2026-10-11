@@ -69,7 +69,10 @@ const visible = defineModel<boolean>("show", { default: false });
 
 const config = useRuntimeConfig();
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const saving = ref(false);
@@ -102,7 +105,12 @@ function buildOptions() {
 			name: String(block.name),
 			// Clone the component by default; static copy by default.
 			include: true,
-			mode: block.name.startsWith("Header") || block.name.startsWith("Footer") || block.name.startsWith("Cta") ? "live" as CloneMode : "static" as CloneMode,
+			mode:
+				block.name.startsWith("Header") ||
+				block.name.startsWith("Footer") ||
+				block.name.startsWith("Cta")
+					? ("live" as CloneMode)
+					: ("static" as CloneMode),
 		}));
 }
 

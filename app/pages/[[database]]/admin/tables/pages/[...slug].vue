@@ -14,7 +14,10 @@ definePageMeta({
 const route = useRoute();
 const database = useState<Database>("database");
 const config = useRuntimeConfig();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const pageSlug = ([] as string[]).concat(route.params.slug || "/").join("/");

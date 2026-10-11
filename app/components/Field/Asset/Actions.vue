@@ -52,46 +52,49 @@
 </template>
 
 <script lang="ts" setup>
-import type { NInput } from "naive-ui"
+import type { NInput } from "naive-ui";
 
 const { field, callback } = defineProps<{
-    field: Field
-    callback: CallableFunction
-}>()
+	field: Field;
+	callback: CallableFunction;
+}>();
 
-const showAssetsModal = defineModel<boolean>("showAssetsModal")
+const showAssetsModal = defineModel<boolean>("showAssetsModal");
 
-const importInputRef = ref<InstanceType<typeof NInput>>()
+const importInputRef = ref<InstanceType<typeof NInput>>();
 
-const config = useRuntimeConfig()
-const assetURLs = ref()
-const database = useState<Database>("database")
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
+const config = useRuntimeConfig();
+const assetURLs = ref();
+const database = useState<Database>("database");
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 async function importAsset() {
-    Loading.value.import = true
-    const data = await $fetch<apiResponse<Asset | Asset[]>>(
-        `${useApiBase()}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID.value}`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "text/plain; charset=utf-8",
-            },
-            body: assetURLs.value,
-            params: {
-                locale: Language.value,
-            },
-            credentials: "include",
-        },
-    )
-    if (data.result) {
-        assetURLs.value = undefined
-        callback(data.result)
-        importInputRef.value?.clear()
-    } else window.$message.error(data.message)
-    Loading.value.import = false
+	Loading.value.import = true;
+	const data = await $fetch<apiResponse<Asset | Asset[]>>(
+		`${useApiBase()}${database.value.slug ?? "inicontent"}/assets/import${field.suffix || ""}${field.suffix?.includes("?") ? "&" : "?"}${database.value.slug}_sid=${sessionID.value}`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "text/plain; charset=utf-8",
+			},
+			body: assetURLs.value,
+			params: {
+				locale: Language.value,
+			},
+			credentials: "include",
+		},
+	);
+	if (data.result) {
+		assetURLs.value = undefined;
+		callback(data.result);
+		importInputRef.value?.clear();
+	} else window.$message.error(data.message);
+	Loading.value.import = false;
 }
 </script>

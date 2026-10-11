@@ -1,7 +1,9 @@
 export default {
 	en: {
-		offlinePersistenceDisabled: "Offline saving is unavailable. Reconnect before saving; a failed save has not been queued.",
-		offlineQuarantineNotice: "Unsynced work from an earlier version is preserved on this device and cannot be replayed safely. Contact your administrator for recovery before clearing site data.",
+		offlinePersistenceDisabled:
+			"Offline saving is unavailable. Reconnect before saving; a failed save has not been queued.",
+		offlineQuarantineNotice:
+			"Unsynced work from an earlier version is preserved on this device and cannot be replayed safely. Contact your administrator for recovery before clearing site data.",
 		// Confirmation messages
 		areYouSure: "Are you sure?",
 		folderNameRequired: "Folder name is required",

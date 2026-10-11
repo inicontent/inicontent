@@ -97,14 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-	Icon,
-	NBadge,
-	NButton,
-	NFlex,
-	NIcon,
-	NText,
-} from "#components";
+import { Icon, NBadge, NButton, NFlex, NIcon, NText } from "#components";
 import { shouldShowSyncStatus } from "~/composables/offlineStatus";
 import { useOfflineSync } from "~/composables/useOfflineSync";
 

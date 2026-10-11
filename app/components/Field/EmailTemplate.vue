@@ -185,7 +185,6 @@ const builtinVariables = [
 	"@user.role",
 ];
 
-
 // Sample values used only for the preview and test emails — never sent.
 const sampleValues: Record<string, string> = {
 	"@user.id": "e7b4c2f8a1d9",
@@ -209,7 +208,6 @@ const variableTag = (key: string) => `{{${key}}}`;
 
 const showAddVariable = ref(false);
 const newVariable = ref("");
-
 
 function addCustomVariable() {
 	const key = newVariable.value.trim().replace(/[{}]/g, "");

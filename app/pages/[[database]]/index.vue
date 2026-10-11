@@ -10,7 +10,10 @@ definePageMeta({ middleware: ["database", "user"] });
 const route = useRoute();
 const database = useState<Database>("database");
 const config = useRuntimeConfig();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const currentPage = useState<Page | null>("currentPage", () => null);
 if (database.value.slug === "inicontent") await navigateTo("/");

@@ -92,9 +92,13 @@
 </template>
 
 <script lang="ts" setup>
-import { Icon, NIcon } from "#components";
 import type { InputInst } from "naive-ui";
-import { imageExtensions, officeExtensions, videoExtensions } from "~/composables";
+import { Icon, NIcon } from "#components";
+import {
+	imageExtensions,
+	officeExtensions,
+	videoExtensions,
+} from "~/composables";
 import { useAssetPreview } from "~/composables/useAssetPreview";
 
 const path = defineModel<string>("path");
@@ -107,7 +111,10 @@ const { isAssetRoute, table, selectedAssetIds } = defineProps<{
 
 const database = useState<Database>("database");
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
 const modelValue = defineModel<Asset[]>();
 const config = useRuntimeConfig();
@@ -120,16 +127,16 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 async function deleteAsset(asset: Asset) {
 	Loading.value[`deleteAsset${asset.id}`] = true;
 	const data = await $fetch<apiResponse>(
-		`${useApiBase()}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
-		{
-			method: "DELETE",
-			params: {
-				locale: Language.value,
-				[`${database.value.slug}_sid`]: sessionID.value,
+			`${useApiBase()}${database.value.slug}/assets${path.value}/${asset.type === "dir" ? asset.name : asset.id}`,
+			{
+				method: "DELETE",
+				params: {
+					locale: Language.value,
+					[`${database.value.slug}_sid`]: sessionID.value,
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		},
-	),
+		),
 		singleAsset = modelValue.value?.find((value) => value.id === asset.id);
 	if (data?.result) {
 		modelValue.value = modelValue.value?.filter(
@@ -302,9 +309,7 @@ function dropdownOnClickOutside(e: MouseEvent) {
 	if (!isRightClick) showDropdown.value = false;
 }
 const route = useRoute();
-const selectedAssetIdsSet = computed(
-	() => new Set(selectedAssetIds ?? []),
-);
+const selectedAssetIdsSet = computed(() => new Set(selectedAssetIds ?? []));
 const sortedAssets = computed(() =>
 	((modelValue.value ?? []) as Asset[]).slice().sort((a, b) => {
 		if (a.type === "dir" && b.type !== "dir") return -1;

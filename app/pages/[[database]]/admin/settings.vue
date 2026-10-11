@@ -144,7 +144,10 @@ const route = useRoute();
 const router = useRouter();
 const database = useState<Database>("database");
 const user = useState<User>("user");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const isRTL = computed(() => Language.value === "ar");
 const generalRef = ref<FormInst>();
 const translationRef = ref<FormInst>();

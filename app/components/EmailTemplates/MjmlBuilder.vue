@@ -1131,7 +1131,6 @@ const variableTag = (key: string) => `{{${key}}}`;
 const showAddVariable = ref(false);
 const newVariable = ref("");
 
-
 function addCustomVariable() {
 	const key = newVariable.value.trim().replace(/[{}]/g, "");
 	if (!key) return;

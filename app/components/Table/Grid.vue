@@ -119,127 +119,137 @@
 </template>
 
 <script lang="ts" setup>
-import { type DropdownOption, NIcon } from "naive-ui"
-import { Icon, NuxtLink } from "#components"
+import { type DropdownOption, NIcon } from "naive-ui";
+import { Icon, NuxtLink } from "#components";
 
-const modelValue = defineModel<Database>({ required: true })
+const modelValue = defineModel<Database>({ required: true });
 
-const showPopover = ref(false)
+const showPopover = ref(false);
 
-const config = useRuntimeConfig()
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const user = useState<User>("user")
-const newTableSlug = ref()
-const route = useRoute()
+const config = useRuntimeConfig();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const user = useState<User>("user");
+const newTableSlug = ref();
+const route = useRoute();
 
-const database = useState<Database>("database")
+const database = useState<Database>("database");
 
-const { tableUrl } = useTableUrl()
+const { tableUrl } = useTableUrl();
 
 function getTableUrl(slug: string) {
 	const db =
 		!route.params.database && database.value?.slug !== "inicontent"
 			? ""
-			: String(modelValue.value.slug)
-	return tableUrl(slug, "", db || undefined)
+			: String(modelValue.value.slug);
+	return tableUrl(slug, "", db || undefined);
 }
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-type CrudPermission = "c" | "r" | "u" | "d"
+type CrudPermission = "c" | "r" | "u" | "d";
 const permissionMethods: Record<CrudPermission, string> = {
 	c: "POST",
 	r: "GET",
 	u: "PUT",
 	d: "DELETE",
-}
+};
 
-const showQuickSettings = ref(false)
-const quickSettingsPrivate = ref(false)
-const rolePermissions = reactive<Record<string, CrudPermission[]>>({})
+const showQuickSettings = ref(false);
+const quickSettingsPrivate = ref(false);
+const rolePermissions = reactive<Record<string, CrudPermission[]>>({});
 
 function toggleQuickSettings() {
-	showQuickSettings.value = !showQuickSettings.value
-	if (showQuickSettings.value){
+	showQuickSettings.value = !showQuickSettings.value;
+	if (showQuickSettings.value) {
 		for (const { id } of modelValue.value.roles ?? [])
-			rolePermissions[id] = ["c", "r", "u", "d"]
-	} else resetQuickSettings()
+			rolePermissions[id] = ["c", "r", "u", "d"];
+	} else resetQuickSettings();
 }
 
 function resetQuickSettings() {
-	showQuickSettings.value = false
-	quickSettingsPrivate.value = false
-	for (const id of Object.keys(rolePermissions)) delete rolePermissions[id]
+	showQuickSettings.value = false;
+	quickSettingsPrivate.value = false;
+	for (const id of Object.keys(rolePermissions)) delete rolePermissions[id];
 }
 
 // "@user.4" is the user role field, role ids come from database.roles
 function generateQuickSettingsFlows(): FlowType[] {
-	if (quickSettingsPrivate.value) return [[["error", "accessDenied"]]]
+	if (quickSettingsPrivate.value) return [[["error", "accessDenied"]]];
 
 	// if no change made to role permissions, no need to create flows
-	if (Object.values(rolePermissions).filter(permissions => permissions.length === 4).length === modelValue.value.roles?.length)
-		return []
+	if (
+		Object.values(rolePermissions).filter(
+			(permissions) => permissions.length === 4,
+		).length === modelValue.value.roles?.length
+	)
+		return [];
 
-	const flows: FlowType[] = []
+	const flows: FlowType[] = [];
 	for (const { id } of modelValue.value.roles ?? []) {
 		// skip flows for admin
 		if (id === config.public.idOne) continue;
 
-		const allowedPermissions = rolePermissions[id]
-		if (!allowedPermissions || allowedPermissions.length === 4) continue
-		const deniedMethods = (
-			Object.keys(permissionMethods) as CrudPermission[]
-		)
+		const allowedPermissions = rolePermissions[id];
+		if (!allowedPermissions || allowedPermissions.length === 4) continue;
+		const deniedMethods = (Object.keys(permissionMethods) as CrudPermission[])
 			.filter((permission) => !allowedPermissions.includes(permission))
-			.map((permission) => permissionMethods[permission])
-		if (!deniedMethods.length) continue
-		const flow: FlowType = [["@user.4", "=", id]]
+			.map((permission) => permissionMethods[permission]);
+		if (!deniedMethods.length) continue;
+		const flow: FlowType = [["@user.4", "=", id]];
 		if (deniedMethods.length < Object.keys(permissionMethods).length)
-			flow.push(["@method", "[]", deniedMethods])
-		flow.push(["error", "accessDenied"])
-		flows.push(flow)
+			flow.push(["@method", "[]", deniedMethods]);
+		flow.push(["error", "accessDenied"]);
+		flows.push(flow);
 	}
-	return flows
+	return flows;
 }
 
 const createTable = async () => {
 	if (newTableSlug.value) {
-		Loading.value.Table = true
-		
-		const bodyContent: string = toRaw(newTableSlug.value)
-		const quickSettingsFlows = generateQuickSettingsFlows()
+		Loading.value.Table = true;
+
+		const bodyContent: string = toRaw(newTableSlug.value);
+		const quickSettingsFlows = generateQuickSettingsFlows();
 
 		const data = await $fetch<apiResponse<Table>>(
 			`${useApiBase()}inicontent/databases/${modelValue.value.slug}/${bodyContent}`,
 			{
 				method: "POST",
-				body: quickSettingsFlows.length ? { onRequest: quickSettingsFlows } : undefined,
+				body: quickSettingsFlows.length
+					? { onRequest: quickSettingsFlows }
+					: undefined,
 				params: {
 					locale: Language.value,
 					[`${database.value.slug}_sid`]: sessionID.value,
 				},
 				credentials: "include",
 			},
-		)
+		);
 
 		if (data.result) {
-			modelValue.value.tables?.push(data.result)
-			window.$message.success(data.message)
-			newTableSlug.value = null
-			showPopover.value = false
-		} else window.$message.error(data.message ?? t("error"))
-	
-		Loading.value.Table = false
-	} else window.$message.error(t("inputsAreInvalid"))
-}
+			modelValue.value.tables?.push(data.result);
+			window.$message.success(data.message);
+			newTableSlug.value = null;
+			showPopover.value = false;
+		} else window.$message.error(data.message ?? t("error"));
+
+		Loading.value.Table = false;
+	} else window.$message.error(t("inputsAreInvalid"));
+};
 
 const filteredTables = computed(() =>
 	modelValue.value.tables
 		?.filter(
 			({ allowedMethods, show, slug }) =>
-				allowedMethods?.includes("r") && show !== false && slug !== "dashboards" && slug !== "backups",
+				allowedMethods?.includes("r") &&
+				show !== false &&
+				slug !== "dashboards" &&
+				slug !== "backups",
 		)
 		.sort(
 			(a, b) =>
@@ -250,10 +260,10 @@ const filteredTables = computed(() =>
 					["users", "sessions", "translations", "assets"].includes(a.slug),
 				),
 		),
-)
+);
 
 const getDropdownOptions = (table: Table) => {
-	const url = getTableUrl(table.slug)
+	const url = getTableUrl(table.slug);
 	return [
 		{
 			key: url,
@@ -291,8 +301,8 @@ const getDropdownOptions = (table: Table) => {
 				table.allowedMethods?.includes("c") &&
 				user.value?.role === config.public.idOne,
 		},
-	]
-}
+	];
+};
 
 function renderDropdownLabel(option: DropdownOption) {
 	return h(
@@ -301,6 +311,6 @@ function renderDropdownLabel(option: DropdownOption) {
 			to: option.key as string,
 		},
 		() => option.label,
-	)
+	);
 }
 </script>

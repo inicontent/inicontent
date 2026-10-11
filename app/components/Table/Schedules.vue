@@ -126,36 +126,46 @@
 </template>
 
 <script lang="ts" setup>
-import type { DataTableColumns, SelectOption } from "naive-ui"
-import Inison from "inison"
-import { Icon, NButton, NButtonGroup, NIcon, NPopconfirm, NTag } from "#components"
+import Inison from "inison";
+import type { DataTableColumns, SelectOption } from "naive-ui";
+import {
+	Icon,
+	NButton,
+	NButtonGroup,
+	NIcon,
+	NPopconfirm,
+	NTag,
+} from "#components";
 
 const database = useState<Database>("database");
-const config = useRuntimeConfig()
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const config = useRuntimeConfig();
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const table = useState<Table>("table")
+const table = useState<Table>("table");
 
-const loading = ref(false)
-const saving = ref(false)
-const previewing = ref(false)
-const showModal = ref(false)
-const schedules = ref<Schedules[]>([])
-const editingSchedule = ref<Schedules | null>(null)
-const resolvedPreviewText = ref("")
+const loading = ref(false);
+const saving = ref(false);
+const previewing = ref(false);
+const showModal = ref(false);
+const schedules = ref<Schedules[]>([]);
+const editingSchedule = ref<Schedules | null>(null);
+const resolvedPreviewText = ref("");
 const pagination = reactive({
 	page: 1,
 	pageSize: 15,
 	itemCount: 0,
-})
+});
 
 const presetCronMap: Record<Exclude<SchedulesPreset, "custom">, string> = {
 	hourly: "0 * * * *",
 	daily: "0 0 * * *",
 	weekly: "0 0 * * 1",
 	monthly: "0 0 1 * *",
-}
+};
 
 const form = reactive({
 	name: "",
@@ -164,7 +174,7 @@ const form = reactive({
 	payloadText: "{}",
 	excludeWeekdays: [] as number[],
 	isActive: true,
-})
+});
 
 const presetOptions = computed<SelectOption[]>(() => [
 	{ label: t("hourly"), value: "hourly" },
@@ -172,7 +182,7 @@ const presetOptions = computed<SelectOption[]>(() => [
 	{ label: t("weekly"), value: "weekly" },
 	{ label: t("monthly"), value: "monthly" },
 	{ label: t("custom"), value: "custom" },
-])
+]);
 
 const weekdayOptions = computed(() => [
 	{ label: t("sunday"), value: 0 },
@@ -182,22 +192,22 @@ const weekdayOptions = computed(() => [
 	{ label: t("thursday"), value: 4 },
 	{ label: t("friday"), value: 5 },
 	{ label: t("saturday"), value: 6 },
-])
+]);
 
 const currentPresetDescription = computed(() => {
 	switch (form.preset) {
 		case "hourly":
-			return t("presetDescriptionHourly")
+			return t("presetDescriptionHourly");
 		case "daily":
-			return t("presetDescriptionDaily")
+			return t("presetDescriptionDaily");
 		case "weekly":
-			return t("presetDescriptionWeekly")
+			return t("presetDescriptionWeekly");
 		case "monthly":
-			return t("presetDescriptionMonthly")
+			return t("presetDescriptionMonthly");
 		default:
-			return t("presetDescriptionCustom")
+			return t("presetDescriptionCustom");
 	}
-})
+});
 
 const payloadTemplateExamples = computed(() =>
 	JSON.stringify(
@@ -216,14 +226,14 @@ const payloadTemplateExamples = computed(() =>
 		null,
 		2,
 	),
-)
+);
 
 const scheduleSummaryPreview = computed(() => {
-	const excluded = formatExcludedDays(form.excludeWeekdays)
+	const excluded = formatExcludedDays(form.excludeWeekdays);
 	return excluded === t("noExcludedDays")
 		? t("scheduleSummaryNoExcluded")
-		: t("scheduleSummaryWithExcluded", { days: excluded })
-})
+		: t("scheduleSummaryWithExcluded", { days: excluded });
+});
 
 const tablePagination = computed(() => ({
 	page: pagination.page,
@@ -232,113 +242,124 @@ const tablePagination = computed(() => ({
 	showSizePicker: true,
 	pageSizes: [15, 30, 60, 100],
 	onChange: async (page: number) => {
-		pagination.page = page
-		await loadSchedules()
+		pagination.page = page;
+		await loadSchedules();
 	},
 	onUpdatePageSize: async (pageSize: number) => {
-		pagination.pageSize = pageSize
-		pagination.page = 1
-		await loadSchedules()
+		pagination.pageSize = pageSize;
+		pagination.page = 1;
+		await loadSchedules();
 	},
-	prefix: ({ itemCount }: { itemCount?: number }) => itemCount
-}))
+	prefix: ({ itemCount }: { itemCount?: number }) => itemCount,
+}));
 
 watch(
 	() => form.preset,
 	(preset) => {
-		if (preset !== "custom") form.cronExpression = presetCronMap[preset]
+		if (preset !== "custom") form.cronExpression = presetCronMap[preset];
 	},
-)
+);
 
 function getRequestParams() {
 	return {
 		locale: Language.value,
 		[`${database.value.slug}_sid`]: sessionID.value,
-	}
+	};
 }
 
 function formatDate(value?: number) {
-	if (!value) return "--"
-	return new Date(value).toLocaleString()
+	if (!value) return "--";
+	return new Date(value).toLocaleString();
 }
 
 function formatExcludedDays(excludedDays?: number[]) {
-	if (!excludedDays?.length) return t("noExcludedDays")
+	if (!excludedDays?.length) return t("noExcludedDays");
 	return excludedDays
-		.map((day) => weekdayOptions.value.find((item) => item.value === day)?.label ?? String(day))
-		.join(", ")
+		.map(
+			(day) =>
+				weekdayOptions.value.find((item) => item.value === day)?.label ??
+				String(day),
+		)
+		.join(", ");
 }
 
 function buildPayloadExample() {
-	const result: Record<string, unknown> = {}
+	const result: Record<string, unknown> = {};
 	for (const field of table.value.schema ?? []) {
-		if (["id", "createdAt", "updatedAt"].includes(field.key)) continue
+		if (["id", "createdAt", "updatedAt"].includes(field.key)) continue;
 		switch (Array.isArray(field.type) ? field.type[0] : field.type) {
 			case "number":
-				result[field.key] = 0
-				break
+				result[field.key] = 0;
+				break;
 			case "boolean":
-				result[field.key] = false
-				break
+				result[field.key] = false;
+				break;
 			case "date":
-				result[field.key] = Date.now()
-				break
+				result[field.key] = Date.now();
+				break;
 			case "array":
-				result[field.key] = []
-				break
+				result[field.key] = [];
+				break;
 			case "object":
 			case "json":
-				result[field.key] = {}
-				break
+				result[field.key] = {};
+				break;
 			case "table":
-				result[field.key] = "<id>"
-				break
+				result[field.key] = "<id>";
+				break;
 			default:
-				result[field.key] = ""
+				result[field.key] = "";
 		}
 	}
-	return result
+	return result;
 }
 
 function parsePayloadText(payloadText: string) {
-	const normalizedPayloadText = payloadText.trim()
-	if (!normalizedPayloadText) return {}
+	const normalizedPayloadText = payloadText.trim();
+	if (!normalizedPayloadText) return {};
 
 	try {
-		return JSON.parse(normalizedPayloadText)
+		return JSON.parse(normalizedPayloadText);
 	} catch {
-		return Inison.unstringify(normalizedPayloadText) as Record<string, unknown>
+		return Inison.unstringify(normalizedPayloadText) as Record<string, unknown>;
 	}
 }
 
 function formatPayloadText() {
 	try {
-		form.payloadText = JSON.stringify(parsePayloadText(form.payloadText || "{}"), null, 2)
+		form.payloadText = JSON.stringify(
+			parsePayloadText(form.payloadText || "{}"),
+			null,
+			2,
+		);
 	} catch {
-		window.$message.error(t("invalidJSON"))
+		window.$message.error(t("invalidJSON"));
 	}
 }
 
 function fillPayloadExample() {
-	form.payloadText = JSON.stringify(buildPayloadExample(), null, 2)
+	form.payloadText = JSON.stringify(buildPayloadExample(), null, 2);
 }
 
 async function previewResolvedPayload() {
-	let payload: Record<string, unknown>
+	let payload: Record<string, unknown>;
 
 	try {
-		payload = parsePayloadText(form.payloadText || "{}") as Record<string, unknown>
+		payload = parsePayloadText(form.payloadText || "{}") as Record<
+			string,
+			unknown
+		>;
 	} catch {
-		window.$message.error(t("invalidJSON"))
-		return
+		window.$message.error(t("invalidJSON"));
+		return;
 	}
 
 	if (Array.isArray(payload) || !payload || typeof payload !== "object") {
-		window.$message.error(t("invalidJSON"))
-		return
+		window.$message.error(t("invalidJSON"));
+		return;
 	}
 
-	previewing.value = true
+	previewing.value = true;
 	try {
 		const response = await $fetch<apiResponse<Record<string, unknown>>>(
 			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/preview`,
@@ -351,56 +372,56 @@ async function previewResolvedPayload() {
 				params: getRequestParams(),
 				credentials: "include",
 			},
-		)
+		);
 
-		resolvedPreviewText.value = JSON.stringify(response.result ?? {}, null, 2)
+		resolvedPreviewText.value = JSON.stringify(response.result ?? {}, null, 2);
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null && "message" in error
 				? String((error as { message?: unknown }).message ?? t("error"))
-				: t("error")
-		window.$message.error(errorMessage)
+				: t("error");
+		window.$message.error(errorMessage);
 	} finally {
-		previewing.value = false
+		previewing.value = false;
 	}
 }
 
 function resetForm() {
-	form.name = ""
-	form.preset = "hourly"
-	form.cronExpression = presetCronMap.hourly
-	form.payloadText = "{}"
-	form.excludeWeekdays = []
-	form.isActive = true
-	resolvedPreviewText.value = ""
-	editingSchedule.value = null
-	showModal.value = false
-	return true
+	form.name = "";
+	form.preset = "hourly";
+	form.cronExpression = presetCronMap.hourly;
+	form.payloadText = "{}";
+	form.excludeWeekdays = [];
+	form.isActive = true;
+	resolvedPreviewText.value = "";
+	editingSchedule.value = null;
+	showModal.value = false;
+	return true;
 }
 
 function openCreateModal() {
-	resetForm()
-	showModal.value = true
+	resetForm();
+	showModal.value = true;
 }
 
 function openEditModal(schedule: Schedules) {
-	editingSchedule.value = schedule
-	form.name = schedule.name
-	form.preset = schedule.preset ?? "custom"
-	form.cronExpression = schedule.cronExpression
-	form.payloadText = JSON.stringify(schedule.payload ?? {}, null, 2)
-	form.excludeWeekdays = [...(schedule.excludeWeekdays ?? [])]
-	form.isActive = schedule.isActive !== false
-	resolvedPreviewText.value = ""
-	showModal.value = true
+	editingSchedule.value = schedule;
+	form.name = schedule.name;
+	form.preset = schedule.preset ?? "custom";
+	form.cronExpression = schedule.cronExpression;
+	form.payloadText = JSON.stringify(schedule.payload ?? {}, null, 2);
+	form.excludeWeekdays = [...(schedule.excludeWeekdays ?? [])];
+	form.isActive = schedule.isActive !== false;
+	resolvedPreviewText.value = "";
+	showModal.value = true;
 }
 
 function closeModal() {
-	showModal.value = false
+	showModal.value = false;
 }
 
 async function loadSchedules() {
-	loading.value = true
+	loading.value = true;
 	try {
 		const response = await $fetch<apiResponse<Schedules[]>>(
 			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`,
@@ -410,97 +431,104 @@ async function loadSchedules() {
 					options: Inison.stringify({
 						page: pagination.page,
 						perPage: pagination.pageSize,
-					})
+					}),
 				},
 				credentials: "include",
 			},
-		)
+		);
 
-		schedules.value = response.result ?? []
+		schedules.value = response.result ?? [];
 
 		if (response.options) {
-			pagination.page = Number(response.options.page ?? pagination.page)
+			pagination.page = Number(response.options.page ?? pagination.page);
 			// pagination.pageSize = Number(response.options.perPage ?? pagination.pageSize)
-			pagination.itemCount = Number(response.options.total ?? schedules.value.length)
+			pagination.itemCount = Number(
+				response.options.total ?? schedules.value.length,
+			);
 		} else {
-			pagination.itemCount = schedules.value.length
+			pagination.itemCount = schedules.value.length;
 		}
 
-		return response
+		return response;
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null
 				? (error as { data?: { message?: string }; message?: string })
-				: undefined
-		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
-		schedules.value = []
-		pagination.itemCount = 0
-		return null
+				: undefined;
+		window.$message.error(
+			errorMessage?.data?.message ?? errorMessage?.message ?? t("error"),
+		);
+		schedules.value = [];
+		pagination.itemCount = 0;
+		return null;
 	} finally {
-		loading.value = false
+		loading.value = false;
 	}
 }
 
 async function saveSchedule() {
-	let payload: Record<string, unknown>
+	let payload: Record<string, unknown>;
 
 	try {
-		payload = parsePayloadText(form.payloadText || "{}")
+		payload = parsePayloadText(form.payloadText || "{}");
 	} catch {
-		window.$message.error(t("invalidJSON"))
-		return
+		window.$message.error(t("invalidJSON"));
+		return;
 	}
 
 	if (Array.isArray(payload) || !payload || typeof payload !== "object") {
-		window.$message.error(t("invalidJSON"))
-		return
+		window.$message.error(t("invalidJSON"));
+		return;
 	}
 
 	if (form.excludeWeekdays.length >= 7) {
-		window.$message.error(t("invalidExcludedDays"))
-		return
+		window.$message.error(t("invalidExcludedDays"));
+		return;
 	}
 
-	saving.value = true
+	saving.value = true;
 	try {
 		const requestBody = {
 			name: form.name,
 			preset: form.preset,
-			cronExpression: form.preset === "custom" ? form.cronExpression : undefined,
+			cronExpression:
+				form.preset === "custom" ? form.cronExpression : undefined,
 			payload,
 			excludeWeekdays: [...form.excludeWeekdays].sort((a, b) => a - b),
 			isActive: form.isActive,
-		}
+		};
 
 		const endpoint = editingSchedule.value?.id
-				? `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
-				: `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`
-		const method = editingSchedule.value?.id ? "PUT" : "POST"
+			? `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${editingSchedule.value.id}`
+			: `${useApiBase()}${database.value.slug}/${table.value.slug}/schedules`;
+		const method = editingSchedule.value?.id ? "PUT" : "POST";
 		const response = await $fetch<apiResponse<Schedules>>(endpoint, {
 			method,
 			body: requestBody,
 			params: getRequestParams(),
 			credentials: "include",
-		})
+		});
 
 		if (response.result) {
-			window.$message.success(response.message)
-			closeModal()
-			await loadSchedules()
-		} else window.$message.error(response.message)
+			window.$message.success(response.message);
+			closeModal();
+			await loadSchedules();
+		} else window.$message.error(response.message);
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null
 				? (error as { data?: { message?: string }; message?: string })
-				: undefined
-		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+				: undefined;
+		window.$message.error(
+			errorMessage?.data?.message ?? errorMessage?.message ?? t("error"),
+		);
 	} finally {
-		saving.value = false
+		saving.value = false;
 	}
 }
 
 async function runScheduleNow(schedule: Schedules) {
-	loading.value = true
+	loading.value = true;
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
 			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}/run`,
@@ -509,26 +537,28 @@ async function runScheduleNow(schedule: Schedules) {
 				params: getRequestParams(),
 				credentials: "include",
 			},
-		)
+		);
 
 		if (response.result) {
-			window.$message.success(response.message)
-			await loadSchedules()
-		} else window.$message.error(response.message)
+			window.$message.success(response.message);
+			await loadSchedules();
+		} else window.$message.error(response.message);
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null
 				? (error as { data?: { message?: string }; message?: string })
-				: undefined
-		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+				: undefined;
+		window.$message.error(
+			errorMessage?.data?.message ?? errorMessage?.message ?? t("error"),
+		);
 	} finally {
-		loading.value = false
+		loading.value = false;
 	}
 }
 
 async function runAllActiveSchedules() {
-	loading.value = true
-	let errors = 0
+	loading.value = true;
+	let errors = 0;
 
 	try {
 		const response = await $fetch<apiResponse<Schedules[]>>(
@@ -537,17 +567,21 @@ async function runAllActiveSchedules() {
 				params: {
 					...getRequestParams(),
 					where: Inison.stringify({ isActive: true }),
-					options: Inison.stringify({ page: 1, perPage: 1000, columns: ["id"] }),
+					options: Inison.stringify({
+						page: 1,
+						perPage: 1000,
+						columns: ["id"],
+					}),
 				},
 				credentials: "include",
 			},
-		)
+		);
 
-		const activeSchedules = response.result ?? []
+		const activeSchedules = response.result ?? [];
 
 		if (!activeSchedules.length) {
-			window.$message.info(t("noActiveSchedules"))
-			return
+			window.$message.info(t("noActiveSchedules"));
+			return;
 		}
 
 		for (const schedule of activeSchedules) {
@@ -559,33 +593,33 @@ async function runAllActiveSchedules() {
 						params: getRequestParams(),
 						credentials: "include",
 					},
-				)
+				);
 
-				if (!runResponse.result) errors++
+				if (!runResponse.result) errors++;
 			} catch {
-				errors++
+				errors++;
 			}
 		}
 
-		if (errors === 0)
-			window.$message.success(t("allActiveSchedulesRan"))
-		else
-			window.$message.warning(t("someSchedulesFailed", { count: errors }))
+		if (errors === 0) window.$message.success(t("allActiveSchedulesRan"));
+		else window.$message.warning(t("someSchedulesFailed", { count: errors }));
 
-		await loadSchedules()
+		await loadSchedules();
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null
 				? (error as { data?: { message?: string }; message?: string })
-				: undefined
-		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+				: undefined;
+		window.$message.error(
+			errorMessage?.data?.message ?? errorMessage?.message ?? t("error"),
+		);
 	} finally {
-		loading.value = false
+		loading.value = false;
 	}
 }
 
 async function removeSchedule(schedule: Schedules) {
-	loading.value = true
+	loading.value = true;
 	try {
 		const response = await $fetch<apiResponse<boolean>>(
 			`${useApiBase()}${database.value.slug}/${table.value.slug}/schedules/${schedule.id}`,
@@ -594,25 +628,27 @@ async function removeSchedule(schedule: Schedules) {
 				params: getRequestParams(),
 				credentials: "include",
 			},
-		)
+		);
 
 		const responseCode =
 			typeof response === "object" && response !== null && "code" in response
 				? (response as { code?: number }).code
-				: undefined
+				: undefined;
 
 		if (response.result || responseCode === 204) {
-			window.$message.success(response.message)
-			await loadSchedules()
-		} else window.$message.error(response.message)
+			window.$message.success(response.message);
+			await loadSchedules();
+		} else window.$message.error(response.message);
 	} catch (error: unknown) {
 		const errorMessage =
 			typeof error === "object" && error !== null
 				? (error as { data?: { message?: string }; message?: string })
-				: undefined
-		window.$message.error(errorMessage?.data?.message ?? errorMessage?.message ?? t("error"))
+				: undefined;
+		window.$message.error(
+			errorMessage?.data?.message ?? errorMessage?.message ?? t("error"),
+		);
 	} finally {
-		loading.value = false
+		loading.value = false;
 	}
 }
 
@@ -629,7 +665,11 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 		render: (schedule) =>
 			h(
 				NTag,
-				{ type: schedule.isActive ? "success" : "default", bordered: false, round: true },
+				{
+					type: schedule.isActive ? "success" : "default",
+					bordered: false,
+					round: true,
+				},
 				{ default: () => (schedule.isActive ? t("active") : t("inactive")) },
 			),
 	},
@@ -648,7 +688,8 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 		title: t("nextRunAt"),
 		key: "nextRunAt",
 		minWidth: 170,
-		render: (schedule) => (schedule.isActive ? formatDate(schedule.nextRunAt) : "--"),
+		render: (schedule) =>
+			schedule.isActive ? formatDate(schedule.nextRunAt) : "--",
 	},
 	{
 		title: t("lastRunAt"),
@@ -679,7 +720,9 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 								{ secondary: true, type: "success", title: t("runNow") },
 								{
 									icon: () =>
-										h(NIcon, null, () => h(Icon, { name: "tabler:player-play" })),
+										h(NIcon, null, () =>
+											h(Icon, { name: "tabler:player-play" }),
+										),
 								},
 							),
 						default: () => t("theFollowingActionIsIrreversible"),
@@ -687,7 +730,11 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 				),
 				h(
 					NButton,
-					{ secondary: true, type: "primary", onClick: () => openEditModal(schedule) },
+					{
+						secondary: true,
+						type: "primary",
+						onClick: () => openEditModal(schedule),
+					},
 					{
 						icon: () =>
 							h(NIcon, null, () => h(Icon, { name: "tabler:pencil" })),
@@ -711,12 +758,14 @@ const columns = computed<DataTableColumns<Schedules>>(() => [
 				),
 			]),
 	},
-])
+]);
 
-onMounted(loadSchedules)
+onMounted(loadSchedules);
 
 useHead({
 	title: `${t(database.value.slug)} | ${t(table.value.slug)} : ${t("tableSchedules")}`,
-	link: [{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" }],
-})
+	link: [
+		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
+	],
+});
 </script>

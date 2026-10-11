@@ -102,7 +102,10 @@ const modelValue = defineModel<string | Asset | (string | Asset)[]>();
 
 const database = useState<Database>("database");
 
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
 const config = useRuntimeConfig();
 const LARGE_VIDEO_BYTES = 512 * 1024 * 1024;
@@ -500,6 +503,7 @@ async function customRequest({
 						compressionIndicator.value = null;
 					} else throw videoError;
 				}
+				// biome-ignore lint/correctness/noConstantCondition: PDF compression is a deliberate kill-switch — branch stays dead until enabled.
 			} else if (isPdf && false) {
 				notifyPdfSize(originalFile.size);
 				try {

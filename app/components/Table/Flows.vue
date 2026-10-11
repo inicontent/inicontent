@@ -356,11 +356,11 @@ import {
 	flattenSchema,
 	isArrayOfObjects,
 	isNumber,
-	isObject
-} from "inibase/utils"
-import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui"
-import { VueDraggable } from "vue-draggable-plus"
-import { Icon, NIcon } from "#components"
+	isObject,
+} from "inibase/utils";
+import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui";
+import { VueDraggable } from "vue-draggable-plus";
+import { Icon, NIcon } from "#components";
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -370,55 +370,65 @@ onMounted(() => {
 				(e.key.toLowerCase() === "s" || e.key === "س")
 			)
 		)
-			return
-		e.preventDefault()
-		saveFlow()
-	}
+			return;
+		e.preventDefault();
+		saveFlow();
+	};
 	// Load template names for flow email action
-	$fetch<apiResponse>(
-		`${useApiBase()}${database.value.slug}/templates`,
-		{
-			params: { columns: "name", perPage: 100, locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value },
-			credentials: "include",
+	$fetch<apiResponse>(`${useApiBase()}${database.value.slug}/templates`, {
+		params: {
+			columns: "name",
+			perPage: 100,
+			locale: Language.value,
+			[`${database.value.slug}_sid`]: sessionID.value,
 		},
-	).then((data) => {
-		if (Array.isArray(data?.result))
-			templateNames.value = (data.result as { name: string }[]).map(({ name }) => ({
-				label: name,
-				value: name,
-			}))
-	}).catch(() => {})
-})
+		credentials: "include",
+	})
+		.then((data) => {
+			if (Array.isArray(data?.result))
+				templateNames.value = (data.result as { name: string }[]).map(
+					({ name }) => ({
+						label: name,
+						value: name,
+					}),
+				);
+		})
+		.catch(() => {});
+});
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
-const config = useRuntimeConfig()
-const Loading = useState<Record<string, boolean>>("Loading", () => ({}))
-const table = useState<Table>("table")
-const tableCopy = ref<any>(toRaw(table.value))
-const currentFlow = ref<string>("onRequest")
-const currentFlowCard = ref<string>()
+const config = useRuntimeConfig();
+const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
+const table = useState<Table>("table");
+const tableCopy = ref<any>(toRaw(table.value));
+const currentFlow = ref<string>("onRequest");
+const currentFlowCard = ref<string>();
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const templateNames = ref<SelectOption[]>([])
+const templateNames = ref<SelectOption[]>([]);
 
-const reorderEnabled = ref(false)
+const reorderEnabled = ref(false);
 
 async function saveFlow() {
-	Loading.value.updateTable = true
-	const bodyContent = toRaw(tableCopy.value)
+	Loading.value.updateTable = true;
+	const bodyContent = toRaw(tableCopy.value);
 
 	// Remove id and replace with value property before sending
 	for (const flowName of flowNames) {
 		bodyContent[flowName] = bodyContent[flowName]?.map((item: any) =>
 			item.value?.map((rule: any) => rule.value),
-		)
+		);
 	}
 
 	const data = await $fetch<apiResponse>(
-		`${useApiBase()}inicontent/databases/${database.value.slug
+		`${useApiBase()}inicontent/databases/${
+			database.value.slug
 		}/${table.value.slug}`,
 		{
 			method: "PUT",
@@ -427,20 +437,21 @@ async function saveFlow() {
 				onRequest,
 			}))(bodyContent),
 			params: {
-				locale: Language.value, [`${database.value.slug}_sid`]: sessionID.value,
+				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
 			credentials: "include",
 		},
-	)
+	);
 
 	if (data.result) {
-		tableCopy.value = formatFlow(data.result)
-		window.$message.success(data.message)
-	} else window.$message.error(data.message)
-	Loading.value.updateTable = false
+		tableCopy.value = formatFlow(data.result);
+		window.$message.success(data.message);
+	} else window.$message.error(data.message);
+	Loading.value.updateTable = false;
 }
 
-const flowNames = ["onRequest", "onResponse"] as const
+const flowNames = ["onRequest", "onResponse"] as const;
 // Ensure each flow item has a unique id and a value property
 function formatFlow(_table: Table) {
 	for (const flowName of flowNames) {
@@ -449,15 +460,15 @@ function formatFlow(_table: Table) {
 				return {
 					id: randomID(),
 					value: item.map((rule: any) => ({ id: randomID(), value: rule })),
-				}
+				};
 			}
-			return item
-		})
+			return item;
+		});
 	}
-	return _table
+	return _table;
 }
 
-formatFlow(tableCopy.value)
+formatFlow(tableCopy.value);
 
 function ruleDropdownProps(flow: FlowType, index: number) {
 	return {
@@ -471,37 +482,37 @@ function ruleDropdownProps(flow: FlowType, index: number) {
 		onSelect(key: string) {
 			switch (key) {
 				case "delete":
-					flow.splice(index, 1)
-					break
+					flow.splice(index, 1);
+					break;
 			}
 		},
-	}
+	};
 }
 function schemaToOptions(schema: Schema, prefix = "@data") {
-	const options: CascaderOption[] = []
+	const options: CascaderOption[] = [];
 	for (const field of schema) {
 		let option: CascaderOption = {
 			label: field.key,
 			value: `${prefix}.${field.id}`,
-		}
+		};
 		if (isArrayOfObjects(field.children))
-			option.children = schemaToOptions(field.children, prefix)
-		options.push(option)
+			option.children = schemaToOptions(field.children, prefix);
+		options.push(option);
 	}
-	return options
+	return options;
 }
 function generateFlowCascaderOptions(
 	withWhere?: boolean,
 	withWhereOr?: boolean,
 	withUser?: boolean,
 ) {
-	const result: CascaderOption[] = []
+	const result: CascaderOption[] = [];
 	if (withUser) {
 		let userSchema = database.value.tables?.find(
 			({ slug }) => slug === "users",
-		)?.schema
+		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema as any)
+			userSchema = flattenSchema(userSchema as any);
 			result.push({
 				label: "@user",
 				value: "@user",
@@ -509,7 +520,7 @@ function generateFlowCascaderOptions(
 					label: key,
 					value: `@user.${id}`,
 				})),
-			})
+			});
 		}
 	}
 	if (table.value.schema) {
@@ -520,47 +531,47 @@ function generateFlowCascaderOptions(
 				children: [
 					...(withWhereOr
 						? [
-							{
-								label: t("or"),
-								value: "@where.or",
-								children: schemaToOptions(table.value.schema, "@where.or"),
-							},
-						]
+								{
+									label: t("or"),
+									value: "@where.or",
+									children: schemaToOptions(table.value.schema, "@where.or"),
+								},
+							]
 						: []),
 					...schemaToOptions(table.value.schema, "@where"),
 				],
-			})
+			});
 		result.push({
 			label: "@data",
 			value: "@data",
 			children: schemaToOptions(table.value.schema),
-		})
+		});
 	}
-	return result
+	return result;
 }
 function generateFlowSelectOptions(
 	value: string | null,
 	withWhereOr = true,
 	withUser?: boolean,
 ) {
-	const result: (SelectOption | SelectGroupOption)[] = []
+	const result: (SelectOption | SelectGroupOption)[] = [];
 	if (value === "@method")
 		return ["get", "post", "put", "delete"].map((method) => ({
 			label: method.toUpperCase(),
 			value: method.toUpperCase(),
-		}))
+		}));
 
-	let schema: Schema = []
+	let schema: Schema = [];
 	if (table.value.schema) {
-		schema = flattenSchema(table.value.schema as any) as Schema
+		schema = flattenSchema(table.value.schema as any) as Schema;
 		if (value) {
 			let userSchema = database.value.tables?.find(
 				({ slug }) => slug === "users",
-			)?.schema
-			if (userSchema) userSchema = flattenSchema(userSchema as any)
+			)?.schema;
+			if (userSchema) userSchema = flattenSchema(userSchema as any);
 			const field = (value.startsWith("@user.") ? userSchema : schema)?.find(
 				({ id }) => String(id) === value.slice(6),
-			)
+			);
 			if (field?.options)
 				field.options.map((_value) =>
 					result.push(
@@ -569,18 +580,18 @@ function generateFlowSelectOptions(
 							: Array.isArray(_value)
 								? { label: _value[0], value: _value[0] }
 								: {
-									label: _value,
-									value: _value,
-								}) as any,
+										label: _value,
+										value: _value,
+									}) as any,
 					),
-				)
+				);
 		}
 	}
 
 	result.push({
 		label: "@null",
 		value: "undefined",
-	})
+	});
 
 	if (
 		value &&
@@ -596,13 +607,13 @@ function generateFlowSelectOptions(
 				label: name,
 				value: id,
 			})),
-		})
+		});
 	if (withUser) {
 		let userSchema = database.value.tables?.find(
 			({ slug }) => slug === "users",
-		)?.schema
+		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema as any)
+			userSchema = flattenSchema(userSchema as any);
 			result.push({
 				key: "@user",
 				label: "@user",
@@ -611,7 +622,7 @@ function generateFlowSelectOptions(
 					label: `@user.${key}`,
 					value: `@user.${id}`,
 				})),
-			})
+			});
 		}
 	}
 	if (schema) {
@@ -622,23 +633,23 @@ function generateFlowSelectOptions(
 			children: [
 				...(withWhereOr
 					? [
-						{
-							key: "@where.or",
-							label: "or",
-							type: "group",
-							children: schema.map(({ id, key }) => ({
-								label: `@where.or.${key}`,
-								value: `@where.or.${id}`,
-							})),
-						},
-					]
+							{
+								key: "@where.or",
+								label: "or",
+								type: "group",
+								children: schema.map(({ id, key }) => ({
+									label: `@where.or.${key}`,
+									value: `@where.or.${id}`,
+								})),
+							},
+						]
 					: []),
 				...schema.map(({ id, key }) => ({
 					label: `@where.${key}`,
 					value: `@where.${id}`,
 				})),
 			],
-		})
+		});
 		result.push({
 			key: "@data",
 			label: "@data",
@@ -647,9 +658,9 @@ function generateFlowSelectOptions(
 				label: `@data.${key}`,
 				value: `@data.${id}`,
 			})),
-		})
+		});
 	}
-	return result
+	return result;
 }
 
 function formatValue(
@@ -662,12 +673,12 @@ function formatValue(
 		parentKey &&
 		(parentKey === "@user.4" ||
 			(table.value.slug === "users" && parentKey.endsWith(".4"))) &&
-		value && !value.toString().startsWith("@")
+		value &&
+		!value.toString().startsWith("@")
 	)
 		return (
-			database.value.roles?.find(({ id }) => id === value)
-				?.name ?? "@undefined"
-		)
+			database.value.roles?.find(({ id }) => id === value)?.name ?? "@undefined"
+		);
 
 	if (
 		value &&
@@ -677,85 +688,88 @@ function formatValue(
 			value.startsWith("@where."))
 	) {
 		const splitedValue = value.split("."),
-			lastItem = splitedValue.pop()
+			lastItem = splitedValue.pop();
 		let schema =
 			splitedValue[0] === "@user"
 				? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
-				: table.value.schema
+				: table.value.schema;
 		if (schema) {
-			schema = flattenSchema(schema as any, true)
-			const item = schema.find(({ id }) => String(id) === lastItem)
+			schema = flattenSchema(schema as any, true);
+			const item = schema.find(({ id }) => String(id) === lastItem);
 
-			if (!item) return undefined
+			if (!item) return undefined;
 
-			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`
+			if (property === "key") return `${splitedValue.join(".")}.${item?.key}`;
 
-			return item[property] ?? defaultValue
+			return item[property] ?? defaultValue;
 		}
 	}
-	return value || defaultValue
+	return value || defaultValue;
 }
 
 function getFlowField(value: string | null) {
-	if (!value || value === "@method") return undefined
+	if (!value || value === "@method") return undefined;
 
-	const valueRoot = value.split(".")[0]
-	const fieldID = value.split(".").pop()
-	if (!fieldID) return undefined
+	const valueRoot = value.split(".")[0];
+	const fieldID = value.split(".").pop();
+	if (!fieldID) return undefined;
 
 	const schema =
 		valueRoot === "@user"
 			? database.value.tables?.find(({ slug }) => slug === "users")?.schema
-			: table.value.schema
+			: table.value.schema;
 
-	if (!schema) return undefined
+	if (!schema) return undefined;
 
 	return flattenSchema(schema as any, true).find(
 		({ id }) => String(id) === fieldID,
-	)
+	);
 }
 
 function isDateFlowField(value: string | null) {
-	return getFlowField(value)?.type === "date"
+	return getFlowField(value)?.type === "date";
 }
 
 function getDateFlowPickerType(value: string | null) {
-	return getFlowField(value)?.date ?? "date"
+	return getFlowField(value)?.date ?? "date";
 }
 
 function isRelativeDateValue(value: unknown) {
 	return (
 		typeof value === "string" &&
 		["@date.now", "@date.tomorrow", "@date.yesterday"].includes(value)
-	)
+	);
 }
 
 function formatFlowValue(value: unknown, parentKey?: string | null) {
-	const field = getFlowField(parentKey ?? null)
-	if (field?.type !== "date") return formatValue(value as any, parentKey ?? undefined)
+	const field = getFlowField(parentKey ?? null);
+	if (field?.type !== "date")
+		return formatValue(value as any, parentKey ?? undefined);
 
 	if (typeof value === "string") {
 		switch (value) {
 			case "@date.now":
-				return "Now"
+				return "Now";
 			case "@date.tomorrow":
-				return "Tomorrow"
+				return "Tomorrow";
 			case "@date.yesterday":
-				return "Yesterday"
+				return "Yesterday";
 			default:
-				if (/^\d+$/.test(value)) value = Number(value)
+				if (/^\d+$/.test(value)) value = Number(value);
 		}
 	}
 
 	if (typeof value === "number") {
-		const date = new Date(value)
-		if (Number.isNaN(date.getTime())) return String(value)
-		return ["datetime", "datetimerange"].includes(getDateFlowPickerType(parentKey ?? null))
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return String(value);
+		return ["datetime", "datetimerange"].includes(
+			getDateFlowPickerType(parentKey ?? null),
+		)
 			? date.toLocaleString(Language.value)
-			: date.toLocaleDateString(Language.value)
+			: date.toLocaleDateString(Language.value);
 	}
 
-	return formatValue(value as any, parentKey ?? undefined)
+	return formatValue(value as any, parentKey ?? undefined);
 }
 
 const dateFlowValueOptions = [
@@ -763,7 +777,7 @@ const dateFlowValueOptions = [
 	{ label: "Tomorrow", value: "@date.tomorrow" },
 	{ label: "Yesterday", value: "@date.yesterday" },
 	{ label: "Custom", value: "__custom__" },
-]
+];
 
 const addRuleDropdownOptions = [
 	{
@@ -788,22 +802,25 @@ const addRuleDropdownOptions = [
 		key: "email",
 		label: t("email"),
 	},
-]
+];
 
-function pushRuleToFlow(flow: any, value: "if" | "set" | "unset" | "error" | "email") {
+function pushRuleToFlow(
+	flow: any,
+	value: "if" | "set" | "unset" | "error" | "email",
+) {
 	switch (value) {
 		case "if":
-			flow.push({ id: randomID(), value: [null, null, null] })
-			break
+			flow.push({ id: randomID(), value: [null, null, null] });
+			break;
 		case "set":
-			flow.push({ id: randomID(), value: ["set", null, null] })
-			break
+			flow.push({ id: randomID(), value: ["set", null, null] });
+			break;
 		case "email":
-			flow.push({ id: randomID(), value: ["email", null, null] })
-			break
+			flow.push({ id: randomID(), value: ["email", null, null] });
+			break;
 		default:
-			flow.push({ id: randomID(), value: [value, null] })
-			break
+			flow.push({ id: randomID(), value: [value, null] });
+			break;
 	}
 }
 
@@ -812,5 +829,5 @@ useHead({
 	link: [
 		{ rel: "icon", href: database.value?.icon?.publicURL ?? "/favicon.ico" },
 	],
-})
+});
 </script>

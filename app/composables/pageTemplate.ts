@@ -259,7 +259,10 @@ export function resolveItemTemplate(
 export function usePageTemplate() {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	/** Scan the current site's pages for one whose dynamic slug matches the URL. */

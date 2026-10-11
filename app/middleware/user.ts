@@ -3,10 +3,16 @@ export default defineNuxtRouteMiddleware(async () => {
 	const database = useState<Database>("database");
 	const config = useRuntimeConfig();
 
-	const sessionID = useScopedCookie<string|undefined>("sid", database.value?.slug);
+	const sessionID = useScopedCookie<string | undefined>(
+		"sid",
+		database.value?.slug,
+	);
 
 	if (!user.value) {
-		const platformSessionID = useScopedCookie<string|undefined>("sid", "inicontent");
+		const platformSessionID = useScopedCookie<string | undefined>(
+			"sid",
+			"inicontent",
+		);
 
 		if (!sessionID.value && !platformSessionID.value) return;
 
@@ -19,7 +25,9 @@ export default defineNuxtRouteMiddleware(async () => {
 						credentials: "include",
 						method: "POST",
 						body: {},
-						query: sessionID.value ? { [`${database.value.slug}_sid`]: sessionID.value } : { "inicontent_sid": platformSessionID.value },
+						query: sessionID.value
+							? { [`${database.value.slug}_sid`]: sessionID.value }
+							: { inicontent_sid: platformSessionID.value },
 					},
 				)
 			).result;

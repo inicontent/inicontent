@@ -106,7 +106,10 @@ const tableRef = ref<TableRef>();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 const config = useRuntimeConfig();
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const previewDevice = useState<Devices>("selectedDevice");
@@ -123,7 +126,8 @@ function isSystemBlock(block: Content) {
 // read-only preview can render without mutating the row.
 const sortedBlocks = computed(() => {
 	const rows = [...((tableRef.value?.data?.result ?? []) as Content[])];
-	const blockType = (name?: string) => String(name ?? "").split("/")[0] as Blocks;
+	const blockType = (name?: string) =>
+		String(name ?? "").split("/")[0] as Blocks;
 	return rows
 		.map((row) => {
 			if (isSystemBlock(row)) return row;
@@ -132,10 +136,7 @@ const sortedBlocks = computed(() => {
 			return {
 				...row,
 				config: Array.isArray(row.config)
-					? convertArrayToObject(
-							row.config,
-							blockTypes[type]?.schema,
-						)
+					? convertArrayToObject(row.config, blockTypes[type]?.schema)
 					: row.config,
 			};
 		})
@@ -148,8 +149,10 @@ const sortedBlocks = computed(() => {
 			if (system) return system;
 			const createdA = Date.parse(String(a.createdAt ?? ""));
 			const createdB = Date.parse(String(b.createdAt ?? ""));
-			return (Number.isFinite(createdB) ? createdB : 0) -
-				(Number.isFinite(createdA) ? createdA : 0);
+			return (
+				(Number.isFinite(createdB) ? createdB : 0) -
+				(Number.isFinite(createdA) ? createdA : 0)
+			);
 		});
 });
 

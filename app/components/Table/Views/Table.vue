@@ -59,19 +59,16 @@ const tablesConfig = computed({
 	get: () => user.value?.config?.tables ?? {},
 	set: (v) => {
 		user.value.config = { ...(user.value.config ?? {}), tables: v };
-		$fetch(
-			`${useApiBase()}${database.value.slug}/users/${user.value?.id}`,
-			{
-				method: "PUT",
-				body: user.value,
-				params: {
-					return: false,
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
-				credentials: "include",
+		$fetch(`${useApiBase()}${database.value.slug}/users/${user.value?.id}`, {
+			method: "PUT",
+			body: user.value,
+			params: {
+				return: false,
+				locale: Language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
 			},
-		).catch((err) => window.$message.error(err.message));
+			credentials: "include",
+		}).catch((err) => window.$message.error(err.message));
 	},
 });
 

@@ -83,9 +83,7 @@ export function usePlatformRedirect() {
 				"inicontent",
 				platformSessionID.value,
 				destination,
-			).then(
-				(code) => ["inicontent_handoff", code] as [string, string | null],
-			),
+			).then((code) => ["inicontent_handoff", code] as [string, string | null]),
 		);
 
 		for (const [key, code] of await Promise.all(jobs)) {

@@ -110,8 +110,8 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils"
-import Inison from "inison"
+import { flattenSchema } from "inibase/utils";
+import Inison from "inison";
 
 type ActionName =
 	| "set"
@@ -121,35 +121,41 @@ type ActionName =
 	| "unset"
 	| "delete"
 	| "create"
-	| "revert"
-type Actions = [ActionName, string, any?][]
+	| "revert";
+type Actions = [ActionName, string, any?][];
 interface Log extends Item {
-	actions: Actions
-	madeBy?: User
-	item: Item | Item[]
+	actions: Actions;
+	madeBy?: User;
+	item: Item | Item[];
 }
 
 const { id, open } = defineProps<{
-	id?: string | number
-	open?: boolean
-}>()
-const isOpen = ref(open)
+	id?: string | number;
+	open?: boolean;
+}>();
+const isOpen = ref(open);
 
-const config = useRuntimeConfig()
-const Loading = useState<Record<string, boolean | string>>("Loading", () => ({}))
+const config = useRuntimeConfig();
+const Loading = useState<Record<string, boolean | string>>(
+	"Loading",
+	() => ({}),
+);
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
-const usersTable = database.value.tables?.find(({ slug }) => slug === "users")
+const usersTable = database.value.tables?.find(({ slug }) => slug === "users");
 
-const table = useState<Table>("table")
+const table = useState<Table>("table");
 
 onBeforeRouteLeave(() => {
-	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`)
-})
+	clearNuxtData(`${database.value.slug}/${table.value?.slug as string}/logs`);
+});
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug)
-const hasLogs = ref(true)
+const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+const hasLogs = ref(true);
 
 const { data, execute, refresh } = await useLazyFetch<apiResponse<Log[]>>(
 	() => `${useApiBase()}${database.value.slug}/${table.value.slug}/logs`,
@@ -168,42 +174,42 @@ const { data, execute, refresh } = await useLazyFetch<apiResponse<Log[]>>(
 		},
 		immediate: false,
 		onRequest() {
-			Loading.value.logs = true
+			Loading.value.logs = true;
 		},
 		onResponse: ({ response: { _data } }) => {
-			Loading.value.logs = false
-			hasLogs.value = !!_data?.result?.length
+			Loading.value.logs = false;
+			hasLogs.value = !!_data?.result?.length;
 		},
 		credentials: "include",
 	},
-)
+);
 
-let firstTime = true
+let firstTime = true;
 watch(
 	isOpen,
 	(newValue) => {
 		if (newValue && firstTime) {
-			execute()
-			firstTime = false
+			execute();
+			firstTime = false;
 		}
 	},
 	{ immediate: true },
-)
+);
 
 // Refetch logs when the current language changes (log messages are
 // locale-dependent), but only once they've been loaded at least once
 watch(Language, () => {
-	if (!firstTime) execute()
-})
+	if (!firstTime) execute();
+});
 
 function handleCollapseChange({
 	name,
 	expanded,
 }: {
-	name: string | number
-	expanded: boolean
+	name: string | number;
+	expanded: boolean;
 }) {
-	if (name === "logs") isOpen.value = expanded
+	if (name === "logs") isOpen.value = expanded;
 }
 
 function getTypeFromAction(
@@ -211,11 +217,11 @@ function getTypeFromAction(
 ): "error" | "info" | "success" {
 	switch (ActionName) {
 		case "create":
-			return "success"
+			return "success";
 		case "delete":
-			return "error"
+			return "error";
 		default:
-			return "info"
+			return "info";
 	}
 }
 
@@ -223,26 +229,28 @@ function getTypeFromAction(
 // the API maps ids back to keys but falls through for ids missing from the
 // current schema (e.g. fields deleted after the edit was recorded) — so we
 // re-resolve them here and translate the field label instead of a raw number.
-const flatSchema = computed(() => flattenSchema(table.value?.schema ?? [], true))
+const flatSchema = computed(() =>
+	flattenSchema(table.value?.schema ?? [], true),
+);
 
 /** Display label for an action's target: a field key/path, or a raw field id
  *  (decimal-encoded like "45.47") resolved against the current schema. */
 function actionTargetLabel(target: unknown): string {
 	if (typeof target === "number" || typeof target === "string") {
-		const str = String(target)
-		const idPart = str.match(/^\d+(?:\.\d+)?/)
+		const str = String(target);
+		const idPart = str.match(/^\d+(?:\.\d+)?/);
 		if (idPart) {
 			const field = flatSchema.value.find(
 				({ id }) => String(id) === idPart?.[0],
-			)
+			);
 			if (field?.key)
 				return t(
 					`${field.key.split(".").pop() ?? field.key}${str.slice(idPart[0].length)}`,
-				)
-			return str
+				);
+			return str;
 		}
 	}
-	return t(target as string)
+	return t(target as string);
 }
 
 /** True when `value` looks like an asset object (id + name + extension/
@@ -257,7 +265,7 @@ function isAssetObject(value: unknown): value is Asset {
 		typeof (value as Asset).name === "string" &&
 		(typeof (value as Asset).extension === "string" ||
 			typeof (value as Asset).publicURL === "string")
-	)
+	);
 }
 
 /** Resolve an action's field path (e.g. `المرفقات.ملفات طباعة[0]`,
@@ -266,26 +274,26 @@ function resolveActionPath(
 	item: Item | Item[] | undefined,
 	path: string,
 ): unknown {
-	let node: unknown = ([] as Item[]).concat(item)[0]
-	if (node === undefined || node === null) return undefined
+	let node: unknown = ([] as Item[]).concat(item)[0];
+	if (node === undefined || node === null) return undefined;
 	for (const part of path.split(".").filter(Boolean)) {
-		if (part === "*") return undefined
-		const bracket = part.match(/^([^[\]]+)((?:\[\d+\])+)$/)
+		if (part === "*") return undefined;
+		const bracket = part.match(/^([^[\]]+)((?:\[\d+\])+)$/);
 		if (bracket) {
-			node = (node as Record<string, unknown>)?.[bracket[1] as string]
-			if (node === undefined || node === null) return undefined
+			node = (node as Record<string, unknown>)?.[bracket[1] as string];
+			if (node === undefined || node === null) return undefined;
 			for (const index of [...bracket[2].matchAll(/\[(\d+)\]/g)].map((m) =>
 				Number(m[1]),
 			)) {
-				node = (node as unknown[])?.[index]
-				if (node === undefined || node === null) return undefined
+				node = (node as unknown[])?.[index];
+				if (node === undefined || node === null) return undefined;
 			}
 		} else {
-			node = (node as Record<string, unknown>)?.[part]
-			if (node === undefined || node === null) return undefined
+			node = (node as Record<string, unknown>)?.[part];
+			if (node === undefined || node === null) return undefined;
 		}
 	}
-	return node
+	return node;
 }
 
 /** Best-effort asset behind a `set`/`update` action's value: either the value
@@ -293,44 +301,41 @@ function resolveActionPath(
  *  item state at the action's path. Log `item` snapshots reflect the current
  *  state, so replaced/removed assets can't be recovered — those fall back to
  *  the raw id tag. */
-function assetFromAction(
-	log: Log,
-	action: Actions[number],
-): Asset | undefined {
-	const value = action[2]
-	if (isAssetObject(value)) return value
+function assetFromAction(log: Log, action: Actions[number]): Asset | undefined {
+	const value = action[2];
+	if (isAssetObject(value)) return value;
 	if (typeof value !== "string" || typeof action[1] !== "string")
-		return undefined
-	const node = resolveActionPath(log.item, action[1])
-	if (isAssetObject(node) && node.id === value) return node
-	return undefined
+		return undefined;
+	const node = resolveActionPath(log.item, action[1]);
+	if (isAssetObject(node) && node.id === value) return node;
+	return undefined;
 }
 
 // Scratch variable used by the template to render an action asset once
-let asset: Asset | undefined
+let asset: Asset | undefined;
 
 // Revert functionality
-const showRevertDialog = ref(false)
-const pendingRevertLog = ref<Log | null>(null)
+const showRevertDialog = ref(false);
+const pendingRevertLog = ref<Log | null>(null);
 
 function canRevert(log: Log, index: number): boolean {
 	// Don't show revert button for revert actions themselves
-	if (log.actions[0]?.[0] === "revert") return false
+	if (log.actions[0]?.[0] === "revert") return false;
 	// Don't show for the latest log (current state)
-	if (index === 0) return false
+	if (index === 0) return false;
 	// Don't show if already loading revert for this log
-	return Loading.value.revert !== log.id
+	return Loading.value.revert !== log.id;
 }
 
 function confirmRevert(log: Log) {
-	pendingRevertLog.value = log
-	showRevertDialog.value = true
+	pendingRevertLog.value = log;
+	showRevertDialog.value = true;
 }
 
 async function executeRevert() {
-	if (!pendingRevertLog.value || !id) return
+	if (!pendingRevertLog.value || !id) return;
 
-	Loading.value.revert = pendingRevertLog.value.id
+	Loading.value.revert = pendingRevertLog.value.id;
 
 	try {
 		const response = await $fetch<apiResponse<Item>>(
@@ -341,29 +346,29 @@ async function executeRevert() {
 				credentials: "include",
 				query: { [`${database.value.slug}_sid`]: sessionID.value },
 			},
-		)
+		);
 
 		if (response.result) {
-			window.$message?.success(t("revertSuccess"))
+			window.$message?.success(t("revertSuccess"));
 			// Refresh the item data and logs
-			await refreshNuxtData(`${database.value.slug}/${table.value.slug}/${id}`)
-			await refresh()
+			await refreshNuxtData(`${database.value.slug}/${table.value.slug}/${id}`);
+			await refresh();
 		} else {
-			window.$message?.error(response.message || t("revertFailed"))
+			window.$message?.error(response.message || t("revertFailed"));
 		}
 	} catch (error: any) {
-		window.$message?.error(error.data?.message || t("revertFailed"))
+		window.$message?.error(error.data?.message || t("revertFailed"));
 	} finally {
-		Loading.value.revert = false
-		showRevertDialog.value = false
-		pendingRevertLog.value = null
+		Loading.value.revert = false;
+		showRevertDialog.value = false;
+		pendingRevertLog.value = null;
 	}
 }
 
 function formatRevertTime(timestamp?: number): string {
-	if (!timestamp) return ""
-	const date = new Date(timestamp)
-	return date.toLocaleString()
+	if (!timestamp) return "";
+	const date = new Date(timestamp);
+	return date.toLocaleString();
 }
 </script>
 

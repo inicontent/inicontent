@@ -85,7 +85,10 @@ export function useForm(modelValue: Ref<Form>) {
 	const database = useState<Database>("database");
 	const runtimeConfig = useRuntimeConfig();
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
-	const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+	const Language = useScopedCookie<LanguagesType>(
+		"language",
+		database.value?.slug,
+	);
 
 	const tableSlug = computed(() => modelValue.value?.table);
 
