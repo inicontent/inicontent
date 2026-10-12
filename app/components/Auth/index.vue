@@ -179,6 +179,9 @@ type LoginPayload = User & {
 type LoginResponse = apiResponse<LoginPayload>;
 
 const passkeyEnrollmentForced = ref(false);
+// True while the current session is server-restricted to enrollment. Cleared
+// when enrollment rotates it to an authenticated session.
+const sessionRestricted = ref(false);
 
 function promptForPasskeyEnrollment() {
 	showPasskeyEnrollment.value = true;
@@ -212,6 +215,14 @@ async function registerPasskeyAfterLogin() {
 	Loading.value.PasskeyRegistration = true;
 	try {
 		const response = await registerCurrentUserPasskey();
+		// Enrolling rotates a restricted session into a fresh authenticated one.
+		// The tenant SID travels as a Bearer, so persist the new one before the
+		// caller re-reads the database; otherwise later requests would present
+		// the (now deleted) enrollment SID.
+		const rotatedSID = response.result?.sessionID;
+		if (typeof rotatedSID === "string") sessionID.value = rotatedSID;
+		// A successful enrollment always yields an authenticated session.
+		sessionRestricted.value = false;
 		window.$message.success(
 			response.message || t("passkey.registeredSuccessfully"),
 		);
@@ -233,17 +244,27 @@ async function handleSuccessfulLogin(
 	sessionID.value = data.result.sessionID;
 	window.$message.success(data.message);
 	user.value = data.result;
-	database.value = (
-		await $fetch<apiResponse<Database>>(
-			`${useApiBase()}inicontent/databases/${database.value.slug}`,
-			{
-				credentials: "include",
-				params: {
-					[`${database.value.slug}_sid`]: sessionID.value,
+	sessionRestricted.value = data.result.enrollmentRequired === true;
+
+	// A restricted (`enrollment_required`) session is refused by the server on
+	// every route except enrollment/status/signout, including this database
+	// record. Read it once the session is authenticated — which, after a
+	// password login for a mandatory-passkey role, is only after enrollment.
+	const loadDatabase = async () => {
+		database.value = (
+			await $fetch<apiResponse<Database>>(
+				`${useApiBase()}inicontent/databases/${database.value.slug}`,
+				{
+					credentials: "include",
+					params: {
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
 				},
-			},
-		)
-	).result;
+			)
+		).result;
+	};
+
+	if (!sessionRestricted.value) await loadDatabase();
 
 	if (props?.onLoggedIn) {
 		props.onLoggedIn();
@@ -258,6 +279,12 @@ async function handleSuccessfulLogin(
 		passkeyEnrollmentForced.value = forcedEnrollment;
 		await promptForPasskeyEnrollment();
 	}
+
+	// Enrollment (if it ran) rotated `sessionID` to an authenticated session, so
+	// the database record is readable now. If the policy is mandatory but this
+	// browser cannot do passkeys, the session stays restricted and the record
+	// stays unavailable — the admin UI is expected to surface that.
+	if (!sessionRestricted.value) await loadDatabase();
 
 	const queryRedirectTo =
 		typeof route.query.redirectTo === "string"
