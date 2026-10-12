@@ -226,6 +226,7 @@
 
 <script setup lang="ts">
 import { copyToClipboard } from "~/composables";
+import { createObjectUrlScope } from "~/composables/managedObjectUrl";
 import type { OcrResult } from "~/composables/useOcr";
 import type { Corners, PaperAnalysis } from "~/composables/useScanner";
 
@@ -245,6 +246,10 @@ const emit = defineEmits<{
 	/** Emitted when user clicks "Insert as Text" (only if allowOCR) */
 	insertText: [text: string, blocks: any[]];
 }>();
+
+// C2a: revoke upload-preview object URLs on disposal and on session change.
+const fileObjectUrls = createObjectUrlScope();
+onBeforeUnmount(() => fileObjectUrls.releaseAll());
 
 // `t` is auto-imported globally (see composables/index.ts + template-globals plugin).
 
@@ -402,7 +407,7 @@ function onDrop(e: DragEvent) {
 }
 
 async function loadImageFile(file: File) {
-	const url = URL.createObjectURL(file);
+	const url = fileObjectUrls.create(file);
 	const img = new Image();
 	img.onload = () => {
 		const canvas = document.createElement("canvas");
@@ -410,11 +415,13 @@ async function loadImageFile(file: File) {
 		canvas.height = img.naturalHeight;
 		const ctx = canvas.getContext("2d")!;
 		ctx.drawImage(img, 0, 0);
-		URL.revokeObjectURL(url);
+		fileObjectUrls.release(url);
 
 		rawCanvas.value = canvas;
 		autoExtract();
 	};
+	// A failed decode must still release the URL (it previously leaked here).
+	img.onerror = () => fileObjectUrls.release(url);
 	img.src = url;
 }
 

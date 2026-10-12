@@ -550,7 +550,15 @@ async function customRequest({
 				method: "POST",
 				credentials: "include",
 				headers: headers as Record<string, string>,
-				body: { name, size: file.file?.size, type: file.type, extension },
+				// Explicitly published (C2a): block/builder media is public; the
+				// server's fail-closed default keeps it private without this.
+				body: {
+					name,
+					size: file.file?.size,
+					type: file.type,
+					extension,
+					public: true,
+				},
 			},
 		);
 

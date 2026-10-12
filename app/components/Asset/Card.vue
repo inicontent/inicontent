@@ -186,6 +186,7 @@ import type {
 } from "naive-ui";
 import { Icon, NIcon } from "#components";
 import { getFileNameAndExtension } from "~/composables";
+import { createObjectUrlScope } from "~/composables/managedObjectUrl";
 import { useOptimizeFile } from "~/composables/optimizeFile";
 import { generateSearchArray } from "~/composables/search";
 import { useAssetUploader } from "~/composables/useAssetUploader";
@@ -198,6 +199,9 @@ const { where, suffix, targetID } = defineProps<{
 	suffix?: string;
 }>();
 const config = useRuntimeConfig();
+
+// C2a: revoke bulk-download object URLs on disposal and on session change.
+const downloadObjectUrls = createObjectUrlScope();
 
 const getResponsivePageSize = () => {
 	if (typeof window === "undefined") return 15;
@@ -565,13 +569,13 @@ async function downloadSelectedAsZip() {
 			},
 		);
 
-		const downloadURL = URL.createObjectURL(zipBlob);
+		const downloadURL = downloadObjectUrls.create(zipBlob);
 		const anchor = document.createElement("a");
 		const zipName = `assets-${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
 		anchor.href = downloadURL;
 		anchor.download = zipName;
 		anchor.click();
-		setTimeout(() => URL.revokeObjectURL(downloadURL), 1000);
+		setTimeout(() => downloadObjectUrls.release(downloadURL), 1000);
 		bulkZipProgress.value = 100;
 	} catch (error) {
 		console.error("Failed to download selected assets as zip", error);
@@ -719,6 +723,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
 	window.removeEventListener("resize", syncPaginationPageSize);
+	downloadObjectUrls.releaseAll();
 });
 
 const showSizePicker = ref(false);
@@ -906,7 +911,16 @@ async function customRequest({
 			method: "POST",
 			credentials: "include",
 			headers: headers as Record<string, string>,
-			body: { name, size: fileToUpload.size, type: mimeType, extension },
+			// An asset uploaded through the media library is explicitly published
+			// (C2a): without this the server's fail-closed default keeps it
+			// private and no publicURL is generated.
+			body: {
+				name,
+				size: fileToUpload.size,
+				type: mimeType,
+				extension,
+				public: true,
+			},
 		});
 
 		if (!result.uploadURL) {
@@ -1180,7 +1194,15 @@ async function uploadFileToPath(file: File, targetPath: string) {
 	const { result } = await $fetch<apiResponse<Asset>>(action, {
 		method: "POST",
 		credentials: "include",
-		body: { name, size: fileToUpload.size, type: mimeType, extension },
+		// Explicitly published (C2a): the server's fail-closed default keeps an
+		// asset private unless `public: true` is sent, so it must be sent here.
+		body: {
+			name,
+			size: fileToUpload.size,
+			type: mimeType,
+			extension,
+			public: true,
+		},
 	});
 
 	if (!result.uploadURL) throw new Error("Failed to get upload URL");
