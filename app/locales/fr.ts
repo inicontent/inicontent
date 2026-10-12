@@ -1468,5 +1468,9 @@ export default {
 			emailBuilderTitle:
 				"Des e-mails transactionnels et automatises qui fonctionnent",
 		},
+		complianceSettings: "Conformité",
+		phi: "PHI",
+		phiDescription:
+			"Marque cette base de données comme contenant des informations de santé protégées. Si activé — ou non défini — l'enregistrement hors ligne, les modifications en attente et le cache du navigateur restent désactivés. Désactivez-le pour classer explicitement la base comme non-PHI et activer la persistance hors ligne.",
 	},
 } as const;

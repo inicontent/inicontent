@@ -3,6 +3,12 @@ import {
 	migrateBrowserPersistence,
 	purgeBrowserCopies,
 } from "../composables/browserContainment";
+import { releaseAllObjectUrls } from "../composables/managedObjectUrl";
+import {
+	isPhiDatabase,
+	resolvePhiDatabase,
+	setPhiDatabase,
+} from "../composables/phiGuard";
 
 export default defineNuxtPlugin({
 	name: "browser-containment",
@@ -28,9 +34,28 @@ export default defineNuxtPlugin({
 				"Close other tabs or installed windows of this app to continue. Unsynced work is being preserved. Do not clear site data.";
 		}
 		const worker = navigator.serviceWorker;
+		/**
+		 * Keep the PHI guard and the service worker in sync with the active
+		 * database. Until a database is positively loaded as non-PHI we assume
+		 * PHI, so no response is runtime-cached in the meantime.
+		 */
+		function syncPhi() {
+			const loaded = Boolean(currentDatabase.value?.slug);
+			// Conservative (C1): only an explicit `phi: false` is non-PHI.
+			const phi = loaded ? resolvePhiDatabase(currentDatabase.value) : true;
+			setPhiDatabase(phi);
+			if (!loaded) return;
+			try {
+				worker?.controller?.postMessage({ type: "CONTAINMENT_PHI", phi });
+			} catch {
+				// The worker may be gone during unload; the next boot re-syncs.
+			}
+			if (phi) void purgeBrowserCopies();
+		}
 		worker?.addEventListener("message", (event) => {
 			if (event.data?.type === "CONTAINMENT_IDENTIFY")
 				event.ports[0]?.postMessage(BROWSER_CONTAINMENT_VERSION);
+			else if (event.data?.type === "CONTAINMENT_REPORT_PHI") syncPhi();
 		});
 		async function workerVersion(controller: ServiceWorker): Promise<unknown> {
 			return new Promise((resolve) => {
@@ -76,6 +101,7 @@ export default defineNuxtPlugin({
 			}
 			quarantined.value = await migrateBrowserPersistence(blocked);
 			gate.remove();
+			syncPhi();
 		} catch {
 			gate.textContent =
 				"Browser update or storage cleanup could not finish. Close other app tabs, reconnect and reload. Unsynced work is preserved; do not clear site data.";
@@ -98,13 +124,22 @@ export default defineNuxtPlugin({
 					void resetContext(true);
 			},
 		});
-		// Ask the active worker to keep all subsequent data fetches network-only.
-		// The worker's per-request handshake also blocks un-updated tabs.
+		// Keep the guard and the worker informed as soon as the database the user
+		// is working in is known (or changes).
+		watch(
+			() => [currentDatabase.value?.slug, currentDatabase.value?.phi],
+			() => syncPhi(),
+			{ immediate: true },
+		);
+		// A PHI database keeps every subsequent data fetch network-only; the
+		// worker's per-request handshake also blocks un-updated tabs. Non-PHI
+		// databases fall through to the runtime caches instead.
 		worker?.addEventListener("controllerchange", () => {
-			void purgeBrowserCopies();
+			syncPhi();
+			if (isPhiDatabase()) void purgeBrowserCopies();
 		});
 		window.addEventListener("focus", () => {
-			void purgeBrowserCopies();
+			if (isPhiDatabase()) void purgeBrowserCopies();
 		});
 		const channel =
 			typeof BroadcastChannel === "undefined"
@@ -129,6 +164,8 @@ export default defineNuxtPlugin({
 				}
 			}
 			clearNuxtData();
+			// Drop in-memory media handles to the previous session before reload.
+			releaseAllObjectUrls();
 			await purgeBrowserCopies().catch(() => {});
 			// A reload drops component state and in-flight requests as well as Nuxt data.
 			window.location.reload();

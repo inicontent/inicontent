@@ -1,12 +1,66 @@
-/** A3: database metadata is network-only, including reads of legacy copies. */
-export function saveDatabaseConfigLocally(
-	_slug: string,
-	_database?: Database,
-) {}
-export function loadDatabaseConfigLocally(_slug: string): Database | undefined {
-	return undefined;
+import { isPhiDatabase } from "./phiGuard.ts";
+
+/**
+ * Local persistence of the database configuration (metadata + table schemas).
+ *
+ * The middleware normally loads this from the API (served by the service
+ * worker's config cache when offline). Persisting a copy in localStorage adds
+ * a second, independent fallback: even when the SW cache is evicted or a
+ * partial cache state is served, the app can still boot with the real database
+ * config purely from local storage — i.e. the app stays accessible offline.
+ *
+ * PHI databases are excluded: nothing about them is written to the browser.
+ * The `-v2` key suffix lets the boot-time containment purge drop the legacy
+ * copies without touching the live ones.
+ */
+
+const STORAGE_KEY_PREFIX = "inicontent:db-config-v2:";
+const LEGACY_STORAGE_KEY_PREFIX = "inicontent:db-config:";
+/** Guard against pathological sizes (schemas can be large, but not this large). */
+const MAX_STORAGE_BYTES = 2_500_000;
+
+export function saveDatabaseConfigLocally(slug: string, database?: Database) {
+	if (
+		isPhiDatabase() ||
+		typeof localStorage === "undefined" ||
+		!database ||
+		!slug
+	)
+		return;
+	try {
+		const serialized = JSON.stringify(database);
+		if (serialized.length > MAX_STORAGE_BYTES) {
+			console.warn(
+				"[LocalDatabaseConfig] config too large to persist locally:",
+				serialized.length,
+			);
+			return;
+		}
+		localStorage.setItem(STORAGE_KEY_PREFIX + slug, serialized);
+	} catch (error) {
+		console.warn("[LocalDatabaseConfig] Failed to persist config:", error);
+	}
 }
+
+export function loadDatabaseConfigLocally(slug: string): Database | undefined {
+	if (isPhiDatabase() || typeof localStorage === "undefined" || !slug)
+		return undefined;
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY_PREFIX + slug);
+		if (!raw) return undefined;
+		return JSON.parse(raw) as Database;
+	} catch (error) {
+		console.warn("[LocalDatabaseConfig] Failed to read config:", error);
+		return undefined;
+	}
+}
+
 export function clearDatabaseConfigLocally(slug: string) {
-	if (typeof localStorage !== "undefined")
-		localStorage.removeItem(`inicontent:db-config:${slug}`);
+	if (typeof localStorage === "undefined" || !slug) return;
+	try {
+		localStorage.removeItem(STORAGE_KEY_PREFIX + slug);
+		localStorage.removeItem(LEGACY_STORAGE_KEY_PREFIX + slug);
+	} catch {
+		// ignore
+	}
 }

@@ -8,7 +8,8 @@
 
 <script lang="ts" setup>
 import { useOsTheme } from "naive-ui";
-import { loadTranslations } from "./composables";
+import { debounce, loadTranslations } from "./composables";
+import { saveDatabaseConfigLocally } from "./composables/useLocalDatabaseConfig";
 
 const database = useState<Database>("database");
 const Language = useScopedCookie<LanguagesType>(
@@ -57,6 +58,23 @@ watch(osThemeRef, (newOsTheme) => {
 		Theme.value = newOsTheme;
 	}
 });
+
+// Persist the database config locally so the app stays reachable offline from
+// local storage even when the service worker cache is missing. The middleware
+// saves the initial fetch; this debounced deep watcher also catches config
+// updates made later (e.g. schema changes from the Settings page). PHI
+// databases are excluded inside `saveDatabaseConfigLocally`.
+const persistDatabaseConfigDebounced = debounce(() => {
+	const db = database.value;
+	if (db?.slug) saveDatabaseConfigLocally(db.slug, db);
+}, 2000);
+watch(
+	() => database.value,
+	() => {
+		persistDatabaseConfigDebounced();
+	},
+	{ deep: true },
+);
 
 // Initialize the offline queue tracker on boot so pending counts start
 // loading even before the Header (which hosts the SyncStatus badge) mounts.

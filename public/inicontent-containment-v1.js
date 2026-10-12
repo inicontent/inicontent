@@ -1,23 +1,28 @@
-/* Imported before Workbox routes. Never cache API or user-supplied assets. */
+/* Imported before Workbox routes. Runtime-caches API/asset responses only for
+ * clients whose active database is not flagged PHI; PHI (and unknown) clients
+ * stay network-only and must answer the handshake. */
 (() => {
 	const version = "browser-storage-v1";
-	const sensitiveCache = (name) =>
-		/^inicontent-(api|config|static|icon)-cache$/.test(name) ||
-		name.startsWith("workbox-precache-");
-	self.addEventListener("activate", (event) => {
-		event.waitUntil(
-			caches
-				.keys()
-				.then((names) =>
-					Promise.all(
-						names.filter(sensitiveCache).map((name) => caches.delete(name)),
-					),
-				),
-		);
-	});
+	// clientId -> boolean (true = PHI). An absent entry is unknown and treated
+	// as PHI, so nothing is cached until a client positively reports non-PHI.
+	const phiByClient = new Map();
 	self.addEventListener("message", (event) => {
-		if (event.data?.type === "CONTAINMENT_VERSION")
+		const data = event.data;
+		if (data?.type === "CONTAINMENT_VERSION") {
 			event.ports[0]?.postMessage(version);
+		} else if (data?.type === "CONTAINMENT_PHI" && event.source?.id) {
+			phiByClient.set(event.source.id, data.phi === true);
+		}
+	});
+	self.addEventListener("activate", (event) => {
+		// A restarted worker has no per-client state: ask every client to report
+		// its active database before caching resumes.
+		event.waitUntil(
+			self.clients.matchAll().then((clients) => {
+				for (const client of clients)
+					client.postMessage({ type: "CONTAINMENT_REPORT_PHI" });
+			}),
+		);
 	});
 	async function currentClient(clientId) {
 		const client = clientId && (await self.clients.get(clientId));
@@ -50,6 +55,9 @@
 					"/pwa-512x512.png",
 				].includes(url.pathname));
 		if (shell) return;
+		// Known non-PHI client: fall through to Workbox's runtime routes so the
+		// response can be served offline later.
+		if (phiByClient.get(event.clientId) === false) return;
 		event.respondWith(
 			(async () => {
 				// A stale tab cannot continue reading responses or replaying its old queue

@@ -92,6 +92,13 @@ declare global {
 		prefix?: string;
 		suffix?: string;
 		optimize?: boolean;
+		/**
+		 * Boolean fields normalize an unset value to `false` on mount. Set
+		 * `preserveUnset` when `undefined` is a meaningful third state that must
+		 * survive an unrelated form save (e.g. the PHI classification, where
+		 * "unclassified" must not silently become "non-PHI").
+		 */
+		preserveUnset?: boolean;
 		where?: string | Record<string, any>;
 		description?: string;
 		render?: any;
@@ -220,6 +227,12 @@ declare global {
 			from_email?: string;
 			from_name?: string;
 		};
+		/**
+		 * PHI capability flag — marks the database as holding protected health
+		 * information. Offline persistence, queued edits and browser caching stay
+		 * disabled for PHI databases (SOC 2 + HIPAA remediation plan, phase C1).
+		 */
+		phi?: boolean;
 	};
 	type DatabaseExportStatus = {
 		id: string;

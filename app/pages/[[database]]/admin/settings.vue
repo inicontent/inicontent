@@ -44,6 +44,12 @@
 						<FieldS v-model="databaseCopy" :schema="translationSchema" />
 					</NForm>
 				</NCard>
+				<NCard v-show="$device.isMobile || activeSection === 'compliance'" id="compliance"
+					:title="t('complianceSettings')" hoverable>
+					<NForm ref="complianceRef" :model="databaseCopy">
+						<FieldS v-model="databaseCopy" :schema="complianceSchema" />
+					</NForm>
+				</NCard>
 				<NCard v-if="canExportDatabase" v-show="$device.isMobile || activeSection === 'database-export'"
 					id="database-export" :title="t('databaseExport')" hoverable>
 					<template #header-extra>
@@ -105,6 +111,7 @@
 					@update:value="changeSection">
 					<NTab name="general">{{ t('generalSettings') }}</NTab>
 					<NTab name="translation">{{ t('translationSettings') }}</NTab>
+					<NTab name="compliance">{{ t('complianceSettings') }}</NTab>
 					<NTab v-if="canExportDatabase" name="database-export">
 						{{ t('databaseExport') }}
 					</NTab>
@@ -152,7 +159,13 @@ const isRTL = computed(() => Language.value === "ar");
 const generalRef = ref<FormInst>();
 const translationRef = ref<FormInst>();
 const emailRef = ref<FormInst>();
-type SettingsSection = "general" | "translation" | "database-export" | "email";
+const complianceRef = ref<FormInst>();
+type SettingsSection =
+	| "general"
+	| "translation"
+	| "compliance"
+	| "database-export"
+	| "email";
 const activeSection = ref<SettingsSection>("general");
 const databaseCopy = ref<Database>(JSON.parse(JSON.stringify(database.value)));
 databaseCopy.value.email ??= {};
@@ -180,7 +193,13 @@ const exportIsActive = computed(() =>
 function sectionFromHash(hash: string): SettingsSection | undefined {
 	const section = hash.replace(/^#/, "") as SettingsSection;
 	if (
-		["general", "translation", "database-export", "email"].includes(section) &&
+		[
+			"general",
+			"translation",
+			"compliance",
+			"database-export",
+			"email",
+		].includes(section) &&
 		(section !== "database-export" || canExportDatabase.value)
 	)
 		return section;
@@ -245,6 +264,22 @@ const databaseSchema: Schema = [
 		inputProps: (index: number) =>
 			[0, 1, 2].includes(index) ? { disabled: true } : {},
 		required: false,
+	},
+];
+
+// PHI capability flag (SOC 2 + HIPAA remediation plan, phase C1). Databases
+// that hold PHI keep offline persistence, queued edits and browser caching
+// disabled; only a database an administrator has explicitly classified as
+// non-PHI (`phi: false`) keeps the full offline-first behaviour. `preserveUnset`
+// keeps an unclassified database unclassified across an unrelated save: the
+// switch starts off without writing `false` until an administrator changes it.
+const complianceSchema: Schema = [
+	{
+		key: "phi",
+		type: "boolean",
+		label: t("phi"),
+		description: "phiDescription",
+		preserveUnset: true,
 	},
 ];
 
@@ -419,6 +454,7 @@ async function updateDatabase(showSuccess = true) {
 		await Promise.all([
 			generalRef.value?.validate(),
 			translationRef.value?.validate(),
+			complianceRef.value?.validate(),
 			emailRef.value?.validate(),
 		]);
 	} catch {

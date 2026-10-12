@@ -9,18 +9,25 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormItemRule } from "naive-ui"
+import type { FormItemRule } from "naive-ui";
 
-const { field } = defineProps<{ field: Field }>()
+const { field } = defineProps<{ field: Field }>();
 
-const modelValue = defineModel<boolean>()
-if (modelValue.value === null || modelValue.value === undefined) modelValue.value = false;
+const modelValue = defineModel<boolean>();
+// Boolean fields normally coerce an unset value to `false`. Fields that carry a
+// meaningful "unset" state (e.g. the PHI classification) set `preserveUnset` so
+// an unrelated form save cannot silently turn unclassified into `false`.
+const normalized = normalizeBooleanField(
+	modelValue.value,
+	field.preserveUnset === true,
+);
+if (normalized !== modelValue.value) modelValue.value = normalized;
 
 const rule: FormItemRule = {
-    required: field.required,
-    validator: async () => {
-        await nextTick()
-        return fieldValidator(field, modelValue.value)
-    },
-}
+	required: field.required,
+	validator: async () => {
+		await nextTick();
+		return fieldValidator(field, modelValue.value);
+	},
+};
 </script>

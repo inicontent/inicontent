@@ -204,10 +204,86 @@ export default defineNuxtConfig({
 			// manifest manually (see appShellRevision above) — otherwise offline
 			// navigation has nothing to serve and the app can never load.
 			additionalManifestEntries: [{ url: "/", revision: appShellRevision }],
-			// A3: only the precached build shell is available offline.
+			// The precached shell is always available offline. These runtime
+			// caches additionally cover API reads and assets — but only for
+			// clients whose active database is not flagged PHI: the imported
+			// containment script skips these routes entirely for PHI (or
+			// not-yet-identified) clients and serves them network-only.
 			cacheId: "inicontent-shell-v1",
 			importScripts: ["/inicontent-containment-v1.js"],
-			runtimeCaching: [],
+			runtimeCaching: [
+				{
+					// Icons are served by the Nuxt app's own /_nuxt_icon endpoint
+					// (same origin). The clientBundle above covers the statically
+					// used + network-state icons; this route saves any other icon
+					// (icon-picker choices, per-item/table icons) the first time
+					// it's fetched while online, then serves it from cache
+					// offline. Revalidate in the background so collections stay
+					// fresh while online.
+					urlPattern: ({ url }) => url.pathname.includes("_nuxt_icon/"),
+					handler: "StaleWhileRevalidate",
+					options: {
+						cacheName: "inicontent-icon-cache-v2",
+						expiration: {
+							maxEntries: 400,
+							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+						},
+						cacheableResponse: { statuses: [0, 200] },
+					},
+				},
+				{
+					// Database metadata, dashboard definitions and other
+					// rarely-changing configuration. Serve from cache instantly,
+					// revalidate in the background.
+					urlPattern: ({ url, request }) =>
+						url.hostname.endsWith("inicontent.com") &&
+						request.method === "GET" &&
+						/\/databases\/|\/translations$|\/schema$/i.test(url.pathname),
+					handler: "StaleWhileRevalidate",
+					options: {
+						cacheName: "inicontent-config-cache-v2",
+						expiration: {
+							maxEntries: 200,
+							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+						},
+						cacheableResponse: { statuses: [0, 200] },
+					},
+				},
+				{
+					// All other API reads (table data, items, searches). Try the
+					// network first, fall back to cache when offline.
+					urlPattern: ({ url, request }) =>
+						url.hostname.endsWith("inicontent.com") && request.method === "GET",
+					handler: "NetworkFirst",
+					options: {
+						cacheName: "inicontent-api-cache-v2",
+						networkTimeoutSeconds: 3,
+						expiration: {
+							maxEntries: 500,
+							maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+						},
+						cacheableResponse: { statuses: [0, 200] },
+					},
+				},
+				{
+					// Runtime-cache static assets (in case a build asset isn't
+					// precached). Cache-first, so they load fast offline.
+					urlPattern: ({ request }) =>
+						request.destination === "style" ||
+						request.destination === "script" ||
+						request.destination === "font" ||
+						request.destination === "image",
+					handler: "CacheFirst",
+					options: {
+						cacheName: "inicontent-static-cache-v2",
+						expiration: {
+							maxEntries: 500,
+							maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+						},
+						cacheableResponse: { statuses: [0, 200] },
+					},
+				},
+			],
 		},
 	},
 	// "INIc" in binary. Gated on isSourceApp: every app that extends this repo

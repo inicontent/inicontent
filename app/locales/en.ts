@@ -1159,5 +1159,9 @@ export default {
 				"Design reusable email templates once and trigger them from your flows. Included with every subscription — only emails beyond your monthly allowance are metered.",
 			emailBuilderTitle: "Transactional & Flow Emails That Just Work",
 		},
+		complianceSettings: "Compliance",
+		phi: "PHI",
+		phiDescription:
+			"Marks this database as holding protected health information. When on — or left unset — offline saving, queued edits and browser caching stay disabled. Turn it off to explicitly classify the database as non-PHI and enable offline persistence.",
 	},
 } as const;

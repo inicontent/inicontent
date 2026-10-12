@@ -1458,5 +1458,9 @@ export default {
 				"Diseña plantillas de correo reutilizables una sola vez y actívalas desde tus flujos. Incluido con cada suscripción — solo se cobran los correos que superan tu asignación mensual.",
 			emailBuilderTitle: "Correos transaccionales y de flujo que funcionan",
 		},
+		complianceSettings: "Cumplimiento",
+		phi: "PHI",
+		phiDescription:
+			"Marca esta base de datos como contenedora de información de salud protegida. Si está activado — o sin definir — el guardado sin conexión, los cambios en cola y la caché del navegador permanecen desactivados. Desactívalo para clasificar explícitamente la base como no-PHI y habilitar la persistencia sin conexión.",
 	},
 } as const;

@@ -3,9 +3,18 @@ import { openDB } from "idb";
 import {
 	BROWSER_CONTAINMENT_VERSION,
 	migrateBrowserPersistence,
+	OFFLINE_QUEUE_DB,
+	OFFLINE_QUEUE_VERSION,
 	purgeBrowserCopies,
 	QUARANTINE_STORE,
+	THUMBNAIL_DB,
+	THUMBNAIL_VERSION,
 } from "../../app/composables/browserContainment";
+import { setPhiDatabase } from "../../app/composables/phiGuard";
+import {
+	loadDatabaseConfigLocally,
+	saveDatabaseConfigLocally,
+} from "../../app/composables/useLocalDatabaseConfig";
 import { getOfflineItem } from "../../app/composables/useOfflineItem";
 import {
 	clearAllMutations,
@@ -35,10 +44,16 @@ async function rejects(action: () => Promise<unknown>, message: string) {
 }
 async function run() {
 	if (sessionStorage.getItem("containment-reload") === "ready") {
-		const db = await openDB("inicontent-offline-queue", 3);
+		// After a reload the quarantined legacy work must still be there and the
+		// live stores must still be empty — quarantine is durable, not in-memory.
+		const db = await openDB(OFFLINE_QUEUE_DB, OFFLINE_QUEUE_VERSION);
 		assert(
 			(await db.count(QUARANTINE_STORE)) === 2,
 			"quarantine survives reload",
+		);
+		assert(
+			(await db.count("pending-mutations")) === 0,
+			"live queue stays empty after reload",
 		);
 		db.close();
 		assert(
@@ -77,7 +92,8 @@ async function run() {
 			"legacy",
 		);
 		expiration.close();
-		const thumbnails = await openDB("inicontent-thumbnails", 1, {
+		// Pre-containment schema: thumbnails v1, queue v2.
+		const thumbnails = await openDB(THUMBNAIL_DB, 1, {
 			upgrade(db) {
 				db.createObjectStore("thumbnails", { keyPath: "key" });
 			},
@@ -86,7 +102,7 @@ async function run() {
 			key: "old",
 			data: "synthetic-thumbnail",
 		});
-		const queue = await openDB("inicontent-offline-queue", 2, {
+		const queue = await openDB(OFFLINE_QUEUE_DB, 2, {
 			upgrade(db) {
 				db.createObjectStore("pending-mutations", { keyPath: "id" });
 				db.createObjectStore("resolved-ids");
@@ -119,7 +135,7 @@ async function run() {
 			"Workbox cached URL metadata purged",
 		);
 		cleanedExpiration.close();
-		const db = await openDB("inicontent-offline-queue", 3);
+		const db = await openDB(OFFLINE_QUEUE_DB, OFFLINE_QUEUE_VERSION);
 		assert(
 			(await db.count(QUARANTINE_STORE)) === 2,
 			"all unsynced work including late writer is preserved",
@@ -133,18 +149,28 @@ async function run() {
 				.pending__one === "123",
 			"ID relationships preserved",
 		);
+		// The live stores are recreated empty — legacy data is quarantined, not
+		// reused, but non-PHI offline persistence is available again.
 		assert(
-			!db.objectStoreNames.contains("pending-mutations"),
-			"legacy store inaccessible",
+			db.objectStoreNames.contains("pending-mutations") &&
+				(await db.count("pending-mutations")) === 0 &&
+				db.objectStoreNames.contains("resolved-ids"),
+			"live queue recreated empty",
 		);
 		db.close();
+		const thumb = await openDB(THUMBNAIL_DB, THUMBNAIL_VERSION);
+		assert(
+			(await thumb.count("thumbnails")) === 0,
+			"legacy thumbnails dropped, live store empty",
+		);
+		thumb.close();
 		assert(
 			localStorage.getItem("inicontent:db-config:synthetic") === null,
-			"metadata copy purged",
+			"legacy metadata copy purged",
 		);
 		assert(
-			localStorage.getItem("emailTemplates.customVariables") === null,
-			"custom variable copy purged",
+			localStorage.getItem("emailTemplates.customVariables") !== null,
+			"session-boundary copies are not touched by the boot purge",
 		);
 		assert(
 			localStorage.getItem("theme") === "dark",
@@ -152,54 +178,90 @@ async function run() {
 		);
 		assert(
 			(await caches.keys()).every(
-				(name) => !/^inicontent-(api|config|static)-cache$/.test(name),
+				(name) => !/^inicontent-(api|config|static|icon)-cache$/.test(name),
 			),
-			"sensitive caches purged",
+			"legacy sensitive caches purged",
 		);
 		assert(
 			await caches.has("inicontent-shell-v1-precache-test"),
 			"safe shell preserved",
 		);
 		await rejects(
-			() => openDB("inicontent-offline-queue", 2),
+			() => openDB(OFFLINE_QUEUE_DB, OFFLINE_QUEUE_VERSION - 1),
 			"old queue code must fail version check",
 		);
 		await rejects(
-			() => openDB("inicontent-thumbnails", 1),
+			() => openDB(THUMBNAIL_DB, THUMBNAIL_VERSION - 1),
 			"old thumbnail code must fail version check",
 		);
-		assert(
-			(await getAllMutations()).length === 0 &&
-				(await getMutationsByScope("synthetic")).length === 0,
-			"normal app cannot read another user's queued work",
-		);
-		await rejects(
-			() => clearAllMutations(),
-			"generic cleanup cannot delete unsynced work",
-		);
+
+		// PHI: nothing persists through any browser API.
+		setPhiDatabase(true);
 		await rejects(
 			() => enqueueMutation({} as never),
-			"new offline writes cannot persist",
+			"PHI offline writes cannot persist",
 		);
-		await cacheThumbnail("new", "synthetic-data");
+		await cacheThumbnail("phi", "synthetic-data");
 		assert(
-			(await getCachedThumbnail("old")) === null,
-			"legacy thumbnail never read",
+			(await getCachedThumbnail("phi")) === null,
+			"PHI thumbnails never read or written",
+		);
+		saveDatabaseConfigLocally("phi", { slug: "phi" } as never);
+		assert(
+			loadDatabaseConfigLocally("phi") === undefined,
+			"PHI metadata never persisted",
 		);
 		assert(
 			(await getOfflineItem("synthetic", "items", "one", "/api/synthetic")) ===
 				undefined,
-			"cached rows never read",
+			"PHI never resolves queued rows",
 		);
 		assert(
-			await migrateBrowserPersistence(() => {
-				throw new Error("unexpected block");
-			}),
-			"migration is idempotent and preserves queue",
+			(await getAllMutations()).length === 0 &&
+				(await getMutationsByScope("synthetic")).length === 0,
+			"quarantined work is never read by the normal app",
 		);
+
+		// Non-PHI: full offline persistence is back.
+		setPhiDatabase(false);
+		await enqueueMutation({
+			method: "PUT",
+			url: "https://api.inicontent.com/synthetic/items/one",
+			body: { id: "one", value: "local-draft" },
+			database: "synthetic",
+			table: "items",
+		} as never);
+		assert((await getAllMutations()).length === 1, "non-PHI write is queued");
+		assert(
+			(await getOfflineItem("synthetic", "items", "one", "/api/synthetic"))
+				?.value === "local-draft",
+			"non-PHI can resolve the queued row",
+		);
+		await cacheThumbnail("nonphi", "synthetic-data");
+		assert(
+			(await getCachedThumbnail("nonphi")) === "synthetic-data",
+			"non-PHI thumbnails persist",
+		);
+		saveDatabaseConfigLocally("nonphi", { slug: "nonphi" } as never);
+		assert(
+			loadDatabaseConfigLocally("nonphi")?.slug === "nonphi",
+			"non-PHI metadata persists",
+		);
+		await clearAllMutations();
+		assert(
+			(await getAllMutations()).length === 0,
+			"clear empties the live queue",
+		);
+		await migrateBrowserPersistence(() => {
+			throw new Error("unexpected block");
+		});
 		await purgeBrowserCopies();
+		assert(
+			localStorage.getItem("emailTemplates.customVariables") === null,
+			"session-boundary purge clears custom variable copies",
+		);
 		report(
-			"PASS: blocked connections, late writes, quarantine, stale versions, safe shell and idempotent cleanup",
+			"PASS: legacy quarantine, live-store recreation, PHI containment and non-PHI persistence",
 		);
 	}
 
@@ -213,30 +275,26 @@ async function run() {
 				{ once: true },
 			),
 		);
+	// An unidentified client is treated as PHI: it must not read or write
+	// through the worker without answering the handshake.
 	const stale = await fetch("/api/synthetic", { cache: "no-store" });
 	assert(
 		stale.status === 409,
-		"stale clients cannot fetch or replay through the new worker",
+		"unidentified clients cannot fetch through the worker",
 	);
 	navigator.serviceWorker.addEventListener("message", (event) => {
 		if (event.data?.type === "CONTAINMENT_IDENTIFY")
 			event.ports[0]?.postMessage(BROWSER_CONTAINMENT_VERSION);
 	});
 	const fresh = await fetch("/api/synthetic", { cache: "no-store" });
-	assert(fresh.status === 200, "updated client can use network");
+	assert(fresh.status === 200, "identified client can use network");
 	const freshWrite = await fetch("/api/synthetic", {
 		method: "POST",
 		body: "synthetic-only",
 	});
-	assert(freshWrite.status === 200, "updated client can write online");
-	assert(
-		(await caches.keys()).every(
-			(name) => !/^inicontent-(api|config|static)-cache$/.test(name),
-		),
-		"network requests do not recreate sensitive caches",
-	);
+	assert(freshWrite.status === 200, "identified client can write online");
 	report(
-		"PASS: worker denies stale clients, permits updated clients, and caches no API responses",
+		"PASS: worker denies unidentified clients and permits identified ones",
 	);
 	if (sessionStorage.getItem("containment-reload") !== "ready") {
 		sessionStorage.setItem("containment-reload", "ready");

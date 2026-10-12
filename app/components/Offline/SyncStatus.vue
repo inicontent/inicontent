@@ -66,7 +66,11 @@
 				depth="3"
 				style="font-size: 12px; line-height: 1.4; white-space: normal"
 			>
-				{{ t("offlinePersistenceDisabled") }}
+				{{
+					offlineDisabled
+						? t("offlinePersistenceDisabled")
+						: t("offlineTooltip")
+				}}
 			</NText>
 
 			<!-- Pending changes + sync now -->
@@ -99,9 +103,13 @@
 <script setup lang="ts">
 import { Icon, NBadge, NButton, NFlex, NIcon, NText } from "#components";
 import { shouldShowSyncStatus } from "~/composables/offlineStatus";
+import { resolvePhiDatabase } from "~/composables/phiGuard";
 import { useOfflineSync } from "~/composables/useOfflineSync";
 
 const database = useState<Database>("database");
+// Conservative (C1): persistence is disabled unless the database is explicitly
+// classified non-PHI, so an unclassified database also reads "offline disabled".
+const offlineDisabled = computed(() => resolvePhiDatabase(database.value));
 const Language = useScopedCookie<LanguagesType>(
 	"language",
 	database.value?.slug,
