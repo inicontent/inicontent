@@ -7,9 +7,18 @@
 // already signed in. It runs before the route-level `database` / `user`
 // middlewares and is a no-op when no handoff params are present.
 //
+// Each code is bound to a PKCE verifier the source delivered over a
+// shared-domain cookie; the verifier is submitted with the code and the cookie
+// is cleared. A browser-authenticated Origin is also required server-side.
+//
 // Long-lived SIDs never appear in URLs. The only cross-app path is a one-time
 // handoff code, and `?{db}_sid=` is neither emitted nor accepted: old sessions
 // were revoked, so a stale value is treated as no session at all.
+import {
+	clearHandoffVerifier,
+	readHandoffVerifier,
+} from "~/composables/handoffVerifier";
+
 export default defineNuxtRouteMiddleware(async (to) => {
 	const config = useRuntimeConfig();
 	const databaseSlug = String(
@@ -22,14 +31,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const consume = async (key: string, slug: string) => {
 		const code = to.query[key];
 		if (typeof code !== "string" || !code.trim()) return;
+		const verifier = readHandoffVerifier(code);
 		try {
-			// Bind redemption to the app's own origin so a code minted for a
-			// different deployment is refused (and burned) server-side.
-			const destination =
-				typeof window !== "undefined" ? window.location.origin : undefined;
+			// The browser's Origin header is the authoritative destination
+			// binding; the verifier proves this client started the exchange.
 			const response = await $fetch<{ sessionID?: string }>(
 				`${useApiBase()}${slug === "inicontent" ? "inicontent" : slug}/auth/handoff/redeem`,
-				{ method: "POST", body: { code, destination } },
+				{ method: "POST", body: { code, verifier } },
 			);
 			const sid = response?.sessionID;
 			if (sid) {
@@ -42,6 +50,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			}
 		} catch {
 			handoffError = true;
+		} finally {
+			// Single-use: drop the verifier whether redemption succeeded or not.
+			clearHandoffVerifier(code);
 		}
 	};
 

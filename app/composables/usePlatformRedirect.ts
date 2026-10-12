@@ -1,3 +1,8 @@
+import {
+	createHandoffPkce,
+	handoffVerifierDeliverable,
+	writeHandoffVerifier,
+} from "./handoffVerifier.ts";
 import { resolvePlatformFeatureHost } from "./platformFeatureHost.ts";
 
 export type PlatformFeature = "billing";
@@ -10,17 +15,27 @@ async function mintHandoffCode(
 	apiBase: string,
 	slug: string,
 	sid: string | null | undefined,
-	destination?: string,
+	destination: string,
 ): Promise<string | null> {
 	if (!sid) return null;
+	// A source on a tenant custom domain cannot deliver the verifier to the
+	// platform host, so no code is minted: better a signed-out landing than a
+	// code that can never be redeemed. The user signs in at the platform host.
+	if (!handoffVerifierDeliverable()) return null;
 	const target = `${apiBase}${encodeURIComponent(slug)}/auth/handoff`;
 	try {
+		// Only the challenge reaches the API; the verifier stays in the browser
+		// and is handed to the destination through a shared-domain cookie.
+		const { verifier, challenge } = await createHandoffPkce();
 		const response = await $fetch<{ code?: string }>(target, {
 			method: "POST",
-			body: destination ? { destination } : {},
+			body: { destination, challenge },
 			headers: { Authorization: `Bearer ${sid}` },
 		});
-		return response?.code ?? null;
+		const code = response?.code;
+		if (!code) return null;
+		writeHandoffVerifier(code, verifier);
+		return code;
 	} catch {
 		return null;
 	}
@@ -35,10 +50,11 @@ async function mintHandoffCode(
  *
  * Sessions cross origins as short-lived, single-use handoff codes
  * (`?{db}_handoff=...`) minted against the API — the target exhales them
- * through the sid-ingest middleware. The long-lived SID never appears in
- * the URL, browser history, or Referer headers. If minting fails the URL
- * is returned without credentials: the user lands signed-out, never
- * exposed.
+ * through the sid-ingest middleware. Each code is bound to its destination
+ * origin and to a PKCE-style verifier carried over a shared-domain cookie; the
+ * long-lived SID and the verifier never appear in the URL, browser history, or
+ * Referer headers. If minting fails the URL is returned without credentials:
+ * the user lands signed-out, never exposed.
  */
 export function usePlatformRedirect() {
 	const config = useRuntimeConfig();
