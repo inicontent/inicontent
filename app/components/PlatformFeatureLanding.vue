@@ -48,9 +48,9 @@ const featureIcons: Record<PlatformFeature, string> = {
 	billing: "tabler:credit-card",
 };
 const featureIcon = computed(() => featureIcons[props.feature]);
-// Handoff codes are minted against the API, so the href is resolved once the
-// component mounts; each code is single-use, so the link is refreshed
-// before being reused.
+// The href carries only a handoff *init* marker (the return URL), never a
+// secret or a code: the destination generates the PKCE verifier and bounces
+// back to the source to mint. It is resolved once on mount.
 const redirectUrl = ref<string>(platformHost.value);
 onMounted(async () => {
 	redirectUrl.value = await platformUrl(props.feature);

@@ -6,145 +6,211 @@ async function sha256Base64Url(value: string): Promise<string> {
 	return createHash("sha256").update(value, "utf8").digest("base64url");
 }
 
-/** Minimal cookie jar so the verifier write can be observed outside a browser. */
-let cookieJar = "";
-const fakeDocument = {
-	get cookie() {
-		return cookieJar;
-	},
-	set cookie(value: string) {
-		cookieJar = cookieJar ? `${cookieJar}; ${value}` : value;
-	},
-};
-
 const globals = globalThis as Record<string, unknown>;
-globals.document = fakeDocument;
-globals.location = {
-	hostname: "alpha.inicontent.com",
+
+/** A minimal Map-backed `Storage` so origin-local persistence is observable. */
+function fakeStorage(): Storage {
+	const map = new Map<string, string>();
+	return {
+		get length() {
+			return map.size;
+		},
+		clear: () => map.clear(),
+		getItem: (key: string) => map.get(key) ?? null,
+		key: (index: number) => [...map.keys()][index] ?? null,
+		removeItem: (key: string) => void map.delete(key),
+		setItem: (key: string, value: string) => void map.set(key, String(value)),
+	};
+}
+
+let sessionStore = fakeStorage();
+globals.sessionStorage = sessionStore;
+
+const location = {
+	origin: "https://inicontent.com",
 	protocol: "https:",
+	hostname: "inicontent.com",
+	href: "https://inicontent.com/alpha/admin/settings",
 };
+globals.location = location;
+
 globals.useRuntimeConfig = () => ({
 	public: { database: "alpha", apiBase: "https://api.test/" },
 });
 globals.useState = (_key: string, init?: () => unknown) => ({
 	value: init ? init() : undefined,
 });
-globals.useCookie = (name: string) => ({
-	value: name === "alpha_sid" ? "alpha-sid" : "platform-sid",
-});
-globals.useApiBase = () => "https://api.test/";
 globals.computed = (fn: () => unknown) => ({
 	get value() {
 		return fn();
 	},
 });
-globals.useScopedCookie = (
-	await import("../app/composables/databaseCookies.ts")
-).useScopedCookie;
 
-const { handoffVerifierCookieName, readHandoffVerifier } = await import(
-	"../app/composables/handoffVerifier.ts"
-);
+const handoff = await import("../app/composables/handoffVerifier.ts");
 const { usePlatformRedirect } = await import(
 	"../app/composables/usePlatformRedirect.ts"
 );
 
-/** Read `<name>=<value>` out of the fake `document.cookie` jar. */
-function jarValue(name: string): string | null {
-	const match = cookieJar
-		.split(/;\s*/)
-		.find((part) => part.startsWith(`${name}=`));
-	return match ? match.slice(name.length + 1) : null;
+function noVerifierSecret(value: string) {
+	assert.doesNotMatch(value, /_sid=/);
+	assert.doesNotMatch(value, /inicontent_handoff=/);
+	assert.doesNotMatch(value, /_handoff=/);
 }
 
-test("platformUrl mints one-time codes instead of embedding SIDs", async () => {
-	cookieJar = "";
-	const calls: Array<{
-		url: string;
-		headers: Record<string, string>;
-		body: Record<string, unknown>;
-	}> = [];
-	globals.$fetch = async (url: string, options: Record<string, unknown>) => {
-		calls.push({
-			url,
-			headers: (options.headers ?? {}) as Record<string, string>,
-			body: (options.body ?? {}) as Record<string, unknown>,
-		});
-		return { code: `code-for-${url}` };
-	};
+test("platformUrl starts a destination-initiated handoff from a platform origin", async () => {
+	location.origin = "https://inicontent.com";
+	location.hostname = "inicontent.com";
+	location.href = "https://inicontent.com/alpha/admin/settings";
 
 	const { platformUrl } = usePlatformRedirect();
-	const url = await platformUrl("billing");
+	const value = await platformUrl("billing");
+	const url = new URL(value);
 
-	assert.match(url, /^https:\/\/alpha\.inicontent\.com\/admin\/billing\?/);
-	assert.match(url, /alpha_handoff=/);
-	assert.match(url, /inicontent_handoff=/);
-	assert.doesNotMatch(url, /alpha-sid/);
-	assert.doesNotMatch(url, /platform-sid/);
-	assert.equal(calls.length, 2);
-
-	// The two mints run in parallel, so don't depend on completion order.
-	const byUrl = new Map(calls.map((call) => [call.url, call]));
-	const tenantCall = byUrl.get("https://api.test/alpha/auth/handoff");
-	const platformCall = byUrl.get("https://api.test/inicontent/auth/handoff");
-	assert.ok(tenantCall);
-	assert.ok(platformCall);
-	assert.equal(tenantCall.headers.Authorization, "Bearer alpha-sid");
-	assert.equal(platformCall.headers.Authorization, "Bearer platform-sid");
-	// Both codes are bound to the exact origin they will be redeemed on.
-	assert.equal(tenantCall.body.destination, "https://alpha.inicontent.com");
-	assert.equal(platformCall.body.destination, "https://alpha.inicontent.com");
-
-	// Only the PKCE challenge leaves the browser. The verifier is written to a
-	// shared-domain cookie keyed by the code, never sent to the API here.
-	for (const call of calls) {
-		const challenge = call.body.challenge as string;
-		assert.equal(call.body.verifier, undefined);
-		assert.match(challenge, /^[A-Za-z0-9_-]{43}$/);
-
-		const code = `code-for-${call.url}`;
-		const verifier = jarValue(handoffVerifierCookieName(code));
-		assert.ok(verifier, "a verifier must be delivered for every code");
-		assert.equal(await sha256Base64Url(verifier as string), challenge);
-		assert.equal(readHandoffVerifier(code), verifier);
-	}
-	// The two handoffs in one redirect must not share a verifier.
-	assert.notEqual(
-		readHandoffVerifier("code-for-https://api.test/alpha/auth/handoff"),
-		readHandoffVerifier("code-for-https://api.test/inicontent/auth/handoff"),
+	assert.equal(url.origin, "https://alpha.inicontent.com");
+	assert.equal(url.pathname, "/admin/billing");
+	// Only the source's return URL travels out; no secret and no code yet.
+	assert.equal(
+		url.searchParams.get(handoff.HANDOFF_INIT_PARAM),
+		"https://inicontent.com/alpha/admin/settings",
 	);
+	noVerifierSecret(value);
 });
 
-test("platformUrl degrades to a signed-out URL when minting fails", async () => {
-	cookieJar = "";
-	globals.$fetch = async () => {
-		throw new Error("network down");
-	};
+test("platformUrl stays on the bare destination when it is the same origin", async () => {
+	location.origin = "https://alpha.inicontent.com";
+	location.hostname = "alpha.inicontent.com";
+	location.href = "https://alpha.inicontent.com/alpha/admin/settings";
+
 	const { platformUrl } = usePlatformRedirect();
 	const url = await platformUrl("billing");
 	assert.equal(url, "https://alpha.inicontent.com/admin/billing");
 });
 
-test("platformUrl fails closed when the source cannot share the verifier", async () => {
-	cookieJar = "";
-	const loc = globals.location as { hostname: string; protocol: string };
-	const originalHostname = loc.hostname;
-	loc.hostname = "shop.example.com";
-	let fetchCalls = 0;
-	globals.$fetch = async () => {
-		fetchCalls += 1;
-		return { code: "should-not-be-minted" };
-	};
+test("platformUrl does not attempt a handoff from a custom-domain source", async () => {
+	location.origin = "https://shop.example.com";
+	location.hostname = "shop.example.com";
+	location.href = "https://shop.example.com/admin/settings";
 
 	try {
 		const { platformUrl } = usePlatformRedirect();
 		const url = await platformUrl("billing");
-		// No code is minted and no verifier is written: the user lands on the
-		// platform host signed out rather than with an unredeemable code.
+		// No handshake is started: the destination must never redirect back to a
+		// non-platform origin, so the user signs in at the platform host.
 		assert.equal(url, "https://alpha.inicontent.com/admin/billing");
-		assert.equal(fetchCalls, 0);
-		assert.equal(cookieJar, "");
 	} finally {
-		loc.hostname = originalHostname;
+		location.origin = "https://inicontent.com";
+		location.hostname = "inicontent.com";
+		location.href = "https://inicontent.com/alpha/admin/settings";
 	}
+});
+
+test("isPlatformHandoffOrigin accepts platform hosts and rejects everything else", () => {
+	for (const origin of [
+		"https://inicontent.com",
+		"https://www.inicontent.com",
+		"https://alpha.inicontent.com",
+		"https://app.inicontent.com",
+		"https://xn--bcher-kva.inicontent.com",
+	]) {
+		assert.equal(handoff.isPlatformHandoffOrigin(origin), true, origin);
+	}
+	for (const origin of [
+		"",
+		"https://shop.example.com",
+		"https://inicontent.com.evil.test",
+		"https://evilinicontent.com",
+		"https://inicontent.com:8443",
+		"http://inicontent.com",
+		"https://inicontent.com/alpha",
+		"https://-bad.inicontent.com",
+		"https://a_b.inicontent.com",
+	]) {
+		assert.equal(handoff.isPlatformHandoffOrigin(origin), false, origin);
+	}
+});
+
+test("createHandoffPkce derives the challenge from the verifier", async () => {
+	const { verifier, challenge } = await handoff.createHandoffPkce();
+	assert.match(verifier, /^[A-Za-z0-9_-]{43}$/);
+	assert.equal(await sha256Base64Url(verifier), challenge);
+	assert.equal(handoff.isHandoffChallenge(challenge), true);
+	assert.equal(handoff.isHandoffChallenge("short"), false);
+});
+
+test("a verifier is stored, read back and cleared by state", () => {
+	sessionStore = fakeStorage();
+	globals.sessionStorage = sessionStore;
+	const record = {
+		verifier: "v".repeat(43),
+		destination: "https://alpha.inicontent.com",
+		to: "https://alpha.inicontent.com/admin/billing",
+	};
+	handoff.storeHandoffVerifier("state-1", record);
+	assert.deepEqual(
+		handoff.readHandoffVerifier("state-1")?.verifier,
+		record.verifier,
+	);
+	handoff.clearHandoffVerifier("state-1");
+	assert.equal(handoff.readHandoffVerifier("state-1"), null);
+});
+
+test("a verifier past its TTL is treated as absent and swept", () => {
+	sessionStore = fakeStorage();
+	globals.sessionStorage = sessionStore;
+	handoff.storeHandoffVerifier("state-2", {
+		verifier: "v".repeat(43),
+		destination: "https://alpha.inicontent.com",
+		to: "https://alpha.inicontent.com/admin/billing",
+	});
+
+	const now = Date.now;
+	try {
+		Date.now = () => now() + handoff.HANDOFF_VERIFIER_TTL_MS + 1;
+		assert.equal(handoff.readHandoffVerifier("state-2"), null);
+	} finally {
+		Date.now = now;
+	}
+	// Swept on read, so a replay cannot find it either.
+	assert.equal(
+		sessionStore.getItem(handoff.handoffVerifierStorageKey("state-2")),
+		null,
+	);
+});
+
+test("stripHandoffParams removes the flow and code keys only", () => {
+	const query = {
+		inicontent_handoff_init: "x",
+		inicontent_handoff_challenge: "y",
+		inicontent_handoff_state: "z",
+		inicontent_handoff_to: "t",
+		alpha_handoff: "c1",
+		inicontent_handoff: "c2",
+		keep: "1",
+	};
+	assert.deepEqual(handoff.stripHandoffParams(query, "alpha"), { keep: "1" });
+	// On the platform database `alpha_handoff` is not a handoff key, so it stays.
+	assert.deepEqual(handoff.stripHandoffParams(query, "inicontent"), {
+		alpha_handoff: "c1",
+		keep: "1",
+	});
+});
+
+test("handoffCodeParams names one code per database plus the platform code", () => {
+	assert.deepEqual(handoff.handoffCodeParams("alpha"), [
+		"alpha_handoff",
+		"inicontent_handoff",
+	]);
+	assert.deepEqual(handoff.handoffCodeParams("inicontent"), [
+		"inicontent_handoff",
+	]);
+});
+
+test("handoffSourceUrl drops the fragment and any handoff parameters", () => {
+	location.origin = "https://inicontent.com";
+	location.href =
+		"https://inicontent.com/alpha/admin/settings?inicontent_handoff_state=old&keep=1#draft";
+	assert.equal(
+		handoff.handoffSourceUrl(),
+		"https://inicontent.com/alpha/admin/settings?keep=1",
+	);
 });
