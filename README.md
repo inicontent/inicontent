@@ -1,5 +1,11 @@
 # Inicontent CMS
 
+> Manage your data, compose pages and emails, and make the CMS your own with a reusable Nuxt layer.
+
+![Inicontent feature illustration: organize data, create pages and emails, and extend with Nuxt](./.github/assets/overview.svg)
+
+**[Get started](#usage) · [Features](#features) · [Ecosystem](#ecosystem) · [Contribute](#contributing)**
+
 [![npmjs](https://img.shields.io/npm/dm/inicontent.svg?style=flat)](https://www.npmjs.org/package/inicontent) [![License](https://img.shields.io/github/license/inicontent/inicontent.svg?style=flat&colorA=18181B&colorB=28CF8D)](./LICENSE) [![Activity](https://img.shields.io/github/commit-activity/m/inicontent/inicontent)](https://github.com/inicontent/inicontent/pulse) [![GitHub stars](https://img.shields.io/github/stars/inicontent/inicontent?style=social)](https://github.com/inicontent/inicontent)
 
 > **License:** Inicontent CMS is open source under the [Apache License 2.0](./LICENSE). This repository contains the client layer only — the Inicontent backend API (`inicontent/api`) is proprietary.
@@ -28,6 +34,7 @@ Inicontent CMS is a content management system built using [Nuxt](https://github.
 ## Features
 
 - **Multi-database admin** - manage one or many databases from a single `/admin` interface.
+- **Page and email builder** with reusable blocks and custom Liquid templates.
 - **Rich text editing** via [Tiptap](https://github.com/ueberdosis/tiptap).
 - **Sleek UI** built with [Naive UI](https://github.com/tusen-ai/naive-ui) and [Tabler Icons](https://github.com/tabler/tabler-icons).
 - **PWA-ready** out of the box.
@@ -50,13 +57,10 @@ contract.
 
 ## Ecosystem
 
+![Architecture graph: your Nuxt app extends the open source CMS client; the CMS connects to the proprietary Inicontent API](./.github/assets/ecosystem.svg)
+
 - **[`inicontent/starter`](https://github.com/inicontent/starter)** — the minimal layer app to
   build on: a starting point with routing and the project wiring already done.
-- **[`@inicontent/mcp`](https://github.com/inicontent/mcp)** — the MCP server that connects code
-  agents (ChatGPT, Claude, Cursor, OpenCode, …) to a database: REST tools, context resources
-  (the query language, table schemas and flows, authentication, custom-route registration), and
-  starter scaffolding. This replaced the in-app AI assistant and chatbot, and is where the
-  AI-agent context now lives.
 - **`inicontent/api (private)`** — the server behind
   `https://api.inicontent.com/`: REST CRUD per table, authentication, assets.
 
@@ -70,12 +74,6 @@ Every database gets a public REST API at `https://api.inicontent.com/{databaseSl
   Inison-stringified `options` query param and filters in `where`.
 - Structure: `GET/POST/PUT/DELETE inicontent/databases/{db}[/{table}]` for metadata, schemas,
   flows (`onRequest`/`onResponse`), and table CRUD.
-- AI access goes through the `@inicontent/mcp` server (there are no in-app `/ai` endpoints): its
-  `inicontent_*` tools wrap the endpoints above and scaffold `inicontent/starter` for custom code.
-
-For the full reference — query language, schema field types, flows, routing —
-connect a client to the [`@inicontent/mcp`](https://github.com/inicontent/mcp)
-server, which serves it as context resources.
 
 ## Usage
 
