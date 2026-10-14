@@ -106,7 +106,7 @@ export const useSubscription = () => {
 			if (assetGb) query.storageAsset = assetGb;
 
 			const response = await $fetch<apiResponse<PricingData>>(
-				`${useApiBase()}inicontent/billing/pricing`,
+				`${useMainApiBase()}inicontent/billing/pricing`,
 				{
 					credentials: "include",
 					params: {
@@ -132,7 +132,7 @@ export const useSubscription = () => {
 
 		try {
 			const response = await $fetch<apiResponse<SubscriptionData>>(
-				`${useApiBase()}inicontent/billing/subscription`,
+				`${useMainApiBase()}inicontent/billing/subscription`,
 				{
 					credentials: "include",
 					params: {
@@ -164,7 +164,7 @@ export const useSubscription = () => {
 
 		try {
 			const response = await $fetch<apiResponse<UsageData>>(
-				`${useApiBase()}inicontent/billing/usage`,
+				`${useMainApiBase()}inicontent/billing/usage`,
 				{
 					credentials: "include",
 					params: {
@@ -191,7 +191,7 @@ export const useSubscription = () => {
 		try {
 			const response = await $fetch<
 				apiResponse<{ url?: string; approval_url?: string }>
-			>(`${useApiBase()}inicontent/billing/checkout`, {
+			>(`${useMainApiBase()}inicontent/billing/checkout`, {
 				credentials: "include",
 				params: {
 					[`${database.value.slug}_sid`]: sessionID.value,
@@ -260,7 +260,7 @@ export const useSubscription = () => {
 
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/cancel`,
+				`${useMainApiBase()}inicontent/billing/cancel`,
 				{
 					credentials: "include",
 					params: {
@@ -297,7 +297,7 @@ export const useSubscription = () => {
 		try {
 			const response = await $fetch<
 				apiResponse<{ url?: string; approval_url?: string }>
-			>(`${useApiBase()}inicontent/billing/upgrade`, {
+			>(`${useMainApiBase()}inicontent/billing/upgrade`, {
 				credentials: "include",
 				params: {
 					[`${database.value.slug}_sid`]: sessionID.value,
@@ -333,7 +333,7 @@ export const useSubscription = () => {
 					| { transactions: unknown[]; total: number }[]
 					| { transactions: unknown[]; total: number }
 				>
-			>(`${useApiBase()}inicontent/billing/transactions`, {
+			>(`${useMainApiBase()}inicontent/billing/transactions`, {
 				credentials: "include",
 				params: {
 					[`${database.value.slug}_sid`]: sessionID.value,
@@ -362,7 +362,7 @@ export const useSubscription = () => {
 		try {
 			const response = await $fetch<
 				apiResponse<{ url?: string; approval_url?: string }>
-			>(`${useApiBase()}inicontent/billing/credit/topup`, {
+			>(`${useMainApiBase()}inicontent/billing/credit/topup`, {
 				credentials: "include",
 				params: { [`${database.value.slug}_sid`]: sessionID.value },
 				method: "POST",
@@ -388,7 +388,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/credit/request`,
+				`${useMainApiBase()}inicontent/billing/credit/request`,
 				{
 					credentials: "include",
 					params: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -413,7 +413,7 @@ export const useSubscription = () => {
 		try {
 			const response = await $fetch<
 				apiResponse<{ requests: any[]; total: number }>
-			>(`${useApiBase()}inicontent/billing/credit/requests`, {
+			>(`${useMainApiBase()}inicontent/billing/credit/requests`, {
 				credentials: "include",
 				params: { [`${database.value.slug}_sid`]: sessionID.value, status },
 			});
@@ -433,7 +433,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse<{ approval_url?: string }>>(
-				`${useApiBase()}inicontent/billing/autocharge/setup`,
+				`${useMainApiBase()}inicontent/billing/autocharge/setup`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -456,7 +456,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse<{ approval_url?: string }>>(
-				`${useApiBase()}inicontent/billing/autocharge/activate`,
+				`${useMainApiBase()}inicontent/billing/autocharge/activate`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -482,7 +482,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/autocharge/disable`,
+				`${useMainApiBase()}inicontent/billing/autocharge/disable`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -504,7 +504,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/credit/request/${id}/approve`,
+				`${useMainApiBase()}inicontent/billing/credit/request/${id}/approve`,
 				{
 					credentials: "include",
 					params: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -526,7 +526,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/credit/request/${id}/reject`,
+				`${useMainApiBase()}inicontent/billing/credit/request/${id}/reject`,
 				{
 					credentials: "include",
 					params: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -553,7 +553,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/credit/adjust`,
+				`${useMainApiBase()}inicontent/billing/credit/adjust`,
 				{
 					credentials: "include",
 					params: { [`${database.value.slug}_sid`]: sessionID.value },
@@ -580,7 +580,7 @@ export const useSubscription = () => {
 		error.value = null;
 		try {
 			const response = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/billing/custom-plan`,
+				`${useMainApiBase()}inicontent/billing/custom-plan`,
 				{
 					credentials: "include",
 					params: { [`${database.value.slug}_sid`]: sessionID.value },

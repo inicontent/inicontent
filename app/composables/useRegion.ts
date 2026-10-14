@@ -19,6 +19,8 @@ import {
 	type RegionOption,
 	type RegionSelection,
 	regionApiBase,
+	resolvePinnedSelection,
+	resolveSelectionAgainstCatalog,
 	serializeRegionSelection,
 	toRegionOption,
 	withTrailingSlash,
@@ -58,6 +60,9 @@ export function useRegion() {
 		const normalized = next
 			? parseRegionSelection({ code: next.code, apiUrl: next.apiUrl })
 			: null;
+		// A pinned deployment cannot be switched: the region is part of the
+		// build, so any other target is refused rather than silently honoured.
+		if (pinned && normalized && normalized.code !== pinned) return null;
 		const changed = selection.value?.code !== normalized?.code;
 		selection.value = normalized;
 		cookie.value = serializeRegionSelection(normalized);
@@ -72,9 +77,15 @@ export function useRegion() {
 		return select(option);
 	}
 
-	/** Fetch the region catalog from the main region and cache it. */
+	/**
+	 * Fetch the region catalog from the **main** region and cache it.
+	 *
+	 * The main region is the authority for `code → apiUrl`, so the catalog is
+	 * always read from there — never from the currently selected region, which
+	 * would let a bad selection re-point its own validation.
+	 */
 	async function loadRegions() {
-		const query = withTrailingSlash(regionApiBase(selection.value, mainBase));
+		const query = withTrailingSlash(mainBase);
 		const response = await $fetch<apiResponse<RegionOption[]>>(
 			`${query}inicontent/regions`,
 			{ credentials: "include", cache: "no-store" },
@@ -83,6 +94,37 @@ export function useRegion() {
 			.map(toRegionOption)
 			.filter((option): option is RegionOption => option !== null);
 		return catalog.value;
+	}
+
+	/**
+	 * Resolve the request base before the first navigation.
+	 *
+	 * A multi-region deployment with no persisted selection has nothing to
+	 * resolve and keeps the configured default (the catalog is loaded lazily by
+	 * the picker). Otherwise the catalog is fetched once and becomes the
+	 * authority: a pinned deployment snaps to its own region; a multi-region one
+	 * keeps its persisted selection only if the catalog still vouches for it.
+	 * When the catalog is unreachable the current selection is left untouched —
+	 * `null` for a pinned deployment, so requests stay on the configured base
+	 * instead of guessing another region.
+	 */
+	async function bootstrap() {
+		if (!pinned && !selection.value) return;
+
+		try {
+			await loadRegions();
+		} catch {
+			// Fail safe: never invent an origin.
+			return;
+		}
+
+		if (pinned) {
+			const resolved = resolvePinnedSelection(pinned, catalog.value);
+			if (resolved) select(resolved);
+			return;
+		}
+
+		select(resolveSelectionAgainstCatalog(selection.value, catalog.value));
 	}
 
 	return {
@@ -101,6 +143,7 @@ export function useRegion() {
 		select,
 		selectByCode,
 		loadRegions,
+		bootstrap,
 		resetRegionState,
 	};
 }

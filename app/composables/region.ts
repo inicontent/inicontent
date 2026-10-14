@@ -172,3 +172,48 @@ export function regionApiBase(
 export function normalizePinnedRegion(value: unknown): string {
 	return normalizeRegionCode(value) ?? "";
 }
+
+/**
+ * Reduce a persisted selection to one the trusted catalog vouches for.
+ *
+ * The catalog (served by the main region) is the **only** authority for
+ * `code → apiUrl`. A selection living in a cookie is attacker-influenceable, so
+ * a request base is never taken from it directly: the code must match a
+ * catalog entry *and* its URL must still agree. Anything else resolves to
+ * `null` — the caller then falls back to the configured default rather than
+ * pointing requests at an origin the main region never published.
+ */
+export function resolveSelectionAgainstCatalog(
+	selection: RegionSelection | null | undefined,
+	catalog: readonly RegionOption[],
+): RegionSelection | null {
+	if (!selection) return null;
+	const match = catalog.find((region) => region.code === selection.code);
+	if (!match) return null;
+
+	const apiUrl = normalizeRegionApiUrl(match.apiUrl);
+	if (!apiUrl || apiUrl !== normalizeRegionApiUrl(selection.apiUrl))
+		return null;
+
+	return { code: match.code, apiUrl };
+}
+
+/**
+ * The selection a **pinned** deployment must target, resolved from the catalog
+ * (the deployment knows its region code, not its API URL). Returns `null` when
+ * the region is absent or carries no usable URL — the caller must then fail
+ * closed rather than silently target a different region.
+ */
+export function resolvePinnedSelection(
+	pinned: unknown,
+	catalog: readonly RegionOption[],
+): RegionSelection | null {
+	const code = normalizeRegionCode(pinned);
+	if (!code) return null;
+
+	const match = catalog.find((region) => region.code === code);
+	const apiUrl = match ? normalizeRegionApiUrl(match.apiUrl) : null;
+	if (!apiUrl) return null;
+
+	return { code, apiUrl };
+}

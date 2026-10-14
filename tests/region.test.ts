@@ -16,6 +16,8 @@ import {
 	parseRegionSelection,
 	REGIONAL_STATE_KEYS,
 	regionApiBase,
+	resolvePinnedSelection,
+	resolveSelectionAgainstCatalog,
 	serializeRegionSelection,
 	toRegionOption,
 	withTrailingSlash,
@@ -139,4 +141,81 @@ test("region-scoped state keys are unique and cover the cached data", () => {
 	assert.equal(new Set(keys).size, keys.length, "keys must be unique");
 	for (const key of ["database", "user", "table", "translations"])
 		assert.ok(keys.includes(key), `missing ${key}`);
+});
+
+test("a persisted selection is trusted only when the catalog vouches for it", () => {
+	const catalog = [
+		{
+			code: "main",
+			name: "Main",
+			apiUrl: "https://api.inicontent.com",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+		{
+			code: "sa-1",
+			name: "Saudi Arabia",
+			apiUrl: "https://sa.api.inicontent.com",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+	];
+
+	// Matching code *and* URL resolves to the catalog's own entry.
+	assert.deepEqual(
+		resolveSelectionAgainstCatalog(
+			{ code: "sa-1", apiUrl: "https://sa.api.inicontent.com/" },
+			catalog,
+		),
+		{ code: "sa-1", apiUrl: "https://sa.api.inicontent.com" },
+	);
+
+	// A code the catalog does not know is dropped…
+	assert.equal(
+		resolveSelectionAgainstCatalog(
+			{ code: "evil", apiUrl: "https://evil.example.com" },
+			catalog,
+		),
+		null,
+	);
+	// …and so is a known code re-pointed at a foreign origin.
+	assert.equal(
+		resolveSelectionAgainstCatalog(
+			{ code: "sa-1", apiUrl: "https://evil.example.com" },
+			catalog,
+		),
+		null,
+	);
+
+	assert.equal(resolveSelectionAgainstCatalog(null, catalog), null);
+	assert.equal(
+		resolveSelectionAgainstCatalog(
+			{ code: "sa-1", apiUrl: "https://sa.api.inicontent.com" },
+			[],
+		),
+		null,
+	);
+});
+
+test("a pinned region resolves from the catalog, or fails closed", () => {
+	const catalog = [
+		{
+			code: "sa-1",
+			name: "Saudi Arabia",
+			apiUrl: "https://sa.api.inicontent.com",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+	];
+
+	assert.deepEqual(resolvePinnedSelection("SA-1", catalog), {
+		code: "sa-1",
+		apiUrl: "https://sa.api.inicontent.com",
+	});
+	// Absent from the catalog → no base, never a different region.
+	assert.equal(resolvePinnedSelection("ae-1", catalog), null);
+	assert.equal(resolvePinnedSelection("", catalog), null);
+	assert.equal(resolvePinnedSelection(undefined, catalog), null);
+	// An empty catalog (unreachable main region) never yields a base.
+	assert.equal(resolvePinnedSelection("sa-1", []), null);
 });
