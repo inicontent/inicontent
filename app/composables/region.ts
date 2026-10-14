@@ -296,6 +296,12 @@ export const REGION_HOST_SEPARATOR = "--";
 
 /** A DNS label: 1..63 chars, alphanumeric plus hyphen, no leading/trailing hyphen. */
 const HOSTNAME_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+/**
+ * A plausible non-ASCII DNS label: Unicode letters/digits and hyphens only.
+ * Guards the IDNA path, because `new URL("https://x?y")` silently truncates at
+ * the `?` instead of failing.
+ */
+const HOST_LABEL_INPUT_PATTERN = /^[\p{L}\p{N}-]+$/u;
 
 export interface DatabaseHostname {
 	/** Region code the hostname names, or `null` for the main/default region. */
@@ -343,14 +349,40 @@ export function parseDatabaseHostname(
 }
 
 /**
+ * The ASCII (ACE/punycode) form of one slug label, or `null` when it cannot
+ * form a valid DNS label. An all-ASCII slug passes through lower-cased; a
+ * non-ASCII slug is IDNA-encoded **on its own**, so the region separator stays
+ * outside the `xn--` form (`sa-1--xn--…`, never `xn--sa-1--…`).
+ */
+function asciiSlugLabel(value: string): string | null {
+	const lower = value.toLowerCase();
+	if (HOSTNAME_LABEL_PATTERN.test(lower)) return lower;
+	// Only a plausible host label may go through IDNA. `?`, `#`, `/` and `:`
+	// are URL delimiters, not label characters, and would truncate the hostname
+	// rather than fail.
+	if (!HOST_LABEL_INPUT_PATTERN.test(value)) return null;
+	try {
+		const { hostname } = new URL(`https://${value}`);
+		if (!hostname || hostname.includes(".")) return null;
+		return HOSTNAME_LABEL_PATTERN.test(hostname) ? hostname : null;
+	} catch {
+		return null;
+	}
+}
+
+/**
  * The platform hostname for a database slug: `<region>--<slug>.inicontent.com`
  * for a secondary region, `<slug>.inicontent.com` for the main/default one.
  * Returns `null` for a slug that cannot form a valid host, so a caller never
  * navigates to a malformed one.
  *
- * A non-ASCII slug keeps the bare host: IDNA folds such a label into one `xn--`
- * ACE label, which would swallow the region separator. The region still travels
- * out of band (`?region=<code>`), so the host stays valid either way.
+ * An internationalized slug is IDNA-encoded per label, so the region separator
+ * is encoded **outside** the ACE form: `مرحبا` in `sa-1` is reached at
+ * `sa-1--xn--mgbbop3h.inicontent.com`, and on the main region at
+ * `xn--mgbbop3h.inicontent.com`. The region therefore lives in the hostname for
+ * every supported slug, not only the ASCII ones; `?region=` stays an
+ * independent cross-check rather than the only routing signal. A pre-existing
+ * bare ACE host keeps resolving (the parser reads it as the main region).
  */
 export function databaseHostname(
 	slug: unknown,
@@ -363,17 +395,8 @@ export function databaseHostname(
 	const regionCode = normalizeRegionCode(region);
 	if (region && !regionCode) return null;
 
-	const slugLabel = trimmed.toLowerCase();
-	if (!HOSTNAME_LABEL_PATTERN.test(slugLabel)) {
-		// Non-ASCII slug: validate its punycoded bare host instead.
-		try {
-			const url = new URL(`https://${trimmed}${TENANT_HOSTNAME_SUFFIX}`);
-			const label = url.hostname.slice(0, -TENANT_HOSTNAME_SUFFIX.length);
-			return HOSTNAME_LABEL_PATTERN.test(label) ? url.hostname : null;
-		} catch {
-			return null;
-		}
-	}
+	const slugLabel = asciiSlugLabel(trimmed);
+	if (!slugLabel) return null;
 
 	const label = regionCode
 		? `${regionCode}${REGION_HOST_SEPARATOR}${slugLabel}`

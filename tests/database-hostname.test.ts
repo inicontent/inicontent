@@ -92,15 +92,32 @@ test("an invalid slug or region never yields a hostname", () => {
 	assert.equal(databaseHostname("clinic-"), null);
 	assert.equal(databaseHostname("clinic", "bad code"), null);
 	assert.equal(databaseHostname(undefined), null);
+	// URL delimiters are not label characters: `new URL` would truncate them.
+	assert.equal(databaseHostname("clinic?x="), null);
+	assert.equal(databaseHostname("clinic#frag"), null);
+	assert.equal(databaseHostname("clinic/path"), null);
+	assert.equal(databaseHostname("clinic:8080"), null);
+	assert.equal(databaseHostname("clinic?x=", "sa-1"), null);
 });
 
-test("a non-ASCII slug keeps the bare host (region travels out of band)", () => {
+test("a non-ASCII slug gets a region-prefixed ACE host", () => {
+	// The region is encoded outside the ACE form, so the slug itself still
+	// round-trips through the parser on every region — no `?region=` needed.
 	const host = databaseHostname("مرحبا", "sa-1");
-	assert.ok(host, "a punycoded host is produced");
-	assert.ok(host.endsWith(".inicontent.com"));
-	// IDNA folds the whole label into one ACE label, so it cannot carry the
-	// region separator — parsing it back yields no region.
-	assert.equal(parseDatabaseHostname(host)?.region, null);
+	assert.equal(host, "sa-1--xn--mgbbop3h.inicontent.com");
+	assert.equal(parseDatabaseHostname(host)?.region, "sa-1");
+
+	// On the main region the host stays bare, so an already-published URL is
+	// unchanged.
+	assert.equal(databaseHostname("مرحبا"), "xn--mgbbop3h.inicontent.com");
+	assert.equal(
+		parseDatabaseHostname(databaseHostname("مرحبا") as string)?.region,
+		null,
+	);
+
+	// A slug that IDNA cannot encode yields no hostname rather than a malformed
+	// one (Arabic-Indic digits are not valid in a DNS label).
+	assert.equal(databaseHostname("٠١٢", "sa-1"), null);
 });
 
 test("the sign-in URL is on the database's own hostname, never the admin host", () => {
@@ -116,6 +133,13 @@ test("the sign-in URL is on the database's own hostname, never the admin host", 
 	const url = new URL(resolveDatabaseLoginUrl("clinic", "sa-1") as string);
 	assert.equal(url.hostname, "sa-1--clinic.inicontent.com");
 	assert.notEqual(url.hostname, "inicontent.com");
+
+	// An internationalized slug is reachable at its own regional host, so its
+	// credentials are scoped there too.
+	assert.equal(
+		resolveDatabaseLoginUrl("مرحبا", "sa-1"),
+		"https://sa-1--xn--mgbbop3h.inicontent.com/login?region=sa-1",
+	);
 
 	// An invalid slug yields no URL rather than a malformed one.
 	assert.equal(resolveDatabaseLoginUrl("my--clinic"), null);
