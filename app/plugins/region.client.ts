@@ -20,13 +20,14 @@ export default defineNuxtPlugin({
 	enforce: "pre",
 	async setup() {
 		try {
-			// An explicit `?region=<code>` deep link is resolved here (not in a
-			// route middleware) so it is settled before `domain.global.ts`
+			// An explicit `?region=<code>` deep link, or a region encoded in the
+			// hostname (`sa-1--clinic.inicontent.com`), is resolved here (not in
+			// a route middleware) so it is settled before `domain.global.ts`
 			// resolves a hostname to a database from `useApiBase()`.
-			const requested = new URL(window.location.href).searchParams.get(
-				REGION_QUERY_PARAM,
-			);
-			await useRegion().bootstrap(requested);
+			const url = new URL(window.location.href);
+			const requested = url.searchParams.get(REGION_QUERY_PARAM);
+			const hostRegion = parseDatabaseHostname(url.hostname)?.region ?? null;
+			await useRegion().bootstrap(requested, hostRegion);
 		} catch {
 			// bootstrap() already fails safe; this guards the wrapper itself.
 		}

@@ -222,24 +222,19 @@ const createdDatabase = ref<{ slug: string; adminUsername: string } | null>(
 );
 
 /**
- * `https://<slug>.inicontent.com/login`, carrying the active region as an
- * explicit, catalog-validated `?region=` parameter.
+ * `https://<region>--<slug>.inicontent.com/login` (or the bare
+ * `https://<slug>.inicontent.com/login` on the main region), carrying the active
+ * region as an explicit, catalog-validated `?region=` parameter.
  *
- * The login host is a different origin, so the persisted region selection is
- * not shared with it; the parameter is the only way to preserve region context
- * without a global database locator. It is omitted on the default region.
+ * The URL is built by `resolveDatabaseLoginUrl` (unit-tested). What matters here
+ * is the **host**: the sign-in form runs on the database's own origin, so a
+ * password manager scopes the new credentials to it rather than to this
+ * administration host.
  */
 const databaseLoginUrl = computed(() => {
 	const slug = createdDatabase.value?.slug;
 	if (!slug) return "";
-	try {
-		const url = new URL("/login", resolvePlatformFeatureHost(slug));
-		const code = selection.value?.code;
-		if (code) url.searchParams.set(REGION_QUERY_PARAM, code);
-		return url.toString();
-	} catch {
-		return "";
-	}
+	return resolveDatabaseLoginUrl(slug, selection.value?.code) ?? "";
 });
 
 const DatabaseRef = ref<FormInst>();
@@ -249,8 +244,12 @@ const databaseSchema = computed<Schema>(() => [
 		key: "slug",
 		type: "string",
 		required: true,
-		regex: "^[a-zA-Z0-9\u0621-\u064A\u0660-\u0669-_]+$",
+		// A double hyphen separates the region code from the slug in a database
+		// hostname (`sa-1--clinic.inicontent.com`), so it cannot appear in the
+		// slug itself.
+		regex: "^(?!.*--)[a-zA-Z0-9\u0621-\u064A\u0660-\u0669-_]+$",
 		width: 2,
+		description: "databaseSlugHint",
 	},
 	// The database's *own* first administrator. It is a separate identity from
 	// the global owner: the owner chooses it here, and it is created inside the

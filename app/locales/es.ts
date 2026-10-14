@@ -238,6 +238,8 @@ export default {
 		adminUsername: "Nombre de usuario del administrador",
 		adminPassword: "Contraseña del administrador",
 		adminPasswordConfirm: "Confirmar contraseña del administrador",
+		databaseSlugHint:
+			"Letras, números y guiones. El guion doble (--) está reservado para la región.",
 		databaseAdminUsernameHint:
 			"El nombre de usuario del primer administrador de esta base de datos. Es independiente de tu cuenta global.",
 		databaseAdminPasswordHint:

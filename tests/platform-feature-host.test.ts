@@ -30,3 +30,17 @@ test("malformed slugs cannot redirect billing off platform", () => {
 		assert.throws(() => resolvePlatformFeatureHost(slug), undefined, slug);
 	}
 });
+
+test("a secondary region's platform host carries the region prefix", () => {
+	assert.equal(
+		resolvePlatformFeatureHost("clinic", "sa-1"),
+		"https://sa-1--clinic.inicontent.com",
+	);
+	// The platform database itself always lives on the main host.
+	assert.equal(
+		resolvePlatformFeatureHost("inicontent", "sa-1"),
+		"https://inicontent.com",
+	);
+	// A region that cannot form a host is refused, never silently dropped.
+	assert.throws(() => resolvePlatformFeatureHost("clinic", "bad code"));
+});

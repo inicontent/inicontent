@@ -48,3 +48,14 @@ test("the database login alias resolves to the real sign-in page", () => {
 	const login = source("app/pages/login.vue");
 	assert.match(login, /navigateTo\(\{[\s\S]*path:\s*"\/auth"/);
 });
+
+test("the post-create sign-in link is on the database host, not the admin host", () => {
+	// A browser associates saved credentials with the origin the form was
+	// submitted from, so the link must point at `[region--]slug.inicontent.com`,
+	// never at this administration host. The URL builder is pure and covered by
+	// `database-hostname.test.ts`; this pins that the form uses it.
+	const dashboard = source("app/components/Dashboard.vue");
+	assert.match(dashboard, /resolveDatabaseLoginUrl\(/);
+	const region = source("app/composables/region.ts");
+	assert.match(region, /export function resolveDatabaseLoginUrl\(/);
+});

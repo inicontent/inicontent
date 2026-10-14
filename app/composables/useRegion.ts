@@ -116,27 +116,53 @@ export function useRegion() {
 	/**
 	 * Resolve the request base before the first navigation.
 	 *
-	 * A multi-region deployment with no persisted selection has nothing to
-	 * resolve and keeps the configured default (the catalog is loaded lazily by
-	 * the picker). Otherwise the catalog is fetched once and becomes the
-	 * authority: a pinned deployment snaps to its own region; a multi-region one
-	 * keeps its persisted selection only if the catalog still vouches for it.
+	 * `requested` is the raw `?region=` value from the current URL (or `null`);
+	 * `hostRegion` is the region encoded in the hostname (`sa-1--clinic`), if
+	 * any. The query parameter is **strict** — an unknown code is an error — and
+	 * the hostname is **permissive**: a prefix that names no catalog region is a
+	 * legacy slug that merely contains `--`, not an explicit region, so it
+	 * falls back to the persisted selection instead of erroring.
+	 *
+	 * The two must agree. When an explicit query parameter and the hostname name
+	 * different regions, resolution fails closed (`regionMismatch`) rather than
+	 * silently choosing one — "do not fall back to the main region" applies in
+	 * both directions.
 	 *
 	 * A **pinned** deployment that cannot resolve its region records an explicit
 	 * error instead of silently falling back to the configured default: the
-	 * region is part of the build, so another origin must never serve it. The
-	 * same holds for an explicit deep link naming an unknown or disabled region
-	 * — it is never quietly ignored.
+	 * region is part of the build, so another origin must never serve it.
 	 *
-	 * `requested` is the raw `?region=` value from the current URL (or `null`).
 	 * It is resolved **here**, in the `pre` plugin, so it is settled before the
 	 * SaaS `domain.global.ts` middleware resolves a hostname to a database.
 	 */
-	async function bootstrap(requested?: string | null) {
+	async function bootstrap(
+		requested?: string | null,
+		hostRegion?: string | null,
+	) {
 		const raw = typeof requested === "string" ? requested.trim() : "";
-		const code = normalizeRegionCode(raw);
-		if (raw && !code) {
+		const queryCode = normalizeRegionCode(raw);
+		if (raw && !queryCode) {
 			regionError.value = "regionNotFound";
+			return;
+		}
+
+		const rawHost = typeof hostRegion === "string" ? hostRegion.trim() : "";
+		const hostCode = normalizeRegionCode(rawHost);
+		if (rawHost && !hostCode) {
+			regionError.value = "regionNotFound";
+			return;
+		}
+		if (queryCode && hostCode && queryCode !== hostCode) {
+			regionError.value = "regionMismatch";
+			return;
+		}
+
+		const code = queryCode ?? hostCode;
+		// Only the query parameter is a strict, explicit region request.
+		const explicit = !!queryCode;
+
+		if (pinned && code && code !== pinned) {
+			regionError.value = "regionMismatch";
 			return;
 		}
 		if (!pinned && !selection.value && !code && !regionError.value) return;
@@ -166,17 +192,21 @@ export function useRegion() {
 
 		if (code) {
 			const option = catalog.value.find((region) => region.code === code);
-			if (!option) {
+			if (option) {
+				if (option.enabled === false) {
+					regionError.value = "regionDisabled";
+					return;
+				}
+				regionError.value = null;
+				await select(option);
+				return;
+			}
+			// A host-derived code that names no catalog region is a legacy slug,
+			// not an explicit region: fall through to the persisted selection.
+			if (explicit) {
 				regionError.value = "regionNotFound";
 				return;
 			}
-			if (option.enabled === false) {
-				regionError.value = "regionDisabled";
-				return;
-			}
-			regionError.value = null;
-			await select(option);
-			return;
 		}
 
 		await select(

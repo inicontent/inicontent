@@ -31,6 +31,7 @@ import {
 	stripHandoffParams,
 } from "~/composables/handoffVerifier";
 import { resolvePlatformFeatureHost } from "~/composables/platformFeatureHost";
+import { REGION_STATE_KEY, type RegionSelection } from "~/composables/region";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const config = useRuntimeConfig();
@@ -48,7 +49,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	};
 
 	const currentOrigin = typeof location === "undefined" ? "" : location.origin;
-	const destinationOrigin = resolveDestinationOrigin(databaseSlug);
+	// The destination for a tenant lives on its region's platform host; the
+	// platform database itself always lives on the main host.
+	const region = useState<RegionSelection | null>(REGION_STATE_KEY, () => null);
+	const destinationOrigin = resolveDestinationOrigin(
+		databaseSlug,
+		databaseSlug === "inicontent" ? null : region.value?.code,
+	);
 	// Only the initiate branch consults this; it avoids a pointless round-trip
 	// when the destination already holds the scoped sessions.
 	const destinationSignedIn =
@@ -145,9 +152,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	return strip();
 });
 
-function resolveDestinationOrigin(databaseSlug: string): string | null {
+function resolveDestinationOrigin(
+	databaseSlug: string,
+	region?: string | null,
+): string | null {
 	try {
-		return resolvePlatformFeatureHost(databaseSlug);
+		return resolvePlatformFeatureHost(databaseSlug, region);
 	} catch {
 		return null;
 	}

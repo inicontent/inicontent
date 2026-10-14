@@ -276,3 +276,133 @@ export function collectRegionOrigins(options: {
 
 	return [...origins];
 }
+
+// ─── Database hostnames ─────────────────────────────────────────────────────
+//
+// The region a database belongs to is encoded in its hostname so a bare
+// `*.inicontent.com` host can be resolved deterministically without a global
+// database locator:
+//
+//   main region      myclinic.inicontent.com
+//   secondary region sa-1--myclinic.inicontent.com
+//
+// `--` separates the region code from the slug; a single hyphen is an ordinary
+// slug character. A slug therefore never contains `--` (enforced at creation).
+
+/** Tenant platform hostnames live under this suffix. */
+export const TENANT_HOSTNAME_SUFFIX = ".inicontent.com";
+/** Double hyphen separating an optional region code from the database slug. */
+export const REGION_HOST_SEPARATOR = "--";
+
+/** A DNS label: 1..63 chars, alphanumeric plus hyphen, no leading/trailing hyphen. */
+const HOSTNAME_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+export interface DatabaseHostname {
+	/** Region code the hostname names, or `null` for the main/default region. */
+	region: string | null;
+	/** Database slug label (the ASCII form on the wire). */
+	slug: string;
+}
+
+/**
+ * Parse `[<region>--]<slug>.inicontent.com` deterministically, or `null` when
+ * the value is not a database hostname. Mirrors the API's parser: another
+ * domain, a multi-label host, an empty/invalid slug, an invalid region code and
+ * a label with more than one separator all resolve to `null` rather than a
+ * guess.
+ */
+export function parseDatabaseHostname(
+	hostname: unknown,
+): DatabaseHostname | null {
+	if (typeof hostname !== "string" || !hostname.trim()) return null;
+	let host = hostname.trim().toLowerCase();
+	if (host.endsWith(".")) host = host.slice(0, -1);
+	if (host.startsWith("[") || host.includes(":") || host.includes("/"))
+		return null;
+	if (!host.endsWith(TENANT_HOSTNAME_SUFFIX)) return null;
+
+	const label = host.slice(0, -TENANT_HOSTNAME_SUFFIX.length);
+	if (!label || label.includes(".") || !HOSTNAME_LABEL_PATTERN.test(label))
+		return null;
+
+	// An ACE (punycode) label starts with `xn--`: that `--` is the IDNA prefix,
+	// not a region separator, so such a label carries no region.
+	if (label.startsWith("xn--")) return { region: null, slug: label };
+
+	const separator = label.indexOf(REGION_HOST_SEPARATOR);
+	if (separator === -1) return { region: null, slug: label };
+
+	const region = label.slice(0, separator);
+	const slug = label.slice(separator + REGION_HOST_SEPARATOR.length);
+	if (!normalizeRegionCode(region)) return null;
+	if (!slug || !HOSTNAME_LABEL_PATTERN.test(slug)) return null;
+	if (slug.includes(REGION_HOST_SEPARATOR) && !slug.startsWith("xn--"))
+		return null;
+
+	return { region, slug };
+}
+
+/**
+ * The platform hostname for a database slug: `<region>--<slug>.inicontent.com`
+ * for a secondary region, `<slug>.inicontent.com` for the main/default one.
+ * Returns `null` for a slug that cannot form a valid host, so a caller never
+ * navigates to a malformed one.
+ *
+ * A non-ASCII slug keeps the bare host: IDNA folds such a label into one `xn--`
+ * ACE label, which would swallow the region separator. The region still travels
+ * out of band (`?region=<code>`), so the host stays valid either way.
+ */
+export function databaseHostname(
+	slug: unknown,
+	region?: string | null,
+): string | null {
+	if (typeof slug !== "string") return null;
+	const trimmed = slug.trim();
+	if (!trimmed || trimmed.includes(REGION_HOST_SEPARATOR)) return null;
+
+	const regionCode = normalizeRegionCode(region);
+	if (region && !regionCode) return null;
+
+	const slugLabel = trimmed.toLowerCase();
+	if (!HOSTNAME_LABEL_PATTERN.test(slugLabel)) {
+		// Non-ASCII slug: validate its punycoded bare host instead.
+		try {
+			const url = new URL(`https://${trimmed}${TENANT_HOSTNAME_SUFFIX}`);
+			const label = url.hostname.slice(0, -TENANT_HOSTNAME_SUFFIX.length);
+			return HOSTNAME_LABEL_PATTERN.test(label) ? url.hostname : null;
+		} catch {
+			return null;
+		}
+	}
+
+	const label = regionCode
+		? `${regionCode}${REGION_HOST_SEPARATOR}${slugLabel}`
+		: slugLabel;
+	if (!HOSTNAME_LABEL_PATTERN.test(label)) return null;
+	return `${label}${TENANT_HOSTNAME_SUFFIX}`;
+}
+
+/**
+ * The absolute sign-in URL for a database: `/login` **on the database's own
+ * hostname**, carrying the region as an explicit `?region=<code>`.
+ *
+ * This is why the credentials a password manager offers to save are scoped to
+ * the database (`myclinic.inicontent.com`, or `sa-1--myclinic…`), never to the
+ * SaaS administration host (`inicontent.com`) where the database was created —
+ * a browser only associates saved credentials with the origin the form was
+ * submitted from. The region prefix and the parameter both encode the region so
+ * either one alone is enough to route.
+ *
+ * Returns `null` for a slug that cannot form a valid host.
+ */
+export function resolveDatabaseLoginUrl(
+	slug: unknown,
+	region?: string | null,
+): string | null {
+	const host = databaseHostname(slug, region);
+	if (!host) return null;
+	const url = new URL(`https://${host}/login`);
+	const regionCode = normalizeRegionCode(region);
+	if (regionCode) url.searchParams.set(REGION_QUERY_PARAM, regionCode);
+	return url.toString();
+}

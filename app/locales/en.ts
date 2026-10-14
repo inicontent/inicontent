@@ -531,6 +531,8 @@ export default {
 		adminUsername: "Administrator username",
 		adminPassword: "Administrator password",
 		adminPasswordConfirm: "Confirm administrator password",
+		databaseSlugHint:
+			"Letters, numbers, hyphens and underscores. A double hyphen (--) is reserved for the region.",
 		databaseAdminUsernameHint:
 			"The username for this database's first administrator. It is separate from your global account.",
 		databaseAdminPasswordHint:

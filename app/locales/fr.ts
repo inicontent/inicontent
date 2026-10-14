@@ -239,6 +239,8 @@ export default {
 		adminUsername: "Nom d'utilisateur de l'administrateur",
 		adminPassword: "Mot de passe de l'administrateur",
 		adminPasswordConfirm: "Confirmer le mot de passe de l'administrateur",
+		databaseSlugHint:
+			"Lettres, chiffres et tirets. Le double tiret (--) est réservé à la région.",
 		databaseAdminUsernameHint:
 			"Le nom d'utilisateur du premier administrateur de cette base de données. Il est distinct de votre compte global.",
 		databaseAdminPasswordHint:

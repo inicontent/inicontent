@@ -240,6 +240,8 @@ export default {
 		adminUsername: "اسم مستخدم المسؤول",
 		adminPassword: "كلمة مرور المسؤول",
 		adminPasswordConfirm: "تأكيد كلمة مرور المسؤول",
+		databaseSlugHint:
+			"حروف وأرقام وشرطات وشرطات سفلية. الشرطة المزدوجة (--) محجوزة للمنطقة.",
 		databaseAdminUsernameHint:
 			"اسم المستخدم لأول مسؤول في قاعدة البيانات هذه. إنه منفصل عن حسابك العام.",
 		databaseAdminPasswordHint:

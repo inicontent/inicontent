@@ -4,6 +4,7 @@ import {
 	isPlatformHandoffOrigin,
 } from "./handoffVerifier.ts";
 import { resolvePlatformFeatureHost } from "./platformFeatureHost.ts";
+import { REGION_STATE_KEY, type RegionSelection } from "./region.ts";
 
 export type PlatformFeature = "billing";
 
@@ -34,6 +35,13 @@ const platformFeaturePaths: Record<PlatformFeature, string> = {
 export function usePlatformRedirect() {
 	const config = useRuntimeConfig();
 	const database = useState<Database>("database");
+	// Read the active selection straight from the shared state (not
+	// `useRegion()`, which also owns the session lifecycle) so this composable
+	// stays usable without the full region wrapper.
+	const selection = useState<RegionSelection | null>(
+		REGION_STATE_KEY,
+		() => null,
+	);
 
 	const databaseSlug = computed(() => {
 		const slug = database.value?.slug ?? config.public.database;
@@ -41,7 +49,11 @@ export function usePlatformRedirect() {
 	});
 
 	const platformHost = computed(() =>
-		resolvePlatformFeatureHost(databaseSlug.value),
+		resolvePlatformFeatureHost(
+			databaseSlug.value,
+			// The platform database itself always lives on the main host.
+			databaseSlug.value === "inicontent" ? null : selection.value?.code,
+		),
 	);
 
 	async function platformUrl(feature: PlatformFeature): Promise<string> {
