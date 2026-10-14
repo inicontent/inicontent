@@ -1,6 +1,18 @@
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineNuxtModule, useLogger } from "@nuxt/kit";
+
+// This module is auto-registered in every app that extends this repo as a
+// layer (Nuxt's resolveModules walks `_layers` and registers each layer's
+// `modules/` dir), so it *does* run in consumers — that part is the point. But
+// the `logger.info` below is only actionable when developing THIS repo: a
+// consumer didn't add these entries and can't act on them. Gate just the log
+// so their terminal stays clean while the drop keeps running for everyone.
+//
+// Mirrors the `isSourceApp` gate in nuxt.config.ts, but compares the app root
+// Nuxt is actually building (rootDir) rather than the process cwd.
+const layerRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 // `nuxt-tiptap-editor` hardcodes its ProseMirror dependencies as bare
 // specifiers in `vite.optimizeDeps.include`:
@@ -62,6 +74,8 @@ export default defineNuxtModule({
 	},
 	setup(_options, nuxt) {
 		const logger = useLogger("inicontent:optimize-deps");
+		const isSourceApp =
+			realpathSync(nuxt.options.rootDir) === realpathSync(layerRoot);
 
 		nuxt.hook("modules:done", () => {
 			const optimizeDeps = nuxt.options.vite?.optimizeDeps;
@@ -77,9 +91,11 @@ export default defineNuxtModule({
 			if (!dropped.length) return;
 
 			optimizeDeps.include = resolvable;
-			logger.info(
-				`Dropped ${dropped.length} unresolvable vite.optimizeDeps.include entries added by nuxt-tiptap-editor: ${dropped.join(", ")}`,
-			);
+			if (isSourceApp) {
+				logger.info(
+					`Dropped ${dropped.length} unresolvable vite.optimizeDeps.include entries added by nuxt-tiptap-editor: ${dropped.join(", ")}`,
+				);
+			}
 		});
 	},
 });
