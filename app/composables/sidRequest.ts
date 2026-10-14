@@ -70,49 +70,26 @@ function headerValue(
 	}
 }
 
-export function rewriteSidRequest(
+function requestHeaders(
 	input: string | URL | Request,
 	init: RequestInit | undefined,
-	base: string,
-): SidRewrite | undefined {
-	const url = requestURL(input, base);
-	if (!url) return undefined;
-	const sid = singleSid(url);
-	if (!sid) return undefined;
-	const [key, value] = sid;
+): HeadersInit | undefined {
+	return typeof input === "string" || input instanceof URL
+		? init?.headers
+		: input.headers;
+}
 
-	const existing =
-		headerValue(init, "authorization") ??
-		(input instanceof Request ? input.headers.get("authorization") : null);
-	if (existing) return undefined;
-
-	url.searchParams.delete(key);
-	const target = cleanPath(url, base);
-
-	// Which header? A session whose own slug matches the route's database is
-	// the caller's own session and belongs in `Authorization`. On a platform
-	// route (`/inicontent/...`) a session belonging to another tenant is a
-	// delegated child session: it still must not travel in a URL, so it moves
-	// to the child-session headers the API resolves for owner-to-tenant access.
-	const routeDatabase = url.pathname.split("/").filter(Boolean)[0];
-	const ownSlug = key.slice(0, -"_sid".length);
-	const delegated = ownSlug !== routeDatabase;
-	const headers = new Headers(
-		typeof input === "string" || input instanceof URL
-			? init?.headers
-			: input.headers,
-	);
-	if (delegated) {
-		headers.set(CHILD_SESSION_HEADER, value);
-		headers.set(CHILD_DATABASE_HEADER, ownSlug);
-	} else {
-		headers.set("authorization", `Bearer ${value}`);
-	}
-
+function materialize(
+	input: string | URL | Request,
+	init: RequestInit | undefined,
+	headers: Headers,
+	target: string,
+	sid: string,
+	delegated: boolean,
+): SidRewrite {
 	if (typeof input === "string" || input instanceof URL) {
-		return { input: target, init: { ...init, headers }, sid: value, delegated };
+		return { input: target, init: { ...init, headers }, sid, delegated };
 	}
-
 	// A Request object: copy it onto the cleaned URL, keeping its headers.
 	const request = new Request(target, {
 		method: input.method,
@@ -130,5 +107,84 @@ export function rewriteSidRequest(
 		signal: input.signal,
 		mode: input.mode,
 	});
-	return { input: request, init: undefined, sid: value, delegated };
+	return { input: request, init: undefined, sid, delegated };
+}
+
+/**
+ * Rewrite a request's session handling at the network boundary.
+ *
+ * `regionOrigins` are the **secondary** region API origins this deployment
+ * knows about. The main-region platform session (`inicontent_sid`) is removed
+ * from any request headed to them — before it can be moved into an
+ * `Authorization` header — because a secondary region must never receive the
+ * main region's credential. The region authenticates with its own host-only
+ * regional session cookie instead, which `credentials: "include"` sends.
+ */
+export function rewriteSidRequest(
+	input: string | URL | Request,
+	init: RequestInit | undefined,
+	base: string,
+	regionOrigins: readonly string[] = [],
+): SidRewrite | undefined {
+	const url = requestURL(input, base);
+	if (!url) return undefined;
+
+	let strippedMain = false;
+	if (
+		regionOrigins.includes(url.origin) &&
+		url.searchParams.has("inicontent_sid")
+	) {
+		url.searchParams.delete("inicontent_sid");
+		strippedMain = true;
+	}
+
+	const sid = singleSid(url);
+
+	if (!sid) {
+		if (!strippedMain) return undefined;
+		// Nothing to authenticate with; hand back the cleaned request so the
+		// main session still leaves the URL.
+		return materialize(
+			input,
+			init,
+			new Headers(requestHeaders(input, init)),
+			cleanPath(url, base),
+			"",
+			false,
+		);
+	}
+	const [key, value] = sid;
+
+	const existing =
+		headerValue(init, "authorization") ??
+		(input instanceof Request ? input.headers.get("authorization") : null);
+	// A caller-supplied Authorization header wins — but a stripped main session
+	// must still leave the URL, so return the cleaned request rather than a
+	// pass-through.
+	if (existing && !strippedMain) return undefined;
+
+	const headers = new Headers(requestHeaders(input, init));
+	if (existing) {
+		return materialize(input, init, headers, cleanPath(url, base), "", false);
+	}
+
+	url.searchParams.delete(key);
+	const target = cleanPath(url, base);
+
+	// Which header? A session whose own slug matches the route's database is
+	// the caller's own session and belongs in `Authorization`. On a platform
+	// route (`/inicontent/...`) a session belonging to another tenant is a
+	// delegated child session: it still must not travel in a URL, so it moves
+	// to the child-session headers the API resolves for owner-to-tenant access.
+	const routeDatabase = url.pathname.split("/").filter(Boolean)[0];
+	const ownSlug = key.slice(0, -"_sid".length);
+	const delegated = ownSlug !== routeDatabase;
+	if (delegated) {
+		headers.set(CHILD_SESSION_HEADER, value);
+		headers.set(CHILD_DATABASE_HEADER, ownSlug);
+	} else {
+		headers.set("authorization", `Bearer ${value}`);
+	}
+
+	return materialize(input, init, headers, target, value, delegated);
 }

@@ -50,7 +50,34 @@
 				</NFlex>
 			</template>
 		</NCard>
-		<NSpin v-else-if="databases?.result?.length" size="small" :show="status === 'idle' || status === 'pending'">
+		<NCard v-if="createdDatabase" :title="t('databaseCreatedTitle')" closable
+			@close="createdDatabase = null" style="margin-bottom: 20px;">
+			<NAlert type="success" :show-icon="false" style="margin-bottom: 12px;">
+				{{ t("databaseCreatedHint") }}
+			</NAlert>
+			<NFlex vertical :size="12">
+				<NDescriptions :column="1" label-placement="left" size="small" bordered>
+					<NDescriptionsItem :label="t('adminUsername')">
+						{{ createdDatabase.adminUsername }}
+					</NDescriptionsItem>
+					<NDescriptionsItem :label="t('databaseLoginUrlLabel')">
+						<NText code>{{ databaseLoginUrl }}</NText>
+					</NDescriptionsItem>
+				</NDescriptions>
+				<NFlex justify="end">
+					<NButton tag="a" type="primary" :href="databaseLoginUrl" target="_blank"
+						rel="noopener noreferrer">
+						<template #icon>
+							<NIcon>
+								<Icon name="tabler:external-link" />
+							</NIcon>
+						</template>
+						{{ t("openDatabaseLogin") }}
+					</NButton>
+				</NFlex>
+			</NFlex>
+		</NCard>
+		<NSpin v-if="!showDatabaseCreation && !createdDatabase && databases?.result?.length" size="small" :show="status === 'idle' || status === 'pending'">
 			<NCollapse v-model:expanded-names="expandedNames"
 				:triggerAreas="['main', 'arrow']" accordion>
 				<NCollapseItem v-for="(database, index) in databases?.result" :title="t(database.slug)"
@@ -117,11 +144,15 @@ const regionOptions = computed(() =>
 );
 
 function onRegionChange(code: string) {
+	// Switching region rotates the regional session (clear the old, establish
+	// the new) before the list refetches, so the request never carries the
+	// previous region's credential.
 	selectRegion(
 		regionCatalog.value.find((region) => region.code === code) ?? null,
-	);
-	pagination.page = 1;
-	refresh();
+	).finally(() => {
+		pagination.page = 1;
+		refresh();
+	});
 }
 
 const pagination = reactive({
@@ -181,6 +212,36 @@ if (!pinned) {
 const expandedNames = ref<string[]>();
 const showDatabaseCreation = ref(false);
 
+/**
+ * The database whose administrator was just created. Shown as a follow-up card
+ * so the owner has a clear action to open the database's own sign-in page —
+ * where the browser can offer to save the new credentials for its hostname.
+ */
+const createdDatabase = ref<{ slug: string; adminUsername: string } | null>(
+	null,
+);
+
+/**
+ * `https://<slug>.inicontent.com/login`, carrying the active region as an
+ * explicit, catalog-validated `?region=` parameter.
+ *
+ * The login host is a different origin, so the persisted region selection is
+ * not shared with it; the parameter is the only way to preserve region context
+ * without a global database locator. It is omitted on the default region.
+ */
+const databaseLoginUrl = computed(() => {
+	const slug = createdDatabase.value?.slug;
+	if (!slug) return "";
+	try {
+		const url = new URL("/login", resolvePlatformFeatureHost(slug));
+		const code = selection.value?.code;
+		if (code) url.searchParams.set(REGION_QUERY_PARAM, code);
+		return url.toString();
+	} catch {
+		return "";
+	}
+});
+
 const DatabaseRef = ref<FormInst>();
 const DatabaseModal = ref<Database>({});
 const databaseSchema = computed<Schema>(() => [
@@ -190,6 +251,45 @@ const databaseSchema = computed<Schema>(() => [
 		required: true,
 		regex: "^[a-zA-Z0-9\u0621-\u064A\u0660-\u0669-_]+$",
 		width: 2,
+	},
+	// The database's *own* first administrator. It is a separate identity from
+	// the global owner: the owner chooses it here, and it is created inside the
+	// new database. The global user's credentials are never copied.
+	{
+		key: "adminUsername",
+		type: "string",
+		required: true,
+		regex: "^.{3,64}$",
+		width: 2,
+		// `field.inputProps` are NInput props; the nested `inputProps` is what
+		// NInput puts on the inner `<input>`.
+		inputProps: {
+			inputProps: {
+				name: "admin-username",
+				autocomplete: "off",
+				autocapitalize: "none",
+				spellcheck: "false",
+			},
+		},
+		description: "databaseAdminUsernameHint",
+	},
+	{
+		key: "adminPassword",
+		type: "password",
+		required: true,
+		regex: "^.{8,200}$",
+		width: 2,
+		// `new-password` tells a password manager this is a value to generate or
+		// save, not an existing credential to autofill.
+		inputProps: { inputProps: { autocomplete: "new-password" } },
+		description: "databaseAdminPasswordHint",
+	},
+	{
+		key: "adminPasswordConfirm",
+		type: "password",
+		required: true,
+		width: 2,
+		inputProps: { inputProps: { autocomplete: "new-password" } },
 	},
 	{
 		key: "primaryColor",
@@ -238,30 +338,51 @@ function startDatabaseCreation() {
 async function createDatabase() {
 	DatabaseRef.value?.validate(async (errors: any) => {
 		if (errors) return window.$message.error(t("inputsAreInvalid"));
-		const bodyContent = toRaw(DatabaseModal.value);
+		const bodyContent = toRaw(DatabaseModal.value) as Database & {
+			adminUsername?: string;
+			adminPassword?: string;
+			adminPasswordConfirm?: string;
+		};
+		// The confirmation is a client-side guard only; the server never sees it.
+		if (bodyContent.adminPassword !== bodyContent.adminPasswordConfirm)
+			return window.$message.error(t("passwordsDoNotMatch"));
 		Loading.value.Database = true;
-		const data = await $fetch<apiResponse>(
-			`${useApiBase()}inicontent/databases/${bodyContent.slug}`,
-			{
-				method: "POST",
-				body: bodyContent,
-				params: {
-					locale: Language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
+		try {
+			const data = await $fetch<apiResponse>(
+				`${useApiBase()}inicontent/databases/${bodyContent.slug}`,
+				{
+					method: "POST",
+					body: bodyContent,
+					params: {
+						locale: Language.value,
+						[`${database.value.slug}_sid`]: sessionID.value,
+					},
+					credentials: "include",
 				},
-				credentials: "include",
-			},
-		);
-		Loading.value.Database = false;
-		if (!data.result) return window.$message.error(data.message);
-		DatabaseModal.value = data.result;
-		if (databases.value) {
-			if (databases.value.result) databases.value.result.push(data.result);
-			else databases.value.result = [data.result];
-			expandedNames.value = [data.result.slug];
+			);
+			if (!data.result) {
+				window.$message.error(data.message);
+				return;
+			}
+			DatabaseModal.value = data.result;
+			if (databases.value) {
+				if (databases.value.result) databases.value.result.push(data.result);
+				else databases.value.result = [data.result];
+				expandedNames.value = [data.result.slug];
+			}
+			// Surface a clear action to sign in at the database's own hostname,
+			// where the browser can offer to save the new credentials.
+			createdDatabase.value = {
+				slug: data.result.slug as string,
+				adminUsername: bodyContent.adminUsername ?? "",
+			};
+			window.$message.success(data.message);
+			showDatabaseCreation.value = false;
+		} catch (error: any) {
+			window.$message.error(error?.data?.message ?? t("error"));
+		} finally {
+			Loading.value.Database = false;
 		}
-		window.$message.success(data.message);
-		showDatabaseCreation.value = false;
 	});
 }
 </script>

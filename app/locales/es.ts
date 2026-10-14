@@ -229,7 +229,24 @@ export default {
 		databases: "Bases de datos",
 		region: "Región",
 		selectRegion: "Seleccionar una región",
+		regionNotFound: "No se encontró esa región",
+		regionMismatch: "Esta implementación está fijada a otra región",
+		regionDisabled: "Esa región no está disponible",
+		regionUnavailable: "La región de esta implementación no está disponible",
+		regionCatalogUnavailable: "El catálogo de regiones no está disponible",
 		createDatabase: "Crear base de datos",
+		adminUsername: "Nombre de usuario del administrador",
+		adminPassword: "Contraseña del administrador",
+		adminPasswordConfirm: "Confirmar contraseña del administrador",
+		databaseAdminUsernameHint:
+			"El nombre de usuario del primer administrador de esta base de datos. Es independiente de tu cuenta global.",
+		databaseAdminPasswordHint:
+			"Al menos 8 caracteres. Se almacena como hash; nunca se copia de tu cuenta global.",
+		databaseCreatedTitle: "Base de datos creada",
+		databaseCreatedHint:
+			"Inicia sesión en la dirección propia de la base de datos para guardar estas credenciales en tu navegador.",
+		databaseLoginUrlLabel: "Dirección de inicio de sesión",
+		openDatabaseLogin: "Abrir inicio de sesión de la base de datos",
 		basicInformation: "Información básica",
 		basicInformationDescription:
 			"Define los detalles de la base de datos y el idioma predeterminado.",

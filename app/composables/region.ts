@@ -31,8 +31,17 @@ export interface RegionSelection {
 export const REGION_STATE_KEY = "region";
 /** State key holding the fetched region catalog. */
 export const REGION_CATALOG_KEY = "region-catalog";
+/**
+ * State key holding an explicit region-resolution failure. A **pinned**
+ * deployment that cannot resolve its region must stop region-scoped work with
+ * an error rather than silently target the configured default (which may be a
+ * different region).
+ */
+export const REGION_ERROR_KEY = "region-error";
 /** Cookie persisting the active selection across reloads. */
 export const REGION_COOKIE = "inicontent_region";
+/** App-route query parameter carrying an explicit region for deep links. */
+export const REGION_QUERY_PARAM = "region";
 
 /**
  * Region-scoped Nuxt state. Every entry caches data resolved against the active
@@ -216,4 +225,54 @@ export function resolvePinnedSelection(
 	if (!apiUrl) return null;
 
 	return { code, apiUrl };
+}
+
+/**
+ * The region code an explicit deep link asks for, from an app-route query
+ * object (`?region=sa-1`). Returns `null` when the parameter is absent or not a
+ * valid code — an unvalidated value never becomes a request target.
+ */
+export function regionCodeFromQuery(query: unknown): string | null {
+	if (!query || typeof query !== "object") return null;
+	const raw = (query as Record<string, unknown>)[REGION_QUERY_PARAM];
+	const value = Array.isArray(raw) ? raw[0] : raw;
+	return normalizeRegionCode(value);
+}
+
+/** The bare origin (`https://host`) of a region API URL, or `null`. */
+export function apiUrlOrigin(value: unknown): string | null {
+	const apiUrl = normalizeRegionApiUrl(value);
+	if (!apiUrl) return null;
+	try {
+		return new URL(apiUrl).origin;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Every **secondary** region origin a deployment knows about.
+ *
+ * Used by the network boundary to decide where the main-region platform session
+ * must never travel. The main origin is deliberately excluded: it is the one
+ * place that session is valid. Origins are compared bare (`https://host`), so a
+ * trailing path on a region URL never defeats the match.
+ */
+export function collectRegionOrigins(options: {
+	selection?: RegionSelection | null;
+	catalog?: readonly RegionOption[];
+	mainApiUrl?: unknown;
+}): string[] {
+	const main = apiUrlOrigin(options.mainApiUrl);
+	const origins = new Set<string>();
+
+	const add = (value: unknown) => {
+		const origin = apiUrlOrigin(value);
+		if (origin && origin !== main) origins.add(origin);
+	};
+
+	add(options.selection?.apiUrl);
+	for (const region of options.catalog ?? []) add(region.apiUrl);
+
+	return [...origins];
 }

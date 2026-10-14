@@ -11,15 +11,22 @@
  * multi-region deployment with no persisted selection, snaps a pinned
  * deployment to its own region, and re-validates a persisted selection against
  * the main region's catalog. A failure is swallowed deliberately — the app must
- * boot, and a pinned deployment then stays on its configured base rather than
- * silently targeting another region.
+ * boot. A **pinned** deployment that cannot resolve its region records an
+ * explicit error (`regionError`), which `region.global.ts` surfaces before any
+ * page runs, rather than silently targeting the configured base.
  */
 export default defineNuxtPlugin({
 	name: "region",
 	enforce: "pre",
 	async setup() {
 		try {
-			await useRegion().bootstrap();
+			// An explicit `?region=<code>` deep link is resolved here (not in a
+			// route middleware) so it is settled before `domain.global.ts`
+			// resolves a hostname to a database from `useApiBase()`.
+			const requested = new URL(window.location.href).searchParams.get(
+				REGION_QUERY_PARAM,
+			);
+			await useRegion().bootstrap(requested);
 		} catch {
 			// bootstrap() already fails safe; this guards the wrapper itself.
 		}

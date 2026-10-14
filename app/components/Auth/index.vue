@@ -137,11 +137,25 @@ const SigninColumns: Schema = [
 		key: "username",
 		type: "string",
 		required: true,
+		// `field.inputProps` are NInput **props**; NInput forwards its own
+		// `inputProps` object onto the inner `<input>`, which is where a browser
+		// password manager reads the autocomplete contract.
+		inputProps: {
+			inputProps: {
+				autocomplete: "username",
+				name: "username",
+				autocapitalize: "none",
+				spellcheck: "false",
+			},
+		},
 	},
 	{
 		key: "password",
 		type: "password",
 		required: true,
+		inputProps: {
+			inputProps: { autocomplete: "current-password", name: "password" },
+		},
 	},
 ];
 const ResetRequestColumns: Schema = [
