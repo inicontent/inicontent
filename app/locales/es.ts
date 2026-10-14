@@ -227,6 +227,8 @@ export default {
 		translations: "Traducciones",
 		assets: "Archivos",
 		databases: "Bases de datos",
+		region: "Región",
+		selectRegion: "Seleccionar una región",
 		createDatabase: "Crear base de datos",
 		basicInformation: "Información básica",
 		basicInformationDescription:

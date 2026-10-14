@@ -320,8 +320,17 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			apiBase: process.env.apiBase || "https://api.inicontent.com/",
+			// Main-region control plane. Equal to `apiBase` unless a regional
+			// deployment points it at the central main region explicitly.
+			mainApiBase:
+				process.env.INICONTENT_MAIN_API_URL ||
+				process.env.apiBase ||
+				"https://api.inicontent.com/",
 			idOne: process.env.idOne || "d7b3d61a582e53ee29b5a1d02a436d55",
-			database: process.env.database || "inicontent",
+			database:
+				process.env.INICONTENT_DATABASE || process.env.database || "inicontent",
+			// The region this deployment is pinned to (`""` = multi-region).
+			region: process.env.INICONTENT_REGION || "",
 		},
 	},
 });

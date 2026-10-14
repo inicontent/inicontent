@@ -1,10 +1,20 @@
+import {
+	REGION_STATE_KEY,
+	type RegionSelection,
+	withTrailingSlash,
+} from "./region";
+
 /**
- * The single seam for the API base URL. Today it is a build-time constant;
- * per-region routing (Phase D) delivers it at session bootstrap instead.
- * Every call site must read it through this composable so the switch is a
- * one-place change. Do not add new direct `config.public.apiBase` reads.
+ * The single seam for the API base URL. It resolves to the active region's
+ * origin when one is selected (`INICONTENT_REGION` or the region picker), and
+ * to the configured default otherwise. Every call site must read it through
+ * this composable so region routing stays a one-place change. Do not add new
+ * direct `config.public.apiBase` reads.
  */
 export function useApiBase(): string {
 	const config = useRuntimeConfig();
-	return String(config.public?.apiBase ?? "");
+	const region = useState<RegionSelection | null>(REGION_STATE_KEY, () => null);
+
+	const base = region.value?.apiUrl || String(config.public?.apiBase ?? "");
+	return base ? withTrailingSlash(base) : "";
 }

@@ -379,8 +379,12 @@ declare module "nuxt/schema" {
 	interface runtimeConfig {
 		public: {
 			apiBase: string;
+			/** Main-region control plane; equals `apiBase` unless a regional deployment points it at the central main region. */
+			mainApiBase: string;
 			idOne: string;
 			database?: string;
+			/** The region this deployment is pinned to (`""` = multi-region). */
+			region?: string;
 		};
 	}
 }

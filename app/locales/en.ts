@@ -519,6 +519,8 @@ export default {
 
 		// Dashboards
 		databases: "Databases",
+		region: "Region",
+		selectRegion: "Select a region",
 		createDatabase: "Create database",
 		create: "Create",
 		basicInformation: "Basic information",

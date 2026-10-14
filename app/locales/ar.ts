@@ -229,6 +229,8 @@ export default {
 		translations: "الترجمة",
 		assets: "الملفات",
 		databases: "قواعد البيانات",
+		region: "المنطقة",
+		selectRegion: "اختر منطقة",
 		createDatabase: "إنشاء قاعدة بيانات",
 		basicInformation: "المعلومات الأساسية",
 		basicInformationDescription: "حدد تفاصيل قاعدة البيانات واللغة الافتراضية.",

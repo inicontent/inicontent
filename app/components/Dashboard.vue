@@ -2,6 +2,9 @@
 	<NCard :title="t('databases')" style="background: none" :bordered="false">
 		<template #header-extra>
 			<NFlex justify="center" align="center">
+				<NSelect v-if="!isPinned && regionOptions.length"
+					:value="selection?.code ?? null" :options="regionOptions" :placeholder="t('selectRegion')"
+					size="small" style="width: 180px; margin-inline-end: 8px;" @update:value="onRegionChange" />
 				<NPagination v-if="pagination.itemCount && pagination.pageCount > 1"
 				:simple="!!$device.isMobile" :page="pagination.page" :page-count="pagination.pageCount"
 				@update:page="pagination.onUpdatePage" />
@@ -97,6 +100,30 @@ const Language = useScopedCookie<LanguagesType>(
 );
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
+// Explicit region selection. The platform admin lists databases per region;
+// switching region retargets `useApiBase()` and the reactive fetch below.
+const {
+	catalog: regionCatalog,
+	selection,
+	pinned,
+	isPinned,
+	select: selectRegion,
+	loadRegions,
+} = useRegion();
+const regionOptions = computed(() =>
+	regionCatalog.value
+		.filter((region) => region.enabled)
+		.map((region) => ({ label: region.name, value: region.code })),
+);
+
+function onRegionChange(code: string) {
+	selectRegion(
+		regionCatalog.value.find((region) => region.code === code) ?? null,
+	);
+	pagination.page = 1;
+	refresh();
+}
+
 const pagination = reactive({
 	page: 1,
 	pageCount: 1,
@@ -120,7 +147,7 @@ const {
 	status,
 	refresh,
 } = await useLazyFetch<apiResponse<Database[]>>(
-	`${useApiBase()}inicontent/databases`,
+	computed(() => `${useApiBase()}inicontent/databases`),
 	{
 		key: "databases",
 		onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
@@ -141,6 +168,16 @@ const {
 		credentials: "include",
 	},
 );
+
+// Multi-region only: load the catalog once so the selector can offer regions.
+// Best-effort — a failure leaves the deployment's default region in place.
+if (!pinned) {
+	try {
+		await loadRegions();
+	} catch {
+		// The dashboard still lists the default region's databases.
+	}
+}
 const expandedNames = ref<string[]>();
 const showDatabaseCreation = ref(false);
 
