@@ -29,6 +29,15 @@ test("a bare hostname resolves to the main region", () => {
 	});
 });
 
+test("the canonical main selection preserves existing bare tenant login hosts", () => {
+	assert.equal(databaseHostname("myclinic", "main"), "myclinic.inicontent.com");
+	assert.equal(
+		resolveDatabaseLoginUrl("myclinic", "main"),
+		"https://myclinic.inicontent.com/login?region=main",
+	);
+	assert.equal(databaseHostname("مرحبا", "main"), databaseHostname("مرحبا"));
+});
+
 test("a region-encoded hostname splits on the double hyphen", () => {
 	assert.deepEqual(parseDatabaseHostname("sa-1--myclinic.inicontent.com"), {
 		region: "sa-1",

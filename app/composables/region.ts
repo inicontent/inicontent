@@ -473,8 +473,11 @@ export function databaseHostname(
 	const slugLabel = asciiSlugLabel(trimmed);
 	if (!slugLabel) return null;
 
-	const label = regionCode
-		? `${regionCode}${REGION_HOST_SEPARATOR}${slugLabel}`
+	// `main` is the registry's alias for the historical default deployment;
+	// selecting Paris must not turn an existing bare tenant host into main--….
+	const hostnameRegion = regionCode === "main" ? "" : regionCode;
+	const label = hostnameRegion
+		? `${hostnameRegion}${REGION_HOST_SEPARATOR}${slugLabel}`
 		: slugLabel;
 	if (!HOSTNAME_LABEL_PATTERN.test(label)) return null;
 	return `${label}${TENANT_HOSTNAME_SUFFIX}`;
