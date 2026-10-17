@@ -276,3 +276,14 @@ source provenance, type checks and dependency-vulnerability remediation are not
 all accepted. Effective production cron/schedule overrides also need review
 before the proposed job freeze. The code integration and candidate preparation
 do not silently waive these gates.
+
+## Immutable Linux ARM64 candidate
+
+Built and validated on the existing staging ARM64 host in an isolated sandbox.
+Archive SHA-256:
+`afffd0f38c08f77139e4cb0d0154332849afcfdc0403a91bc50b6bb437398487`
+(`inicontent-production-e96217bb63e8-linux-arm64.tar.gz`, 183,865,240 bytes).
+All 189,875 payload files digest-verified; 1 native module (Linux ARM64 ELF);
+standalone runtime passed 13 checks; secret scan passed. The artifact is a
+validated candidate, **not a production release**. See
+`docs/production/RELEASE_MANIFEST.json` for the complete evidence record.

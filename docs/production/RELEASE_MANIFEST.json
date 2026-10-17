@@ -1,6 +1,6 @@
 {
 	"format": 1,
-	"recordedAt": "2026-10-17T21:14:32.873100+00:00",
+	"recordedAt": "2026-10-17T22:48:11.614948+00:00",
 	"decision": "NO-GO",
 	"finalCutoverAuthorized": false,
 	"localCandidateTag": "launch-paris-20261017-rc1",
@@ -45,11 +45,71 @@
 		"saas": "ca91855bb64677358d921dfd3f6f931bb02824ee4dd5bf38bf4cab82a8cc0fa2"
 	},
 	"artifact": {
-		"status": "pending",
-		"approvedForProduction": false
+		"status": "built-and-integrity-verified",
+		"approvedForProduction": false,
+		"filename": "inicontent-production-e96217bb63e8-linux-arm64.tar.gz",
+		"bytes": 183865240,
+		"sha256": "afffd0f38c08f77139e4cb0d0154332849afcfdc0403a91bc50b6bb437398487",
+		"manifestSHA256": "711aba6ba5db9fa1ba986118e546b54325fadf38a77700e1cea9b79c0bdb0003",
+		"payloadFileCount": 189875,
+		"frontendFileCount": 717,
+		"nodeVersion": "v26.9.0",
+		"nodeModuleABI": "147",
+		"packageManager": "pnpm@10.33.0",
+		"createdAt": "2026-10-17T22:09:19.124983+00:00"
 	},
 	"linuxValidation": {
-		"status": "pending"
+		"status": "passed",
+		"engineTests": {
+			"status": "passed",
+			"tests": 393,
+			"pass": 393,
+			"fail": 0,
+			"skipped": 0,
+			"cancelled": 0,
+			"log": "inibase-tests.log",
+			"logSHA256": "b1cc7c2be268b00b9ed92ed094e6c36444c345d0e74cc3a968cbfdbb9f463daa"
+		},
+		"apiTests": {
+			"status": "passed",
+			"tests": 1038,
+			"pass": 1038,
+			"fail": 0,
+			"skipped": 0,
+			"cancelled": 0,
+			"log": "api-tests.log",
+			"logSHA256": "f90e34c816c9ffabb8ce34b4395fb93ef12aa4cc0b7176a932ddc461e13824a7"
+		},
+		"standaloneBuiltServer": {
+			"linux": true,
+			"arch": "arm64",
+			"release": "e96217bb63e8",
+			"status": "passed",
+			"checks": [
+				"built health identity",
+				"runtime cache path",
+				"Paris-only catalog",
+				"public projection",
+				"headers/no-store",
+				"anonymous region mutation denied",
+				"private asset HTTP403/no-store",
+				"password auth/Secure cookie",
+				"partial region identity preservation",
+				"closed-region creation denial",
+				"database provisioning and separate administrator",
+				"cross-database SID rejection",
+				"pinned sparse-read engine"
+			]
+		},
+		"nativeModules": [".output/server/node_modules/re2/build/Release/re2.node"],
+		"builderNODE_OPTIONS": "--max-old-space-size=512",
+		"sandbox": {
+			"memoryMaxMiB": 300,
+			"memorySwapMaxMiB": 768,
+			"cpuQuotaPercent": 50,
+			"liveDataInaccessible": true,
+			"credentialsCleared": true
+		}
 	},
 	"localTests": {
 		"inibase": {

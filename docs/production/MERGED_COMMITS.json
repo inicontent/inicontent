@@ -1,5 +1,5 @@
 {
-	"observedAt": "2026-10-17T21:14:32.873100+00:00",
+	"observedAt": "2026-10-17T22:48:11.614948+00:00",
 	"integrationBranch": "production/launch-eu-paris",
 	"mergeConflicts": [],
 	"repositories": {
@@ -428,7 +428,7 @@
 				"refs/heads/fix/writer-concurrency ab988c782090cd8ccb1f98c5ed236dff04718dc8",
 				"refs/heads/master 9f33a73823e16055d36fa8fda66160256b9febae",
 				"refs/heads/port/open3.2.0 ab988c782090cd8ccb1f98c5ed236dff04718dc8",
-				"refs/heads/production/launch-eu-paris 8a3e35a50d9ceeddc17c5a4a001e5fc0a3ebbf6b",
+				"refs/heads/production/launch-eu-paris 18fba6e634eac018be9bdc501cecb37d87a21be4",
 				"refs/remotes/origin/HEAD 38d2dba417ad140c2e267dafe845b5778f9a47b7",
 				"refs/remotes/origin/fix/lossless-string-storage 591fa7838a158dbe7a25071379319bfbc85cc1d8",
 				"refs/remotes/origin/fix/writer-concurrency ab988c782090cd8ccb1f98c5ed236dff04718dc8",
@@ -459,25 +459,10 @@
 				"refs/tags/v3.8.1 3438e09bfabb97c6836536a729915304ad7db041"
 			],
 			"uncommittedAtReportNotIncludedInSourcePin": [
-				"M package.json",
-				" M src/expression.ts",
-				" M src/file.ts",
-				" M src/format.ts",
-				" M src/index.ts",
-				" M src/overlay.ts",
-				" M src/updatelog.ts",
-				" M tests/updatelog.engine.test.ts",
-				"?? src/disk-overlay.ts",
-				"?? src/key-index.ts",
-				"?? src/resources.ts",
-				"?? src/seek.ts",
-				"?? test-bench-log/",
-				"?? tests/incremental.test.ts",
-				"?? tests/seekable.test.ts",
-				"?? tests/storage-hardening.test.ts",
-				"?? tests/storage-process.test.ts",
-				"?? tests/storage.child.ts",
-				"?? tests/tombstones.test.ts"
+				"M README.md",
+				" M src/disk-overlay.ts",
+				"?? docs/",
+				"?? test-db-advanced/"
 			]
 		},
 		"inicontent": {
@@ -552,7 +537,7 @@
 				"refs/heads/agents/add-quick-settings-table-popover 1b30ff983080b4d25cdc3fe8a5887f1cab638510",
 				"refs/heads/fix/encode-table-url-slugs ef9cf7e00fb29a0563591328d487590f16238c24",
 				"refs/heads/main 2751defba4cc6a7a881c1dfdb6b2393eb8522736",
-				"refs/heads/production/launch-eu-paris e4143d8f6f7991c9d195736b7004a51fdda86908",
+				"refs/heads/production/launch-eu-paris 7034714193ddaf3ad024031ff91e52ecaf7c66e3",
 				"refs/remotes/origin/HEAD 6f04e27bb323b07c7f296d3a842d9342b285a0a8",
 				"refs/remotes/origin/agents/add-quick-settings-table-popover 1b30ff983080b4d25cdc3fe8a5887f1cab638510",
 				"refs/remotes/origin/fix/encode-table-url-slugs ef9cf7e00fb29a0563591328d487590f16238c24",
@@ -568,10 +553,7 @@
 				"refs/tags/v1.2.0 d55f608f36c6e38d54fe1de01e5260f0c326b98f",
 				"refs/tags/v1.5.0 554e6992acbcafa1ef4f01e725ace152a4b78779"
 			],
-			"uncommittedAtReportNotIncludedInSourcePin": [
-				"?? docs/",
-				"?? scripts/production-report.py"
-			]
+			"uncommittedAtReportNotIncludedInSourcePin": []
 		},
 		"saas": {
 			"destination": "1c047f37c5ed055b328584348dbebcb9a041c02b",

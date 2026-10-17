@@ -1,5 +1,5 @@
 {
-	"observedAt": "2026-10-17T21:14:32.873100+00:00",
+	"observedAt": "2026-10-17T22:48:11.614948+00:00",
 	"repositories": {
 		"inibase": {
 			"command": "pnpm audit --prod --json",

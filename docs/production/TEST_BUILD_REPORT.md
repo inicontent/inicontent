@@ -144,6 +144,37 @@ The final Linux result and immutable tarball checksum must be read from
 recorded, this section is **not a claim of Linux success**. An older superseded
 candidate's pass cannot certify source changes made afterward.
 
+## Linux ARM64 artifact: PASSED
+
+The final candidate was built on the existing staging ARM64 host inside a
+separate unprivileged systemd sandbox (user `m8accept`, 300 MiB RAM, 768 MiB
+swap, 50% CPU, live data/credentials inaccessible). The first attempt passed all
+393 engine / 1,038 API tests but exhausted V8's default heap during Nitro's
+build. The retry set `NODE_OPTIONS=--max-old-space-size=512` and completed the
+full pipeline: frozen installs, both test suites, engine type check, Nitro
+build, standalone runtime validation, secret scan, and immutable tarball
+creation.
+
+| Evidence | Result |
+|---|---|
+| Engine tests (Linux) | **393 passed**, 0 failed |
+| API tests (Linux) | **1,038 passed**, 0 failed |
+| Engine type check (Linux) | Passed |
+| Nitro build (Linux ARM64) | Passed |
+| Standalone built-server runtime | **13 checks passed** on the copied payload |
+| Secret scan | Passed, 0 findings |
+| Archive SHA-256 | `afffd0f38c08f77139e4cb0d0154332849afcfdc0403a91bc50b6bb437398487` |
+| Archive size | 183,865,240 bytes |
+| Payload files | 189,875, all digest-verified independently |
+| Native modules | 1 (`re2`), Linux ARM64 ELF verified |
+| Node / ABI | v26.9.0 / NODE_MODULE_VERSION 147 |
+
+The artifact was downloaded to a restricted local workspace and independently
+verified: archive digest matched its sidecar, every payload file digest matched
+`MANIFEST.json`, the native module is Linux ARM64 ELF, and the standalone
+copied server passed all 13 runtime checks. The artifact is **not approved for
+production**; it is a validated candidate only.
+
 The superseded first Linux attempt found a durability **test-harness race**:
 it compared one engine read with three later independent filesystem reads while
 writers continued committing (97/97/97/98 lines). The corrected reader keeps
