@@ -1,0 +1,32 @@
+{
+	"source": {
+		"api": {
+			"commit": "e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+			"tree": "53629b0a9fd6f5a3a9dc10fab76f903afe7b88be"
+		},
+		"inibase": {
+			"commit": "3692895c3a1feacf1e76c4bf65cd11b10c445c0f",
+			"tree": "fba1742172bd82f1cb56964a43cc44db5b764bbd",
+			"vendoredPackage": {
+				"commit": "dacd10280bfdf8c39fae1bc0f0ebbd3d14abd9c5",
+				"package": "inibase-3.8.0-dacd10280bfd.tgz",
+				"sha256": "e265a89ef690026d24f3beea03f2a85cbe6322cd96ef7b717f9f7002c7ab076e",
+				"sparseReadCommit": "9f33a73823e16055d36fa8fda66160256b9febae"
+			}
+		},
+		"inicontent": {
+			"commit": "e4143d8f6f7991c9d195736b7004a51fdda86908",
+			"tree": "f8ce46eb38ab4337c3838f1574b0c60abe7d786a"
+		},
+		"saas": {
+			"commit": "04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+			"tree": "10c7e2cb87936d9c487617de1a92326d25d060a7"
+		}
+	},
+	"lockfiles": {
+		"api": "d1c49e742c6c2a3c9d7f604b69bf3cf2a2e3f35d6215af81de62c89296bb084b",
+		"inibase": "822dafe890c4c5701ae8268727085939cf1a036fb31d4d71226799d5004b38f9",
+		"inicontent": "98b5252fd2922fcb5f8c35eb4104722629e5448f4280196ea27bf3ec86b7b342",
+		"saas": "ca91855bb64677358d921dfd3f6f931bb02824ee4dd5bf38bf4cab82a8cc0fa2"
+	}
+}

@@ -1,0 +1,752 @@
+{
+	"observedAt": "2026-10-17T21:14:32.873100+00:00",
+	"integrationBranch": "production/launch-eu-paris",
+	"mergeConflicts": [],
+	"repositories": {
+		"api": {
+			"destination": "7070c1d9daed61e917f877f925bcea2417b72fdb",
+			"incoming": "783579e0437808004cba1edd7e0cef86d637ba8a",
+			"candidateSource": "e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+			"incomingCommits": [
+				{
+					"commit": "7732f587004a1ae8da6bb57cd010eebcb71a1dd8",
+					"subject": "security: C2a asset privacy fails closed and publishes explicitly"
+				},
+				{
+					"commit": "bd799e799445fc26eaa9ac762c649ef2162d18c8",
+					"subject": "security: mint a fresh session unless the caller presents their own valid SID (B1)"
+				},
+				{
+					"commit": "b4e85d22a48af4ed3c601578d92ca24b99bf038b",
+					"subject": "security: make rate-limit and handoff consumption atomic (B2/B3)"
+				},
+				{
+					"commit": "91bd8a156c4f141e63159749df6663a6d05cc9b7",
+					"subject": "security: restrict enrollment sessions and add account recovery (B1a)"
+				},
+				{
+					"commit": "f4c85f962ec6e8516461b82f0506e3659f7e5385",
+					"subject": "security: do not trust X-Forwarded-For when the peer is unknown (A4)"
+				},
+				{
+					"commit": "b72c31396b91273849038adc20a2df2153fa4254",
+					"subject": "security: throttle handoff code redemption (B3)"
+				},
+				{
+					"commit": "c6ec3cd1833559c700211bd0555a119905000102",
+					"subject": "security: bind handoff codes to a PKCE verifier and destination origin (B2)"
+				},
+				{
+					"commit": "89b4f5e7540bd62ad17cc349c6de0d07c95dc186",
+					"subject": "security: sanitize resource paths and extend audit attribution (B4)"
+				},
+				{
+					"commit": "46fed3cb033ae6036e04920180153899f6f7c631",
+					"subject": "security: record privilege, delegation, PHI-read and provisioning events (B4)"
+				},
+				{
+					"commit": "81a1414f02bd9fa09ce687140e4d3179a1de654b",
+					"subject": "security: apply response-security headers to every API response (C3)"
+				},
+				{
+					"commit": "c7a3c3331242930c0f88f091be5fc1d8b8292cfd",
+					"subject": "docs: C3 response-header runbook and refresh the evidence record"
+				},
+				{
+					"commit": "26e132bd0aad460503bfe89056e6638e62ef7a85",
+					"subject": "security: bind sessions to their minting database (B2)"
+				},
+				{
+					"commit": "65992f60fe6beba5c74da34671e40f10002ab235",
+					"subject": "docs: record the B2 session↔database binding fix"
+				},
+				{
+					"commit": "bf9fd84a9358816d9693da9185ea40795ebe19ff",
+					"subject": "security: snapshot consistency, restore verification and an isolated restoration exercise (C4a)"
+				},
+				{
+					"commit": "2ab2f1c60861498dbbd8dd06395e607158827d98",
+					"subject": "security: seal, rotate and retain the audit trail, and alert on it (C4b/C4c)"
+				},
+				{
+					"commit": "c5cbe96756fe5212a775a69df1b78513663ea38f",
+					"subject": "security: document and test incident recovery (C4d)"
+				},
+				{
+					"commit": "366e7aaa05a1be2a4e39c14ec5b1fe5ea9958f7b",
+					"subject": "fix: do not flag a not-yet-created audit root as an access problem (C4b)"
+				},
+				{
+					"commit": "0ab76b5d91bfd5985cee3f07c7e9bc47da47e622",
+					"subject": "docs(security): record V1-V3 staging run (blocked) and C4 operational acceptance criteria"
+				},
+				{
+					"commit": "f1e29a0abbabd5f19f3722da8e6a1f9720263637",
+					"subject": "feat(staging): production-isolation preflight + isolated deploy path"
+				},
+				{
+					"commit": "d9780589e446dc22485529b2d578514d41a813bb",
+					"subject": "docs(security): link the staging deployment runbook from the matrix"
+				},
+				{
+					"commit": "75127a1e1595db0b22f4193a04de25990f1a0aee",
+					"subject": "fix(staging): drop no-op trap and unintended ecosystem upload"
+				},
+				{
+					"commit": "7566dfa671247de94e42adf6cb5e3d623909f963",
+					"subject": "feat(staging): effective-isolation gate and exact-target rollback"
+				},
+				{
+					"commit": "1f9471d7582643f335f5a37403c22c4d4402b4c8",
+					"subject": "feat(health): read-only /health reporting the baked release id"
+				},
+				{
+					"commit": "02bb5bf8092ad95f51fec7153ad5dc72f916791e",
+					"subject": "feat(staging): verify the /health release id and classify probe denials"
+				},
+				{
+					"commit": "3a9994ad008ef39c53a5a311f224741e2e67b726",
+					"subject": "feat(regions): add the main-region registry, server identity and region CRUD API"
+				},
+				{
+					"commit": "ae5a21e6128ed941e6981034f89cd80324a10c28",
+					"subject": "feat(identity): exchange global identity across regions and scope database ownership"
+				},
+				{
+					"commit": "e2522e3ca7308b0a21412d6c8028cf61c11c298c",
+					"subject": "M3: authenticate regional database operations with a regional session"
+				},
+				{
+					"commit": "3e5cbf18af0ff31d2b6074924d337b892fc22de1",
+					"subject": "M3: pin region isolation and single-region compatibility"
+				},
+				{
+					"commit": "41e3baa45a74056d164005dece1078517332214f",
+					"subject": "chore: apply biome formatting to M3 files"
+				},
+				{
+					"commit": "c47fd25ab77306b86bb512c0dd831dc68e5c1a68",
+					"subject": "M3: provision a database-specific administrator from the create form"
+				},
+				{
+					"commit": "09b88b30fc32d4c128832d6e5883a6e5bb639521",
+					"subject": "M3: resolve regional database hostnames deterministically"
+				},
+				{
+					"commit": "c76631d56f6c450f88b1bfbbd99a52e164535c9c",
+					"subject": "M3: host internationalized database slugs under their region"
+				},
+				{
+					"commit": "93b0964480510a85cb38e64bc5cb85a43fd68459",
+					"subject": "M3: reject a region code that would shadow an existing database"
+				},
+				{
+					"commit": "5d1d274b96730572f23265d9a8ba1b3d123c4467",
+					"subject": "M3: advertise the regional database host in SEO artifacts"
+				},
+				{
+					"commit": "8bda374eadbf3bccb6e514a33b0260911a15d8f7",
+					"subject": "M4: fail-closed billing authority (main region only)"
+				},
+				{
+					"commit": "8031aaf77bbd6090b1573ea0b30a6b9c217eb2a4",
+					"subject": "M4: regional pricing with currencies and effective dates"
+				},
+				{
+					"commit": "39f585143c89dbb9d6f4907f0513b198b3558c38",
+					"subject": "M4: central billing inventory"
+				},
+				{
+					"commit": "81be23cf44922b0584d9781a1358ee9b70197f04",
+					"subject": "M4: idempotent invoicing and regional reconciliation"
+				},
+				{
+					"commit": "6e966253c052b0787016569cba2e3118926d7214",
+					"subject": "M5: payment gateway interfaces, registry, availability, durable state\\n\\nStandard PaymentGateway interface with capabilities, registry, region/country /\\ncurrency/method constrained gateway selection, and durable intent/attempt /\\nevent/transaction state with idempotent creation and replay grants."
+				},
+				{
+					"commit": "365aa7f4b46e67497d3ac8cae7b694eedece545a",
+					"subject": "M5: gateway checkout, capture, webhook and admin routes with tests"
+				},
+				{
+					"commit": "2730f873338399e4fdcc40e76f95fcc0d1ac8289",
+					"subject": "M5 hardening: atomic claim via unique constraint catch, settlement validation\\n\\nLock-based read-then-write idempotency retained its describe; invoice +-intent\\n+-event creation now conflict-resolve on the DB UNIQUE constraint rather than\\nsilently producing a duplicate. Verified webhooks now only settle the invoice\\nafter validateSettlement agrees on gateway/intent/external/invoice/amount/\\ncurrency/user."
+				},
+				{
+					"commit": "8c8571429ae4332810f6f7bf58ba526100e2c0c8",
+					"subject": "M6: universal region installer script + docs + smoke test"
+				},
+				{
+					"commit": "79d0c6a5630b76914f7e1d323348c748849bcb59",
+					"subject": "M7: regional monitoring engine, storage, admin, public status API"
+				},
+				{
+					"commit": "1cb6735f2d80229588e332aaaf73343f1d98289d",
+					"subject": "M7 follow-up: fix translated incident-not-found code"
+				},
+				{
+					"commit": "5b9b3d92f232d6cdfc1dac05be9a4237ab5dbec2",
+					"subject": "M7: clean task/store files and rebuild"
+				},
+				{
+					"commit": "8772d72c7b187c3fdcd37dae6d15d49b2f802b1c",
+					"subject": "M7 security: SSRF-hardened monitoring targets, main-region authority, monitoring tests"
+				},
+				{
+					"commit": "fb339dcb153e39e3dda9f281cc77a6f1492ea55a",
+					"subject": "M5 admin: platform-admin + main-region gated gateway/payment diagnostics"
+				},
+				{
+					"commit": "908697fe8c947d8efa0dccd22b3d3fa4cf89591a",
+					"subject": "M6: portable smoke test and disposable-host acceptance harness"
+				},
+				{
+					"commit": "4b2acc15ebaa46c7be1d0e174c9f360f1de01c48",
+					"subject": "M8: multi-region acceptance plan (isolated, not executed)"
+				},
+				{
+					"commit": "5d50981896618fdaf8094ab089d4a76b4e8ecd7f",
+					"subject": "M8: record the acceptance execution attempt (blocked at infra prerequisite)"
+				},
+				{
+					"commit": "c918ec1911a7a426d5685e6f6e1a4606b65d4a09",
+					"subject": "M7: enforce the monitoring connect timeout and extend SSRF address coverage"
+				},
+				{
+					"commit": "0e44ef295abb482d8b55c7bbb7b6c58c2f5c8440",
+					"subject": "M9 — Security & Compliance Center backend"
+				},
+				{
+					"commit": "a69ab50cbfa38d7d70092100a00fce31fd81a5cc",
+					"subject": "M9 — never return the evidence storage reference to the browser"
+				},
+				{
+					"commit": "7e9fde48f6e6b3a7db90032899947952cc8964bc",
+					"subject": "M9 — Security & Compliance Center documentation"
+				},
+				{
+					"commit": "cc5364a27ff28445e76e6c4c157c2a5a64091d04",
+					"subject": "perf(cache): per-instance cache dir, safe shared purge, bounded in-memory metadata cache"
+				},
+				{
+					"commit": "f20f4afdf02a17f57555037b767f0ee7a1713d3d",
+					"subject": "docs(perf): add M10 report; correct the deployed engine version"
+				},
+				{
+					"commit": "1910b258aa9af966e0f645717f61d8e1cae0f5b5",
+					"subject": "chore(bench): add the reproducible performance harness and results"
+				},
+				{
+					"commit": "29e6685fe7b3ef5616baef1267af6b47cec3ee96",
+					"subject": "fix(cron): register monitoring:regions and audit:alerts on one schedule"
+				},
+				{
+					"commit": "e7028824313f183baa4079c54deb7d9b6f99de9b",
+					"subject": "fix(cache): include region in database-meta cache keys for isolation"
+				},
+				{
+					"commit": "bccdd5a919e1c116816c42a7a0e4652e144cd4a1",
+					"subject": "test(cache): add metadata cache invalidation, TTL, clone and region/database isolation tests"
+				},
+				{
+					"commit": "ab2868968dcb99aa496faba12351a96382aa8073",
+					"subject": "docs: update staging-isolation-acceptance-report with P1 remediation results"
+				},
+				{
+					"commit": "000e4edf8637f29a0879ce5d0d3a3bf78e1f7408",
+					"subject": "build(m8): add reproducible, checksummed release builder"
+				},
+				{
+					"commit": "58df4efc4061686962a65b0a0d9b88feba66acb8",
+					"subject": "build(m8): fix outer tarball staging and refine path scan"
+				},
+				{
+					"commit": "45374c33486378e3d57806fded42cbb0945d9626",
+					"subject": "fix(cache): resolve the storage mount dir at runtime"
+				},
+				{
+					"commit": "ebdfb725e2aec992444c76b129d02cd3d69ea5c8",
+					"subject": "build(m8): package instance composition and per-instance configs"
+				},
+				{
+					"commit": "582046d0937dc8091ab7fceb19786a6373e42e24",
+					"subject": "build(m8): never bake a developer .env into the release"
+				},
+				{
+					"commit": "62b3a05a28d8c31decdef46f8d77bd78ecc08f4e",
+					"subject": "fix(m8): restore the stashed .env with find, not a shell glob"
+				},
+				{
+					"commit": "686e5dba8387d200e070e6c7c5a3147565e57aa0",
+					"subject": "docs(m8): release, acceptance config, execution plan, browser pass"
+				},
+				{
+					"commit": "746fa572bf77b23db01beb0ec6dd7d2ff15958af",
+					"subject": "docs(m8): record the built artifact's identity and verification"
+				},
+				{
+					"commit": "e7670922c3e30c428dbf4e6ed4aab9652b19e306",
+					"subject": "fix(m8): isolate acceptance from the live host before running"
+				},
+				{
+					"commit": "02174452d2fd374a71e63c4267d8dcb016348a9f",
+					"subject": "docs(m8): record the isolation-corrected artifact identity"
+				},
+				{
+					"commit": "5f52d4ad870445786eeb25167aeabf461e9fa672",
+					"subject": "fix(m8): make the instance's writable paths actually writable"
+				},
+				{
+					"commit": "d7e293f567c161067be886cffae80aea98523fc3",
+					"subject": "docs(m8): record the writable-path build and tighten provisioning"
+				},
+				{
+					"commit": "02c44711fab4b41dfa5d98687638d4283d4028a2",
+					"subject": "docs(m8): record the writable-path build, and note what an archive hash proves"
+				},
+				{
+					"commit": "ba3e9992342d8aee9d5c3109823517ea33b3b9ec",
+					"subject": "docs(m8): promote the current build and renumber the recorded builds"
+				},
+				{
+					"commit": "2e71e4542b2893bfb8444462fbc4b6621eb20fd5",
+					"subject": "docs(m8): state which commit the recorded artifact corresponds to"
+				},
+				{
+					"commit": "bc4e0f349b4165c915edd9921aafe484952f748b",
+					"subject": "docs(m8): name the containment guard in the status table"
+				},
+				{
+					"commit": "cf65a21d5a7823b2ca72410035f7dbc94eeb1e03",
+					"subject": "fix(m8): make the acceptance env templates safe to source in bash"
+				},
+				{
+					"commit": "c47b41027be79a0c309f5d13ef6714b14d688246",
+					"subject": "docs(m8): record the main-region smoke test and the env-template fix"
+				},
+				{
+					"commit": "61ee49bcf299f265af3eeec03cd7af012af9d9f6",
+					"subject": "fix(m8): hide each acceptance instance from the other, and mark deploy scripts executable"
+				},
+				{
+					"commit": "c8eb105b5403b3b0aeb8f6f4af4b8ef9e176d25f",
+					"subject": "docs(m8): record the v6 runtime verification and the two-region isolation finding"
+				},
+				{
+					"commit": "18293aa27859610264388285482750073e6d4728",
+					"subject": "docs(m8): say one listening socket, which is what was measured"
+				},
+				{
+					"commit": "3fc885c282e329c59e252c9fd10b79267132e259",
+					"subject": "fix(m8): one Linux user per region, so /proc cannot cross between them"
+				},
+				{
+					"commit": "0e396316ee2d367b42e0f4a3a238b6c1cc28f487",
+					"subject": "m8: stop three ways the acceptance script drifted from its own record"
+				},
+				{
+					"commit": "83031c741f951b437c4c8220f43ee4220aaaae52",
+					"subject": "m8: record the per-region-user fix, the v8 build and the isolation proof"
+				},
+				{
+					"commit": "b66000e1f47cab299e6330a51cfe9b5a6d8c986d",
+					"subject": "m8: record the second-EC2 provisioning block and the cross-host transport finding"
+				},
+				{
+					"commit": "783579e0437808004cba1edd7e0cef86d637ba8a",
+					"subject": "m8: prepare pinned-v8 two-host bootstrap and private SSH acceptance"
+				}
+			],
+			"preparationCommits": [
+				{
+					"commit": "aa21bfcc4df64d474377a02af2fc4f4f00d22c66",
+					"subject": "feat(release): integrate Paris launch gates and fail-closed production tooling"
+				},
+				{
+					"commit": "7dcaa21d8751cbcdf69eda06e57ec82f6e421317",
+					"subject": "build(release): record the exact vendored engine source identity"
+				},
+				{
+					"commit": "5714f50dc0fb3b0c25db365fec0297d98dcd4b80",
+					"subject": "fix(release): verify provisioning and preserve auth and region metadata at runtime"
+				},
+				{
+					"commit": "48565fd29b511982b040dae982c35960e6832489",
+					"subject": "fix(release): verify credential token boundaries in generated WASM payloads"
+				},
+				{
+					"commit": "a21b9d906aec013511cec1b5e518ee16b1bf4592",
+					"subject": "fix(release): rehearse atomic rollback and preserve typed region identity"
+				},
+				{
+					"commit": "1550c79991dfbd25bbf13bd8d7fc20dafa2797fb",
+					"subject": "fix(release): preserve production storage settings and bound runtime validation"
+				},
+				{
+					"commit": "d2de87fadcbe4908e3aa91b9236a926c9bc35aa5",
+					"subject": "security(release): prevent IAM-role fallback to shared administrator profiles"
+				},
+				{
+					"commit": "e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+					"subject": "build(release): validate the standalone copied Linux payload"
+				}
+			],
+			"refsAtReport": [
+				"refs/heads/main 783579e0437808004cba1edd7e0cef86d637ba8a",
+				"refs/heads/production/launch-eu-paris e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+				"refs/remotes/origin/HEAD 7070c1d9daed61e917f877f925bcea2417b72fdb",
+				"refs/remotes/origin/main 7070c1d9daed61e917f877f925bcea2417b72fdb",
+				"refs/tags/launch-paris-20261017-rc1 e6432413406368ded278a0269af4fb6529174d82"
+			],
+			"uncommittedAtReportNotIncludedInSourcePin": []
+		},
+		"inibase": {
+			"destination": "38d2dba417ad140c2e267dafe845b5778f9a47b7",
+			"incoming": "9f33a73823e16055d36fa8fda66160256b9febae",
+			"candidateSource": "3692895c3a1feacf1e76c4bf65cd11b10c445c0f",
+			"incomingCommits": [
+				{
+					"commit": "9f33a73823e16055d36fa8fda66160256b9febae",
+					"subject": "perf(file): read sparse lines natively instead of spawning sed"
+				}
+			],
+			"preparationCommits": [
+				{
+					"commit": "dacd10280bfdf8c39fae1bc0f0ebbd3d14abd9c5",
+					"subject": "test(release): verify legacy compatibility with installation-independent keys"
+				},
+				{
+					"commit": "917cc6f062b23e5cb45e77bdd0f82848d8086666",
+					"subject": "build(release): retain the engine dependency lock for repeatable validation"
+				},
+				{
+					"commit": "3692895c3a1feacf1e76c4bf65cd11b10c445c0f",
+					"subject": "test(durability): compare physical invariants within one coherent snapshot"
+				}
+			],
+			"refsAtReport": [
+				"refs/heads/fix/writer-concurrency ab988c782090cd8ccb1f98c5ed236dff04718dc8",
+				"refs/heads/master 9f33a73823e16055d36fa8fda66160256b9febae",
+				"refs/heads/port/open3.2.0 ab988c782090cd8ccb1f98c5ed236dff04718dc8",
+				"refs/heads/production/launch-eu-paris 8a3e35a50d9ceeddc17c5a4a001e5fc0a3ebbf6b",
+				"refs/remotes/origin/HEAD 38d2dba417ad140c2e267dafe845b5778f9a47b7",
+				"refs/remotes/origin/fix/lossless-string-storage 591fa7838a158dbe7a25071379319bfbc85cc1d8",
+				"refs/remotes/origin/fix/writer-concurrency ab988c782090cd8ccb1f98c5ed236dff04718dc8",
+				"refs/remotes/origin/master 38d2dba417ad140c2e267dafe845b5778f9a47b7",
+				"refs/tags/launch-paris-20261017-rc1 d1d3d45ace9760d6b9c04b4dfc977b79d7a280d8",
+				"refs/tags/v1.5.10 ffcc737f8d8b8200e4aa376e00bd17b7fd1303b4",
+				"refs/tags/v1.5.11 a1b37f7d065167092e335ee8c03b2467f4a962e9",
+				"refs/tags/v1.5.8 1b6100d4443a804975b8a112af16a5d09a52600e",
+				"refs/tags/v1.5.9 f1747bb91a74ed67fd9a0085d79c0056cd5675ec",
+				"refs/tags/v1.6.0 31d697b6ebea111291611620ee9062d1af9fcdc0",
+				"refs/tags/v1.6.1 221b83e819b170b9fa0459202f6346ff3d790a0f",
+				"refs/tags/v1.6.2 0a436c6ee45ca23ebd93b08791cf7eaf6ce63152",
+				"refs/tags/v1.6.3 510de2b6a6694fe94ea6049c6bd8060fa6a51ed0",
+				"refs/tags/v1.6.4 119b60420568c7d8cd3c1cc357b4b7169e6ffef1",
+				"refs/tags/v1.6.5 5171cb0463067a2cde3f2488debb2708033d282a",
+				"refs/tags/v1.6.6 c55c19a521efe76b0c853eb8698322dc88e00492",
+				"refs/tags/v1.7.0 9342fb849e721d0c42034bcc9ae38a92fb785e73",
+				"refs/tags/v1.7.1 a1c3ef4798068a2cbca82a614c677c66dd67331a",
+				"refs/tags/v1.8.0 da992fedd8376d55ab9a271b001dc91d6a1150bc",
+				"refs/tags/v2.0.0 0969a3070dddafa28cc644086cdbcc3d45980927",
+				"refs/tags/v2.0.1 e8cee0ae4f11ae8e58e0285b0c68d16633fec707",
+				"refs/tags/v3.1.0 0d943301a0b9a10199c538465c4607764d84b740",
+				"refs/tags/v3.1.1 10879add25a5d320b96e98e9ed66490fc39fadd8",
+				"refs/tags/v3.2.0 9ac1dfaadf2f93ed67ed6647605a233ef06ce27c",
+				"refs/tags/v3.3.0 3ba5142d9126148d33828a0861d089b79bad9220",
+				"refs/tags/v3.4.0 394066354d8ee0541bf27fd3451fdf5bd23bab19",
+				"refs/tags/v3.5.0 4e85760257f920eaf501db0c3fa63eba6c3de94a",
+				"refs/tags/v3.8.1 3438e09bfabb97c6836536a729915304ad7db041"
+			],
+			"uncommittedAtReportNotIncludedInSourcePin": [
+				"M package.json",
+				" M src/expression.ts",
+				" M src/file.ts",
+				" M src/format.ts",
+				" M src/index.ts",
+				" M src/overlay.ts",
+				" M src/updatelog.ts",
+				" M tests/updatelog.engine.test.ts",
+				"?? src/disk-overlay.ts",
+				"?? src/key-index.ts",
+				"?? src/resources.ts",
+				"?? src/seek.ts",
+				"?? test-bench-log/",
+				"?? tests/incremental.test.ts",
+				"?? tests/seekable.test.ts",
+				"?? tests/storage-hardening.test.ts",
+				"?? tests/storage-process.test.ts",
+				"?? tests/storage.child.ts",
+				"?? tests/tombstones.test.ts"
+			]
+		},
+		"inicontent": {
+			"destination": "6f04e27bb323b07c7f296d3a842d9342b285a0a8",
+			"incoming": "2751defba4cc6a7a881c1dfdb6b2393eb8522736",
+			"candidateSource": "e4143d8f6f7991c9d195736b7004a51fdda86908",
+			"incomingCommits": [
+				{
+					"commit": "6a084b680c075be67fbeca06674c136d6204d64d",
+					"subject": "security: C1 offline persistence is opt-in and strictly classified"
+				},
+				{
+					"commit": "df649db7ab9b8e0969d5d5467cf69cc1653146b7",
+					"subject": "security: C2a explicit asset publishing and managed object URLs"
+				},
+				{
+					"commit": "ef53c64e02e61b439d3c54b6c31d9ce29b482d91",
+					"subject": "security: support restricted enrollment sessions in the auth flow (B1a)"
+				},
+				{
+					"commit": "165f64f891fe1b22f20779c8934e28cae5412435",
+					"subject": "security: carry the handoff PKCE verifier over a shared-domain cookie (B2)"
+				},
+				{
+					"commit": "cdb10a42e6031a0524995c7fefa19ec2ed50b841",
+					"subject": "security: hand off the PKCE verifier with a destination-initiated redirect (B2)"
+				},
+				{
+					"commit": "0b44bfeebe722eb3a46629f3d81d62c957254b9f",
+					"subject": "docs(readme): refresh overview and ecosystem, add generated assets"
+				},
+				{
+					"commit": "721266d594c5a7f7ad5f831f0ce4834ea02d1611",
+					"subject": "fix(vite): only log dropped optimizeDeps entries when building the source app"
+				},
+				{
+					"commit": "a89213b9f3c6d9de6e882237b1191a136402984f",
+					"subject": "feat(regions): route the client at the active region with explicit selection"
+				},
+				{
+					"commit": "a01d523a6c6003b574c93629e61ceeaa9b9f48b1",
+					"subject": "Complete M1/M2 region integration on the client"
+				},
+				{
+					"commit": "ec0c64a8d56a636f3f2c3170c2b0acd9b1571761",
+					"subject": "M3: create database administrators from the client and route regional sessions"
+				},
+				{
+					"commit": "1f8a446c9f8f4f41568d8d6cc553fd049d0f8bea",
+					"subject": "M3: build region-aware database hostnames and login URLs"
+				},
+				{
+					"commit": "5e834f4d3fd9419a6c59f173f623ceb58a5b6ca8",
+					"subject": "M3: build region-prefixed ACE hostnames for i18n database slugs"
+				},
+				{
+					"commit": "2751defba4cc6a7a881c1dfdb6b2393eb8522736",
+					"subject": "M3: add browser acceptance harness for regional login"
+				}
+			],
+			"preparationCommits": [
+				{
+					"commit": "53b307e4d7673174569b55a986b124f1c658f169",
+					"subject": "feat(release): gate database creation by deployed region availability"
+				},
+				{
+					"commit": "e4143d8f6f7991c9d195736b7004a51fdda86908",
+					"subject": "fix(regions): preserve bare tenant hosts for the main catalog selection"
+				}
+			],
+			"refsAtReport": [
+				"refs/heads/agents/add-quick-settings-table-popover 1b30ff983080b4d25cdc3fe8a5887f1cab638510",
+				"refs/heads/fix/encode-table-url-slugs ef9cf7e00fb29a0563591328d487590f16238c24",
+				"refs/heads/main 2751defba4cc6a7a881c1dfdb6b2393eb8522736",
+				"refs/heads/production/launch-eu-paris e4143d8f6f7991c9d195736b7004a51fdda86908",
+				"refs/remotes/origin/HEAD 6f04e27bb323b07c7f296d3a842d9342b285a0a8",
+				"refs/remotes/origin/agents/add-quick-settings-table-popover 1b30ff983080b4d25cdc3fe8a5887f1cab638510",
+				"refs/remotes/origin/fix/encode-table-url-slugs ef9cf7e00fb29a0563591328d487590f16238c24",
+				"refs/remotes/origin/main 6f04e27bb323b07c7f296d3a842d9342b285a0a8",
+				"refs/tags/launch-paris-20261017-rc1 78c4cf1f98d0e8ced9010cbfc95144f6a01e587a",
+				"refs/tags/v1.0.1 5dc50ccfaaaff6291af0b7320e38bca9b79e826d",
+				"refs/tags/v1.0.2 6864d6bd2d0c0d205d1d64a6f3b07a04e2cb65c5",
+				"refs/tags/v1.0.3 0dbc3eb73e41de2c09693d944574ca5734d3006f",
+				"refs/tags/v1.0.4 0df6b0d25284b7a31357de9b35e413ea9a131b54",
+				"refs/tags/v1.0.6 dc5018ff912c35a4bf9374d19f008f6d48df7903",
+				"refs/tags/v1.0.7 415592c2be7aae2bfb37fba21add49b903481ab3",
+				"refs/tags/v1.1.0 26c85d7b41f543a6cc777c9dd7caab53499f3a44",
+				"refs/tags/v1.2.0 d55f608f36c6e38d54fe1de01e5260f0c326b98f",
+				"refs/tags/v1.5.0 554e6992acbcafa1ef4f01e725ace152a4b78779"
+			],
+			"uncommittedAtReportNotIncludedInSourcePin": [
+				"?? docs/",
+				"?? scripts/production-report.py"
+			]
+		},
+		"saas": {
+			"destination": "1c047f37c5ed055b328584348dbebcb9a041c02b",
+			"incoming": "bf4877b7601a1e3e7001f13c535cedead1d29050",
+			"candidateSource": "04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+			"incomingCommits": [
+				{
+					"commit": "6ca2f42e95e9c7d183004683110ce61d191d1fb4",
+					"subject": "feat(marketing): show HIPAA and SOC 2 compliance badges in the footer"
+				},
+				{
+					"commit": "c3e8a17e66d4bd32700734f7c3a1a23f944b7201",
+					"subject": "feat(settings): add a per-database PHI compliance flag"
+				},
+				{
+					"commit": "41bf8afbc03817265438911e5b639e38d1ab7b1c",
+					"subject": "chore(saas): bump inicontent to ^1.5.0 and prompt on PWA updates"
+				},
+				{
+					"commit": "13039c26da7c80f6aeae0f6ed040957b2531c963",
+					"subject": "feat(settings): route database settings at the active region"
+				},
+				{
+					"commit": "1172c03513776bd9cefa032b26e8703ea1563195",
+					"subject": "Route SaaS API calls to the right region"
+				},
+				{
+					"commit": "edd43366f6a83418e5e41c199f76797248f78ac3",
+					"subject": "Route wildcard-subdomain resolution at the active region"
+				},
+				{
+					"commit": "eb1e53ad9d7c16d2a36fde70cc3afa6c43905896",
+					"subject": "M3: guard SaaS hostname resolution on region errors"
+				},
+				{
+					"commit": "47ed7cd67fe86a7698da1048f3c5b797f6c089b3",
+					"subject": "M7: public status page (/status)"
+				},
+				{
+					"commit": "10061a41f29974f79eabe4c6485c6fcf86059f9b",
+					"subject": "SaaS admin: platform monitoring and payment gateway screens"
+				},
+				{
+					"commit": "782250bb643c7a8db65e06238686bfecb62a4edd",
+					"subject": "SaaS: read public status and platform admin from the main region"
+				},
+				{
+					"commit": "bf4877b7601a1e3e7001f13c535cedead1d29050",
+					"subject": "M9 — Security & Compliance Center UI"
+				}
+			],
+			"preparationCommits": [
+				{
+					"commit": "46d85cdfdf53ed0af458e2afc6914491c8bcbaa4",
+					"subject": "security(release): remove embedded gateway credentials and validate public status"
+				},
+				{
+					"commit": "04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+					"subject": "build(release): commit the SaaS dependency lockfile"
+				}
+			],
+			"refsAtReport": [
+				"refs/heads/agents/database-access-denied-issue bc9a3d5b144b777f8afcaf5bf0180740ee7e29c7",
+				"refs/heads/agents/database-access-denied-issue-de4addfb bc9a3d5b144b777f8afcaf5bf0180740ee7e29c7",
+				"refs/heads/main bf4877b7601a1e3e7001f13c535cedead1d29050",
+				"refs/heads/production/launch-eu-paris 04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+				"refs/remotes/origin/HEAD 1c047f37c5ed055b328584348dbebcb9a041c02b",
+				"refs/remotes/origin/feat/agency-crm-module 1a0fa947919c2f8b7642f117d93d92cfca84af07",
+				"refs/remotes/origin/fix/hide-empty-page-preview cbdc0caf8f89f1e7208979291c7c19d6a326bb2a",
+				"refs/remotes/origin/main 1c047f37c5ed055b328584348dbebcb9a041c02b",
+				"refs/tags/launch-paris-20261017-rc1 0690c3d195acc3c77bb50f8284e0055e2dad8546"
+			],
+			"uncommittedAtReportNotIncludedInSourcePin": []
+		}
+	},
+	"inheritedApiSecurityCommits": [
+		{
+			"commit": "b66000e1f47cab299e6330a51cfe9b5a6d8c986d",
+			"subject": "m8: record the second-EC2 provisioning block and the cross-host transport finding"
+		},
+		{
+			"commit": "e7670922c3e30c428dbf4e6ed4aab9652b19e306",
+			"subject": "fix(m8): isolate acceptance from the live host before running"
+		},
+		{
+			"commit": "0e44ef295abb482d8b55c7bbb7b6c58c2f5c8440",
+			"subject": "M9 — Security & Compliance Center backend"
+		},
+		{
+			"commit": "4b2acc15ebaa46c7be1d0e174c9f360f1de01c48",
+			"subject": "M8: multi-region acceptance plan (isolated, not executed)"
+		},
+		{
+			"commit": "8772d72c7b187c3fdcd37dae6d15d49b2f802b1c",
+			"subject": "M7 security: SSRF-hardened monitoring targets, main-region authority, monitoring tests"
+		},
+		{
+			"commit": "0ab76b5d91bfd5985cee3f07c7e9bc47da47e622",
+			"subject": "docs(security): record V1-V3 staging run (blocked) and C4 operational acceptance criteria"
+		},
+		{
+			"commit": "366e7aaa05a1be2a4e39c14ec5b1fe5ea9958f7b",
+			"subject": "fix: do not flag a not-yet-created audit root as an access problem (C4b)"
+		},
+		{
+			"commit": "c5cbe96756fe5212a775a69df1b78513663ea38f",
+			"subject": "security: document and test incident recovery (C4d)"
+		},
+		{
+			"commit": "2ab2f1c60861498dbbd8dd06395e607158827d98",
+			"subject": "security: seal, rotate and retain the audit trail, and alert on it (C4b/C4c)"
+		},
+		{
+			"commit": "bf9fd84a9358816d9693da9185ea40795ebe19ff",
+			"subject": "security: snapshot consistency, restore verification and an isolated restoration exercise (C4a)"
+		},
+		{
+			"commit": "65992f60fe6beba5c74da34671e40f10002ab235",
+			"subject": "docs: record the B2 session↔database binding fix"
+		},
+		{
+			"commit": "26e132bd0aad460503bfe89056e6638e62ef7a85",
+			"subject": "security: bind sessions to their minting database (B2)"
+		},
+		{
+			"commit": "c7a3c3331242930c0f88f091be5fc1d8b8292cfd",
+			"subject": "docs: C3 response-header runbook and refresh the evidence record"
+		},
+		{
+			"commit": "81a1414f02bd9fa09ce687140e4d3179a1de654b",
+			"subject": "security: apply response-security headers to every API response (C3)"
+		},
+		{
+			"commit": "46fed3cb033ae6036e04920180153899f6f7c631",
+			"subject": "security: record privilege, delegation, PHI-read and provisioning events (B4)"
+		},
+		{
+			"commit": "89b4f5e7540bd62ad17cc349c6de0d07c95dc186",
+			"subject": "security: sanitize resource paths and extend audit attribution (B4)"
+		},
+		{
+			"commit": "c6ec3cd1833559c700211bd0555a119905000102",
+			"subject": "security: bind handoff codes to a PKCE verifier and destination origin (B2)"
+		},
+		{
+			"commit": "b72c31396b91273849038adc20a2df2153fa4254",
+			"subject": "security: throttle handoff code redemption (B3)"
+		},
+		{
+			"commit": "f4c85f962ec6e8516461b82f0506e3659f7e5385",
+			"subject": "security: do not trust X-Forwarded-For when the peer is unknown (A4)"
+		},
+		{
+			"commit": "91bd8a156c4f141e63159749df6663a6d05cc9b7",
+			"subject": "security: restrict enrollment sessions and add account recovery (B1a)"
+		},
+		{
+			"commit": "b4e85d22a48af4ed3c601578d92ca24b99bf038b",
+			"subject": "security: make rate-limit and handoff consumption atomic (B2/B3)"
+		},
+		{
+			"commit": "bd799e799445fc26eaa9ac762c649ef2162d18c8",
+			"subject": "security: mint a fresh session unless the caller presents their own valid SID (B1)"
+		},
+		{
+			"commit": "7732f587004a1ae8da6bb57cd010eebcb71a1dd8",
+			"subject": "security: C2a asset privacy fails closed and publishes explicitly"
+		},
+		{
+			"commit": "7070c1d9daed61e917f877f925bcea2417b72fdb",
+			"subject": "security: audit asset read denials (B4)"
+		},
+		{
+			"commit": "a5f8a5153f5311bacbaf25181e9b1bd4be190dcc",
+			"subject": "security: server-side remediation (B1/B1a, B2, C2a, B3, B4)"
+		}
+	]
+}

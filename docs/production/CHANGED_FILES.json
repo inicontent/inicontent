@@ -1,0 +1,1770 @@
+{
+	"sourceChanges": {
+		"api": {
+			"base": "7070c1d9daed61e917f877f925bcea2417b72fdb",
+			"pin": "e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+			"files": [
+				{
+					"status": "M",
+					"path": ".env.example"
+				},
+				{
+					"status": "M",
+					"path": ".gitignore"
+				},
+				{
+					"status": "A",
+					"path": "bench/.gitignore"
+				},
+				{
+					"status": "A",
+					"path": "bench/README.md"
+				},
+				{
+					"status": "A",
+					"path": "bench/analyze-profile.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/inibase-bench.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/lib/api.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/lib/load.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/lib/resource.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/lib/stats.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/prof-load.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/results/README.md"
+				},
+				{
+					"status": "A",
+					"path": "bench/results/http-cacheoff.json"
+				},
+				{
+					"status": "A",
+					"path": "bench/results/http-cacheon.json"
+				},
+				{
+					"status": "A",
+					"path": "bench/results/inibase-scaling.json"
+				},
+				{
+					"status": "A",
+					"path": "bench/run-api.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/run-isolated.sh"
+				},
+				{
+					"status": "A",
+					"path": "bench/sample.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/seed.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/selftest.mjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/spawn-count.cjs"
+				},
+				{
+					"status": "A",
+					"path": "bench/version-compare.mjs"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/README.md"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/compose-instance.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/ecosystem.m8.cjs"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/instances.tsv"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/lib/guards.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/local-origins/README.md"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/local-origins/hosts.local"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/local-origins/proxy.mjs"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/local-origins/routes.json"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/main.env.example"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/preflight.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/provision-user.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/run-instance.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/secondary.env.example"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/systemd/m8-main.service"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/systemd/m8-secondary.service"
+				},
+				{
+					"status": "A",
+					"path": "deploy/m8/tunnel.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/README.md"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/activate.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/artifact.py"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/backup.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/deploy.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/iam-policy.example.json"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/iam-trust.example.json"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/inicontent-api.service"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/lib/common.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/post-deploy-monitor.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/preflight.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/production.env.example"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/readiness.example.json"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/rollback.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/smoke.sh"
+				},
+				{
+					"status": "A",
+					"path": "deploy/production/verify-readiness.mjs"
+				},
+				{
+					"status": "A",
+					"path": "docs/audit-operations.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/backup-restore.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/deployment-region.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/incident-recovery.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m10-followup-summary.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-acceptance-config.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-acceptance-report.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-browser-acceptance.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-execution-plan.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-release.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m8-two-host-acceptance.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-acceptance-report.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-controls-registry.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-evidence-management.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-multilingual-security-center.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-public-claims.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-risk-register.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-security-compliance-center.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/m9-vulnerability-disclosure.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/multi-region-acceptance.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/performance-m10.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/performance-report.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/region-installer-acceptance.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/security-headers.md"
+				},
+				{
+					"status": "M",
+					"path": "docs/security-remediation.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/staging-deployment.md"
+				},
+				{
+					"status": "A",
+					"path": "docs/staging-isolation-acceptance-report.md"
+				},
+				{
+					"status": "M",
+					"path": "middleware/0.cors.ts"
+				},
+				{
+					"status": "M",
+					"path": "middleware/1.validate.ts"
+				},
+				{
+					"status": "M",
+					"path": "middleware/2.database.ts"
+				},
+				{
+					"status": "A",
+					"path": "middleware/4.billingAuthority.ts"
+				},
+				{
+					"status": "A",
+					"path": "middleware/5.monitoringAuthority.ts"
+				},
+				{
+					"status": "A",
+					"path": "middleware/6.complianceAuthority.ts"
+				},
+				{
+					"status": "M",
+					"path": "nitro.config.ts"
+				},
+				{
+					"status": "M",
+					"path": "package.json"
+				},
+				{
+					"status": "M",
+					"path": "plugins/cache-management.ts"
+				},
+				{
+					"status": "A",
+					"path": "plugins/payment-mode.ts"
+				},
+				{
+					"status": "A",
+					"path": "plugins/production-guard.ts"
+				},
+				{
+					"status": "A",
+					"path": "plugins/security-headers.ts"
+				},
+				{
+					"status": "M",
+					"path": "pnpm-lock.yaml"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/[table]/[id]/index.put.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/[table]/index.delete.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/[id]/content.get.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/import/index.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/index.delete.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/index.get.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/index.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/index.put.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/assets/rename/[...path]/index.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/current.get.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/handoff.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/handoff/redeem.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/passkey/authenticate/complete.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/passkey/register/complete.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/[database]/auth/recovery/redeem.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/signin.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/auth/signout.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/backups/[id]/restore.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/[database]/seo/[artifact].get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/health.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/assets/[id]/content.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/auth/region-grant.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/auth/region-grant/redeem.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/auth/region-session/signout.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/billing/admin/payments.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/billing/gateway-capture.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/billing/gateway-checkout.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/billing/gateway-webhook.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/admin.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/claims/[id]/review.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/claims/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/controls/[id].put.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/controls/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/documents/[id].put.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/documents/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/evidence/[id].get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/evidence/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/frameworks.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/public.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/risks/[id].put.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/risks/[id]/accept.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/risks/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/compliance/security-txt.get.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/inicontent/databases/[database]/index.post.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/inicontent/databases/[database]/index.put.ts"
+				},
+				{
+					"status": "M",
+					"path": "routes/inicontent/databases/index.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/monitoring/admin.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/monitoring/incidents.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/monitoring/incidents/[key].put.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/monitoring/maintenance.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/monitoring/status.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/payment-gateways/[id]/enable.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/payment-gateways/index.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/region-report.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/regions/[id]/index.delete.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/regions/[id]/index.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/regions/[id]/index.put.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/regions/index.get.ts"
+				},
+				{
+					"status": "A",
+					"path": "routes/inicontent/regions/index.post.ts"
+				},
+				{
+					"status": "A",
+					"path": "scripts/audit.ts"
+				},
+				{
+					"status": "A",
+					"path": "scripts/build-m8-release.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/build-production-release.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/deploy-staging.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/export-production-sources.py"
+				},
+				{
+					"status": "A",
+					"path": "scripts/inicontent-region.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/forward.mjs"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/identify-secondary.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/native-base.mjs"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/pins.json"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/secondary-env.mjs"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/secondary-preflight.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/m8-two-host/verify-v8.mjs"
+				},
+				{
+					"status": "A",
+					"path": "scripts/migrate-created-by.ts"
+				},
+				{
+					"status": "A",
+					"path": "scripts/production-inventory.py"
+				},
+				{
+					"status": "A",
+					"path": "scripts/production-runtime-check.mjs"
+				},
+				{
+					"status": "A",
+					"path": "scripts/scan-release-secrets.py"
+				},
+				{
+					"status": "A",
+					"path": "scripts/scan-release-secrets.sh"
+				},
+				{
+					"status": "A",
+					"path": "scripts/seed-launch-region.ts"
+				},
+				{
+					"status": "A",
+					"path": "scripts/staging-isolation-verify.ts"
+				},
+				{
+					"status": "A",
+					"path": "scripts/staging-preflight.ts"
+				},
+				{
+					"status": "A",
+					"path": "tasks/audit/alerts.ts"
+				},
+				{
+					"status": "A",
+					"path": "tasks/audit/rotate.ts"
+				},
+				{
+					"status": "A",
+					"path": "tasks/billing/central.ts"
+				},
+				{
+					"status": "A",
+					"path": "tasks/monitoring/regions.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/anonymous-flow.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/asset-auth.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/asset-private-projection.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/atomic-lock.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/audit-alerts.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/audit-asset-read.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/audit-cli.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/audit-coverage.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/audit-rotation.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/audit.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/b1a-enrollment-scope.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/backup-restore.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/backup-snapshot.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/billing-authority.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/billing-inventory.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/billing-reconciliation.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/cache-config.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/cache-management.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/cache-meta-invalidation.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/cache-meta-keys.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/cache-mount.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/compliance.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-admin-provisioning.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-admin.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-entitlement.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-hostname.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-ownership.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/get-user-ip.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/handoff-binding.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/handoff.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/health.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/installer/acceptance-linux.sh"
+				},
+				{
+					"status": "A",
+					"path": "tests/installer/smoke.sh"
+				},
+				{
+					"status": "A",
+					"path": "tests/invoicing.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/m8-env-templates.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/m8-instance-guards.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/m8-sandbox-units.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/m8-two-host.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/memory-cache.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/middleware-billing-authority.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/middleware-compliance-authority.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/middleware-database-binding.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/middleware-monitoring-authority.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/migrate-created-by.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/monitoring-security.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/monitoring.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/origin-policy.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/passkey-recovery.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/passkey-session-rotation.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/payment-gateway.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/payment-launch-gate.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/payment-mode.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/payment-state.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/production-deploy.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/production-guard.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/production-runtime.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/rate-limit.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/realtime-authorization.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-grant.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-isolation.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-launch.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-routing.integration.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-session.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/regional-pricing.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/regions.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/request-sid.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/s3-runtime.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/scheduled-tasks.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/secret-fingerprint.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/security-headers.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/seo.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/session-cache.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/session-database-binding.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/session-scope.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/session-token.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/settlement-validation.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/staging-isolation-verify.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/staging-preflight.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/task-authority.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tsconfig.json"
+				},
+				{
+					"status": "M",
+					"path": "utils/assetAuth.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/atomicLock.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/audit-alerts.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/audit.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/backup-snapshot.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/backups.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/billingAuthority.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/billingInventory.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/billingReconciliation.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/cache-config.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/cache-management.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/compliance.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/complianceAuthority.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/complianceRoutes.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/complianceSeed.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/complianceStore.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/database-export.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/database-meta-cache.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/databaseAdmin.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/databaseEntitlement.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/databaseHostname.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/databaseOwnership.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/formatAsset.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/gateways/index.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/gateways/mockAdapter.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/gateways/paypalAdapter.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/getDatabase.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/getFolderSize.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/getUserIP.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/handleFlow.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/handoffCodes.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/index.d.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/infrastructurePaths.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/invoicing.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/isPlatformAdmin.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/memory-cache.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/message.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/monitoringAuthority.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/monitoringSecurity.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/origin-policy.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/passkey.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/paymentAvailability.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/paymentGateway.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/paymentGatewayRegistry.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/paymentState.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/rate-limit.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/region.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionGrant.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionLaunch.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionMonitoring.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionMonitoringStore.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionSession.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionSessionCookie.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/regionalPricing.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/release.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/requestSID.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/resolveOwnerAdminAccess.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/resolveRealtimeAccess.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/resolveRegionSession.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/s3Runtime.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/scheduled-tasks.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/secretFingerprint.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/seo-artifacts.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/session-cache.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/sessionCookie.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/sessionScope.ts"
+				},
+				{
+					"status": "M",
+					"path": "utils/sessionToken.ts"
+				},
+				{
+					"status": "A",
+					"path": "utils/settlementValidation.ts"
+				},
+				{
+					"status": "A",
+					"path": "vendor/README.md"
+				},
+				{
+					"status": "A",
+					"path": "vendor/inibase-3.8.0-dacd10280bfd.tgz"
+				},
+				{
+					"status": "A",
+					"path": "vendor/inibase-source.json"
+				}
+			]
+		},
+		"inibase": {
+			"base": "38d2dba417ad140c2e267dafe845b5778f9a47b7",
+			"pin": "3692895c3a1feacf1e76c4bf65cd11b10c445c0f",
+			"files": [
+				{
+					"status": "M",
+					"path": ".gitignore"
+				},
+				{
+					"status": "A",
+					"path": "pnpm-lock.yaml"
+				},
+				{
+					"status": "M",
+					"path": "src/file.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/inibase.advanced.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/production-upgrade.mjs"
+				},
+				{
+					"status": "M",
+					"path": "tests/reader.child.ts"
+				}
+			]
+		},
+		"inicontent": {
+			"base": "6f04e27bb323b07c7f296d3a842d9342b285a0a8",
+			"pin": "e4143d8f6f7991c9d195736b7004a51fdda86908",
+			"files": [
+				{
+					"status": "A",
+					"path": ".github/assets/ecosystem.svg"
+				},
+				{
+					"status": "A",
+					"path": ".github/assets/overview.svg"
+				},
+				{
+					"status": "A",
+					"path": ".github/assets/storage-benchmark-100k.png"
+				},
+				{
+					"status": "M",
+					"path": "README.md"
+				},
+				{
+					"status": "M",
+					"path": "app/app.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Asset/Card.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Asset/Scanner.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Auth/index.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Dashboard.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Field/Asset/index.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Field/Boolean.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Offline/SyncStatus.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/PlatformFeatureLanding.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/browserContainment.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/fieldNormalization.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/handoffFlow.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/handoffVerifier.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/managedObjectUrl.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/phiGuard.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/platformFeatureHost.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/region.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/sidRequest.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useApiBase.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useLocalDatabaseConfig.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/useMainApiBase.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useOfflineFetch.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useOfflineItem.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useOfflineQueue.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useOfflineSync.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/usePlatformRedirect.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/useRegion.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/useRegionSession.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useSubscription.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/composables/useThumbnailCache.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/ar.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/en.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/es.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/fr.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/middleware/database.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/middleware/region.global.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/middleware/sid-ingest.global.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/pages/[[database]]/admin/settings.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/login.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/plugins/browser-containment.client.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/plugins/offline-warmup.client.ts"
+				},
+				{
+					"status": "A",
+					"path": "app/plugins/region.client.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/plugins/zzz-sid-header.client.ts"
+				},
+				{
+					"status": "M",
+					"path": "index.d.ts"
+				},
+				{
+					"status": "M",
+					"path": "modules/vite-optimize-deps.ts"
+				},
+				{
+					"status": "M",
+					"path": "nuxt.config.ts"
+				},
+				{
+					"status": "M",
+					"path": "package.json"
+				},
+				{
+					"status": "M",
+					"path": "pnpm-lock.yaml"
+				},
+				{
+					"status": "M",
+					"path": "public/inicontent-containment-v1.js"
+				},
+				{
+					"status": "M",
+					"path": "tests/browser-containment.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/browser/README.md"
+				},
+				{
+					"status": "M",
+					"path": "tests/browser/containment.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/browser/handoff.html"
+				},
+				{
+					"status": "A",
+					"path": "tests/browser/handoff.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/browser/region.html"
+				},
+				{
+					"status": "A",
+					"path": "tests/browser/region.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/browser/server.py"
+				},
+				{
+					"status": "A",
+					"path": "tests/database-hostname.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/field-normalization.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/handoff-flow.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/handoff-redirect.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/object-urls.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/password-manager-contract.test.ts"
+				},
+				{
+					"status": "M",
+					"path": "tests/platform-feature-host.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region-session-transport.test.ts"
+				},
+				{
+					"status": "A",
+					"path": "tests/region.test.ts"
+				}
+			]
+		},
+		"saas": {
+			"base": "1c047f37c5ed055b328584348dbebcb9a041c02b",
+			"pin": "04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+			"files": [
+				{
+					"status": "M",
+					"path": ".gitignore"
+				},
+				{
+					"status": "M",
+					"path": "README.md"
+				},
+				{
+					"status": "A",
+					"path": "SECURITY.md"
+				},
+				{
+					"status": "M",
+					"path": "app/components/Domain/Settings.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/components/MarketingLayout.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/composables/statusRegions.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/ar.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/en.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/es.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/locales/fr.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/middleware/dashboard.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/middleware/domain.global.ts"
+				},
+				{
+					"status": "M",
+					"path": "app/pages/[[database]]/admin/billing/credit-success.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/pages/[[database]]/admin/billing/success.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/[[database]]/admin/compliance/index.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/[[database]]/admin/monitoring/index.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/[[database]]/admin/payments/index.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/pages/[[database]]/admin/settings.vue"
+				},
+				{
+					"status": "M",
+					"path": "app/pages/index.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/security/index.vue"
+				},
+				{
+					"status": "A",
+					"path": "app/pages/status.vue"
+				},
+				{
+					"status": "M",
+					"path": "nuxt.config.ts"
+				},
+				{
+					"status": "M",
+					"path": "package.json"
+				},
+				{
+					"status": "A",
+					"path": "pnpm-lock.yaml"
+				},
+				{
+					"status": "A",
+					"path": "pnpm-workspace.yaml"
+				},
+				{
+					"status": "A",
+					"path": "tests/production-launch.test.ts"
+				}
+			]
+		}
+	},
+	"documentationAndReportingFiles": [
+		"docs/ADDING_REGIONS.md",
+		"docs/PRODUCTION_PROMOTION.md",
+		"docs/production/CHANGED_FILES.json",
+		"docs/production/CONFIGURATION.md",
+		"docs/production/DATA_COMPATIBILITY.md",
+		"docs/production/DEPENDENCY_AUDIT.json",
+		"docs/production/MERGED_COMMITS.json",
+		"docs/production/RELEASE_MANIFEST.json",
+		"docs/production/SECURITY_READINESS.md",
+		"docs/production/SOURCE_REVISIONS.json",
+		"docs/production/TEST_BUILD_REPORT.md",
+		"scripts/production-report.py"
+	]
+}

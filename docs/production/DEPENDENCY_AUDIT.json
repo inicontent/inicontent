@@ -1,0 +1,1974 @@
+{
+	"observedAt": "2026-10-17T21:14:32.873100+00:00",
+	"repositories": {
+		"inibase": {
+			"command": "pnpm audit --prod --json",
+			"scope": "lockfile dependencies, not a runtime reachability determination",
+			"sourceCommit": "3692895c3a1feacf1e76c4bf65cd11b10c445c0f",
+			"lockSHA256": "822dafe890c4c5701ae8268727085939cf1a036fb31d4d71226799d5004b38f9",
+			"rawLogSHA256": "5968bbcd09a911f4d0c1d097ff8b25bb8f06050466060022061e44e93c0e00e4",
+			"counts": {
+				"info": 0,
+				"low": 3,
+				"moderate": 5,
+				"high": 3,
+				"critical": 0
+			},
+			"advisories": [
+				{
+					"id": 1239932,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+					"vulnerable_versions": ">=8.1.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240035,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via orphaned RetryHandler response body",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-pmjh-fq2x-6v4x",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240037,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to downstream response splitting via retry interceptor",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240040,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240043,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via unbounded decompression of compressed responses",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-3xpg-4rpp-hhhm",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240045,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to cross-user cookie disclosure via Set-Cookie caching in shared caches",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-2jfj-6hjv-fm6j",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240047,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to response truncation via oversized chunked responses in the dump interceptor",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-2gqq-gqf2-x968",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240049,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to TLS certificate validation bypass via dropped connect options in BalancedPool",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-w293-vg96-wgc3",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240051,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to caching and replay of unsafe HTTP method responses",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-8436-99hf-9mmv",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240053,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to cross-origin cache poisoning via missing origin isolation in interceptors",
+					"vulnerable_versions": ">=8.10.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-vp8m-p9jh-q5pm",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240054,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via WebSocketStream unclean close",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-rx4f-c7p8-82vq",
+					"findings": [
+						{
+							"version": "8.10.1",
+							"paths": [".>re2>node-gyp>undici"]
+						}
+					]
+				}
+			]
+		},
+		"api": {
+			"command": "pnpm audit --prod --json",
+			"scope": "lockfile dependencies, not a runtime reachability determination",
+			"sourceCommit": "e96217bb63e86aa54a9179801f6e8d3b44adb15c",
+			"lockSHA256": "d1c49e742c6c2a3c9d7f604b69bf3cf2a2e3f35d6215af81de62c89296bb084b",
+			"rawLogSHA256": "4a9b4a69295a7cb80b0ca6f8f288e138e5a89cf05cfe12037f0141adb4f7be13",
+			"counts": {
+				"info": 0,
+				"low": 6,
+				"moderate": 25,
+				"high": 26,
+				"critical": 0
+			},
+			"advisories": [
+				{
+					"id": 1109804,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: Email to an unintended domain can occur due to Interpretation Conflict",
+					"vulnerable_versions": "<7.0.7",
+					"patched_versions": ">=7.0.7",
+					"url": "https://github.com/advisories/GHSA-mm7p-fcc7-pg87",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1115470,
+					"module_name": "nodemailer",
+					"severity": "low",
+					"title": "Nodemailer has SMTP command injection due to unsanitized `envelope.size` parameter",
+					"vulnerable_versions": "<8.0.4",
+					"patched_versions": ">=8.0.4",
+					"url": "https://github.com/advisories/GHSA-c7w3-x93f-qmm8",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1116270,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer Vulnerable to SMTP Command Injection via CRLF in Transport name Option (EHLO/HELO) ",
+					"vulnerable_versions": "<=8.0.4",
+					"patched_versions": ">=8.0.5",
+					"url": "https://github.com/advisories/GHSA-vvjj-xcjg-gr5g",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1117911,
+					"module_name": "fast-xml-parser",
+					"severity": "moderate",
+					"title": "fast-xml-parser XMLBuilder: XML Comment and CDATA Injection via Unescaped Delimiters",
+					"vulnerable_versions": "<5.7.0",
+					"patched_versions": ">=5.7.0",
+					"url": "https://github.com/advisories/GHSA-gh4j-gqv2-49f6",
+					"findings": [
+						{
+							"version": "5.5.8",
+							"paths": [
+								".>@aws-sdk/client-amplify>@aws-sdk/core>@aws-sdk/xml-builder>fast-xml-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1118965,
+					"module_name": "fast-xml-builder",
+					"severity": "high",
+					"title": "fast-xml-builder allows attribute values with unwanted quotes to bypass malicious or unwanted attributes",
+					"vulnerable_versions": "<=1.1.6",
+					"patched_versions": ">=1.1.7",
+					"url": "https://github.com/advisories/GHSA-5wm8-gmm8-39j9",
+					"findings": [
+						{
+							"version": "1.1.4",
+							"paths": [
+								".>@aws-sdk/client-amplify>@aws-sdk/core>@aws-sdk/xml-builder>fast-xml-parser>fast-xml-builder"
+							]
+						}
+					]
+				},
+				{
+					"id": 1120607,
+					"module_name": "js-cookie",
+					"severity": "high",
+					"title": "JavaScript Cookie: Per-instance prototype hijack in assign() enables cookie-attribute injection",
+					"vulnerable_versions": "<=3.0.5",
+					"patched_versions": ">=3.0.7",
+					"url": "https://github.com/advisories/GHSA-qjx8-664m-686j",
+					"findings": [
+						{
+							"version": "3.0.5",
+							"paths": [".>mjml>mjml-core>js-beautify>js-cookie"]
+						}
+					]
+				},
+				{
+					"id": 1120795,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: CRLF injection in Nodemailer List-* header comments allows arbitrary message header injection",
+					"vulnerable_versions": "<=8.0.8",
+					"patched_versions": ">=8.0.9",
+					"url": "https://github.com/advisories/GHSA-268h-hp4c-crq3",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1120796,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer jsonTransport bypasses disableFileAccess and disableUrlAccess during message normalization",
+					"vulnerable_versions": "<=8.0.8",
+					"patched_versions": ">=8.0.9",
+					"url": "https://github.com/advisories/GHSA-wqvq-jvpq-h66f",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1121242,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to HTTP header injection via Set-Cookie percent-decoding",
+					"vulnerable_versions": "<6.27.0",
+					"patched_versions": ">=6.27.0",
+					"url": "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1121245,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici WebSocket client vulnerable to denial of service via fragment count bypass",
+					"vulnerable_versions": "<6.27.0",
+					"patched_versions": ">=6.27.0",
+					"url": "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1121255,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to Set-Cookie SameSite attribute downgrade via permissive substring matching",
+					"vulnerable_versions": "<6.27.0",
+					"patched_versions": ">=6.27.0",
+					"url": "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1121860,
+					"module_name": "js-yaml",
+					"severity": "moderate",
+					"title": "JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases",
+					"vulnerable_versions": ">=4.0.0 <=4.1.1",
+					"patched_versions": ">=4.2.0",
+					"url": "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+					"findings": [
+						{
+							"version": "4.1.1",
+							"paths": [".>mjml>mjml-core>htmlnano>cosmiconfig>js-yaml"]
+						}
+					]
+				},
+				{
+					"id": 1123478,
+					"module_name": "nodemailer",
+					"severity": "high",
+					"title": "Nodemailer’s addressparser is vulnerable to DoS caused by recursive calls",
+					"vulnerable_versions": ">=3.0.0 <=7.0.10",
+					"patched_versions": ">=7.0.11",
+					"url": "https://github.com/advisories/GHSA-rcmh-qjqh-p98v",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1123896,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+					"vulnerable_versions": ">=2.0.0 <2.1.2",
+					"patched_versions": ">=2.1.2",
+					"url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1123911,
+					"module_name": "js-yaml",
+					"severity": "high",
+					"title": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+					"vulnerable_versions": ">=4.0.0 <4.3.0",
+					"patched_versions": ">=4.3.0",
+					"url": "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+					"findings": [
+						{
+							"version": "4.1.1",
+							"paths": [".>mjml>mjml-core>htmlnano>cosmiconfig>js-yaml"]
+						}
+					]
+				},
+				{
+					"id": 1130589,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+					"vulnerable_versions": ">=2.0.0 <2.1.3",
+					"patched_versions": ">=2.1.3",
+					"url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1130709,
+					"module_name": "postcss",
+					"severity": "moderate",
+					"title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+					"vulnerable_versions": "<=8.5.22",
+					"patched_versions": ">=8.5.23",
+					"url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+					"findings": [
+						{
+							"version": "8.5.14",
+							"paths": [".>mjml>mjml-core>postcss"]
+						}
+					]
+				},
+				{
+					"id": 1130716,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to downstream response desynchronization via retry interceptor",
+					"vulnerable_versions": "<6.28.0",
+					"patched_versions": ">=6.28.0",
+					"url": "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1130727,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to CRLF Injection via blob-like body 'type' property",
+					"vulnerable_versions": "<6.28.0",
+					"patched_versions": ">=6.28.0",
+					"url": "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1130732,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to cookie attribute injection via unsanitized domain and unparsed setCookie fields",
+					"vulnerable_versions": "<6.28.0",
+					"patched_versions": ">=6.28.0",
+					"url": "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1130736,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+					"vulnerable_versions": ">=2.0.0 <2.1.4",
+					"patched_versions": ">=2.1.4",
+					"url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1137243,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to HTTP response queue poisoning via keep-alive socket reuse",
+					"vulnerable_versions": "<6.27.0",
+					"patched_versions": ">=6.27.0",
+					"url": "https://github.com/advisories/GHSA-35p6-xmwp-9g52",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1138115,
+					"module_name": "js-yaml",
+					"severity": "high",
+					"title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+					"vulnerable_versions": ">=4.0.0 <4.3.1",
+					"patched_versions": ">=4.3.1",
+					"url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+					"findings": [
+						{
+							"version": "4.1.1",
+							"paths": [".>mjml>mjml-core>htmlnano>cosmiconfig>js-yaml"]
+						}
+					]
+				},
+				{
+					"id": 1138811,
+					"module_name": "nanoid",
+					"severity": "high",
+					"title": "nanoid: non-secure generators can loop indefinitely with negative size",
+					"vulnerable_versions": "<3.3.16",
+					"patched_versions": ">=3.3.16",
+					"url": "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+					"findings": [
+						{
+							"version": "3.3.12",
+							"paths": [".>mjml>mjml-core>postcss>nanoid"]
+						}
+					]
+				},
+				{
+					"id": 1139427,
+					"module_name": "nanoid",
+					"severity": "high",
+					"title": "nanoid: custom generators can loop indefinitely when size is zero",
+					"vulnerable_versions": "<3.3.18",
+					"patched_versions": ">=3.3.18",
+					"url": "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+					"findings": [
+						{
+							"version": "3.3.12",
+							"paths": [".>mjml>mjml-core>postcss>nanoid"]
+						}
+					]
+				},
+				{
+					"id": 1139510,
+					"module_name": "postcss",
+					"severity": "high",
+					"title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+					"vulnerable_versions": "<=8.5.17",
+					"patched_versions": ">=8.5.18",
+					"url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+					"findings": [
+						{
+							"version": "8.5.14",
+							"paths": [".>mjml>mjml-core>postcss"]
+						}
+					]
+				},
+				{
+					"id": 1139518,
+					"module_name": "svgo",
+					"severity": "high",
+					"title": "SVGO removeScripts plugin leaves some executable scripts intact",
+					"vulnerable_versions": ">=4.0.0 <4.0.2",
+					"patched_versions": ">=4.0.2",
+					"url": "https://github.com/advisories/GHSA-2p49-hgcm-8545",
+					"findings": [
+						{
+							"version": "4.0.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-svgo>svgo"
+							]
+						}
+					]
+				},
+				{
+					"id": 1153169,
+					"module_name": "postcss-selector-parser",
+					"severity": "low",
+					"title": "postcss-selector-parser allows denial of service through uncontrolled AST recursion",
+					"vulnerable_versions": ">=7.1.0 <7.1.3",
+					"patched_versions": ">=7.1.3",
+					"url": "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+					"findings": [
+						{
+							"version": "7.1.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-calc>postcss-selector-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1153171,
+					"module_name": "browserslist",
+					"severity": "high",
+					"title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+					"vulnerable_versions": "<=4.28.6",
+					"patched_versions": ">=4.28.7",
+					"url": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+					"findings": [
+						{
+							"version": "4.28.2",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>browserslist"
+							]
+						}
+					]
+				},
+				{
+					"id": 1153172,
+					"module_name": "browserslist",
+					"severity": "high",
+					"title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+					"vulnerable_versions": "<=4.28.6",
+					"patched_versions": ">=4.28.7",
+					"url": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+					"findings": [
+						{
+							"version": "4.28.2",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>browserslist"
+							]
+						}
+					]
+				},
+				{
+					"id": 1158513,
+					"module_name": "nodemailer",
+					"severity": "high",
+					"title": "Nodemailer: Message-level raw option bypasses disableFileAccess/disableUrlAccess, enabling arbitrary file read and full-response SSRF in the delivered message",
+					"vulnerable_versions": "<=9.0.0",
+					"patched_versions": ">=9.0.1",
+					"url": "https://github.com/advisories/GHSA-p6gq-j5cr-w38f",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1164823,
+					"module_name": "stream-json",
+					"severity": "moderate",
+					"title": "stream-json: pick/ignore/filter/replace filters are O(depth²) on nested input — small crafted JSON blocks the event loop for seconds→minutes (DoS)",
+					"vulnerable_versions": "<=3.4.0",
+					"patched_versions": ">=3.5.0",
+					"url": "https://github.com/advisories/GHSA-528h-pc64-c93x",
+					"findings": [
+						{
+							"version": "1.9.1",
+							"paths": [".>stream-json"]
+						}
+					]
+				},
+				{
+					"id": 1182138,
+					"module_name": "@simplewebauthn/server",
+					"severity": "low",
+					"title": "SimpleWebAuthn: Registration verification does not sufficiently ensure that attestation certificates chain to a trust anchor",
+					"vulnerable_versions": "<=13.3.1",
+					"patched_versions": ">=13.3.2",
+					"url": "https://github.com/advisories/GHSA-6hxq-p678-4hr2",
+					"findings": [
+						{
+							"version": "13.3.0",
+							"paths": [".>@simplewebauthn/server"]
+						}
+					]
+				},
+				{
+					"id": 1193670,
+					"module_name": "csv-parse",
+					"severity": "moderate",
+					"title": "node-csv: Prototype replacement still reachable via columns path",
+					"vulnerable_versions": "<7.0.2",
+					"patched_versions": ">=7.0.2",
+					"url": "https://github.com/advisories/GHSA-8cw4-87c7-c6xx",
+					"findings": [
+						{
+							"version": "5.6.0",
+							"paths": [".>csv-parse"]
+						}
+					]
+				},
+				{
+					"id": 1193686,
+					"module_name": "baseline-browser-mapping",
+					"severity": "moderate",
+					"title": "baseline-browser-mapping process termination on invalid input causes denial of service",
+					"vulnerable_versions": ">=2.0.0 <2.11.0",
+					"patched_versions": ">=2.11.0",
+					"url": "https://github.com/advisories/GHSA-w5vr-8v7q-w6rv",
+					"findings": [
+						{
+							"version": "2.10.27",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>browserslist>baseline-browser-mapping"
+							]
+						}
+					]
+				},
+				{
+					"id": 1193727,
+					"module_name": "js-yaml",
+					"severity": "high",
+					"title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+					"vulnerable_versions": ">=4.0.0 <4.3.2",
+					"patched_versions": ">=4.3.2",
+					"url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+					"findings": [
+						{
+							"version": "4.1.1",
+							"paths": [".>mjml>mjml-core>htmlnano>cosmiconfig>js-yaml"]
+						}
+					]
+				},
+				{
+					"id": 1193735,
+					"module_name": "svgo",
+					"severity": "high",
+					"title": "SVGO: removeScripts allows executable links through namespace and control-character bypasses",
+					"vulnerable_versions": ">=4.0.0 <4.1.0",
+					"patched_versions": ">=4.1.0",
+					"url": "https://github.com/advisories/GHSA-w27v-7q3p-w38r",
+					"findings": [
+						{
+							"version": "4.0.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-svgo>svgo"
+							]
+						}
+					]
+				},
+				{
+					"id": 1193738,
+					"module_name": "svgo",
+					"severity": "moderate",
+					"title": "SVGO: removeScripts incompletely sanitizes executable HTML in SVG foreignObject elements",
+					"vulnerable_versions": ">=4.0.0 <4.1.0",
+					"patched_versions": ">=4.1.0",
+					"url": "https://github.com/advisories/GHSA-4vpr-x523-8j87",
+					"findings": [
+						{
+							"version": "4.0.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-svgo>svgo"
+							]
+						}
+					]
+				},
+				{
+					"id": 1193741,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: resolveContent() on a MailMessage bypasses disableFileAccess/disableUrlAccess when called with the legacy signature",
+					"vulnerable_versions": "<=9.1.0",
+					"patched_versions": ">=9.1.1",
+					"url": "https://github.com/advisories/GHSA-8m3c-c648-2xjj",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1193770,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: IDN/Punycode domain allow-list bypass leads to email delivery to an attacker-controlled domain",
+					"vulnerable_versions": "<9.1.0",
+					"patched_versions": ">=9.1.0",
+					"url": "https://github.com/advisories/GHSA-wmmp-3585-3rmp",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1193778,
+					"module_name": "nodemailer",
+					"severity": "high",
+					"title": "Nodemailer: Quadratic (O(n²)) time complexity in addressparser allows remote denial of service via a crafted address list",
+					"vulnerable_versions": "<9.1.0",
+					"patched_versions": ">=9.1.0",
+					"url": "https://github.com/advisories/GHSA-2x7j-588g-ccc2",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1193779,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: Recipient-domain validation bypass via RFC 5322 comment mis-parsing leads to email delivery to an attacker-controlled domain",
+					"vulnerable_versions": ">=6.9.16 <9.1.0",
+					"patched_versions": ">=9.1.0",
+					"url": "https://github.com/advisories/GHSA-cc9r-2j5m-2m83",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1239931,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: Process-global DNS cache reuses TLS `servername` across transports, enabling cross-tenant SMTP credential disclosure",
+					"vulnerable_versions": ">=5.0.0 <10.0.2",
+					"patched_versions": ">=10.0.2",
+					"url": "https://github.com/advisories/GHSA-6vj9-mwq6-2f5v",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1239934,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+					"vulnerable_versions": ">=6.25.0 <6.28.1",
+					"patched_versions": ">=6.28.1",
+					"url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240033,
+					"module_name": "nodemailer",
+					"severity": "moderate",
+					"title": "Nodemailer: Nested structured recipient arrays bypass the parser depth limit and cause stack exhaustion DoS",
+					"vulnerable_versions": "<10.0.2",
+					"patched_versions": ">=10.0.2",
+					"url": "https://github.com/advisories/GHSA-8vvx-rff5-p5rq",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1240039,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to downstream response splitting via retry interceptor",
+					"vulnerable_versions": "<6.28.1",
+					"patched_versions": ">=6.28.1",
+					"url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240042,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+					"vulnerable_versions": ">=6.7.0 <6.28.1",
+					"patched_versions": ">=6.28.1",
+					"url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+					"findings": [
+						{
+							"version": "6.25.0",
+							"paths": [".>mjml>mjml-core>cheerio>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240101,
+					"module_name": "brace-expansion",
+					"severity": "moderate",
+					"title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+					"vulnerable_versions": ">=2.0.0 <2.1.7",
+					"patched_versions": ">=2.1.7",
+					"url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1240105,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+					"vulnerable_versions": ">=2.0.0 <2.1.6",
+					"patched_versions": ">=2.1.6",
+					"url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1240109,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+					"vulnerable_versions": ">=2.0.0 <2.1.5",
+					"patched_versions": ">=2.1.5",
+					"url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+					"findings": [
+						{
+							"version": "2.0.3",
+							"paths": [".>mjml>mjml-cli>minimatch>brace-expansion"]
+						}
+					]
+				},
+				{
+					"id": 1240114,
+					"module_name": "nodemailer",
+					"severity": "high",
+					"title": "Nodemailer: Quadratic backtracking in the addressparser free-text fallback allows remote denial of service",
+					"vulnerable_versions": "<=10.0.5",
+					"patched_versions": ">=10.0.6",
+					"url": "https://github.com/advisories/GHSA-v53p-9fqp-m79j",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1240992,
+					"module_name": "braces",
+					"severity": "high",
+					"title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+					"vulnerable_versions": "<=3.0.3",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+					"findings": [
+						{
+							"version": "3.0.3",
+							"paths": [".>mjml>mjml-cli>chokidar>braces"]
+						}
+					]
+				},
+				{
+					"id": 1241195,
+					"module_name": "nodemailer",
+					"severity": "high",
+					"title": "Nodemailer: Improper TLS Certificate Validation in OAuth2 Token Fetch Enables Credential Interception",
+					"vulnerable_versions": "<=8.0.7",
+					"patched_versions": ">=8.0.8",
+					"url": "https://github.com/advisories/GHSA-r7g4-qg5f-qqm2",
+					"findings": [
+						{
+							"version": "6.10.1",
+							"paths": [".>nodemailer"]
+						}
+					]
+				},
+				{
+					"id": 1241209,
+					"module_name": "source-map-js",
+					"severity": "high",
+					"title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+					"vulnerable_versions": ">=1.0.0 <1.2.2",
+					"patched_versions": ">=1.2.2",
+					"url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+					"findings": [
+						{
+							"version": "1.2.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-svgo>svgo>css-tree>source-map-js"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241232,
+					"module_name": "postcss-selector-parser",
+					"severity": "moderate",
+					"title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+					"vulnerable_versions": "<7.1.6",
+					"patched_versions": ">=7.1.6",
+					"url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+					"findings": [
+						{
+							"version": "7.1.1",
+							"paths": [
+								".>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-calc>postcss-selector-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241262,
+					"module_name": "stream-json",
+					"severity": "moderate",
+					"title": "stream-json: JSONC parser and verifier re-scan the whole accumulated comment on every input chunk",
+					"vulnerable_versions": "<=3.5.0",
+					"patched_versions": ">=3.6.0",
+					"url": "https://github.com/advisories/GHSA-hqr4-qq8f-hg3x",
+					"findings": [
+						{
+							"version": "1.9.1",
+							"paths": [".>stream-json"]
+						}
+					]
+				},
+				{
+					"id": 1241263,
+					"module_name": "stream-json",
+					"severity": "moderate",
+					"title": "stream-json has a prototype pollution issue: Assembler writes this.current[this.key] on plain objects",
+					"vulnerable_versions": "<3.6.0",
+					"patched_versions": ">=3.6.0",
+					"url": "https://github.com/advisories/GHSA-mjw6-4jj6-33hc",
+					"findings": [
+						{
+							"version": "1.9.1",
+							"paths": [".>stream-json"]
+						}
+					]
+				}
+			]
+		},
+		"inicontent": {
+			"command": "pnpm audit --prod --json",
+			"scope": "lockfile dependencies, not a runtime reachability determination",
+			"sourceCommit": "e4143d8f6f7991c9d195736b7004a51fdda86908",
+			"lockSHA256": "98b5252fd2922fcb5f8c35eb4104722629e5448f4280196ea27bf3ec86b7b342",
+			"rawLogSHA256": "1e58f03251d40531c0a04910ab2ef443ade4011a3002d520d4dfa2948cac9174",
+			"counts": {
+				"info": 0,
+				"low": 2,
+				"moderate": 0,
+				"high": 7,
+				"critical": 3
+			},
+			"advisories": [
+				{
+					"id": 1108110,
+					"module_name": "xlsx",
+					"severity": "high",
+					"title": "Prototype Pollution in sheetJS",
+					"vulnerable_versions": "<0.19.3",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-4r6h-8v6p-xvw6",
+					"findings": [
+						{
+							"version": "0.18.5",
+							"paths": [".>xlsx"]
+						}
+					]
+				},
+				{
+					"id": 1108111,
+					"module_name": "xlsx",
+					"severity": "high",
+					"title": "SheetJS Regular Expression Denial of Service (ReDoS)",
+					"vulnerable_versions": "<0.20.2",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-5pgg-2g8v-p4x9",
+					"findings": [
+						{
+							"version": "0.18.5",
+							"paths": [".>xlsx"]
+						}
+					]
+				},
+				{
+					"id": 1120680,
+					"module_name": "esbuild",
+					"severity": "low",
+					"title": "esbuild allows arbitrary file read when running the development server on Windows",
+					"vulnerable_versions": ">=0.27.3 <0.28.1",
+					"patched_versions": ">=0.28.1",
+					"url": "https://github.com/advisories/GHSA-g7r4-m6w7-qqqr",
+					"findings": [
+						{
+							"version": "0.27.7",
+							"paths": [".>@nuxt/fonts>fontless>esbuild"]
+						}
+					]
+				},
+				{
+					"id": 1240620,
+					"module_name": "serialize-javascript",
+					"severity": "low",
+					"title": "Serialize JavaScript: Cross-site scripting (XSS) via unescaped </script> in serialized function bodies",
+					"vulnerable_versions": ">=7.1.1 <7.1.2",
+					"patched_versions": ">=7.1.2",
+					"url": "https://github.com/advisories/GHSA-gfhx-hw2g-v5hg",
+					"findings": [
+						{
+							"version": "7.1.1",
+							"paths": [
+								".>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@rollup/plugin-terser>serialize-javascript"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240912,
+					"module_name": "node-forge",
+					"severity": "high",
+					"title": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+					"vulnerable_versions": "<=1.4.0",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+					"findings": [
+						{
+							"version": "1.4.0",
+							"paths": [".>nuxt>@nuxt/cli>listhen>node-forge"]
+						}
+					]
+				},
+				{
+					"id": 1240992,
+					"module_name": "braces",
+					"severity": "high",
+					"title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+					"vulnerable_versions": "<=3.0.3",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+					"findings": [
+						{
+							"version": "3.0.3",
+							"paths": [
+								".>nuxt>@nuxt/nitro-server>nitropack>globby>micromatch>braces"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241198,
+					"module_name": "@simple-git/argv-parser",
+					"severity": "critical",
+					"title": "simple-git: `VISUAL` editor environment variable is omitted from unsafe editor detection",
+					"vulnerable_versions": "<2.0.1",
+					"patched_versions": ">=2.0.1",
+					"url": "https://github.com/advisories/GHSA-v5rq-49vh-5v5c",
+					"findings": [
+						{
+							"version": "1.1.1",
+							"paths": [
+								".>nuxt>@nuxt/devtools>simple-git>@simple-git/argv-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241199,
+					"module_name": "simple-git",
+					"severity": "critical",
+					"title": "simple-git unsafe-operation guard does not block trailer command configuration",
+					"vulnerable_versions": ">=3.15.0 <4.0.1",
+					"patched_versions": ">=4.0.1",
+					"url": "https://github.com/advisories/GHSA-x6jw-m9v5-85vh",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				},
+				{
+					"id": 1241200,
+					"module_name": "simple-git",
+					"severity": "high",
+					"title": "simple-git allows command execution through unblocked Git configuration includes",
+					"vulnerable_versions": "<=3.36.0",
+					"patched_versions": ">=4.0.0",
+					"url": "https://github.com/advisories/GHSA-g4wm-2vf7-vfgr",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				},
+				{
+					"id": 1241209,
+					"module_name": "source-map-js",
+					"severity": "high",
+					"title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+					"vulnerable_versions": ">=1.0.0 <1.2.2",
+					"patched_versions": ">=1.2.2",
+					"url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+					"findings": [
+						{
+							"version": "1.2.1",
+							"paths": [
+								".>@nuxt/fonts>@nuxt/devtools-kit>vite>postcss>source-map-js"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241332,
+					"module_name": "shell-quote",
+					"severity": "critical",
+					"title": "shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token",
+					"vulnerable_versions": ">=1.8.4 <1.11.0",
+					"patched_versions": ">=1.11.0",
+					"url": "https://github.com/advisories/GHSA-pqg4-j6r4-53mv",
+					"findings": [
+						{
+							"version": "1.10.0",
+							"paths": [".>nuxt>@nuxt/devtools>launch-editor>shell-quote"]
+						}
+					]
+				},
+				{
+					"id": 1242216,
+					"module_name": "simple-git",
+					"severity": "high",
+					"title": "simple-git: unsafe-operations plugin bypass via git long-option abbreviation (--receive-p/--exe) -> command execution (residual of CVE-2026-28291)",
+					"vulnerable_versions": "<=3.36.0",
+					"patched_versions": ">=4.0.0",
+					"url": "https://github.com/advisories/GHSA-858h-whjf-mvg5",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				}
+			]
+		},
+		"saas": {
+			"command": "pnpm audit --prod --json",
+			"scope": "lockfile dependencies, not a runtime reachability determination",
+			"sourceCommit": "04a83b146a497dbdcd40b5612ad1904405bc3fdf",
+			"lockSHA256": "ca91855bb64677358d921dfd3f6f931bb02824ee4dd5bf38bf4cab82a8cc0fa2",
+			"rawLogSHA256": "b9627b1127624023f8a58c76f5f665c0310f8000e26061a54c48d4df6edf1d5f",
+			"counts": {
+				"info": 0,
+				"low": 5,
+				"moderate": 13,
+				"high": 22,
+				"critical": 3
+			},
+			"advisories": [
+				{
+					"id": 1108110,
+					"module_name": "xlsx",
+					"severity": "high",
+					"title": "Prototype Pollution in sheetJS",
+					"vulnerable_versions": "<0.19.3",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-4r6h-8v6p-xvw6",
+					"findings": [
+						{
+							"version": "0.18.5",
+							"paths": [".>inicontent>xlsx"]
+						}
+					]
+				},
+				{
+					"id": 1108111,
+					"module_name": "xlsx",
+					"severity": "high",
+					"title": "SheetJS Regular Expression Denial of Service (ReDoS)",
+					"vulnerable_versions": "<0.20.2",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-5pgg-2g8v-p4x9",
+					"findings": [
+						{
+							"version": "0.18.5",
+							"paths": [".>inicontent>xlsx"]
+						}
+					]
+				},
+				{
+					"id": 1113686,
+					"module_name": "serialize-javascript",
+					"severity": "high",
+					"title": "Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString()",
+					"vulnerable_versions": "<=7.0.2",
+					"patched_versions": ">=7.0.3",
+					"url": "https://github.com/advisories/GHSA-5c6j-r48x-rmvq",
+					"findings": [
+						{
+							"version": "6.0.2",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@rollup/plugin-terser>serialize-javascript"
+							]
+						}
+					]
+				},
+				{
+					"id": 1119440,
+					"module_name": "serialize-javascript",
+					"severity": "moderate",
+					"title": "Serialize JavaScript has CPU Exhaustion Denial of Service via crafted array-like objects",
+					"vulnerable_versions": ">=5.0.0 <7.0.5",
+					"patched_versions": ">=7.0.5",
+					"url": "https://github.com/advisories/GHSA-qj8w-gfj5-8c6v",
+					"findings": [
+						{
+							"version": "6.0.2",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@rollup/plugin-terser>serialize-javascript"
+							]
+						}
+					]
+				},
+				{
+					"id": 1120680,
+					"module_name": "esbuild",
+					"severity": "low",
+					"title": "esbuild allows arbitrary file read when running the development server on Windows",
+					"vulnerable_versions": ">=0.27.3 <0.28.1",
+					"patched_versions": ">=0.28.1",
+					"url": "https://github.com/advisories/GHSA-g7r4-m6w7-qqqr",
+					"findings": [
+						{
+							"version": "0.27.7",
+							"paths": [".>inicontent>@nuxt/fonts>fontless>esbuild"]
+						}
+					]
+				},
+				{
+					"id": 1193735,
+					"module_name": "svgo",
+					"severity": "high",
+					"title": "SVGO: removeScripts allows executable links through namespace and control-character bypasses",
+					"vulnerable_versions": ">=4.0.0 <4.1.0",
+					"patched_versions": ">=4.1.0",
+					"url": "https://github.com/advisories/GHSA-w27v-7q3p-w38r",
+					"findings": [
+						{
+							"version": "4.0.2",
+							"paths": [
+								".>inicontent>nuxt>@nuxt/vite-builder>cssnano>cssnano-preset-default>postcss-svgo>svgo"
+							]
+						}
+					]
+				},
+				{
+					"id": 1193738,
+					"module_name": "svgo",
+					"severity": "moderate",
+					"title": "SVGO: removeScripts incompletely sanitizes executable HTML in SVG foreignObject elements",
+					"vulnerable_versions": ">=4.0.0 <4.1.0",
+					"patched_versions": ">=4.1.0",
+					"url": "https://github.com/advisories/GHSA-4vpr-x523-8j87",
+					"findings": [
+						{
+							"version": "4.0.2",
+							"paths": [
+								".>inicontent>nuxt>@nuxt/vite-builder>cssnano>cssnano-preset-default>postcss-svgo>svgo"
+							]
+						}
+					]
+				},
+				{
+					"id": 1237790,
+					"module_name": "devalue",
+					"severity": "moderate",
+					"title": "Svelte devalue: DoS via malformed input",
+					"vulnerable_versions": "<5.9.1",
+					"patched_versions": ">=5.9.2",
+					"url": "https://github.com/advisories/GHSA-9rgm-9g3h-6x36",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1239932,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via unhandled error in WebSocket permessage-deflate decompression",
+					"vulnerable_versions": ">=8.1.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240035,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via orphaned RetryHandler response body",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-pmjh-fq2x-6v4x",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240037,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to downstream response splitting via retry interceptor",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240040,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240043,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via unbounded decompression of compressed responses",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-3xpg-4rpp-hhhm",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240045,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to cross-user cookie disclosure via Set-Cookie caching in shared caches",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-2jfj-6hjv-fm6j",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240047,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to response truncation via oversized chunked responses in the dump interceptor",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-2gqq-gqf2-x968",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240049,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to TLS certificate validation bypass via dropped connect options in BalancedPool",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-w293-vg96-wgc3",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240051,
+					"module_name": "undici",
+					"severity": "low",
+					"title": "undici vulnerable to caching and replay of unsafe HTTP method responses",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-8436-99hf-9mmv",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240053,
+					"module_name": "undici",
+					"severity": "high",
+					"title": "undici vulnerable to cross-origin cache poisoning via missing origin isolation in interceptors",
+					"vulnerable_versions": ">=8.10.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-vp8m-p9jh-q5pm",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240054,
+					"module_name": "undici",
+					"severity": "moderate",
+					"title": "undici vulnerable to Denial of Service via WebSocketStream unclean close",
+					"vulnerable_versions": ">=8.0.0 <8.10.2",
+					"patched_versions": ">=8.10.2",
+					"url": "https://github.com/advisories/GHSA-rx4f-c7p8-82vq",
+					"findings": [
+						{
+							"version": "8.10.0",
+							"paths": [".>inicontent>@nuxt/fonts>unifont>undici"]
+						}
+					]
+				},
+				{
+					"id": 1240101,
+					"module_name": "brace-expansion",
+					"severity": "moderate",
+					"title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+					"vulnerable_versions": ">=2.0.0 <2.1.7",
+					"patched_versions": ">=2.1.7",
+					"url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+					"findings": [
+						{
+							"version": "2.1.4",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@surma/rollup-plugin-off-main-thread>ejs>jake>filelist>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240103,
+					"module_name": "brace-expansion",
+					"severity": "moderate",
+					"title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+					"vulnerable_versions": ">=4.0.0 <5.0.12",
+					"patched_versions": ">=5.0.12",
+					"url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+					"findings": [
+						{
+							"version": "5.0.9",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>glob>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240105,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+					"vulnerable_versions": ">=2.0.0 <2.1.6",
+					"patched_versions": ">=2.1.6",
+					"url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+					"findings": [
+						{
+							"version": "2.1.4",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@surma/rollup-plugin-off-main-thread>ejs>jake>filelist>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240107,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+					"vulnerable_versions": ">=4.0.0 <5.0.11",
+					"patched_versions": ">=5.0.11",
+					"url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+					"findings": [
+						{
+							"version": "5.0.9",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>glob>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240109,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+					"vulnerable_versions": ">=2.0.0 <2.1.5",
+					"patched_versions": ">=2.1.5",
+					"url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+					"findings": [
+						{
+							"version": "2.1.4",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>@surma/rollup-plugin-off-main-thread>ejs>jake>filelist>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240111,
+					"module_name": "brace-expansion",
+					"severity": "high",
+					"title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+					"vulnerable_versions": ">=4.0.0 <5.0.10",
+					"patched_versions": ">=5.0.10",
+					"url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+					"findings": [
+						{
+							"version": "5.0.9",
+							"paths": [
+								".>inicontent>@vite-pwa/nuxt>vite-plugin-pwa>workbox-build>glob>minimatch>brace-expansion"
+							]
+						}
+					]
+				},
+				{
+					"id": 1240870,
+					"module_name": "devalue",
+					"severity": "high",
+					"title": "devalue: `stringify`/`uneval` serialize shared memory",
+					"vulnerable_versions": ">=5.1.0 <=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-j22f-vq7h-c4qm",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240871,
+					"module_name": "devalue",
+					"severity": "moderate",
+					"title": "devalue: Residual sparse-array CPU amplification in uneval",
+					"vulnerable_versions": "<=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-hx4r-w6wj-j8fg",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240872,
+					"module_name": "devalue",
+					"severity": "high",
+					"title": "devalue: Repeated primitive strings cause quadratic expansion in uneval",
+					"vulnerable_versions": "<=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-mcm9-63f2-9j32",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240873,
+					"module_name": "devalue",
+					"severity": "low",
+					"title": "devalue: Sparse arrays emitted by uneval cause eager allocation when evaluated",
+					"vulnerable_versions": ">=1.0.0 <=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-wf3x-273g-mvxv",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240874,
+					"module_name": "devalue",
+					"severity": "high",
+					"title": "devalue: stringifyAsync can cause an unhandled rejection despite a caught returned promise",
+					"vulnerable_versions": ">=5.8.0 <=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-x5rw-q4pp-hg5g",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240875,
+					"module_name": "devalue",
+					"severity": "moderate",
+					"title": "devalue: Malformed null-prototype object keys bypass __proto__ rejection via property-key coercion",
+					"vulnerable_versions": "<=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-4q55-j62x-fr9h",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				},
+				{
+					"id": 1240912,
+					"module_name": "node-forge",
+					"severity": "high",
+					"title": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+					"vulnerable_versions": "<=1.4.0",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+					"findings": [
+						{
+							"version": "1.4.0",
+							"paths": [".>inicontent>nuxt>@nuxt/cli>listhen>node-forge"]
+						}
+					]
+				},
+				{
+					"id": 1240992,
+					"module_name": "braces",
+					"severity": "high",
+					"title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+					"vulnerable_versions": "<=3.0.3",
+					"patched_versions": "<0.0.0",
+					"url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+					"findings": [
+						{
+							"version": "3.0.3",
+							"paths": [
+								".>inicontent>nuxt>@nuxt/nitro-server>nitropack>globby>fast-glob>micromatch>braces"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241198,
+					"module_name": "@simple-git/argv-parser",
+					"severity": "critical",
+					"title": "simple-git: `VISUAL` editor environment variable is omitted from unsafe editor detection",
+					"vulnerable_versions": "<2.0.1",
+					"patched_versions": ">=2.0.1",
+					"url": "https://github.com/advisories/GHSA-v5rq-49vh-5v5c",
+					"findings": [
+						{
+							"version": "1.1.1",
+							"paths": [
+								".>inicontent>nuxt>@nuxt/devtools>simple-git>@simple-git/argv-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241199,
+					"module_name": "simple-git",
+					"severity": "critical",
+					"title": "simple-git unsafe-operation guard does not block trailer command configuration",
+					"vulnerable_versions": ">=3.15.0 <4.0.1",
+					"patched_versions": ">=4.0.1",
+					"url": "https://github.com/advisories/GHSA-x6jw-m9v5-85vh",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>inicontent>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				},
+				{
+					"id": 1241200,
+					"module_name": "simple-git",
+					"severity": "high",
+					"title": "simple-git allows command execution through unblocked Git configuration includes",
+					"vulnerable_versions": "<=3.36.0",
+					"patched_versions": ">=4.0.0",
+					"url": "https://github.com/advisories/GHSA-g4wm-2vf7-vfgr",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>inicontent>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				},
+				{
+					"id": 1241208,
+					"module_name": "seroval",
+					"severity": "high",
+					"title": "Seroval: Memory exhaustion via unchecked TypedArray length in JSON deserialization",
+					"vulnerable_versions": "<=1.6.2",
+					"patched_versions": ">=1.6.3",
+					"url": "https://github.com/advisories/GHSA-jp82-f5mq-hwhp",
+					"findings": [
+						{
+							"version": "1.6.2",
+							"paths": [".>inicontent>nuxt>@nuxt/vite-builder>seroval"]
+						}
+					]
+				},
+				{
+					"id": 1241209,
+					"module_name": "source-map-js",
+					"severity": "high",
+					"title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+					"vulnerable_versions": ">=1.0.0 <1.2.2",
+					"patched_versions": ">=1.2.2",
+					"url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+					"findings": [
+						{
+							"version": "1.2.1",
+							"paths": [
+								".>inicontent>@nuxt/fonts>@nuxt/devtools-kit>vite>postcss>source-map-js"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241232,
+					"module_name": "postcss-selector-parser",
+					"severity": "moderate",
+					"title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+					"vulnerable_versions": "<7.1.6",
+					"patched_versions": ">=7.1.6",
+					"url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+					"findings": [
+						{
+							"version": "7.1.5",
+							"paths": [
+								".>inicontent>mjml>mjml-core>cssnano>cssnano-preset-default>postcss-calc>postcss-selector-parser"
+							]
+						}
+					]
+				},
+				{
+					"id": 1241259,
+					"module_name": "@vue/server-renderer",
+					"severity": "high",
+					"title": "@vue/server-renderer: XSS via missing CR in attribute-name blacklist",
+					"vulnerable_versions": "<3.5.42",
+					"patched_versions": ">=3.5.42",
+					"url": "https://github.com/advisories/GHSA-g2v6-rqmx-r4w6",
+					"findings": [
+						{
+							"version": "3.5.41",
+							"paths": [".>inicontent>nuxt>vue>@vue/server-renderer"]
+						}
+					]
+				},
+				{
+					"id": 1241332,
+					"module_name": "shell-quote",
+					"severity": "critical",
+					"title": "shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token",
+					"vulnerable_versions": ">=1.8.4 <1.11.0",
+					"patched_versions": ">=1.11.0",
+					"url": "https://github.com/advisories/GHSA-pqg4-j6r4-53mv",
+					"findings": [
+						{
+							"version": "1.10.0",
+							"paths": [
+								".>inicontent>nuxt>@nuxt/devtools>launch-editor>shell-quote"
+							]
+						}
+					]
+				},
+				{
+					"id": 1242216,
+					"module_name": "simple-git",
+					"severity": "high",
+					"title": "simple-git: unsafe-operations plugin bypass via git long-option abbreviation (--receive-p/--exe) -> command execution (residual of CVE-2026-28291)",
+					"vulnerable_versions": "<=3.36.0",
+					"patched_versions": ">=4.0.0",
+					"url": "https://github.com/advisories/GHSA-858h-whjf-mvg5",
+					"findings": [
+						{
+							"version": "3.36.0",
+							"paths": [".>inicontent>nuxt>@nuxt/devtools>simple-git"]
+						}
+					]
+				},
+				{
+					"id": 1242362,
+					"module_name": "devalue",
+					"severity": "high",
+					"title": "devalue: Custom ArrayBuffer revivers can bypass typed-array allocation validation",
+					"vulnerable_versions": "<=5.9.2",
+					"patched_versions": ">=5.9.3",
+					"url": "https://github.com/advisories/GHSA-r9w8-h9r3-54w4",
+					"findings": [
+						{
+							"version": "5.9.0",
+							"paths": [".>inicontent>nuxt>devalue"]
+						}
+					]
+				}
+			]
+		}
+	}
+}
