@@ -10,6 +10,8 @@
  */
 
 import {
+	isSingleRegion as catalogHasSingleRegion,
+	creatableRegions,
 	normalizePinnedRegion,
 	normalizeRegionCode,
 	parseRegionSelection,
@@ -23,11 +25,12 @@ import {
 	regionApiBase,
 	resolvePinnedSelection,
 	resolveSelectionAgainstCatalog,
+	selectableRegions,
 	serializeRegionSelection,
 	toRegionOption,
 	withTrailingSlash,
-} from "./region";
-import { useRegionSession } from "./useRegionSession";
+} from "./region.ts";
+import { useRegionSession } from "./useRegionSession.ts";
 
 export function useRegion() {
 	const config = useRuntimeConfig();
@@ -54,6 +57,19 @@ export function useRegion() {
 		() =>
 			catalog.value.find(({ code }) => code === selection.value?.code) ?? null,
 	);
+
+	/** The catalog reduced to regions a picker may offer (enabled only). */
+	const selectableCatalog = computed(() => selectableRegions(catalog.value));
+
+	/** The catalog reduced to regions that accept new databases. */
+	const creatableCatalog = computed(() => creatableRegions(catalog.value));
+
+	/**
+	 * Whether the catalog offers at most one creatable region. One available
+	 * region is the default, so callers hide the picker instead of advertising a
+	 * choice that does not exist.
+	 */
+	const isSingleRegion = computed(() => catalogHasSingleRegion(catalog.value));
 
 	/** Reset the region-scoped caches. Called on every real region switch. */
 	function resetRegionState() {
@@ -219,6 +235,12 @@ export function useRegion() {
 		selection,
 		/** The fetched region catalog (empty until `loadRegions`). */
 		catalog,
+		/** The catalog reduced to regions the picker may offer (sorted). */
+		selectableCatalog,
+		/** The catalog reduced to regions accepting new databases (sorted). */
+		creatableCatalog,
+		/** True when no more than one creatable region exists. */
+		isSingleRegion,
 		/** The region code this deployment is pinned to, or "" when multi-region. */
 		pinned,
 		/** True when the deployment cannot switch regions. */

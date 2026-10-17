@@ -235,6 +235,8 @@ export default {
 		regionDisabled: "Cette région n'est pas disponible",
 		regionUnavailable: "La région de ce déploiement est indisponible",
 		regionCatalogUnavailable: "Le catalogue des régions est indisponible",
+		regionNotAcceptingDatabases:
+			"Cette région n'accepte pas de nouvelles bases de données",
 		createDatabase: "Créer une base de données",
 		adminUsername: "Nom d'utilisateur de l'administrateur",
 		adminPassword: "Mot de passe de l'administrateur",

@@ -234,6 +234,7 @@ export default {
 		regionDisabled: "Esa región no está disponible",
 		regionUnavailable: "La región de esta implementación no está disponible",
 		regionCatalogUnavailable: "El catálogo de regiones no está disponible",
+		regionNotAcceptingDatabases: "Esta región no acepta nuevas bases de datos",
 		createDatabase: "Crear base de datos",
 		adminUsername: "Nombre de usuario del administrador",
 		adminPassword: "Contraseña del administrador",

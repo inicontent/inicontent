@@ -133,6 +133,81 @@ export function toRegionOption(value: unknown): RegionOption | null {
 }
 
 /**
+ * Whether a region may be offered to the user at all. The registry treats a
+ * missing flag as enabled (both share the `enabled !== false` rule), so only an
+ * explicit `false` excludes it; a value that is not a region object is refused
+ * rather than assumed available.
+ */
+export function isRegionSelectable(region: RegionOption): boolean {
+	if (!region || typeof region !== "object") return false;
+	return region.enabled !== false;
+}
+
+/**
+ * Whether a database may be created in a region: it has to be selectable and
+ * not explicitly closed to new databases (`acceptNewDatabases !== false`). A
+ * region that stops accepting databases is still selectable — it keeps serving
+ * the databases it already hosts.
+ */
+export function isRegionCreatable(region: RegionOption): boolean {
+	return isRegionSelectable(region) && region.acceptNewDatabases !== false;
+}
+
+/**
+ * Stable order mirroring the registry's `sortRegions`: the preferred group
+ * first, then by display name, then by code so equal names still order the same
+ * however the catalog arrived.
+ */
+function sortRegionsByPreference(
+	preferred: (region: RegionOption) => boolean,
+	catalog: readonly RegionOption[],
+): RegionOption[] {
+	return [...catalog].sort((a, b) => {
+		const preferenceDelta = Number(preferred(b)) - Number(preferred(a));
+		if (preferenceDelta !== 0) return preferenceDelta;
+		return (
+			(a.name || a.code).localeCompare(b.name || b.code) ||
+			a.code.localeCompare(b.code)
+		);
+	});
+}
+
+/** The regions a picker may offer: enabled only, enabled first then by name. */
+export function selectableRegions(
+	catalog: readonly RegionOption[],
+): RegionOption[] {
+	return sortRegionsByPreference(
+		isRegionSelectable,
+		catalog.filter(isRegionSelectable),
+	);
+}
+
+/**
+ * The regions that accept new databases: selectable and creatable first, then
+ * by name.
+ */
+export function creatableRegions(
+	catalog: readonly RegionOption[],
+): RegionOption[] {
+	return sortRegionsByPreference(
+		isRegionCreatable,
+		catalog.filter(isRegionCreatable),
+	);
+}
+
+/**
+ * Whether the catalog leaves no region *choice* for creating a database.
+ *
+ * One creatable region (or none) is the default: the deployment's own region is
+ * the only target, and a one-option picker would advertise a choice that does
+ * not exist. `true` for an empty catalog too, so a catalog that has not loaded
+ * yet never flashes a picker.
+ */
+export function isSingleRegion(catalog: readonly RegionOption[]): boolean {
+	return creatableRegions(catalog).length <= 1;
+}
+
+/**
  * Parse a persisted selection — a JSON string (cookie) or an object — into a
  * validated selection, or `null`. Anything malformed is discarded rather than
  * trusted as a request base.

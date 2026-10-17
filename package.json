@@ -69,8 +69,8 @@
 		"inison": "^2.0.1",
 		"jscanify": "^1.4.3",
 		"jspdf": "^4.2.1",
-		"mjml": "^5.4.1",
 		"liquidjs": "^10.30.0",
+		"mjml": "^5.4.1",
 		"naive-ui": "^2.45.3",
 		"nuxt": "^4.5.2",
 		"nuxt-tiptap-editor": "3.4.0",
@@ -83,6 +83,8 @@
 		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.14"
+		"@biomejs/biome": "2.5.14",
+		"typescript": "5.9.2",
+		"vue-tsc": "3.1.1"
 	}
 }

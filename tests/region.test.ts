@@ -10,6 +10,10 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import {
+	creatableRegions,
+	isRegionCreatable,
+	isRegionSelectable,
+	isSingleRegion,
 	normalizePinnedRegion,
 	normalizeRegionApiUrl,
 	normalizeRegionCode,
@@ -18,10 +22,12 @@ import {
 	regionApiBase,
 	resolvePinnedSelection,
 	resolveSelectionAgainstCatalog,
+	selectableRegions,
 	serializeRegionSelection,
 	toRegionOption,
 	withTrailingSlash,
 } from "../app/composables/region.ts";
+import { useRegion } from "../app/composables/useRegion.ts";
 
 test("region codes are lower-cased and restricted to a safe alphabet", () => {
 	assert.equal(normalizeRegionCode("SA-1"), "sa-1");
@@ -218,4 +224,232 @@ test("a pinned region resolves from the catalog, or fails closed", () => {
 	assert.equal(resolvePinnedSelection(undefined, catalog), null);
 	// An empty catalog (unreachable main region) never yields a base.
 	assert.equal(resolvePinnedSelection("sa-1", []), null);
+});
+
+test("availability follows the registry flags and fails closed", () => {
+	// A missing flag is the registry's documented default (enabled/accepting),
+	// which `toRegionOption` normalises to an explicit `true`…
+	const open = toRegionOption({ code: "main", apiUrl: "https://api.x" });
+	assert.ok(open);
+	assert.equal(isRegionSelectable(open), true);
+	assert.equal(isRegionCreatable(open), true);
+
+	// …an explicit `false` is final on both axes.
+	const disabled = toRegionOption({
+		code: "ae-1",
+		apiUrl: "https://ae.api.x",
+		enabled: false,
+	});
+	assert.ok(disabled);
+	assert.equal(isRegionSelectable(disabled), false);
+	assert.equal(isRegionCreatable(disabled), false);
+
+	// A region that stopped accepting databases still serves the ones it hosts.
+	const closed = toRegionOption({
+		code: "sa-1",
+		apiUrl: "https://sa.api.x",
+		acceptNewDatabases: false,
+	});
+	assert.ok(closed);
+	assert.equal(isRegionSelectable(closed), true);
+	assert.equal(isRegionCreatable(closed), false);
+
+	// A value that is not a region at all is refused, never assumed available.
+	assert.equal(isRegionSelectable(undefined as never), false);
+	assert.equal(isRegionSelectable(null as never), false);
+	assert.equal(isRegionCreatable(undefined as never), false);
+});
+
+test("the selectable and creatable catalogs filter and order deterministically", () => {
+	const catalog = [
+		{
+			code: "za-1",
+			name: "Zulu",
+			apiUrl: "https://za.api.x",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+		{
+			code: "sa-1",
+			name: "Saudi Arabia",
+			apiUrl: "https://sa.api.x",
+			enabled: true,
+			acceptNewDatabases: false,
+		},
+		{
+			code: "ae-1",
+			name: "UAE",
+			apiUrl: "https://ae.api.x",
+			enabled: false,
+			acceptNewDatabases: true,
+		},
+		{
+			code: "main",
+			name: "Main",
+			apiUrl: "https://api.x",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+	];
+
+	// A disabled region is not offered; one closed to new databases is
+	// selectable but not creatable.
+	assert.deepEqual(
+		selectableRegions(catalog).map(({ code }) => code),
+		["main", "sa-1", "za-1"],
+	);
+	assert.deepEqual(
+		creatableRegions(catalog).map(({ code }) => code),
+		["main", "za-1"],
+	);
+	// The caller's catalog is never reordered in place.
+	assert.deepEqual(
+		catalog.map(({ code }) => code),
+		["za-1", "sa-1", "ae-1", "main"],
+	);
+});
+
+test("equal display names order the same whatever the input order", () => {
+	const sameNames = [
+		{
+			code: "b-1",
+			name: "Europe",
+			apiUrl: "https://b.api.x",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+		{
+			code: "a-1",
+			name: "Europe",
+			apiUrl: "https://a.api.x",
+			enabled: true,
+			acceptNewDatabases: true,
+		},
+	];
+	const reversed = [...sameNames].reverse();
+
+	assert.deepEqual(
+		selectableRegions(sameNames).map(({ code }) => code),
+		["a-1", "b-1"],
+	);
+	assert.deepEqual(
+		selectableRegions(reversed).map(({ code }) => code),
+		["a-1", "b-1"],
+	);
+	assert.deepEqual(
+		creatableRegions(reversed).map(({ code }) => code),
+		["a-1", "b-1"],
+	);
+});
+
+test("a fresh or single-region catalog has no region choice to offer", () => {
+	const main = {
+		code: "main",
+		name: "Main",
+		apiUrl: "https://api.x",
+		enabled: true,
+		acceptNewDatabases: true,
+	};
+	const sa = {
+		code: "sa-1",
+		name: "Saudi Arabia",
+		apiUrl: "https://sa.api.x",
+		enabled: true,
+		acceptNewDatabases: true,
+	};
+	const closed = {
+		code: "ae-1",
+		name: "UAE",
+		apiUrl: "https://ae.api.x",
+		enabled: true,
+		acceptNewDatabases: false,
+	};
+
+	// A catalog that has not loaded yet must not flash a picker…
+	assert.equal(isSingleRegion([]), true);
+	// …and a single creatable region is the default, not a choice.
+	assert.equal(isSingleRegion([main]), true);
+	// A region closed to new databases adds no creatable choice.
+	assert.equal(isSingleRegion([main, closed]), true);
+	// Two creatable regions make a picker meaningful.
+	assert.equal(isSingleRegion([main, sa]), false);
+});
+
+/**
+ * `useRegion` reaches for Nuxt's runtime globals (`useRuntimeConfig`,
+ * `useState`, `useCookie`, `computed`, `$fetch`, `clearNuxtState`) and
+ * `useRegionSession` for `useScopedCookie`. Reproduce them so the reactive
+ * wrapper runs under node:test — the same approach as `translate.test.ts`.
+ */
+function mockNuxt(options: { region?: string; result?: unknown[] }): void {
+	const states = new Map<string, { value: unknown }>();
+	const globals = globalThis as Record<string, unknown>;
+
+	globals.useRuntimeConfig = () => ({
+		public: {
+			apiBase: "https://api.x/",
+			mainApiBase: "https://api.x/",
+			region: options.region ?? "",
+		},
+	});
+	globals.useState = (key: string, init?: () => unknown) => {
+		if (!states.has(key))
+			states.set(key, { value: typeof init === "function" ? init() : init });
+		return states.get(key);
+	};
+	globals.useCookie = () => ({ value: null });
+	globals.useScopedCookie = () => ({ value: undefined });
+	globals.computed = (fn: () => unknown) => ({
+		get value() {
+			return fn();
+		},
+	});
+	globals.clearNuxtState = () => {};
+	globals.$fetch = async () => ({ result: options.result ?? [] });
+}
+
+test("a single-entry catalog loads and keeps a pinned deployment on its region", async () => {
+	mockNuxt({
+		region: "eu-1",
+		result: [
+			{
+				code: "eu-1",
+				name: "Europe",
+				apiUrl: "https://api.x",
+				enabled: true,
+				acceptNewDatabases: true,
+			},
+		],
+	});
+
+	const region = useRegion();
+	await region.loadRegions();
+
+	// One catalog entry is enough to resolve, project and count against.
+	assert.equal(region.catalog.value.length, 1);
+	assert.deepEqual(
+		region.selectableCatalog.value.map(({ code }) => code),
+		["eu-1"],
+	);
+	assert.deepEqual(
+		region.creatableCatalog.value.map(({ code }) => code),
+		["eu-1"],
+	);
+	assert.equal(region.isSingleRegion.value, true);
+
+	// The pinned deployment resolves its own region from that entry…
+	await region.bootstrap();
+	assert.equal(region.regionError.value, null);
+	assert.deepEqual(region.selection.value, {
+		code: "eu-1",
+		apiUrl: "https://api.x",
+	});
+	assert.equal(region.apiBase.value, "https://api.x/");
+
+	// …and cannot be switched away from it.
+	assert.equal(
+		await region.select({ code: "sa-1", apiUrl: "https://sa.api.x" }),
+		null,
+	);
+	assert.equal(region.selection.value?.code, "eu-1");
 });

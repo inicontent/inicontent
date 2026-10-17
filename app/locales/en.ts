@@ -526,6 +526,7 @@ export default {
 		regionDisabled: "That region is not available",
 		regionUnavailable: "This deployment's region is unavailable",
 		regionCatalogUnavailable: "The region catalog is unavailable",
+		regionNotAcceptingDatabases: "This region is not accepting new databases",
 		createDatabase: "Create database",
 		create: "Create",
 		adminUsername: "Administrator username",

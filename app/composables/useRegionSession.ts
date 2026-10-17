@@ -25,7 +25,7 @@ import {
 	REGION_STATE_KEY,
 	type RegionSelection,
 	withTrailingSlash,
-} from "./region";
+} from "./region.ts";
 
 export function useRegionSession() {
 	const config = useRuntimeConfig();

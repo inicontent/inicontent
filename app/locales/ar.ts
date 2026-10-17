@@ -236,6 +236,7 @@ export default {
 		regionDisabled: "تلك المنطقة غير متاحة",
 		regionUnavailable: "منطقة هذا النشر غير متاحة",
 		regionCatalogUnavailable: "دليل المناطق غير متاح",
+		regionNotAcceptingDatabases: "هذه المنطقة لا تقبل قواعد بيانات جديدة",
 		createDatabase: "إنشاء قاعدة بيانات",
 		adminUsername: "اسم مستخدم المسؤول",
 		adminPassword: "كلمة مرور المسؤول",

@@ -2,22 +2,30 @@
 	<NCard :title="t('databases')" style="background: none" :bordered="false">
 		<template #header-extra>
 			<NFlex justify="center" align="center">
-				<NSelect v-if="!isPinned && regionOptions.length"
+				<NSelect v-if="!isPinned && !isSingleRegion && regionOptions.length"
 					:value="selection?.code ?? null" :options="regionOptions" :placeholder="t('selectRegion')"
 					size="small" style="width: 180px; margin-inline-end: 8px;" @update:value="onRegionChange" />
 				<NPagination v-if="pagination.itemCount && pagination.pageCount > 1"
 				:simple="!!$device.isMobile" :page="pagination.page" :page-count="pagination.pageCount"
 				@update:page="pagination.onUpdatePage" />
-				<NButton :circle="$device.isMobile" :round="!$device.isMobile" @click="startDatabaseCreation">
-					<template #icon>
-						<NIcon>
-							<Icon name="tabler:plus" />
-						</NIcon>
+				<NTooltip :delay="1500" :disabled="canCreateDatabase">
+					<template #trigger>
+						<span>
+							<NButton :circle="$device.isMobile" :round="!$device.isMobile"
+								:disabled="!canCreateDatabase" @click="startDatabaseCreation">
+								<template #icon>
+									<NIcon>
+										<Icon name="tabler:plus" />
+									</NIcon>
+								</template>
+								<template v-if="!$device.isMobile">
+									{{ t('createDatabase') }}
+								</template>
+							</NButton>
+						</span>
 					</template>
-					<template v-if="!$device.isMobile">
-						{{ t('createDatabase') }}
-					</template>
-				</NButton>
+					{{ t("regionNotAcceptingDatabases") }}
+				</NTooltip>
 			</NFlex>
 		</template>
 
@@ -113,6 +121,7 @@
 
 <script setup lang="ts">
 import type { FormInst } from "naive-ui";
+import { normalizeRegionApiUrl } from "~/composables/region";
 
 onBeforeRouteLeave((route) => {
 	if (route.params.database) clearNuxtState(["database", "table", "user"]);
@@ -131,6 +140,9 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 // switching region retargets `useApiBase()` and the reactive fetch below.
 const {
 	catalog: regionCatalog,
+	selectableCatalog,
+	creatableCatalog,
+	isSingleRegion,
 	selection,
 	pinned,
 	isPinned,
@@ -138,10 +150,29 @@ const {
 	loadRegions,
 } = useRegion();
 const regionOptions = computed(() =>
-	regionCatalog.value
-		.filter((region) => region.enabled)
-		.map((region) => ({ label: region.name, value: region.code })),
+	selectableCatalog.value.map((region) => ({
+		label: region.name,
+		value: region.code,
+	})),
 );
+
+/**
+ * Whether the active region accepts new databases. The create request targets
+ * `useApiBase()`, so the answer is whether that base is one of the catalog's
+ * creatable regions. When no catalog entry vouches for it (the catalog has not
+ * loaded, or the region is closed to new databases) creation fails closed —
+ * the action stays visible but disabled — instead of surfacing an error only
+ * after submit.
+ */
+const canCreateDatabase = computed(() => {
+	const base = normalizeRegionApiUrl(useApiBase());
+	return (
+		!!base &&
+		creatableCatalog.value.some(
+			(region) => normalizeRegionApiUrl(region.apiUrl) === base,
+		)
+	);
+});
 
 function onRegionChange(code: string) {
 	// Switching region rotates the regional session (clear the old, establish
@@ -335,6 +366,11 @@ function startDatabaseCreation() {
 }
 
 async function createDatabase() {
+	// A region switch can close the active region to new databases while the
+	// creation card is still open; refuse the submit with the same message the
+	// disabled action shows rather than letting it fail at the API.
+	if (!canCreateDatabase.value)
+		return window.$message.error(t("regionNotAcceptingDatabases"));
 	DatabaseRef.value?.validate(async (errors: any) => {
 		if (errors) return window.$message.error(t("inputsAreInvalid"));
 		const bodyContent = toRaw(DatabaseModal.value) as Database & {
