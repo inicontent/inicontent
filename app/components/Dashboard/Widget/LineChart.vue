@@ -11,8 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useDashboardData } from "~/composables/useDashboardData";
-import { VChart } from "~/composables/useEcharts";
+import { useDashboardData, VChart } from "#imports";
 
 const props = defineProps<{
 	widget: Widget;

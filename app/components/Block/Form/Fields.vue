@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { FormField } from "~/composables/useForm";
+import type { FormField } from "#imports";
 
 defineProps<{ fields: FormField[] }>();
 const values = defineModel<Record<string, any>>({ default: () => ({}) });

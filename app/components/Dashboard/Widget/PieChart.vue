@@ -12,9 +12,12 @@
 </template>
 
 <script lang="ts" setup>
-import { groupLimitForSize, topGroups } from "~/composables/groupLabels";
-import { useDashboardData } from "~/composables/useDashboardData";
-import { VChart } from "~/composables/useEcharts";
+import {
+	groupLimitForSize,
+	topGroups,
+	useDashboardData,
+	VChart,
+} from "#imports";
 
 const props = defineProps<{
 	widget: Widget;

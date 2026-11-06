@@ -90,7 +90,7 @@
 
 <script lang="ts" setup>
 import type { FormInst, TabsInst } from "naive-ui";
-import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
+import { usePasskeyAuth } from "#imports";
 
 const props = defineProps<{ onLoggedIn?: () => void }>();
 

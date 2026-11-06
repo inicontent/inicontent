@@ -55,7 +55,9 @@ export default defineNuxtModule({
 					join(nuxt.options.rootDir, "index.js"),
 				);
 
-				template.getContents = async (ctx: object) => {
+				template.getContents = async (
+					ctx: Parameters<typeof getContents>[0],
+				) => {
 					const code: string = await getContents(ctx);
 					if (!nuxt.options.dev) return code;
 

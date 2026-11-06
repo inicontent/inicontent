@@ -41,6 +41,7 @@
 
 <script lang="ts" setup>
 import type { FormItemRule } from "naive-ui"
+import { Icon } from "#components";
 
 const { field } = defineProps<{ field: Field }>()
 const searchQuery = ref<string>()

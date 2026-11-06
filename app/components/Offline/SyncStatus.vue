@@ -102,9 +102,11 @@
 
 <script setup lang="ts">
 import { Icon, NBadge, NButton, NFlex, NIcon, NText } from "#components";
-import { shouldShowSyncStatus } from "~/composables/offlineStatus";
-import { resolvePhiDatabase } from "~/composables/phiGuard";
-import { useOfflineSync } from "~/composables/useOfflineSync";
+import {
+	resolvePhiDatabase,
+	shouldShowSyncStatus,
+	useOfflineSync,
+} from "#imports";
 
 const database = useState<Database>("database");
 // Conservative (C1): persistence is disabled unless the database is explicitly
@@ -194,7 +196,6 @@ onMounted(() => {
 	// Deferred so opening IndexedDB never competes with initial render/fetch.
 	const runInit = () => initSync();
 	if ("requestIdleCallback" in window) {
-		// @ts-expect-error requestIdleCallback types not present
 		window.requestIdleCallback(runInit, { timeout: 3000 });
 	} else {
 		setTimeout(runInit, 500);

@@ -1,3 +1,4 @@
+import type { Data as InisonData } from "inison";
 import { FormatObjectCriteriaValue, isArrayOfObjects } from "inibase/utils";
 
 function _generateSearchInOption(
@@ -161,9 +162,9 @@ function shiftDate(baseDate: Date, amount: number, unit: RelativeUnit) {
 	return date.getTime();
 }
 
-function fieldHasType(field: unknown, expectedType: FieldType) {
+function fieldHasType(field: unknown, expectedType: DB_FieldType) {
 	if (!field || typeof field !== "object") return false;
-	const fieldType = (field as { type?: FieldType | FieldType[] }).type;
+	const fieldType = (field as { type?: DB_FieldType | DB_FieldType[] }).type;
 	if (!fieldType) return false;
 	if (Array.isArray(fieldType)) return fieldType.includes(expectedType);
 	return fieldType === expectedType;
@@ -218,7 +219,7 @@ function appendCriterionValue(
 function prepareCriterionForMode(
 	operator: string | undefined,
 	rawValue: any,
-	field: Field,
+	field: Field | undefined,
 	mode: "display" | "fetch",
 ) {
 	const normalizedOperator =
@@ -240,7 +241,9 @@ export function generateSearchString(
 	searchArray: any,
 	mode: "display" | "fetch" = "display",
 ) {
-	const RETURN: Record<string, Record<string, unknown>> = {};
+	// `InisonData` (not `unknown`) so the result stays assignable to
+	// `Inison.stringify`'s parameter at the call sites.
+	const RETURN: Record<string, Record<string, InisonData>> = {};
 	if (!searchArray) return undefined;
 	for (const condition in searchArray) {
 		const items = searchArray[condition];

@@ -186,9 +186,9 @@ export function useRealtimeSync(
 
 		// Update reactive data
 		if (data.value) {
-			data.value.result = Array.isArray(data.value.result)
-				? dataArray
-				: dataArray[0];
+			// `result` is the table's item list; keep the (possibly mutated)
+			// local array in sync as a whole.
+			data.value.result = dataArray;
 		}
 	};
 

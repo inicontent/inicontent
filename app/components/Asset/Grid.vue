@@ -97,9 +97,9 @@ import { Icon, NIcon } from "#components";
 import {
 	imageExtensions,
 	officeExtensions,
+	useAssetPreview,
 	videoExtensions,
-} from "~/composables";
-import { useAssetPreview } from "~/composables/useAssetPreview";
+} from "#imports";
 
 const path = defineModel<string>("path");
 const { isAssetRoute, table, selectedAssetIds } = defineProps<{

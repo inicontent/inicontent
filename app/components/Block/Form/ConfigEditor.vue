@@ -61,8 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
-import { isFormColumn } from "~/composables/useForm";
+import { flattenSchema, isFormColumn } from "#imports";
 
 const modelValue = defineModel<Form>({ default: () => ({}) });
 defineProps<{ design?: number }>();

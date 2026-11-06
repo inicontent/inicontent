@@ -18,8 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useDashboardData } from "~/composables/useDashboardData";
-import { resolveWidgetTable } from "~/composables/widgetSchema";
+import { resolveWidgetTable, useDashboardData } from "#imports";
 
 const props = defineProps<{
 	widget: Widget;

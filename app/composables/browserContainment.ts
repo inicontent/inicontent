@@ -31,6 +31,7 @@ export const THUMBNAIL_VERSION = 3;
 export function upgradeOfflineQueue(
 	database: IDBPDatabase,
 	oldVersion: number,
+	_newVersion: number | null,
 	transaction: IDBPTransaction<unknown, string[], "versionchange">,
 ): void {
 	const hadPending = database.objectStoreNames.contains(OFFLINE_QUEUE_STORE);

@@ -79,7 +79,8 @@ export default defineNuxtModule({
 
 		nuxt.hook("modules:done", () => {
 			const optimizeDeps = nuxt.options.vite?.optimizeDeps;
-			const include = optimizeDeps?.include;
+			if (!optimizeDeps) return;
+			const include = optimizeDeps.include;
 			if (!include?.length) return;
 
 			const resolvable: string[] = [];

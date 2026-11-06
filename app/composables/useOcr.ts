@@ -109,11 +109,17 @@ export function useOcr() {
 
 			const { data } = await worker.recognize(source as any);
 
-			const words: OcrWord[] = (data.words ?? []).map((w: any) => ({
-				text: w.text,
-				confidence: w.confidence,
-				bbox: w.bbox,
-			}));
+			// tesseract.js v5+ dropped the top-level `words` array — words live
+			// in the structured block → paragraph → line hierarchy.
+			const words: OcrWord[] = (data.blocks ?? [])
+				.flatMap((block) => block.paragraphs)
+				.flatMap((paragraph) => paragraph.lines)
+				.flatMap((line) => line.words)
+				.map((w) => ({
+					text: w.text,
+					confidence: w.confidence,
+					bbox: w.bbox,
+				}));
 
 			return {
 				text: data.text.trim(),

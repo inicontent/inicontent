@@ -1,6 +1,7 @@
 <template>
 	<div v-if="modelValue" class="builderContents">
-		<LazyBlock v-for="(_, index) in modelValue" v-model="modelValue[index]" />
+		<LazyBlock v-for="(content, index) in modelValue" :key="index" :model-value="content"
+			@update:model-value="(value: Content) => { if (modelValue) modelValue[index] = value; }" />
 	</div>
 	<div v-else class="not-found-wrapper">
 		<h1 class="not-found-title">404 | {{ t('pageNotFound') }}</h1>

@@ -1,4 +1,4 @@
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "./schemaCompat.ts";
 import { isVideoMediaValue } from "./useForm";
 
 /** One gallery entry — a plain URL plus whether it renders as a video. */

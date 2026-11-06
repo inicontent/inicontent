@@ -20,6 +20,7 @@ function recordUnfound(target: Record<string, unknown>, path: string) {
 
 	for (let i = 0; i < segments.length; i++) {
 		const segment = segments[i];
+		if (segment === undefined) return;
 		if (
 			segment === "__proto__" ||
 			segment === "prototype" ||
@@ -262,7 +263,8 @@ export default function (
 		const unfoundTranslationsState = useState<TranslationsType>(
 			"unfoundTranslations",
 		);
-		if (!unfoundTranslationsState.value) unfoundTranslationsState.value = {};
+		if (!unfoundTranslationsState.value)
+			unfoundTranslationsState.value = {} as TranslationsType;
 		recordUnfound(unfoundTranslationsState.value, key);
 	}
 

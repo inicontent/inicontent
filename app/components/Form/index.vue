@@ -4,17 +4,16 @@
 			<FieldS
 				v-model="modelValue"
 				v-model:schema="schema"
-				:table="props.table ?? table.value?.slug ?? String(route.params.table ?? '')"
+				:table="props.table ?? table?.slug ?? String(route.params.table ?? '')"
 			/>
 		</slot>
 	</NForm>
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema, isArrayOfObjects } from "inibase/utils";
+import { isArrayOfObjects } from "inibase/utils";
 import type { FormInst } from "naive-ui";
-import { debounce } from "~/composables";
-import { normalizeTranslationValue } from "~/composables/translationValue";
+import { debounce, flattenSchema, normalizeTranslationValue } from "#imports";
 
 const props = defineProps<{
 	// biome-ignore lint/correctness/noVueDuplicateKeys: false positive with translation POST body's `table` key
@@ -486,7 +485,7 @@ async function CREATE() {
 				modelValue.value = props.onBeforeCreate(bodyContent);
 
 			Loading.value.CREATE = true;
-			const data = await useOfflineFetch()
+			const data = await useOfflineFetch<apiResponse<Item>>()
 				.request(
 					`${useApiBase()}${database.value.slug}/${props.table ?? table.value?.slug ?? route.params.table}`,
 					{
@@ -532,8 +531,7 @@ async function CREATE() {
 				);
 			}
 
-			if (!(data as any)?.result || !(data as any)?.result.id)
-				return window.$message.error((data as any)?.message);
+			if (!data?.result?.id) return window.$message.error(data?.message ?? "");
 
 			// When creating an item in a secondary language, also post the
 			// entered values as translations for that language.

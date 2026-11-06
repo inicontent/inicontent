@@ -66,7 +66,7 @@
 					<Icon :name="Language === 'ar' ? 'tabler:chevron-right' : 'tabler:chevron-left'" />
 				</NIcon>
 			</NButton>
-			<NButton v-if="previewAssetList.length > 1" circle tertiary size="large" class="assetLightboxNav assetLightboxNext" type="button" @click="showNextByLanguage">
+			<NButton v-if="previewAssetList.length > 1" circle tertiary size="large" class="assetLightboxNav assetLightboxNext" @click="showNextByLanguage">
 				<NIcon :size="22">
 					<Icon :name="Language === 'ar' ? 'tabler:chevron-left' : 'tabler:chevron-right'" />
 				</NIcon>
@@ -76,11 +76,13 @@
 
 <script setup lang="ts">
 import { Icon, NIcon } from "#components";
-import { imageExtensions, videoExtensions } from "~/composables";
-import { useAssetPreview } from "~/composables/useAssetPreview";
+import { imageExtensions, useAssetPreview, videoExtensions } from "#imports";
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const {
 	currentPreviewAsset,
@@ -212,7 +214,8 @@ async function renderAllPdfPages() {
 	const panel = pdfPanelRef.value;
 	container.innerHTML = "";
 
-	const availableWidth = (panel?.clientWidth || container.clientWidth || 800) - 8;
+	const availableWidth =
+		(panel?.clientWidth || container.clientWidth || 800) - 8;
 	const availableHeight = panel?.clientHeight || 0;
 	const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 	const qualityBoost = 1.5;
@@ -236,12 +239,16 @@ async function renderAllPdfPages() {
 		canvas.width = viewport.width;
 		canvas.height = viewport.height;
 		// Display at the fitted size; oversample only adds render resolution, not layout size.
-		canvas.style.width = `${(baseViewport.width * fitScale)}px`;
-		canvas.style.height = `${(baseViewport.height * fitScale)}px`;
+		canvas.style.width = `${baseViewport.width * fitScale}px`;
+		canvas.style.height = `${baseViewport.height * fitScale}px`;
 		container.appendChild(canvas);
 		const context = canvas.getContext("2d");
 		if (!context) continue;
-		const renderTask = page.render({ canvasContext: context, viewport, canvas });
+		const renderTask = page.render({
+			canvasContext: context,
+			viewport,
+			canvas,
+		});
 		await renderTask.promise;
 	}
 	updatePdfCurrentPage();

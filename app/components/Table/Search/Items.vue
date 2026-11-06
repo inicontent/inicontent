@@ -53,7 +53,9 @@ const randomIdSuffix = Date.now()
 const schema = defineModel<Table['schema']>("schema")
 
 const modelValue = defineModel<searchTypeValue>({
-	default: [[null, "=", null]],
+	// Factory default: Vue's `InferDefault` only accepts object defaults as
+	// factories, otherwise overload resolution fails.
+	default: () => [[null, "=", null]],
 })
 
 type OperatorOption = {

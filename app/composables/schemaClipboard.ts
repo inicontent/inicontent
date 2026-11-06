@@ -1,6 +1,6 @@
 import { isArrayOfObjects } from "inibase/utils";
-import Inison from "inison";
-import { copyToClipboard, randomID } from "~/composables";
+import Inison, { type Data } from "inison";
+import { copyToClipboard, randomID } from "#imports";
 
 /**
  * Shared clipboard for the table-schema editor.
@@ -34,7 +34,9 @@ function copyableField(field: Field): Record<string, unknown> {
  * another schema editor (including a different table or browser tab).
  */
 export async function copySchemaFields(fields: Field[]) {
-	const payload = Inison.stringify(fields.map((field) => copyableField(field)));
+	const payload = Inison.stringify(
+		fields.map((field) => copyableField(field)) as Data[],
+	);
 	await copyToClipboard(`${CLIPBOARD_TAG}:${payload}`);
 }
 

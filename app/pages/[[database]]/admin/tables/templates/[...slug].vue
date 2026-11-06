@@ -4,6 +4,7 @@
 
 <script lang="ts" setup>
 import Inison from "inison";
+import type { NuxtError } from "#app";
 
 interface EmailTemplate {
 	id?: string;
@@ -34,29 +35,33 @@ const templateName = ([] as string[]).concat(route.params.slug || []).join("/");
 // and the API errors. Fetch all templates and pick the exact match instead.
 const isTemplatePatternName = isTemplatePattern(templateName);
 
-const { data: template } = await useFetch<EmailTemplate>(
-	`${useApiBase()}${database.value.slug}/templates`,
-	{
-		params: isTemplatePatternName
-			? {
-					locale: Language.value,
-					options: Inison.stringify({
-						perPage: 1000,
-						columns: ["*"],
-					}),
-				}
-			: {
-					locale: Language.value,
-					where: Inison.stringify({ name: templateName }),
-				},
-		transform: (res) =>
-			isTemplatePatternName
-				? (res.result ?? []).find((item) => item.name === templateName)
-				: res.result?.[0],
-		deep: true,
-		credentials: "include",
-	},
-);
+const { data: template } = await useFetch<
+	EmailTemplate,
+	NuxtError,
+	string,
+	"get",
+	apiResponse<EmailTemplate[]>,
+	EmailTemplate | undefined
+>(`${useApiBase()}${database.value.slug}/templates`, {
+	params: isTemplatePatternName
+		? {
+				locale: Language.value,
+				options: Inison.stringify({
+					perPage: 1000,
+					columns: ["*"],
+				}),
+			}
+		: {
+				locale: Language.value,
+				where: Inison.stringify({ name: templateName }),
+			},
+	transform: (res) =>
+		isTemplatePatternName
+			? (res.result ?? []).find((item) => item.name === templateName)
+			: res.result?.[0],
+	deep: true,
+	credentials: "include",
+});
 
 if (!template.value?.id)
 	throw createError({

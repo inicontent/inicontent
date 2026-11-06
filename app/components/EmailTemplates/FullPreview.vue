@@ -26,8 +26,11 @@
 </template>
 
 <script lang="ts" setup>
-import { renderEmailTemplateClient } from "~/composables/emailRender";
-import { extractBodyStyles, sampleVariables } from "~/composables/emailSheet";
+import {
+	extractBodyStyles,
+	renderEmailTemplateClient,
+	sampleVariables,
+} from "#imports";
 
 /**
  * Rendered preview of a *full* stored email template (MJML document). Used by

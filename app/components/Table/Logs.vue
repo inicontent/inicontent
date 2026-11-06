@@ -5,7 +5,7 @@
 				<NH3 style="margin: 0">{{ t('latestActivities') }}</NH3>
 			</template>
 			<NCard>
-				<NSpin :show="Loading.logs">
+				<NSpin :show="Boolean(Loading.logs)">
 					<NScrollbar v-if="data?.result" style="max-height: 340px">
 						<NTimeline :item-placement="Language === 'ar' ? 'right' : 'left'">
 							<NTimelineItem v-for="(log, index) in data.result?.filter((log) => log.actions?.length)" :key="log.id"
@@ -110,8 +110,8 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
+import { flattenSchema } from "#imports";
 
 type ActionName =
 	| "set"
@@ -136,7 +136,9 @@ const { id, open } = defineProps<{
 const isOpen = ref(open);
 
 const config = useRuntimeConfig();
-const Loading = useState<Record<string, boolean | string>>(
+// Shares the global "Loading" state; `revert` holds the log id being reverted
+// (hence `number` alongside the boolean flags).
+const Loading = useState<Record<string, boolean | string | number>>(
 	"Loading",
 	() => ({}),
 );
@@ -274,7 +276,7 @@ function resolveActionPath(
 	item: Item | Item[] | undefined,
 	path: string,
 ): unknown {
-	let node: unknown = ([] as Item[]).concat(item)[0];
+	let node: unknown = ([] as Item[]).concat(item ?? [])[0];
 	if (node === undefined || node === null) return undefined;
 	for (const part of path.split(".").filter(Boolean)) {
 		if (part === "*") return undefined;
@@ -282,8 +284,8 @@ function resolveActionPath(
 		if (bracket) {
 			node = (node as Record<string, unknown>)?.[bracket[1] as string];
 			if (node === undefined || node === null) return undefined;
-			for (const index of [...bracket[2].matchAll(/\[(\d+)\]/g)].map((m) =>
-				Number(m[1]),
+			for (const index of [...(bracket[2] ?? "").matchAll(/\[(\d+)\]/g)].map(
+				(m) => Number(m[1]),
 			)) {
 				node = (node as unknown[])?.[index];
 				if (node === undefined || node === null) return undefined;
@@ -335,7 +337,7 @@ function confirmRevert(log: Log) {
 async function executeRevert() {
 	if (!pendingRevertLog.value || !id) return;
 
-	Loading.value.revert = pendingRevertLog.value.id;
+	Loading.value.revert = pendingRevertLog.value.id ?? "";
 
 	try {
 		const response = await $fetch<apiResponse<Item>>(

@@ -115,8 +115,8 @@ import {
 import {
 	generateSearchArray,
 	generateSearchString,
-} from "~/composables/search";
-import { useRealtimeSync } from "~/composables/useRealtimeSync";
+	useRealtimeSync,
+} from "#imports";
 
 const user = useState<User>("user");
 const route = useRoute();
@@ -124,7 +124,7 @@ const router = useRouter();
 const { isMobile } = useDevice();
 const { tableUrl } = useTableUrl();
 
-const searchString = ref<string>(
+const searchString = ref<string | undefined>(
 	(route.query.search as string | undefined) ?? "",
 );
 const searchArray = ref<searchType>(
@@ -132,6 +132,12 @@ const searchArray = ref<searchType>(
 		? generateSearchArray(Inison.unstringify(route.query.search as string))
 		: { and: [[null, "=", null]] },
 );
+
+// Replace the active search from outside the component (e.g. after a mutation
+// that needs the grid to re-query). Exposed through `defineExpose` below.
+function search(value: searchType = {}) {
+	searchArray.value = value;
+}
 
 const columns = ref<DataTableColumns>();
 const data = ref<apiResponse<Item[]>>();
@@ -445,7 +451,7 @@ function renderItemButtons(row: Item) {
 provide("renderItemButtons", renderItemButtons);
 
 defineExpose<TableRef>({
-	search: searchArray as searchType,
+	search,
 	columns: columns as any,
 	delete: deleteItem,
 	data: data as any,
@@ -454,8 +460,8 @@ defineExpose<TableRef>({
 const slots = defineSlots<{
 	default(props: { data?: apiResponse<Item[]> }): any;
 	form(props: {
-		onAfterCreate: () => Promise<void>;
-		onAfterUpdate: () => Promise<void>;
+		onAfterCreate: (item?: Item) => Promise<void>;
+		onAfterUpdate: (item?: Item) => Promise<void>;
 	}): any;
 	navbarActions(): any;
 	navbarExtraButtons(): any;
@@ -827,11 +833,9 @@ async function toolsDropdownOnSelect(
 			const displayAs = value === "viewKanban" ? "kanban" : undefined;
 			if (!clonedTablesConfig[table.value.slug])
 				clonedTablesConfig[table.value.slug] = {};
-			// @ts-expect-error
 			clonedTablesConfig[table.value.slug].view = displayAs;
 
 			if (value.startsWith("tableSize"))
-				// @ts-expect-error
 				clonedTablesConfig[table.value.slug].size = value.endsWith("S")
 					? "small"
 					: value.endsWith("L")

@@ -1,12 +1,10 @@
 import {
+	cacheThumbnail,
+	getCachedThumbnail,
 	officeExtensions,
 	spreadsheetExtensions,
 	wordExtensions,
-} from "~/composables";
-import {
-	cacheThumbnail,
-	getCachedThumbnail,
-} from "~/composables/useThumbnailCache";
+} from "#imports";
 
 const MAX_FILE_SIZE_RENDER = 10 * 1024 * 1024; // 10MB limit for Tier 2 rendering
 const THUMBNAIL_SIZE = 200;

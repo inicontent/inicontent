@@ -70,11 +70,16 @@
 </template>
 
 <script setup lang="ts">
-import { useProduct } from "~/composables/useProduct";
+import { useProduct } from "#imports";
 
-const localModelValue = defineModel<Product>();
+// A product block always renders with a config object (the builder supplies one),
+// so default it to `{}` rather than leaving the model possibly undefined.
+const localModelValue = defineModel<Product>({ default: () => ({}) });
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 const { linkAttrs } = usePageLinks();
 
 const hasHeading = computed(

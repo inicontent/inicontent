@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { isVideoMedia, useForm } from "~/composables/useForm";
+import { isVideoMedia, useForm } from "#imports";
 
 const localModelValue = defineModel<Form>();
 

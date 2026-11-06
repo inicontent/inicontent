@@ -3,12 +3,12 @@
 			:width="$device.isMobile ? '100%' : drawer.width" @update:width="(width) => {
 				if (index === 0) defaultWidth = width
 				drawer.width = width
-			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :class="`${drawer.table.replaceAll(' ','_')}-drawer`"
+			}" resizable :placement="Language === 'ar' ? 'left' : 'right'" :class="`${(drawer.table ?? '').replaceAll(' ','_')}-drawer`"
 			:id="index === (Drawers.length - 1) ? 'activeDrawer' : undefined" :close-on-esc="false">
 			<NDrawerContent closable :native-scrollbar="false">
 				<template #header>
 					<NuxtLink v-if="drawer.id" @click="Drawers = []"
-						:to="tableUrl(drawer.table, `/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`)">
+						:to="tableUrl(drawer.table ?? '', `/${drawer.id}${drawer.mode === 'view' ? '' : '/edit'}`)">
 						<NText type="primary">
 							{{ itemsLabels[index] }}
 							<NIcon >
@@ -89,12 +89,11 @@ const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const { tableUrl } = useTableUrl();
 
 defineSlots<{
-	default({
-		onAfterCreate,
-		onAfterUpdate,
-	}: {
-		onAfterCreate: () => any;
-		onAfterUpdate: () => any;
+	// The slot hands the parent hooks that fire after the drawer's form saves;
+	// `onAfterCreate` receives the created item.
+	default(props: {
+		onAfterCreate: (item?: Item) => any;
+		onAfterUpdate: (item?: Item) => any;
 	}): {
 		onAfterCreate: () => any;
 		onAfterUpdate: () => any;

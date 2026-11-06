@@ -28,26 +28,26 @@
 				</NFlex>
 				<NDivider v-if="!isTranslationMode && modelValue.content && currentElementIndex !== undefined && !modelValue.content?.[currentElementIndex]?.name" class="blocks-divider" />
 				<NFlex vertical v-if="modelValue.content && currentElementIndex !== undefined">
-					<NAlert v-if="isTranslationMode && modelValue.content[currentElementIndex].id" type="info" :show-icon="true" class="shared-block-notice">
+					<NAlert v-if="isTranslationMode && currentElement.id" type="info" :show-icon="true" class="shared-block-notice">
 						{{ t('translation.sharedBlockNotice') }}
 					</NAlert>
 					<NCollapse v-model:expanded-names="expandedNames" accordion :trigger-areas="['main', 'arrow']"
 						displayDirective="show">
-						<template v-if="modelValue.content[currentElementIndex].name">
+						<template v-if="currentElement.name">
 							<NCollapseItem v-if="!isTranslationMode" :title="t('style')" name="style">
 								<template #header-extra>
 									<PreviewDropdown />
 								</template>
 								<NGrid :x-gap="12" :y-gap="12" :cols="selectedDevice === 'desktop' ? 1 : 2">
 									<NGridItem
-										v-for="(_, index) in Array(blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks]?.total ?? 0)"
+										v-for="(_, index) in Array(blockTypes[currentElement.name.split('/')[0] as Blocks]?.total ?? 0)"
 										:key="index"
-										@click="updateBlock(modelValue.content[currentElementIndex].name, index + 1)">
+										@click="updateBlock(currentElement.name, index + 1)">
 										<LazyPreview class="previewBox"
-											:style="getPreviewStyle(modelValue.content[currentElementIndex].name, index + 1)">
+											:style="getPreviewStyle(currentElement.name, index + 1)">
 											<div class="builderContents">
 												<LazyBlock
-													:model-value="getRenderModel(modelValue.content[currentElementIndex].name, index + 1)" />
+													:model-value="getRenderModel(currentElement.name, index + 1)" />
 											</div>
 										</LazyPreview>
 									</NGridItem>
@@ -62,7 +62,7 @@
 									<NPopover v-else>
 										<template #trigger>
 											<NButton round type="primary" secondary
-												@click="modelValue.content[currentElementIndex].config = {}">
+												@click="currentElement.config = {}">
 												<template #icon>
 													<NIcon>
 														<Icon name="tabler:eraser" />
@@ -80,25 +80,25 @@
 									<LazyFieldS
 										v-if="isTranslationMode"
 										:schema="selectedBlockConfigSchema"
-										v-model="modelValue.content[currentElementIndex].config" />
+										v-model="currentElement.config" />
 									<BlockLoopConfigEditor
-										v-else-if="modelValue.content[currentElementIndex].name.split('/')[0] === 'Loop'"
-										v-model="modelValue.content[currentElementIndex].config" />
+										v-else-if="currentElement.name.split('/')[0] === 'Loop'"
+										v-model="currentElement.config" />
 									<BlockFormConfigEditor
-										v-else-if="modelValue.content[currentElementIndex].name.split('/')[0] === 'Form'"
-										:design="parseInt(modelValue.content[currentElementIndex].name.split('/')[1], 10)"
-										v-model="modelValue.content[currentElementIndex].config" />
+										v-else-if="currentElement.name.split('/')[0] === 'Form'"
+										:design="parseInt(currentElement.name.split('/')[1] ?? '', 10)"
+										v-model="currentElement.config" />
 									<BlockProductConfigEditor
-										v-else-if="modelValue.content[currentElementIndex].name.split('/')[0] === 'Product'"
+										v-else-if="currentElement.name.split('/')[0] === 'Product'"
 										:default-table="modelValue.template?.table"
-										v-model="modelValue.content[currentElementIndex].config" />
+										v-model="currentElement.config" />
 									<BlockTableConfigEditor
-										v-else-if="modelValue.content[currentElementIndex].name.split('/')[0] === 'Table'"
-										v-model="modelValue.content[currentElementIndex].config" />
+										v-else-if="currentElement.name.split('/')[0] === 'Table'"
+										v-model="currentElement.config" />
 									<LazyFieldS
 										v-else
-										:schema="[...(blockTypes[modelValue.content[currentElementIndex].name.split('/')[0] as Blocks]?.schema ?? []), { key: 'hideOn', type: 'array', options: ['mobile', 'tablet', 'desktop'] }]"
-										v-model="modelValue.content[currentElementIndex].config" />
+										:schema="[...(blockTypes[currentElement.name.split('/')[0] as Blocks]?.schema ?? []), { key: 'hideOn', type: 'array', options: ['mobile', 'tablet', 'desktop'] }]"
+										v-model="currentElement.config" />
 								</div>
 							</NCollapseItem>
 						</template>
@@ -310,7 +310,8 @@
 									</template>
 								</NButton>
 							</NButtonGroup>
-							<LazyBlock v-model="modelValue.content[index]" />
+							<LazyBlock :model-value="element"
+								@update:model-value="(value: Content) => { if (modelValue.content) modelValue.content[index] = value; }" />
 						</div>
 					</template>
 			</VueDraggable>
@@ -337,30 +338,28 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
 import type { FormInst } from "naive-ui";
 import { type DraggableEvent, VueDraggable } from "vue-draggable-plus";
 import { Icon, NIcon } from "#components";
-import {
-	getTemplateSegments,
-	isTemplateSegmentField,
-	type TemplateSegmentIssue,
-	templateSegmentFieldTypes,
-	validatePageTemplate,
-} from "~/composables/pageTemplate";
 import {
 	applyConfigOverlay,
 	collectTranslatablePaths,
 	diffConfigsWithReset,
 	diffPageFieldsWithReset,
 	flattenOverlay,
+	flattenSchema,
 	getConfigValue,
+	getTemplateSegments,
+	isTemplateSegmentField,
 	PAGE_TRANSLATABLE_PATHS,
 	setConfigValue,
+	type TemplateSegmentIssue,
+	templateSegmentFieldTypes,
 	translatableSchema,
-} from "~/composables/translationOverlay";
-import { useTranslationOverlay } from "~/composables/useTranslationOverlay";
+	useTranslationOverlay,
+	validatePageTemplate,
+} from "#imports";
 
 const modelValue = defineModel<Page>({
 	default: () => reactive({}),
@@ -403,6 +402,7 @@ function liftTemplateBlock() {
 	);
 	if (templateBlockIndex === -1) return;
 	const templateBlock = content[templateBlockIndex];
+	if (!templateBlock) return;
 	templateBlockId = blockRowId(templateBlock.id);
 	modelValue.value.template = {
 		...((templateBlock.config as PageTemplate) ?? {}),
@@ -649,10 +649,12 @@ function orderDropdownOnSelect(value: "top" | "down", index: number) {
 
 	if (isMovingUp || isMovingDown) {
 		const targetIndex = isMovingUp ? index - 1 : index + 1;
-		[content[index], content[targetIndex]] = [
-			content[targetIndex],
-			content[index],
-		];
+		const current = content[index];
+		const target = content[targetIndex];
+		if (current !== undefined && target !== undefined) {
+			content[index] = target;
+			content[targetIndex] = current;
+		}
 
 		if (currentElementIndex.value === index)
 			currentElementIndex.value = targetIndex;
@@ -661,6 +663,17 @@ function orderDropdownOnSelect(value: "top" | "down", index: number) {
 
 const isMenuCollapsed = ref(false);
 const currentElementIndex = ref<number>();
+/**
+ * The block currently open in the side panel, addressed by index. Under
+ * `noUncheckedIndexedAccess` the element itself is `Content | undefined`; the
+ * panel bindings only render while the index is in range, so the empty
+ * fallback is a guard that is never observed at runtime.
+ */
+const currentElement = computed(
+	() =>
+		modelValue.value.content?.[currentElementIndex.value ?? -1] ??
+		({} as Content),
+);
 
 const database = useState<Database>("database");
 const Language = useScopedCookie<LanguagesType>(
@@ -719,13 +732,10 @@ const pageSettingSchema = computed<Schema>(() => {
 				!["sessions", "assets", "translations", "dashboards"].includes(slug),
 		)
 		.map((table) => ({ label: t(table.slug), value: table.slug }));
-	return [
-		{
-			key: "slug",
-			type: "string",
-			required: true,
-		},
-		...(modelValue.value?.slug?.includes("[") &&
+	// Typed explicitly: the conditional spread below would otherwise widen
+	// `type` to `string` and fall outside the `Schema` return type.
+	const templateBindingSettings: Schema =
+		modelValue.value?.slug?.includes("[") &&
 		modelValue.value?.slug?.includes("]")
 			? [
 					{
@@ -742,7 +752,14 @@ const pageSettingSchema = computed<Schema>(() => {
 						],
 					},
 				]
-			: []),
+			: [];
+	return [
+		{
+			key: "slug",
+			type: "string",
+			required: true,
+		},
+		...templateBindingSettings,
 		{
 			key: "seo",
 			type: "object",
@@ -1062,9 +1079,12 @@ async function SaveAdd() {
 				(issue) => issue.level === "error",
 			);
 			if (segmentErrors.length) {
-				window.$message.error(templateIssueText(segmentErrors[0]));
-				Loading.value.SaveAdd = false;
-				return;
+				const firstSegmentError = segmentErrors[0];
+				if (firstSegmentError) {
+					window.$message.error(templateIssueText(firstSegmentError));
+					Loading.value.SaveAdd = false;
+					return;
+				}
 			}
 			// Persist the page-template binding (a "Template" pseudo-block in the
 			// blocks table) before the generic block flow runs.
@@ -1148,8 +1168,9 @@ async function SaveAdd() {
 					if (newBlockIdsReq.result?.length)
 						for (let index = 0; index < newBlockIndexes.length; index++) {
 							const newBlockIndex = newBlockIndexes[index];
-							rawModelValue.content[newBlockIndex] =
-								newBlockIdsReq.result[index];
+							const newBlock = newBlockIdsReq.result?.[index];
+							if (newBlockIndex === undefined || !newBlock) continue;
+							rawModelValue.content[newBlockIndex] = newBlock;
 						}
 					else {
 						window.$message.error(newBlockIdsReq.message);
@@ -1228,7 +1249,7 @@ async function deleteBlockDropdownOnSelect(
 	if (!modelValue.value?.content?.length) return;
 	const block = modelValue.value.content[index];
 	if (value === "delete") {
-		if (!block.id) return;
+		if (!block?.id) return;
 		Loading.value.deleteBlock = true;
 		const data = await $fetch<apiResponse<boolean>>(
 			`${useApiBase()}${database.value.slug}/blocks/${block.id}`,
@@ -1285,15 +1306,18 @@ function onClickEditButton(index: number, event?: MouseEvent) {
 const updateBlock = (name: string, style: number) => {
 	if (currentElementIndex.value === undefined || !modelValue.value.content)
 		return;
-	modelValue.value.content[currentElementIndex.value].name =
-		`${name.split("/")[0] as Blocks}/${style}`;
+	const block = modelValue.value.content[currentElementIndex.value];
+	if (!block) return;
+	block.name = `${name.split("/")[0] as Blocks}/${style}`;
 };
 
 const getPreviewStyle = (name: string, style: number) => {
 	if (currentElementIndex.value === undefined || !modelValue.value.content)
 		return;
 
-	const currentBlock = modelValue.value.content[currentElementIndex.value].name;
+	const block = modelValue.value.content[currentElementIndex.value];
+	if (!block) return;
+	const currentBlock = block.name;
 	return currentBlock === `${name.split("/")[0] as Blocks}/${style}`
 		? `border-color: rgb(var(--primaryColor));`
 		: "";
@@ -1319,7 +1343,7 @@ const getRenderModel = (name: string, style: number): Content => {
  * are inherited from the canonical config and only shown in previews. */
 const selectedBlockConfigSchema = computed<Schema>(() => {
 	const index = currentElementIndex.value;
-	const block = modelValue.value.content?.[index];
+	const block = modelValue.value.content?.[index ?? -1];
 	if (!block?.name) return [];
 	const type = block.name.split("/")[0] as Blocks;
 	const base = blockTypes[type]?.schema ?? [];
@@ -1363,7 +1387,7 @@ function resetPageToCanonical() {
 /** Restore the selected block's translatable text to the canonical config. */
 function resetSelectedBlockToCanonical() {
 	const index = currentElementIndex.value;
-	const block = modelValue.value.content?.[index];
+	const block = modelValue.value.content?.[index ?? -1];
 	if (!block || !canonicalPage.value) return;
 	const canonicalBlock = canonicalPage.value.content?.find(
 		(b) => String(b.id) === String(block.id),

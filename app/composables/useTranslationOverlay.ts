@@ -1,4 +1,4 @@
-import Inison from "inison";
+import Inison, { type Data } from "inison";
 import {
 	applyConfigOverlay,
 	BLOCK_CONFIG_OVERLAY_FIELD,
@@ -49,7 +49,7 @@ export function useTranslationOverlay() {
 
 	/** Fetch translation rows matching a where (already scoped to a locale). */
 	async function fetchRows(
-		where: Record<string, unknown>,
+		where: Data,
 		locale: string,
 	): Promise<TranslationRow[]> {
 		if (!database.value?.slug) return [];
@@ -297,10 +297,9 @@ export function useTranslationOverlay() {
 			const fieldId = fieldIdByPath(table.schema, change.path);
 			if (fieldId === undefined) continue;
 			const entry = existing.get(change.path);
+			const to = change.to;
 			const isReset =
-				change.to === change.from ||
-				typeof change.to !== "string" ||
-				change.to.trim() === "";
+				typeof to !== "string" || to === change.from || to.trim() === "";
 			if (isReset) {
 				if (entry?.id) await removeTranslation(entry.id, locale);
 				existing.delete(change.path);
@@ -312,11 +311,10 @@ export function useTranslationOverlay() {
 				field: fieldId,
 				locale,
 				original: change.from || undefined,
-				translation: change.to,
+				translation: to,
 				existingId: entry?.id ?? null,
 			});
-			if (id !== undefined)
-				existing.set(change.path, { id, translation: change.to });
+			if (id !== undefined) existing.set(change.path, { id, translation: to });
 		}
 		invalidateScope("page", String(pageId), locale);
 	}

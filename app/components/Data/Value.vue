@@ -31,8 +31,6 @@ const { field, value } = defineProps<{ field: Field; value: any }>()
 
 const affixes = computed(() => computedAffixesOf(field))
 
-let detectedFieldType = (field.subType ?? field.type) as
-    | DB_FieldType
-    | CMS_FieldType
-if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key
+const rawFieldType = field.subType ?? field.type
+let detectedFieldType: string = Array.isArray(rawFieldType) ? getField(field).key : rawFieldType
 </script>

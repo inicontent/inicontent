@@ -9,7 +9,7 @@ import type {
 import type { DataTableColumns, SelectOption } from "naive-ui";
 import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
-import type languages from "~/composables/Translation/languages";
+import type languages from "./app/composables/Translation/languages";
 
 // type onCreateCallback = (index: number) => any
 // type onCreateType = string | number | boolean | Data | onCreateType[]
@@ -46,7 +46,11 @@ declare global {
 		| "emailTemplate"
 		| "page";
 	type DB_FieldType = dbFieldType;
-	type Field = Omit<dbField, "type" | "children"> & {
+	type Field = Omit<dbField, "type" | "children" | "id"> & {
+		// Row ids arrive as numbers from the API but clipboard/temporary fields
+		// carry generated string ids, so accept both. Stays optional — most
+		// field literals are constructed without an id.
+		id?: string | number;
 		type: CMS_FieldType | DB_FieldType | DB_FieldType[];
 		children?: DB_FieldType | DB_FieldType[] | Schema;
 		subType?: CMS_FieldType;
@@ -287,9 +291,11 @@ declare global {
 
 	type LanguagesType = (typeof languages)[number];
 
-	interface TranslationsType {
+	// A `type` (not `interface`) so it gets an implicit index signature and is
+	// assignable to `Record<string, unknown>` targets.
+	type TranslationsType = {
 		[language in LanguagesType]: SingleLanguageTranslations;
-	}
+	};
 
 	type searchTypeValueItem =
 		| [string | null, string, any]
@@ -301,7 +307,7 @@ declare global {
 	};
 
 	type TableRef = {
-		search?: searchType;
+		search?: (value?: searchType) => void;
 		columns?: DataTableColumns<any>;
 		delete: (id?: string | string[]) => Promise<void>;
 		data?: apiResponse<Item[]>;

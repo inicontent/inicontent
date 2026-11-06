@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import Inison from "inison";
-import { isTemplatePattern } from "~/composables/pageTemplate";
+import { isTemplatePattern } from "#imports";
 
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table", "global"],
@@ -45,7 +45,7 @@ const { data: page } = await useFetch<Page>(
 				},
 		transform: (res) =>
 			isTemplatePatternSlug
-				? (res.result ?? []).find((item) => item.slug === pageSlug)
+				? (res.result ?? []).find((item: Page) => item.slug === pageSlug)
 				: res.result?.[0],
 		deep: true,
 		credentials: "include",

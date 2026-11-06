@@ -7,7 +7,7 @@ export default function mergeConfig<T extends object>(
 	source?: T,
 ): T {
 	const defined = Object.fromEntries(
-		Object.entries(source ?? {}).filter(
+		(source ? Object.entries(source) : []).filter(
 			([, value]) => value !== undefined && value !== null,
 		),
 	) as Partial<T>;

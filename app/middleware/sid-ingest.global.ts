@@ -17,7 +17,6 @@
 // of. Long-lived SIDs never appear in URLs: `?{db}_sid=` is neither emitted nor
 // accepted. The route-level `database`/`user` middlewares run after this one,
 // so a redirect here means the destination page never renders mid-handshake.
-import { planHandoff } from "~/composables/handoffFlow";
 import {
 	clearHandoffVerifier,
 	createHandoffPkce,
@@ -26,12 +25,14 @@ import {
 	HANDOFF_TO_PARAM,
 	handoffDestinationReturnUrl,
 	newHandoffState,
+	planHandoff,
+	REGION_STATE_KEY,
+	type RegionSelection,
 	readHandoffVerifier,
+	resolvePlatformFeatureHost,
 	storeHandoffVerifier,
 	stripHandoffParams,
-} from "~/composables/handoffVerifier";
-import { resolvePlatformFeatureHost } from "~/composables/platformFeatureHost";
-import { REGION_STATE_KEY, type RegionSelection } from "~/composables/region";
+} from "#imports";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const config = useRuntimeConfig();

@@ -37,10 +37,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { EmailBlock } from "~/composables/emailBuilder";
-import { blockDefByName, buildMJML } from "~/composables/emailBuilder";
-import { renderEmailTemplateClient } from "~/composables/emailRender";
-import { sampleVariables } from "~/composables/emailSheet";
+import type { EmailBlock } from "#imports";
+import {
+	blockDefByName,
+	buildMJML,
+	renderEmailTemplateClient,
+	sampleVariables,
+} from "#imports";
 
 /**
  * Live preview for a single block: compiles the block (default content merged

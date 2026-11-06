@@ -36,8 +36,8 @@ const { field, value, itemLabel } = defineProps<{
 	itemLabel?: string;
 }>();
 
-let detectedFieldType = (field.subType ?? field.type) as
-	| DB_FieldType
-	| CMS_FieldType;
-if (Array.isArray(detectedFieldType)) detectedFieldType = getField(field).key;
+const rawFieldType = field.subType ?? field.type;
+let detectedFieldType: string = Array.isArray(rawFieldType)
+	? getField(field).key
+	: rawFieldType;
 </script>

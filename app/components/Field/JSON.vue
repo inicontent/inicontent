@@ -71,11 +71,14 @@ const rule: FormItemRule = {
     required: field.required,
     validator: async () => {
         await nextTick();
+        // A resolved value is ignored by async-validator (only a rejection
+        // marks the rule invalid), so these guarded cases return void — the
+        // required rule and the inline `hasError` message cover the feedback.
         if (field.required && !internalValue.value) {
-            return false;
+            return;
         }
         if (internalValue.value && hasError.value) {
-            return false;
+            return;
         }
         return fieldValidator(field, internalValue.value);
     },

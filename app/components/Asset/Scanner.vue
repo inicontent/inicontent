@@ -225,10 +225,8 @@
 </template>
 
 <script setup lang="ts">
-import { copyToClipboard } from "~/composables";
-import { createObjectUrlScope } from "~/composables/managedObjectUrl";
-import type { OcrResult } from "~/composables/useOcr";
-import type { Corners, PaperAnalysis } from "~/composables/useScanner";
+import type { Corners, OcrResult, PaperAnalysis } from "#imports";
+import { copyToClipboard, createObjectUrlScope } from "#imports";
 
 const props = withDefaults(
 	defineProps<{

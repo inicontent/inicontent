@@ -1,5 +1,7 @@
 <template>
-    <LazyDataTable v-if="field.table && field.table !== 'assets'" :field :value />
+    <!-- `field.table` means the array holds table references (ids or rows). -->
+    <LazyDataTable v-if="field.table && field.table !== 'assets'" :field
+        :value="(value as Item | Item[] | string | number | (string | number)[] | undefined)" />
     <LazyColumn v-else-if="field.subType" :field="{ ...field, type: field.subType }" :value="value" />
     <LazyColumn v-else-if="!isArrayOfObjects(field.children)"
         :field="{ ...field, type: field.children === 'table' ? 'table' : 'tags' }" :value="value" />
@@ -25,15 +27,15 @@
             </table>
         </div>
     </NListItem>
-    <NListItem v-else v-for="(,index) in rows">
+    <NListItem v-else v-for="(_row, index) in rows">
         <template #prefix>
             <NText strong>
                 {{ index + 1 }}
             </NText>
         </template>
         <Data
-            v-for="child in childrenSchema.filter(child => typeof rows[index][child.key] !== 'undefined')"
-            :field="child" :value="rows[index][child.key]" />
+            v-for="child in childrenSchema.filter(child => typeof rows[index]?.[child.key] !== 'undefined')"
+            :field="child" :value="rows[index]?.[child.key]" />
     </NListItem>
 </template>
 

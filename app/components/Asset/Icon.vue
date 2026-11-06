@@ -3,6 +3,8 @@
 </template>
 
 <script lang="ts" setup>
+import { Icon } from "#components";
+
 defineProps<{ type?: string }>()
 
 function getIconName(type?: string): string {

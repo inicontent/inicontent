@@ -1,4 +1,5 @@
-import { flattenSchema } from "inibase/utils";
+import type { Data } from "inibase";
+import { flattenSchema } from "./schemaCompat.ts";
 import Inison from "inison";
 
 /**
@@ -208,9 +209,13 @@ export function matchTemplateSlug(
 	const capture: Record<string, string> = {};
 	for (let index = 0; index < parts.length; index++) {
 		const part = parts[index];
+		const urlSegment = urlSegments[index];
+		// Both arrays are known to have the same length above; the guards keep
+		// the indexed reads definite.
+		if (part === undefined || urlSegment === undefined) continue;
 		if (part.startsWith("[") && part.endsWith("]"))
-			capture[part.slice(1, -1)] = urlSegments[index];
-		else if (part !== urlSegments[index]) return null;
+			capture[part.slice(1, -1)] = urlSegment;
+		else if (part !== urlSegment) return null;
 	}
 	return capture;
 }
@@ -316,7 +321,7 @@ export function usePageTemplate() {
 		);
 
 		// Resolve every captured segment to a filterable column + typed value.
-		const where: Record<string, unknown> = {};
+		const where: Data = {};
 		for (const [segment, encodedValue] of Object.entries(capture)) {
 			// Router params may arrive percent-encoded (e.g. an email in the URL
 			// as `a%40b.com`); the API stores the decoded value, so decode first.

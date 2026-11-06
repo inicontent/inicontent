@@ -1,10 +1,11 @@
-import { isPhiDatabase } from "~/composables/phiGuard";
 import {
+	getMutationsByScope,
+	isJunkResponse,
+	isNetworkError,
+	isPhiDatabase,
 	loadDatabaseConfigLocally,
 	saveDatabaseConfigLocally,
-} from "~/composables/useLocalDatabaseConfig";
-import { isJunkResponse, isNetworkError } from "~/composables/useOfflineFetch";
-import { getMutationsByScope } from "~/composables/useOfflineQueue";
+} from "#imports";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const database = useState<Database>("database");

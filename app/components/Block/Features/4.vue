@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { isVideoMediaValue } from "~/composables/useForm";
+import { isVideoMediaValue } from "#imports";
 
 const modelValue = defineModel<Features>();
 

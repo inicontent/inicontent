@@ -160,9 +160,8 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
 import { LazyTableSearch } from "#components";
-import { resolveWidgetTable } from "~/composables/widgetSchema";
+import { flattenSchema, resolveWidgetTable } from "#imports";
 
 const props = defineProps<{
 	modelValue: Widget;
@@ -282,7 +281,7 @@ const counterFieldOptions = computed(() => {
 	const flat = fieldOptions.value;
 	const schema = selectedTable.value?.schema;
 	if (!schema?.length) return flat;
-	const leaves = flattenSchema(schema as any).filter(
+	const leaves = flattenSchema(schema).filter(
 		(f: Field) =>
 			f.key.includes(".") &&
 			f.key.split(".").length === 2 && // v1: single nesting level

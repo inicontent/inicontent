@@ -147,10 +147,10 @@ import {
 } from "#components";
 import {
 	computePlacements,
+	generateSearchString,
+	resolveWidgetTable,
 	type WidgetPlacement,
-} from "~/composables/dashboardLayout";
-import { generateSearchString } from "~/composables/search";
-import { resolveWidgetTable } from "~/composables/widgetSchema";
+} from "#imports";
 
 const props = defineProps<{
 	dashboard: Dashboard;
@@ -391,17 +391,15 @@ function reorderToDropPoint(
 	// Column group: the contiguous run of widgets sharing the anchor column.
 	const anchorColStart = anchorPlacement?.colStart ?? -1;
 	let groupStart = anchorIndex;
-	while (
-		groupStart > 0 &&
-		frozen[items[groupStart - 1].id]?.colStart === anchorColStart
-	) {
+	while (groupStart > 0) {
+		const prev = items[groupStart - 1];
+		if (!prev || frozen[prev.id]?.colStart !== anchorColStart) break;
 		groupStart -= 1;
 	}
 	let groupEnd = anchorIndex;
-	while (
-		groupEnd < items.length - 1 &&
-		frozen[items[groupEnd + 1].id]?.colStart === anchorColStart
-	) {
+	while (groupEnd < items.length - 1) {
+		const next = items[groupEnd + 1];
+		if (!next || frozen[next.id]?.colStart !== anchorColStart) break;
 		groupEnd += 1;
 	}
 
@@ -430,7 +428,8 @@ function reorderToDropPoint(
 	}
 
 	const [item] = items.splice(curIndex, 1);
-	if (item && curIndex < dest) dest -= 1;
+	if (!item) return;
+	if (curIndex < dest) dest -= 1;
 	items.splice(dest, 0, item);
 	editWidgets.value = items;
 }

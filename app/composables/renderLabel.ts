@@ -1,4 +1,4 @@
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "./schemaCompat.ts";
 
 export default function renderLabel(
 	table?: Table,

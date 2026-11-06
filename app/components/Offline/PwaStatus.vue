@@ -86,13 +86,13 @@ const visible = computed(() => import.meta.client && (needRefresh.value || insta
 
 async function onUpdate() {
 	show.value = false;
-	await $pwa.updateServiceWorker();
-	$pwa.cancelPrompt();
+	await $pwa?.updateServiceWorker();
+	$pwa?.cancelPrompt();
 	window.location.reload();
 }
 
 function onInstall() {
 	show.value = false;
-	$pwa.install();
+	$pwa?.install();
 }
 </script>

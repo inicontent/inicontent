@@ -9,7 +9,7 @@ import {
 	getPageTemplate,
 	isTemplatePattern,
 	resolveItemTemplate,
-} from "~/composables/pageTemplate";
+} from "#imports";
 
 definePageMeta({ middleware: ["database", "user"] });
 
@@ -28,7 +28,7 @@ const templateItem = useState<Item | null>("templateItem", () => null);
 // the Header's language switcher) can read the current page id.
 const currentPage = useState<Page | null>("currentPage", () => null);
 
-const urlSegments = ([] as string[]).concat(route.params.slug);
+const urlSegments = ([] as string[]).concat(route.params.slug ?? []);
 const pageTemplate = usePageTemplate();
 
 // A URL whose segments contain `[segment]` placeholders (e.g. `users/[id]`)

@@ -185,13 +185,15 @@ import type {
 	UploadInst,
 } from "naive-ui";
 import { Icon, NIcon } from "#components";
-import { getFileNameAndExtension } from "~/composables";
-import { createObjectUrlScope } from "~/composables/managedObjectUrl";
-import { useOptimizeFile } from "~/composables/optimizeFile";
-import { generateSearchArray } from "~/composables/search";
-import { useAssetUploader } from "~/composables/useAssetUploader";
-import { usePdfCompressor } from "~/composables/usePdfCompressor";
-import { useVideoCompressor } from "~/composables/useVideoCompressor";
+import {
+	createObjectUrlScope,
+	generateSearchArray,
+	getFileNameAndExtension,
+	useAssetUploader,
+	useOptimizeFile,
+	usePdfCompressor,
+	useVideoCompressor,
+} from "#imports";
 
 const { where, suffix, targetID } = defineProps<{
 	targetID?: string;

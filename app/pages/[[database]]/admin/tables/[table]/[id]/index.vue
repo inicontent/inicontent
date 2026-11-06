@@ -111,7 +111,7 @@ try {
 } catch (error) {
 	if (isNetworkError(error) || isJunkResponse(error)) {
 		loaded = await getOfflineItem(
-			database.value.slug,
+			String(database.value.slug),
 			table.value.slug,
 			String(route.params.id),
 			itemUrl,
@@ -121,7 +121,7 @@ try {
 	}
 }
 
-const data = ref<Item>(loaded);
+const data = ref<Item | undefined>(loaded);
 
 if (!data.value?.id)
 	throw createError({

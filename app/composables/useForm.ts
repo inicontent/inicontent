@@ -1,4 +1,4 @@
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "./schemaCompat.ts";
 
 export type FormField = {
 	/** column id in the linked table schema */
@@ -51,7 +51,7 @@ export function isVideoMedia(
 	if (!url) return false;
 	if ("type" in (media as Asset))
 		return (media as Asset).type.startsWith("video");
-	return /\.(mp4|webm|ogg|mov|m4v|ogv|avi)$/i.test(url.split("?")[0]);
+	return /\.(mp4|webm|ogg|mov|m4v|ogv|avi)$/i.test(url.split("?")[0] ?? "");
 }
 
 /**
@@ -81,7 +81,7 @@ export function isVideoMediaValue(value?: unknown): boolean {
  * convenient widget for its type. `submit()` posts the collected values as a
  * new record in that table using the same endpoint/pattern as the admin Form.
  */
-export function useForm(modelValue: Ref<Form>) {
+export function useForm(modelValue: Ref<Form | undefined>) {
 	const database = useState<Database>("database");
 	const runtimeConfig = useRuntimeConfig();
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
@@ -191,7 +191,7 @@ export function useForm(modelValue: Ref<Form>) {
 	const formFields = computed<FormField[]>(() => {
 		if (!tableSlug.value) return demoFields.value;
 		return (modelValue.value?.fields ?? [])
-			.map((config) => {
+			.map((config): FormField | undefined => {
 				if (
 					config.field === undefined ||
 					config.field === null ||
@@ -205,7 +205,9 @@ export function useForm(modelValue: Ref<Form>) {
 				const label = config.label?.trim() || column.label || undefined;
 				const required = !!config.required || !!column.required;
 				return {
-					field: column.id,
+					// The match above is by id, so `config.field` only ever takes
+					// over when a schema row carries no id of its own.
+					field: column.id ?? config.field,
 					key: column.key,
 					label: label || t(column.key),
 					required,
@@ -217,7 +219,7 @@ export function useForm(modelValue: Ref<Form>) {
 					},
 				};
 			})
-			.filter((field): field is FormField => !!field);
+			.filter((field): field is FormField => field !== undefined);
 	});
 
 	const stepSize = computed(() => Math.max(1, modelValue.value?.stepSize ?? 2));

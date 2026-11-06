@@ -99,13 +99,15 @@
 import type { ImageRenderToolbarProps } from "naive-ui";
 import type { Directive, VNodeChild } from "vue";
 import { Icon, NIcon, NTooltip } from "#components";
-import { imageExtensions, videoExtensions, officeExtensions } from "~/composables";
 import {
-	getCachedThumbnail,
 	cacheThumbnail,
-} from "~/composables/useThumbnailCache";
-import { generateDocumentThumbnail } from "~/composables/useDocumentThumbnail";
-import { useAssetPreview } from "~/composables/useAssetPreview";
+	generateDocumentThumbnail,
+	getCachedThumbnail,
+	imageExtensions,
+	officeExtensions,
+	useAssetPreview,
+	videoExtensions,
+} from "#imports";
 
 interface Props {
 	asset: Asset;
@@ -128,28 +130,29 @@ const {
 	previewAssets,
 	useSharedPreview = true,
 } = defineProps<Props>();
-const emit = defineEmits<{
-	(e: "click", event: MouseEvent): void;
-}>();
+const emit = defineEmits<(e: "click", event: MouseEvent) => void>();
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug);
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
 
 const formatDate = (date: string | Date | number) => {
 	const d = new Date(date);
 	return d.toLocaleString(Language.value, {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit'
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
 	});
 };
 
 const intersectionObserverOptions = containerSelector
 	? {
-		root: containerSelector,
-	}
+			root: containerSelector,
+		}
 	: undefined;
 // Video and PDF thumbnail generation state
 const videoThumbs = reactive<Record<string, string | undefined>>({});
@@ -424,7 +427,9 @@ async function generatePdfThumb() {
 			thumbnailSize / viewport.width,
 			thumbnailSize / viewport.height,
 		);
-		const scaledViewport = (page as any).getViewport({ scale: scale * pixelRatio });
+		const scaledViewport = (page as any).getViewport({
+			scale: scale * pixelRatio,
+		});
 
 		const canvas = document.createElement("canvas");
 		// Make the canvas square at full resolution, scaled back down via CSS
@@ -539,15 +544,15 @@ const renderToolbar: (
 	},
 	file?: Asset,
 ) => {
-		if (download.props && file?.publicURL)
-			download.props.onClick = (event: MouseEvent) => {
-				event?.preventDefault();
-				window.open(file.publicURL as string, "_blank");
-				close?.props?.onClick?.();
-			};
-		return [
-			file?.name
-				? h(
+	if (download.props && file?.publicURL)
+		download.props.onClick = (event: MouseEvent) => {
+			event?.preventDefault();
+			window.open(file.publicURL as string, "_blank");
+			close?.props?.onClick?.();
+		};
+	return [
+		file?.name
+			? h(
 					NTooltip,
 					{},
 					{
@@ -560,20 +565,23 @@ const renderToolbar: (
 							),
 					},
 				)
-				: null,
-			rotateCounterclockwise,
-			rotateClockwise,
-			zoomIn,
-			zoomOut,
-			resizeToOriginalSize,
-			download,
-			close,
-		];
-	};
+			: null,
+		rotateCounterclockwise,
+		rotateClockwise,
+		zoomIn,
+		zoomOut,
+		resizeToOriginalSize,
+		download,
+		close,
+	];
+};
 
 const { currentPreviewAsset, openPreview } = useAssetPreview();
 const requiresPreviewDownloadShortcut = computed(
-	() => asset.extension === "pdf" || videoExtensions.includes(asset.extension) || officeExtensions.includes(asset.extension),
+	() =>
+		asset.extension === "pdf" ||
+		videoExtensions.includes(asset.extension) ||
+		officeExtensions.includes(asset.extension),
 );
 const isPreviewingCurrentAsset = computed(() => {
 	const previewAsset = currentPreviewAsset.value;

@@ -92,7 +92,7 @@ type columnType = {
 
 // const dataModel = defineModel<apiResponse<Item[]>>("data")
 const data = ref<columnType[]>();
-const searchString = defineModel<string>("searchString");
+const searchString = defineModel<string | undefined>("searchString");
 
 const renderItemButtons = inject("renderItemButtons") as (item: Item) => VNode;
 

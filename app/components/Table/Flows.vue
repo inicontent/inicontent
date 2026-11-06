@@ -352,15 +352,11 @@
 </template>
 
 <script lang="ts" setup>
-import {
-	flattenSchema,
-	isArrayOfObjects,
-	isNumber,
-	isObject,
-} from "inibase/utils";
+import { isArrayOfObjects, isNumber, isObject } from "inibase/utils";
 import type { CascaderOption, SelectGroupOption, SelectOption } from "naive-ui";
 import { VueDraggable } from "vue-draggable-plus";
 import { Icon, NIcon } from "#components";
+import { flattenSchema } from "#imports";
 
 onMounted(() => {
 	document.onkeydown = (e) => {
@@ -512,7 +508,7 @@ function generateFlowCascaderOptions(
 			({ slug }) => slug === "users",
 		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema as any);
+			userSchema = flattenSchema(userSchema);
 			result.push({
 				label: "@user",
 				value: "@user",
@@ -563,12 +559,12 @@ function generateFlowSelectOptions(
 
 	let schema: Schema = [];
 	if (table.value.schema) {
-		schema = flattenSchema(table.value.schema as any) as Schema;
+		schema = flattenSchema(table.value.schema);
 		if (value) {
 			let userSchema = database.value.tables?.find(
 				({ slug }) => slug === "users",
 			)?.schema;
-			if (userSchema) userSchema = flattenSchema(userSchema as any);
+			if (userSchema) userSchema = flattenSchema(userSchema);
 			const field = (value.startsWith("@user.") ? userSchema : schema)?.find(
 				({ id }) => String(id) === value.slice(6),
 			);
@@ -613,7 +609,7 @@ function generateFlowSelectOptions(
 			({ slug }) => slug === "users",
 		)?.schema;
 		if (userSchema) {
-			userSchema = flattenSchema(userSchema as any);
+			userSchema = flattenSchema(userSchema);
 			result.push({
 				key: "@user",
 				label: "@user",
@@ -694,7 +690,7 @@ function formatValue(
 				? database.value?.tables?.find(({ slug }) => slug === "users")?.schema
 				: table.value.schema;
 		if (schema) {
-			schema = flattenSchema(schema as any, true);
+			schema = flattenSchema(schema, true);
 			const item = schema.find(({ id }) => String(id) === lastItem);
 
 			if (!item) return undefined;
@@ -721,9 +717,7 @@ function getFlowField(value: string | null) {
 
 	if (!schema) return undefined;
 
-	return flattenSchema(schema as any, true).find(
-		({ id }) => String(id) === fieldID,
-	);
+	return flattenSchema(schema, true).find(({ id }) => String(id) === fieldID);
 }
 
 function isDateFlowField(value: string | null) {

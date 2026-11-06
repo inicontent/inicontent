@@ -12,6 +12,9 @@ export function convertArrayToObject(
 	for (let index = 0; index < schema.length; index++) {
 		const field = schema[index];
 		const raw = array[index];
+		// `noUncheckedIndexedAccess`: a slot past the schema's end has no field
+		// descriptor, so there is nothing to key the value under.
+		if (!field) continue;
 		// `convertObjectToArray` stores unset fields as `null`, so skip those
 		// slots here — leaving keys out lets block components fill in defaults
 		// for anything the stored config doesn't actually set.

@@ -1,4 +1,4 @@
-import * as composables from "@/composables";
+import * as composables from "../composables";
 
 export default defineNuxtPlugin((nuxtApp) => {
 	for (const [key, val] of Object.entries(composables)) {

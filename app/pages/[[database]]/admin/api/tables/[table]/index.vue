@@ -558,7 +558,7 @@ useHead(() => ({
 		...(currentTable.value
 			? [
 					{
-						type: "application/ld+json",
+						type: "application/ld+json" as const,
 						innerHTML: JSON.stringify(jsonLd.value),
 					},
 				]

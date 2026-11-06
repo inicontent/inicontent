@@ -19,14 +19,14 @@
  */
 
 import type { Ref } from "vue";
-import type { EmailBlock } from "~/composables/emailBuilder";
+import type { EmailBlock } from "#imports";
 import {
 	blockDefByName,
 	buildMJML,
 	collectPlaceholders,
+	renderEmailTemplateClient,
 	SAMPLE_VALUES,
-} from "~/composables/emailBuilder";
-import { renderEmailTemplateClient } from "~/composables/emailRender";
+} from "#imports";
 
 /** Sample values for placeholders in a source — used for editor/preview only. */
 export function sampleVariables(content: string): Record<string, string> {
@@ -49,7 +49,7 @@ export interface SheetCompiled {
 export function extractBodyStyles(html: string): SheetCompiled {
 	const styles: string[] = [];
 	for (const match of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
-		styles.push(match[1]);
+		styles.push(match[1] ?? "");
 	}
 	let body = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
 	if (!body) {
@@ -75,7 +75,7 @@ function parseCssBlocks(css: string): CssBlock[] {
 	let index = 0;
 	const length = css.length;
 	while (index < length) {
-		while (index < length && /\s/.test(css[index])) index += 1;
+		while (index < length && /\s/.test(css[index] ?? "")) index += 1;
 		if (css.startsWith("/*", index)) {
 			const end = css.indexOf("*/", index + 2);
 			index = end === -1 ? length : end + 2;

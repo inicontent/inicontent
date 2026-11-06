@@ -91,7 +91,7 @@
 									:size="8"
 									class="mjml-palette-group"
 								>
-									<NText depth="4" class="mjml-pane-group-title">
+									<NText depth="3" class="mjml-pane-group-title">
 										{{ t(`mjmlBuilder.categories.${group.category}`) }}
 									</NText>
 									<NGrid
@@ -666,7 +666,7 @@
 import { isEmail } from "inibase/utils";
 import { VueDraggable } from "vue-draggable-plus";
 import { Icon, NIcon } from "#components";
-import type { EmailBlock, EmailBlockType } from "~/composables/emailBuilder";
+import type { EmailBlock, EmailBlockType } from "#imports";
 import {
 	BUILTIN_VARIABLES,
 	blockDefByName,
@@ -679,12 +679,12 @@ import {
 	createBlock,
 	createTextBlock,
 	PALETTE_GROUPS,
+	renderEmailTemplateClient,
 	SAMPLE_VALUES,
 	stripModelMarker,
 	supportsTextProp,
-} from "~/composables/emailBuilder";
-import { renderEmailTemplateClient } from "~/composables/emailRender";
-import { useEmailSheet } from "~/composables/emailSheet";
+	useEmailSheet,
+} from "#imports";
 
 const props = defineProps<{ existing?: boolean; saving?: boolean }>();
 

@@ -171,7 +171,7 @@ async function duplicateBlock(block: Content) {
 		},
 	);
 	if (!data.result?.length) window.$message.error(data.message);
-	tableRef.value?.search({});
+	tableRef.value?.search?.({});
 }
 
 useHead({

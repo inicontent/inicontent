@@ -1,14 +1,23 @@
-import type { TagColor } from "naive-ui/es/tag/src/common-props";
-import { default as t } from "./Translation/translate";
 import { isArrayOfObjects } from "inibase/utils";
+import type { TagColor } from "naive-ui/es/tag/src/common-props";
+import type languages from "./Translation/languages";
+import { default as t } from "./Translation/translate";
 
-export { default as translationLanguages } from "./Translation/languages";
+/**
+ * The union of supported UI languages, derived exactly like the global
+ * `LanguagesType`. Exported from a scanned composable so `#imports` provides
+ * it — a dozen block config files import `LanguagesType` from `#imports`, and
+ * unimport can only re-export what it finds in these files.
+ */
+export type LanguagesType = (typeof languages)[number];
+
 export { default as defineTranslation } from "./Translation/define";
 export { default as fetchTranslation } from "./Translation/fetch";
-export { default as t } from "./Translation/translate";
-export { default as loadTranslations } from "./Translation/loadTranslations";
+export { default as translationLanguages } from "./Translation/languages";
 // Deprecated alias of `loadTranslations`, kept for existing importers.
 export { default as loadCoreTranslations } from "./Translation/loadCoreTranslations";
+export { default as loadTranslations } from "./Translation/loadTranslations";
+export { default as t } from "./Translation/translate";
 
 // Add a small deepClone helper
 export function deepClone<T>(v: T): T | undefined {
@@ -58,7 +67,7 @@ export function humanFileSize(bytes?: number) {
 	return `${bytes.toFixed(2)} ${t(`units.${units[u]}`)}`;
 }
 
-export function hexToRGB(hex: string): number[] {
+export function hexToRGB(hex: string): [number, number, number] {
 	const r = Number.parseInt(hex.slice(1, 3), 16);
 	const g = Number.parseInt(hex.slice(3, 5), 16);
 	const b = Number.parseInt(hex.slice(5, 7), 16);

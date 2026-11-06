@@ -51,9 +51,10 @@
 							v-if="column.type === 'text' || column.type === 'textarea' || column.type === 'toggle'"
 							:label="columnLabelOf(column)"
 						>
-							<NInput v-if="column.type === 'text'" v-model:value="item[column.id]" clearable />
-							<NInput v-else-if="column.type === 'textarea'" v-model:value="item[column.id]"
-								type="textarea" :rows="2" />
+							<NInput v-if="column.type === 'text'"
+								v-model:value="(item[column.id] as string | null | undefined)" clearable />
+							<NInput v-else-if="column.type === 'textarea'"
+								v-model:value="(item[column.id] as string | null | undefined)" type="textarea" :rows="2" />
 							<NSwitch v-else :value="!!item[column.id]"
 								@update:value="(v) => (item[column.id] = v)" />
 						</NFormItem>
@@ -86,12 +87,20 @@
 </template>
 
 <script lang="ts" setup>
-type TableEditorColumn = NonNullable<DataTableBlock["columns"]>[number];
+/**
+ * Column as edited here. The watcher below backfills a numeric `id` on every
+ * column (legacy configs may lack one), which is what keys the row values.
+ */
+type TableEditorColumn = NonNullable<DataTableBlock["columns"]>[number] & {
+	id: number;
+};
 
 const modelValue = defineModel<DataTableBlock>({ default: () => ({}) });
 
 const columns = computed<TableEditorColumn[]>(() =>
-	Array.isArray(modelValue.value?.columns) ? modelValue.value.columns : [],
+	Array.isArray(modelValue.value?.columns)
+		? (modelValue.value.columns as TableEditorColumn[])
+		: [],
 );
 
 const items = computed<Record<number, unknown>[]>(() =>

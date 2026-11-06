@@ -114,8 +114,7 @@ import {
 	NPopover,
 	NTooltip,
 } from "#components";
-import { deepClone } from "~/composables";
-import { generateSearchString } from "~/composables/search";
+import { deepClone, generateSearchString } from "#imports";
 
 const props = withDefaults(
 	defineProps<{

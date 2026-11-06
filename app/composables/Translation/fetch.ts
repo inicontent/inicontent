@@ -15,7 +15,8 @@ export default async function (onlyTableTranslations = false) {
 	);
 	const translationsState = useState<TranslationsType>(
 		"translations",
-		() => ({}),
+		// Starts empty; real keys are merged in below (same cast as elsewhere).
+		() => ({}) as TranslationsType,
 	);
 	const tableOverlays = useState<
 		Record<string, Record<string, TableTranslationOverlay>>

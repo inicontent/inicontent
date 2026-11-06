@@ -1,6 +1,6 @@
 <template>
 	<NFlex :wrap="false" class="tagsCell">
-		<NTag v-for="singleValue in ([] as string[]).concat(value)" round :bordered="false"
+		<NTag v-for="singleValue in ([] as (string | number)[]).concat(value)" round :bordered="false"
 			:color="isArrayOfArrays(field.options) ? getColorObj(singleValue, field.options as [string | number, string][]) : undefined">
 			{{ singleValue }}</NTag>
 	</NFlex>

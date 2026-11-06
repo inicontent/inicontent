@@ -274,7 +274,10 @@ const userDropdownOptions = computed(() => [
 	},
 ]);
 
-const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+const sessionID = useScopedCookie<string | undefined>(
+	"sid",
+	database.value?.slug,
+);
 const platformSessionID = useScopedCookie<string | undefined>(
 	"sid",
 	"inicontent",
@@ -309,7 +312,7 @@ async function logout() {
 
 	sessionID.value = undefined;
 	platformSessionID.value = undefined;
-	redirectTo.value = undefined;
+	redirectTo.value = null;
 	user.value = undefined;
 
 	let signedOutRemotely = true;
@@ -347,7 +350,9 @@ async function onSelectUserDropdown(v: string) {
 			navigateTo(tableUrl("users", `/${(user.value as User).id}/edit`));
 			break;
 		case "billing":
-			platformUrl("billing").then((url) => navigateTo(url, { external: true }));
+			platformUrl("billing").then((url) => {
+				navigateTo(url, { external: true });
+			});
 			break;
 		case "settings":
 			navigateTo(

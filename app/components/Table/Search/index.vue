@@ -57,7 +57,9 @@ if (!schema.value)
 	schema.value = table.value?.schema
 
 const modelValue = defineModel<searchType>({
-	default: { and: [[null, "=", null]] },
+	// Vue types non-primitive `default`s as factory-only, so the literal form
+	// fails overload resolution (and cascades into every template index).
+	default: () => ({ and: [[null, "=", null]] }),
 })
 
 const conditionDropdownOptions = [

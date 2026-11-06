@@ -24,9 +24,15 @@ const modelValue = defineModel<HeaderAnnouncement>();
 watch(
 	[() => modelValue.value, Language],
 	([v]) => {
-		localModelValue.value = mergeConfig(defaultConfig.value, v);
+		localModelValue.value = mergeConfig<HeaderAnnouncement>(
+			defaultConfig.value,
+			v,
+		);
 	},
 	{ deep: true },
 );
-localModelValue.value = mergeConfig(defaultConfig.value, modelValue.value);
+localModelValue.value = mergeConfig<HeaderAnnouncement>(
+	defaultConfig.value,
+	modelValue.value,
+);
 </script>

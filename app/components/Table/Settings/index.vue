@@ -202,14 +202,14 @@ async function pasteFieldsFromClipboard() {
 	const index =
 		schema[0]?.key === "id" ? Math.max(0, schema.length - 2) : schema.length;
 	const inserted = await pasteSchemaFields(schema, index);
-	if (!inserted.length) {
+	const first = inserted[0];
+	if (!first) {
 		window.$message.warning(t("noFieldsInClipboard"));
 		return;
 	}
-	expandedNames.value = [inserted[0].id as string];
+	expandedNames.value = [first.id as string];
 	setTimeout(
-		() =>
-			document.getElementById(`element-${inserted[0].id}`)?.scrollIntoView(),
+		() => document.getElementById(`element-${first.id}`)?.scrollIntoView(),
 		300,
 	);
 }

@@ -28,7 +28,7 @@
 							<div v-for="field in translatableFields" :key="field.key">
 								<NFlex align="center" :size="4" style="margin-bottom: 4px">
 									<NText strong>{{ t(field.key) }}</NText>
-									<NTag v-if="getTranslationEntry(locale, field.id)?.existingId" size="tiny"
+									<NTag v-if="getTranslationEntry(locale, fieldKey(field))?.existingId" size="tiny"
 										type="success" round :bordered="false">
 										{{ t("translated") }}
 									</NTag>
@@ -61,7 +61,9 @@
 								</NCard>
 
 								<!-- Translation input (rendered by field type) -->
-								<LazyField :field="{...field,labelProps: { showLabel: false }}" v-model="draft[locale][field.id]" />
+								<LazyField :field="{...field,labelProps: { showLabel: false }}"
+									:model-value="draft[locale]?.[fieldKey(field)]"
+									@update:model-value="(value) => updateDraft(locale, field, value)" />
 							</div>
 						</NFlex>
 					</NTabPane>
@@ -72,15 +74,15 @@
 </template>
 
 <script setup lang="ts">
-import { flattenSchema } from "inibase/utils";
 import Inison from "inison";
 import {
+	flattenSchema,
 	isArrayLikeField,
 	isEmptyTranslationValue,
 	isTranslatableField,
 	normalizeTranslationValue,
 	parseTranslationValue,
-} from "~/composables/translationValue";
+} from "#imports";
 
 const props = defineProps<{
 	show: boolean;
@@ -109,7 +111,11 @@ const secondaryLanguages = computed(
 	() => database.value?.secondaryLanguages ?? [],
 );
 
-const activeLocale = ref<LanguagesType>(secondaryLanguages.value[0]);
+const activeLocale = ref<LanguagesType>(
+	// The tabs bound to this render only once `secondaryLanguages` is
+	// non-empty, so the first entry is a safe default.
+	secondaryLanguages.value[0] as LanguagesType,
+);
 
 const translatableFields = computed(() => {
 	if (!table.value?.schema) return [];
@@ -177,11 +183,16 @@ function snapshotValues(
 
 function updateChangedFlags() {
 	for (const lang of secondaryLanguages.value) {
-		if (!changedKeys.value[lang]) changedKeys.value[lang] = {};
+		let changed = changedKeys.value[lang];
+		if (!changed) {
+			changed = {};
+			changedKeys.value[lang] = changed;
+		}
 		for (const field of translatableFields.value) {
-			changedKeys.value[lang][field.id] =
-				JSON.stringify(draft.value[lang]?.[field.id]) !==
-				JSON.stringify(baseline.value[lang]?.[field.id]);
+			const key = fieldKey(field);
+			changed[key] =
+				JSON.stringify(draft.value[lang]?.[key]) !==
+				JSON.stringify(baseline.value[lang]?.[key]);
 		}
 	}
 }
@@ -189,6 +200,25 @@ function updateChangedFlags() {
 watch(draft, updateChangedFlags, { deep: true });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Map key for a schema field's value across the draft/baseline/changed maps. */
+function fieldKey(field: Field): string {
+	return String(field.id);
+}
+
+/** Write a draft value for one locale/field, creating the locale bucket. */
+function updateDraft(
+	locale: string,
+	field: Field,
+	value: Record<string | number, any>,
+) {
+	let localeDraft = draft.value[locale];
+	if (!localeDraft) {
+		localeDraft = {};
+		draft.value[locale] = localeDraft;
+	}
+	localeDraft[fieldKey(field)] = value;
+}
 
 function getTranslationEntry(locale: string, fieldId: string | number) {
 	return {
@@ -213,10 +243,11 @@ function initDraft() {
 	const newDraft: Record<string, Record<string | number, unknown>> = {};
 	const newChanged: Record<string, Record<string, boolean>> = {};
 	for (const lang of langs) {
-		newDraft[lang] = {};
+		const langDraft: Record<string | number, unknown> = {};
+		newDraft[lang] = langDraft;
 		newChanged[lang] = {};
 		for (const field of fields) {
-			newDraft[lang][field.id] = isArrayLikeField(field) ? [] : "";
+			langDraft[fieldKey(field)] = isArrayLikeField(field) ? [] : "";
 		}
 	}
 	draft.value = newDraft;
@@ -260,11 +291,18 @@ async function fetchItemTranslations() {
 				if (!record.locale || !fieldId) continue;
 				const field = fieldById.get(fieldId);
 				if (!field) continue;
-				if (!existingMap.value[record.locale])
-					existingMap.value[record.locale] = {};
-				existingMap.value[record.locale][fieldId] = String(record.id);
-				if (!draft.value[record.locale]) draft.value[record.locale] = {};
-				draft.value[record.locale][fieldId] = parseTranslationValue(
+				let localeExisting = existingMap.value[record.locale];
+				if (!localeExisting) {
+					localeExisting = {};
+					existingMap.value[record.locale] = localeExisting;
+				}
+				localeExisting[fieldId] = String(record.id);
+				let localeDraft = draft.value[record.locale];
+				if (!localeDraft) {
+					localeDraft = {};
+					draft.value[record.locale] = localeDraft;
+				}
+				localeDraft[fieldId] = parseTranslationValue(
 					field,
 					record.translation ?? "",
 				);
@@ -330,7 +368,7 @@ async function saveTranslations() {
 			const fieldId = String(field.id);
 			if (!changedKeys.value[locale]?.[fieldId]) continue;
 
-			const rawValue = draft.value[locale]?.[field.id];
+			const rawValue = draft.value[locale]?.[fieldKey(field)];
 			const translationValue = normalizeTranslationValue(field, rawValue);
 			const empty = isEmptyTranslationValue(rawValue);
 			const existingId = existingMap.value[locale]?.[fieldId];
@@ -406,14 +444,16 @@ async function saveTranslations() {
 
 	if (toUpdate.length) {
 		if (toUpdate.length === 1) {
-			operations.push(
-				$fetch(`${baseUrl}/${toUpdate[0].id}`, {
-					method: "PUT",
-					body: { translation: toUpdate[0].translation },
-					params: sidLang,
-					credentials: "include",
-				}),
-			);
+			const [updateOp] = toUpdate;
+			if (updateOp)
+				operations.push(
+					$fetch(`${baseUrl}/${updateOp.id}`, {
+						method: "PUT",
+						body: { translation: updateOp.translation },
+						params: sidLang,
+						credentials: "include",
+					}),
+				);
 		} else {
 			operations.push(
 				$fetch(baseUrl, {
