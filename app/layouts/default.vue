@@ -118,8 +118,8 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 	themeOverrides: {
 		common: {
 			...ThemeConfig.value,
-			fontFamily: "Cairo",
-			fontFamilyMono: "Cairo",
+			fontFamily: "Cairo Variable",
+			fontFamilyMono: "Cairo Variable",
 			borderRadius: "15px",
 		},
 	},

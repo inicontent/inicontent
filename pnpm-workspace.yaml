@@ -9,3 +9,7 @@ minimumReleaseAgeExclude:
 - inibase
 - inidot
 - inison
+overrides:
+  jspdf>dompurify: 3.4.17
+  launch-editor>shell-quote: 1.12.0
+  '@nuxt/devtools>simple-git': 4.0.2

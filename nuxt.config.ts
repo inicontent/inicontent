@@ -8,7 +8,8 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 // index.html in .output/public), so workbox's navigateFallback has nothing to
 // serve from its precache when the device is offline. Precache it explicitly
 // with a build-unique revision so the shell is re-fetched on every SW update.
-const appShellRevision = Date.now().toString(36);
+const appShellRevision =
+	process.env.INICONTENT_FRONTEND_BUILD_ID || Date.now().toString(36);
 
 // Icons that the static `clientBundle.scan` can't see (computed/ternary names
 // used by the offline status UI) and that therefore must be listed explicitly
@@ -106,25 +107,6 @@ export default defineNuxtConfig({
 	},
 	imports: {
 		dirs: ["types/*.d.ts"],
-	},
-	alias: {
-		// These packages are present in the install (as transitive/peer
-		// dependencies of mjml, @tiptap/* and idb) but are not direct
-		// dependencies, so pnpm's strict node_modules leaves bare imports from
-		// app code unresolvable — at build time *and* for vue-tsc. Map them
-		// onto pnpm's hoisted store, which is stable across installs; Nuxt
-		// feeds this into both Vite and the generated tsconfig paths, so the
-		// bundle and the typechecker see the same modules. jszip and the
-		// @tiptap packages ship their own types — only the paths were missing.
-		jszip: join(currentDir, "node_modules/.pnpm/node_modules/jszip"),
-		"@tiptap/core": join(
-			currentDir,
-			"node_modules/.pnpm/node_modules/@tiptap/core",
-		),
-		"@tiptap/extension-text-style": join(
-			currentDir,
-			"node_modules/.pnpm/node_modules/@tiptap/extension-text-style",
-		),
 	},
 	// `app/components/Block/customBlocks.ts` is the custom block registry, not a
 	// component. Without this the components scan registers its default export

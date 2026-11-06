@@ -83,7 +83,7 @@
 									</NButtonGroup>
 								</NPopover>
 							</template>
-							<LazyPreview v-if="selectedDevice && selectedDevice !== 'none'" mockup>
+							<LazyPreview v-if="selectedDevice && selectedDevice !== 'none' && page.content?.length" mockup>
 								<LazyBlockS v-model="page.content" />
 							</LazyPreview>
 						</NCard>

@@ -194,7 +194,10 @@ async function renderXlsxFirstPage(
 ): Promise<string | undefined> {
 	const container = document.createElement("div");
 	try {
-		const XLSX = await import("xlsx");
+		const [XLSX, { default: DOMPurify }] = await Promise.all([
+			import("xlsx"),
+			import("dompurify"),
+		]);
 		const workbook = XLSX.read(data, {
 			type: "array",
 			sheetRows: 15, // only first 15 rows
@@ -206,7 +209,15 @@ async function renderXlsxFirstPage(
 		const sheet = workbook.Sheets[firstSheetName];
 		if (!sheet) return undefined;
 
-		const html = XLSX.utils.sheet_to_html(sheet);
+		const html = DOMPurify.sanitize(
+			XLSX.utils.sheet_to_html(sheet, { header: "", footer: "" }),
+			{
+				ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "td", "th", "br", "b", "i"],
+				ALLOWED_ATTR: ["rowspan", "colspan"],
+				ALLOW_DATA_ATTR: false,
+				ALLOW_ARIA_ATTR: false,
+			},
+		);
 
 		// Offscreen container with spreadsheet styling
 		Object.assign(container.style, {

@@ -1,3 +1,5 @@
+@import "@fontsource-variable/cairo";
+
 .page-enter-active,
 .page-leave-active {
 	transition: all 0.4s;
@@ -10,7 +12,7 @@
 }
 
 body {
-	font-family: "Cairo", sans-serif;
+	font-family: "Cairo Variable", sans-serif;
 }
 
 a,

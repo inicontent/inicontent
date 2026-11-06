@@ -21,10 +21,12 @@ jobs:
           version: 10.33.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26.9.0
           cache: pnpm
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
+      - name: Type check
+        run: pnpm exec nuxt typecheck
       - name: Test
         run: pnpm test
       - name: Build

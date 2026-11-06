@@ -1,9 +1,21 @@
 {
 	"name": "inicontent",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"license": "Apache-2.0",
 	"type": "module",
 	"main": "./nuxt.config.ts",
+	"types": "./index.d.ts",
+	"files": [
+		"app",
+		"modules",
+		"public",
+		"stubs",
+		"builder.d.ts",
+		"index.d.ts",
+		"module-shims.d.ts",
+		"nuxt.config.ts",
+		"NOTICE"
+	],
 	"author": {
 		"name": "Karim Amahtil",
 		"email": "karim.amahtil@gmail.com"
@@ -45,12 +57,14 @@
 	"dependencies": {
 		"@ffmpeg/ffmpeg": "^0.12.15",
 		"@ffmpeg/util": "^0.12.2",
+		"@fontsource-variable/cairo": "5.3.0",
 		"@iconify-json/tabler": "^1.2.40",
 		"@nuxt/fonts": "^0.14.0",
 		"@nuxt/icon": "^2.5.1",
 		"@nuxt/kit": "^4.5.2",
 		"@nuxtjs/device": "4.0.0",
 		"@simplewebauthn/browser": "^14.0.0",
+		"@tiptap/core": "^3.31.3",
 		"@tiptap/extension-color": "^3.31.3",
 		"@tiptap/extension-highlight": "^3.31.3",
 		"@tiptap/extension-history": "^3.31.3",
@@ -59,8 +73,10 @@
 		"@tiptap/extension-table-header": "^3.31.3",
 		"@tiptap/extension-table-row": "^3.31.3",
 		"@tiptap/extension-text-align": "^3.31.3",
+		"@tiptap/extension-text-style": "^3.31.3",
 		"@vite-pwa/nuxt": "^1.1.1",
 		"docx-preview": "^0.4.1",
+		"dompurify": "3.4.17",
 		"echarts": "^6.1.0",
 		"html2canvas": "^1.4.1",
 		"idb": "^8.0.3",
@@ -69,6 +85,7 @@
 		"inison": "^2.0.1",
 		"jscanify": "^1.4.3",
 		"jspdf": "^4.2.1",
+		"jszip": "^3.10.2",
 		"liquidjs": "^10.30.0",
 		"mjml": "^5.4.1",
 		"naive-ui": "^2.45.3",
@@ -80,7 +97,7 @@
 		"vue-draggable-plus": "^0.6.1",
 		"vue-echarts": "^8.3.0",
 		"vue-router": "^5.3.1",
-		"xlsx": "^0.18.5"
+		"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
