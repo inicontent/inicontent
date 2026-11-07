@@ -108,6 +108,25 @@ export default defineNuxtConfig({
 	imports: {
 		dirs: ["types/*.d.ts"],
 	},
+	alias: {
+		// These packages are present in the install (as transitive/peer
+		// dependencies of mjml, @tiptap/* and idb) but are not direct
+		// dependencies, so pnpm's strict node_modules leaves bare imports from
+		// app code unresolvable — at build time *and* for vue-tsc. Map them
+		// onto pnpm's hoisted store, which is stable across installs; Nuxt
+		// feeds this into both Vite and the generated tsconfig paths, so the
+		// bundle and the typechecker see the same modules. jszip and the
+		// @tiptap packages ship their own types — only the paths were missing.
+		jszip: join(currentDir, "node_modules/.pnpm/node_modules/jszip"),
+		"@tiptap/core": join(
+			currentDir,
+			"node_modules/.pnpm/node_modules/@tiptap/core",
+		),
+		"@tiptap/extension-text-style": join(
+			currentDir,
+			"node_modules/.pnpm/node_modules/@tiptap/extension-text-style",
+		),
+	},
 	// `app/components/Block/customBlocks.ts` is the custom block registry, not a
 	// component. Without this the components scan registers its default export
 	// as `BlockCustomBlocks` / `LazyBlockCustomBlocks`, which is dead weight and
