@@ -8,7 +8,8 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 // index.html in .output/public), so workbox's navigateFallback has nothing to
 // serve from its precache when the device is offline. Precache it explicitly
 // with a build-unique revision so the shell is re-fetched on every SW update.
-const appShellRevision = Date.now().toString(36);
+const appShellRevision =
+	process.env.INICONTENT_FRONTEND_BUILD_ID || Date.now().toString(36);
 
 // Icons that the static `clientBundle.scan` can't see (computed/ternary names
 // used by the offline status UI) and that therefore must be listed explicitly

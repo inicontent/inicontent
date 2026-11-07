@@ -28,7 +28,7 @@ import { defineNuxtModule } from "@nuxt/kit";
  * regardless of what this module decides.
  */
 const SPECIFIER = "#inicontent/custom-blocks";
-const RELATIVE_PATH = "app/components/Block/customBlocks";
+const RELATIVE_PATH = "app/components/Block/customBlocks.ts";
 
 export default defineNuxtModule({
 	meta: {
