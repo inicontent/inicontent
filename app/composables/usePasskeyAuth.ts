@@ -10,6 +10,14 @@ interface PasskeyBeginOptions {
 }
 
 type PasskeyBeginResponse = apiResponse<PasskeyBeginOptions>;
+/**
+ * Registration begin returns the standard WebAuthn creation options plus our
+ * `challengeRef` back-reference. Derived from `startRegistration`'s own
+ * parameter type so the two cannot drift.
+ */
+type PasskeyRegisterBeginOptions = Parameters<
+	typeof startRegistration
+>[0]["optionsJSON"] & { challengeRef?: string };
 type LoginPayload = User & { sessionID: string };
 type LoginResponse = apiResponse<LoginPayload>;
 type PasskeyRegisterResponse = apiResponse<Record<string, unknown>>;
@@ -101,20 +109,19 @@ export function usePasskeyAuth() {
 	}
 
 	async function registerCurrentUserPasskey() {
-		const beginResponse = await $fetch<PasskeyBeginResponse>(
-			`${useApiBase()}${database.value.slug}/auth/passkey/register/begin`,
-			{
-				method: "PUT",
-				credentials: "include",
-				body: {
-					source: "auth",
-				},
-				params: {
-					locale: language.value,
-					[`${database.value.slug}_sid`]: sessionID.value,
-				},
+		const beginResponse = await $fetch<
+			apiResponse<PasskeyRegisterBeginOptions>
+		>(`${useApiBase()}${database.value.slug}/auth/passkey/register/begin`, {
+			method: "PUT",
+			credentials: "include",
+			body: {
+				source: "auth",
 			},
-		);
+			params: {
+				locale: language.value,
+				[`${database.value.slug}_sid`]: sessionID.value,
+			},
+		});
 
 		if (!beginResponse.result?.challenge) {
 			throw new Error(

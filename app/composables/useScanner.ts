@@ -139,7 +139,9 @@ export function useScanner() {
 	 * Safe to call multiple times – subsequent calls await the same load.
 	 */
 	async function loadScanner(): Promise<void> {
-		if (scanner.value || opencvLoaded.value) return;
+		// Boolean() so the early return doesn't narrow scanner.value for the
+		// async closure below (it is reassigned once jscanify has loaded).
+		if (Boolean(scanner.value) || opencvLoaded.value) return;
 		if (loadPromise) return loadPromise;
 
 		loading.value = true;
@@ -412,7 +414,7 @@ export function useScanner() {
 				// Draw the detected quad (green/amber) instead of jscanify's
 				// full-image highlight, so we stay on one canvas.
 				if (analysis.corners) {
-					const quad = [
+					const quad: [Point, Point, Point, Point] = [
 						analysis.corners.topLeft,
 						analysis.corners.topRight,
 						analysis.corners.bottomRight,
@@ -425,7 +427,7 @@ export function useScanner() {
 					ctx.lineWidth = Math.max(3, overlayCanvas.width * 0.005);
 					ctx.beginPath();
 					ctx.moveTo(quad[0].x, quad[0].y);
-					for (let i = 1; i < 4; i++) ctx.lineTo(quad[i].x, quad[i].y);
+					for (const point of quad.slice(1)) ctx.lineTo(point.x, point.y);
 					ctx.closePath();
 					ctx.stroke();
 				}

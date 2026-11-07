@@ -330,7 +330,6 @@ import { isArrayOfArrays, isArrayOfObjects } from "inibase/utils";
 import type { DataTableColumns, SelectOption } from "naive-ui";
 import { VueDraggable } from "vue-draggable-plus";
 import { Icon, NButton, NColorPicker, NFlex, NIcon, NInput } from "#components";
-import { N } from "vue-router/dist/index-BN0B0y8a.js";
 
 const widthOptions = [
 	{

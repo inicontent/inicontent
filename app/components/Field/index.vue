@@ -44,12 +44,9 @@
 <script lang="ts" setup>
 import { isVNode } from "vue";
 const field = defineModel<Field>("field", { required: true });
-const detectedFieldType = computed<DB_FieldType | CMS_FieldType>(() => {
-    const fieldType = (field.value.subType ?? field.value.type) as
-        | DB_FieldType
-        | CMS_FieldType;
-    if (Array.isArray(fieldType)) return getField(field.value).key;
-    return fieldType;
+const detectedFieldType = computed<string>(() => {
+    const fieldType = field.value.subType ?? field.value.type;
+    return Array.isArray(fieldType) ? getField(field.value).key : fieldType;
 });
 
 const modelValue = defineModel<any>({ default: () => ref().value });

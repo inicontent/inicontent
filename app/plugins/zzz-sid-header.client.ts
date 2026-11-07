@@ -1,5 +1,4 @@
-import type { RegionOption, RegionSelection } from "~/composables/region";
-
+import type { RegionOption, RegionSelection } from "#imports";
 /**
  * Move tenant session IDs from URL query strings into the Authorization
  * header, at the network boundary.

@@ -89,12 +89,14 @@ import type {
 	UploadFileInfo,
 } from "naive-ui";
 import { Icon, LazyAssetThumb } from "#components";
-import { getFileNameAndExtension } from "~/composables";
-import { useOptimizeFile } from "~/composables/optimizeFile";
-import renderLabel from "~/composables/renderLabel";
-import { useAssetUploader } from "~/composables/useAssetUploader";
-import { usePdfCompressor } from "~/composables/usePdfCompressor";
-import { useVideoCompressor } from "~/composables/useVideoCompressor";
+import {
+	getFileNameAndExtension,
+	renderLabel,
+	useAssetUploader,
+	useOptimizeFile,
+	usePdfCompressor,
+	useVideoCompressor,
+} from "#imports";
 
 const { field } = defineProps<{ field: Field }>();
 
@@ -457,6 +459,11 @@ const { uploadAssetWithProgress } = useAssetUploader();
 const shouldOptimize = computed(() => field.optimize !== false);
 const showSkipCompressionTooltip = ref(false);
 
+// PDF compression is a deliberate kill-switch — the branch below stays dead
+// until enabled. Declared as a non-literal `boolean` so TypeScript keeps
+// narrowing `originalFile` inside it instead of treating it as unreachable.
+const enablePdfCompression: boolean = false;
+
 async function customRequest({
 	file,
 	headers,
@@ -503,8 +510,7 @@ async function customRequest({
 						compressionIndicator.value = null;
 					} else throw videoError;
 				}
-				// biome-ignore lint/correctness/noConstantCondition: PDF compression is a deliberate kill-switch — branch stays dead until enabled.
-			} else if (isPdf && false) {
+			} else if (isPdf && enablePdfCompression) {
 				notifyPdfSize(originalFile.size);
 				try {
 					fileToUpload = await compressPdf(fileToUpload);

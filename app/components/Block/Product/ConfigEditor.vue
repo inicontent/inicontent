@@ -30,11 +30,6 @@
 				:default-aggregation="'count'" :aggregations="reviewsAggregations" />
 		</NCard>
 
-		<NCard size="small" :title="t('product.images')" :bordered="false" content-style="padding-top: 0;">
-			<NText depth="3" class="product-hint">{{ t('product.imagesHint') }}</NText>
-			<LazyField :field="galleryField" v-model="galleryValue" />
-		</NCard>
-
 		<NCard size="small" :title="t('product.buyCard')" :bordered="false" content-style="padding-top: 0;">
 			<NFlex vertical :size="12">
 				<NFormItem :label="t('product.buttonLabel')">
@@ -68,7 +63,7 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "#imports";
 
 const modelValue = defineModel<Product>({ default: () => ({}) });
 
@@ -136,7 +131,10 @@ function onTableChange(slug: string | null) {
 	for (const slot of mappingSlots) modelValue.value[slot] = undefined;
 }
 
-function patchMapping(slot: (typeof mappingSlots)[number], value: unknown) {
+function patchMapping(
+	slot: (typeof mappingSlots)[number],
+	value: string | number | null,
+) {
 	if (value === null || value === undefined || value === "")
 		modelValue.value[slot] = undefined;
 	else modelValue.value[slot] = value;

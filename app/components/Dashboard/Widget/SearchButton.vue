@@ -67,7 +67,7 @@ import {
 	NPopover,
 	NTooltip,
 } from "#components";
-import { deepClone } from "~/composables";
+import { deepClone } from "#imports";
 
 const props = defineProps<{
 	/** Schema of the widget's source table, feeding the search builder. */

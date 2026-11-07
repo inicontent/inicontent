@@ -91,7 +91,9 @@ function materialize(
 		return { input: target, init: { ...init, headers }, sid, delegated };
 	}
 	// A Request object: copy it onto the cleaned URL, keeping its headers.
-	const request = new Request(target, {
+	// `duplex` is part of the fetch spec for streamed bodies but the DOM
+	// `RequestInit` type lags behind, so declare it on the options object.
+	const requestInit: RequestInit & { duplex?: "half" | "full" } = {
 		method: input.method,
 		headers,
 		body: input.body,
@@ -106,7 +108,8 @@ function materialize(
 		keepalive: input.keepalive,
 		signal: input.signal,
 		mode: input.mode,
-	});
+	};
+	const request = new Request(target, requestInit);
 	return { input: request, init: undefined, sid, delegated };
 }
 

@@ -80,27 +80,26 @@ export function computePlacements(
 	let i = 0;
 	while (i < n) {
 		const widget = widgets[i];
+		if (!widget) break;
 
 		if (!isTall(widget)) {
 			// Collect a contiguous run of shorts that fit on one flow line.
 			const run = [widget];
 			let runWidth = getSpan(widget);
 			let j = i + 1;
-			while (
-				j < n &&
-				!isTall(widgets[j]) &&
-				runWidth + getSpan(widgets[j]) <= 24
-			) {
-				run.push(widgets[j]);
-				runWidth += getSpan(widgets[j]);
+			while (j < n) {
+				const next = widgets[j];
+				if (!next || isTall(next) || runWidth + getSpan(next) > 24) break;
+				run.push(next);
+				runWidth += getSpan(next);
 				j += 1;
 			}
 
 			// A tall widget right after the run can host it: stack the run
 			// in its own column and let the tall span the hosting rows.
 			// Only on a clean line — the block's columns start at 1.
-			if (cursorCol === 1 && j < n && isTall(widgets[j])) {
-				const tall = widgets[j];
+			const tall = cursorCol === 1 ? widgets[j] : undefined;
+			if (tall && isTall(tall)) {
 				const remaining = 24 - getSpan(tall);
 				if (remaining > 0 && run.every((s) => getSpan(s) <= remaining)) {
 					const rowSpan = Math.max(2, Math.min(run.length, MAX_STACKED_SHORTS));
@@ -145,13 +144,16 @@ export function computePlacements(
 			const remaining = 24 - getSpan(widget);
 			const shorts: Widget[] = [];
 			let j = i + 1;
-			while (
-				j < n &&
-				!isTall(widgets[j]) &&
-				remaining > 0 &&
-				getSpan(widgets[j]) <= remaining
-			) {
-				shorts.push(widgets[j]);
+			while (j < n) {
+				const next = widgets[j];
+				if (
+					!next ||
+					isTall(next) ||
+					remaining <= 0 ||
+					getSpan(next) > remaining
+				)
+					break;
+				shorts.push(next);
 				j += 1;
 			}
 

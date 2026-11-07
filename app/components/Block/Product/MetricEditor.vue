@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "#imports";
 
 type MetricSource = AggregateSource;
 
@@ -94,7 +94,7 @@ const aggregationOptions = computed(() =>
 function patch(key: keyof MetricSource, value: unknown) {
 	const next: Partial<MetricSource> = { ...(modelValue.value ?? {}) };
 	if (value === undefined || value === null || value === "") delete next[key];
-	else next[key] = value as MetricSource[keyof MetricSource];
+	else Object.assign(next, { [key]: value });
 	modelValue.value = Object.keys(next).length ? next : undefined;
 }
 

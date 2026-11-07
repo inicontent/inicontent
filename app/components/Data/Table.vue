@@ -1,7 +1,7 @@
 <template>
     <NFlex :wrap="false" class="tableCellLinks">
         <NButton v-for="value in values" class="tableCellLinkButton" tag="a"
-            :href="tableUrl(field.table, `/${idOf(value)}`)"
+            :href="tableUrl(field.table ?? '', `/${idOf(value)}`)"
             @click.prevent.stop="handleClick(value)" :loading="Loading[`Drawer_${field.table}_${idOf(value)}`]" size="small"
             round>
             <template v-if="table" #icon>

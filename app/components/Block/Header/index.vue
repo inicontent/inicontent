@@ -1,6 +1,6 @@
 <template>
 	<LazyBlockHeaderAnnouncement v-if="hasAnnouncement" v-model="localModelValue.announcement"
-		:design="localModelValue.announcement.design" />
+		:design="localModelValue.announcement?.design" />
 	<LazyBlockHeader1 v-if="design === 1" v-model="localModelValue" />
 </template>
 
@@ -28,9 +28,9 @@ const hasAnnouncement = computed(
 watch(
 	[() => modelValue.value, Language],
 	([v]) => {
-		localModelValue.value = mergeConfig(defaultConfig.value, v);
+		localModelValue.value = mergeConfig<Header>(defaultConfig.value, v);
 	},
 	{ deep: true },
 );
-localModelValue.value = mergeConfig(defaultConfig.value, modelValue.value);
+localModelValue.value = mergeConfig<Header>(defaultConfig.value, modelValue.value);
 </script>

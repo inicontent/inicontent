@@ -35,7 +35,7 @@
 
 <script lang="ts" setup>
 import Inison from "inison";
-import { usePasskeyAuth } from "~/composables/usePasskeyAuth";
+import { usePasskeyAuth } from "#imports";
 
 definePageMeta({
 	middleware: ["database", "user", "dashboard", "table", "global"],
@@ -119,7 +119,7 @@ try {
 } catch (error) {
 	if (isNetworkError(error) || isJunkResponse(error)) {
 		fetched = await getOfflineItem(
-			database.value.slug,
+			String(database.value.slug),
 			table.value.slug,
 			String(route.params.id),
 			itemUrl,

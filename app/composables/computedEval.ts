@@ -147,6 +147,7 @@ export function buildFieldIndex(schema: Schema): Map<number, ComputedFieldRef> {
 				let arrayAncestor: { id: number; key: string } | null = null;
 				for (let i = ancestors.length - 1; i >= 0; i--) {
 					const ancestor = ancestors[i];
+					if (!ancestor) continue;
 					if (ancestor.field.type === "array" && isContainer(ancestor.field)) {
 						arrayAncestor = {
 							id: ancestor.field.id as number,
@@ -190,9 +191,11 @@ export function collectFieldDeps(node: CompiledExpressionNode): Set<number> {
 		switch (n.kind) {
 			case "num":
 				return;
-			case "path":
-				deps.add(n.ids[0]);
+			case "path": {
+				const firstId = n.ids[0];
+				if (firstId !== undefined) deps.add(firstId);
 				return;
+			}
 			case "bin":
 				visit(n.left);
 				visit(n.right);
@@ -522,11 +525,13 @@ async function evaluatePath(node: { ids: number[] }, env: EvalEnv) {
 	let value: any;
 	let ref: ComputedFieldRef | undefined;
 	for (let i = 0; i < ids.length; i++) {
-		ref = index.get(ids[i]);
+		const fieldId = ids[i];
+		if (fieldId === undefined) break;
+		ref = index.get(fieldId);
 		if (!ref)
 			throw new ComputedEvalError(
 				"COMPUTED_FIELD_UNKNOWN_FIELD",
-				`computed field "${env.ownKey}": unknown field id ${ids[i]}`,
+				`computed field "${env.ownKey}": unknown field id ${fieldId}`,
 			);
 		const key =
 			strip && ref.key.startsWith(strip)

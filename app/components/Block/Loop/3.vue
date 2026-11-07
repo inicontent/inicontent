@@ -1,7 +1,7 @@
 <template>
 	<div class="loop-container">
 		<LazyBlockHeading v-if="hasHeading" v-model="modelValue" :design="1" />
-		<div v-if="showTagFilter && tags?.length > 1" class="tags-filter">
+		<div v-if="showTagFilter && (tags?.length ?? 0) > 1" class="tags-filter">
 			<button @click="emit('update:activeTag', null)"
 				:class="['tags-filter-btn', { active: !activeTag }]">
 				{{ t("loop.allTags") }}

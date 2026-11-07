@@ -41,11 +41,15 @@ let mjmlPromise: Promise<MjmlRenderer> | undefined;
  * `process.env.MJML_BROWSER`, plus a working `process.cwd()` for the parser).
  */
 function ensureBrowserProcess(): void {
+	// The cast target deliberately declares only the members mjml touches and
+	// no index signature: a `NodeJS.Process`-flavoured `globalThis.process`
+	// (Nuxt dev) is comparable to it, while an index signature would make the
+	// conversion fail. `env` accepts `undefined` values to line up with
+	// `ProcessEnv`.
 	const g = globalThis as {
 		process?: {
-			env?: Record<string, string>;
+			env?: Record<string, string | undefined>;
 			cwd?: () => string;
-			[extra: string]: unknown;
 		};
 	};
 	// A `process` global may already exist (Nuxt/Vite inject a build-flag shim

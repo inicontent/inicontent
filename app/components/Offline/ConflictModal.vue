@@ -101,7 +101,7 @@ import {
 	resolveConflictKeepLocal,
 	resolveConflictKeepServer,
 	useOfflineSync,
-} from "~/composables/useOfflineSync";
+} from "#imports";
 
 // Shared bus: SyncStatus's "resolve conflicts" action opens the *same* modal.
 // Keeping this a useState (not component-local) means the modal can live

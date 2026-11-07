@@ -7,32 +7,35 @@
 
 <script setup lang="ts">
 import {
-	type ConfigProviderProps,
 	arDZ,
+	type ConfigProviderProps,
 	createDiscreteApi,
 	darkTheme,
 	dateArDZ,
 	dateEnUS,
 	enUS,
-} from "naive-ui"
+} from "naive-ui";
 
-import "~/assets/main.css"
+import "~/assets/main.css";
 
-import { hexToRGB } from "~/composables"
+import { hexToRGB } from "#imports";
 
 const database = useState<Database>("database");
-const Language = useScopedCookie<LanguagesType>("language", database.value?.slug)
-const Theme = useCookie<"light" | "dark">("theme", { sameSite: true })
-const ThemeConfig = useState<ThemeConfig>("ThemeConfig")
+const Language = useScopedCookie<LanguagesType>(
+	"language",
+	database.value?.slug,
+);
+const Theme = useCookie<"light" | "dark">("theme", { sameSite: true });
+const ThemeConfig = useState<ThemeConfig>("ThemeConfig");
 
 // The unstable*Rtl styles are only meaningful for Arabic/rtl layouts. They used
 // to be eagerly imported on every boot, pulling ~24 naive-ui style modules into
 // the shared entry chunk that English/global sites never use. They are now
 // loaded on demand (a single chunk, only when the language is "ar").
-const rtlStyles = ref<any[]>([])
+const rtlStyles = ref<any[]>([]);
 
 async function ensureRtlStyles() {
-	if (rtlStyles.value.length) return rtlStyles.value
+	if (rtlStyles.value.length) return rtlStyles.value;
 	const {
 		unstableListRtl,
 		unstablePageHeaderRtl,
@@ -58,7 +61,7 @@ async function ensureRtlStyles() {
 		unstableNotificationRtl,
 		unstableStepsRtl,
 		unstableAlertRtl,
-	} = await import("naive-ui")
+	} = await import("naive-ui");
 	rtlStyles.value = [
 		unstableListRtl,
 		unstablePageHeaderRtl,
@@ -84,26 +87,26 @@ async function ensureRtlStyles() {
 		unstableNotificationRtl,
 		unstableStepsRtl,
 		unstableAlertRtl,
-	]
-	return rtlStyles.value
+	];
+	return rtlStyles.value;
 }
 
 watch(
 	computed(() => Language.value === "ar"),
 	async (isArabic) => {
-		if (isArabic) void ensureRtlStyles()
+		if (isArabic) void ensureRtlStyles();
 	},
 	{ immediate: true },
-)
+);
 
 const Locales = {
 	ar: arDZ,
 	en: enUS,
-}
+};
 const dateLocales = {
 	ar: dateArDZ,
 	en: dateEnUS,
-}
+};
 
 const configProviderProps = computed<ConfigProviderProps>(() => ({
 	dir: Language.value === "ar" ? "rtl" : "ltr",
@@ -117,12 +120,12 @@ const configProviderProps = computed<ConfigProviderProps>(() => ({
 			...ThemeConfig.value,
 			fontFamily: "Cairo",
 			fontFamilyMono: "Cairo",
-			borderRadius: "15px"
+			borderRadius: "15px",
 		},
 	},
 	locale: Locales[Language.value as "ar" | "en"] ?? Locales.en,
 	dateLocale: dateLocales[Language.value as "ar" | "en"] ?? dateLocales.en,
-}))
+}));
 const { message, notification } = createDiscreteApi(
 	["message", "notification"],
 	{
@@ -141,53 +144,53 @@ const { message, notification } = createDiscreteApi(
 		},
 		configProviderProps,
 	},
-)
+);
 
 onMounted(() => {
-	window.$message = message
-	window.$notification = notification
+	window.$message = message;
+	window.$notification = notification;
 
 	// Add an event listener for the print action
 	window.onbeforeprint = () => {
 		// Select the element with the class "printable"
-		let element = document.querySelector(".printable")
+		let element = document.querySelector(".printable");
 
 		// Check if the element and its parent exist
 		if (element?.parentElement) {
 			// Add the class "printable-direct-parent" to the direct parent
-			element.parentElement.classList.add("printable-direct-parent")
+			element.parentElement.classList.add("printable-direct-parent");
 
 			// Traverse up the DOM starting from the direct parent's parent
-			let parent = element.parentElement.parentElement
+			let parent = element.parentElement.parentElement;
 			while (parent) {
 				// Add the class "printable-parent" to all other ancestors
-				parent.classList.add("printable-parent")
-				parent = parent.parentElement
+				parent.classList.add("printable-parent");
+				parent = parent.parentElement;
 			}
 		}
-	}
+	};
 
 	// Optional: Remove the added classes after printing
 	window.onafterprint = () => {
 		// Remove the "printable-parent" class after printing
-		const elements = document.querySelectorAll(".printable-parent")
+		const elements = document.querySelectorAll(".printable-parent");
 		for (let i = 0; i < elements.length; i++)
-			elements[i]?.classList.remove("printable-parent")
+			elements[i]?.classList.remove("printable-parent");
 
 		document
 			.querySelector(".printable-direct-parent")
-			?.classList.remove("printable-parent")
-	}
+			?.classList.remove("printable-parent");
+	};
 
-	fetchTranslation()
-})
+	fetchTranslation();
+});
 
-watch(Language, () => fetchTranslation())
+watch(Language, () => fetchTranslation());
 
 // Naive UI default body colors for each mode.
 const bodyBgColor = computed(() =>
 	Theme.value === "dark" ? "rgb(16, 16, 20)" : "#fff",
-)
+);
 
 useHead({
 	meta: [
@@ -212,23 +215,26 @@ useHead({
 				`--primaryColor: ${hexToRGB(ThemeConfig.value.primaryColor).join(", ")}`,
 		),
 	},
-})
+});
 
 // Safari Mobile ignores dynamic attribute changes on <meta name="theme-color">.
 // Force it to re-read by removing and re-adding the element whenever the mode
 // changes.  The matching background-color on <html> gives Safari a reliable
 // signal for the status-bar / safe-area-inset color.
 onMounted(() => {
-	watch(bodyBgColor, (color) => {
-		const existing = document.querySelector('meta[name="theme-color"]')
-		if (existing) existing.remove()
-		const meta = document.createElement("meta")
-		meta.name = "theme-color"
-		meta.content = color
-		document.head.appendChild(meta)
+	watch(
+		bodyBgColor,
+		(color) => {
+			const existing = document.querySelector('meta[name="theme-color"]');
+			if (existing) existing.remove();
+			const meta = document.createElement("meta");
+			meta.name = "theme-color";
+			meta.content = color;
+			document.head.appendChild(meta);
 
-		document.documentElement.style.backgroundColor = color
-	}, { immediate: true })
-})
-
+			document.documentElement.style.backgroundColor = color;
+		},
+		{ immediate: true },
+	);
+});
 </script>

@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { PlatformFeature } from "~/composables/usePlatformRedirect";
+import type { PlatformFeature } from "#imports";
 
 const props = defineProps<{ feature: PlatformFeature }>();
 

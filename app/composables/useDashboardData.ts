@@ -1,12 +1,12 @@
 import Inison from "inison";
-import { groupItemsByField } from "~/composables/groupLabels";
-import renderLabel from "~/composables/renderLabel";
-import { generateSearchString } from "~/composables/search";
 import {
+	generateSearchString,
+	groupItemsByField,
+	renderLabel,
 	resolveWidgetDateField,
 	resolveWidgetField,
 	resolveWidgetTable,
-} from "~/composables/widgetSchema";
+} from "#imports";
 
 type WidgetDataResult = {
 	value: Ref<number | null>;

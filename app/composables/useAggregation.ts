@@ -1,4 +1,4 @@
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "./schemaCompat.ts";
 import Inison from "inison";
 
 /**

@@ -26,7 +26,7 @@ import type { pageInfo } from "inibase";
 import { isObject, isValidID } from "inibase/utils";
 import Inison from "inison";
 import type { FormItemRule } from "naive-ui";
-import { debounce } from "~/composables";
+import { debounce } from "#imports";
 
 const { field } = defineProps<{ field: Field }>();
 const modelValue = defineModel<string | Item | (string | Item)[]>();
@@ -208,7 +208,7 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 async function loadOptions(searchValue?: string | number) {
 	if (!isOnline.value) {
 		const pending = await getPendingCreates(
-			database.value.slug,
+			database.value?.slug ?? "",
 			String(field.table),
 		);
 		const all = [

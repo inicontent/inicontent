@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "#imports";
 
 const modelValue = defineModel<Loop>({ default: () => ({}) });
 
@@ -177,10 +177,13 @@ function onTableChange(slug: string | null) {
 	for (const slot of mappingSlots) modelValue.value[slot] = undefined;
 }
 
-function patchMapping(slot: (typeof mappingSlots)[number], value: unknown) {
+function patchMapping(
+	slot: (typeof mappingSlots)[number],
+	value: string | number | null,
+) {
 	if (value === null || value === undefined || value === "")
 		modelValue.value[slot] = undefined;
-	else modelValue.value[slot] = value;
+	else Object.assign(modelValue.value, { [slot]: value });
 }
 
 // ---- Manual cards (JSON editor) ----

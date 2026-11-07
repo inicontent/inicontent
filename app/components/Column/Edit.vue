@@ -74,7 +74,7 @@ const isModalEdit = computed(
 
 const tooltipShow = ref(false)
 const isTouchDevice = ref(false)
-const longPressTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+const longPressTimeout = ref<number | null>(null)
 const editHint = computed(() =>
 	t(isTouchDevice.value ? "pressAndHoldToEdit" : "rightClickToEdit"),
 )

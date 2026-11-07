@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { isVideoMediaValue } from "~/composables/useForm";
+import { isVideoMediaValue } from "#imports";
 
 const hasHeading = computed(
 	() =>

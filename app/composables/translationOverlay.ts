@@ -59,7 +59,10 @@ export function isTranslatableConfigField(field: Field): boolean {
 		field.subType === "icon"
 	)
 		return false;
-	if (field.subType === "json" || field.type === "json") return false;
+	// `subType` is a `CMS_FieldType` union that doesn't model "json" (it's a
+	// DB-level type), so compare the widened string — stored schemas may still
+	// carry it there — while `type` covers the canonical json column.
+	if (String(field.subType) === "json" || field.type === "json") return false;
 	if (field.table === "assets") return false;
 	if (field.type === "number" || field.type === "boolean") return false;
 	if (field.type === "array" || field.type === "object") return true;
@@ -113,16 +116,19 @@ export function setConfigValue(
 	let cursor = target as Record<string, unknown>;
 	for (let index = 0; index < segments.length - 1; index++) {
 		const segment = segments[index];
+		const nextSegment = segments[index + 1];
+		if (segment === undefined || nextSegment === undefined) break;
 		const next = cursor[segment];
 		if (next === null || typeof next !== "object") {
-			const created: unknown = /^\d+$/.test(segments[index + 1]) ? [] : {};
+			const created: unknown = /^\d+$/.test(nextSegment) ? [] : {};
 			cursor[segment] = created;
 			cursor = created as Record<string, unknown>;
 		} else {
 			cursor = next as Record<string, unknown>;
 		}
 	}
-	cursor[segments[segments.length - 1]] = value;
+	const last = segments[segments.length - 1];
+	if (last !== undefined) cursor[last] = value;
 }
 
 /**
@@ -144,7 +150,12 @@ export function collectTranslatablePaths(
 		if (isStructuralConfigKey(String(field.key))) continue;
 		const path = basePath ? `${basePath}.${field.key}` : field.key;
 		const value = obj[field.key];
-		const children = Array.isArray(field.children) ? field.children : undefined;
+		// `children` is `DB_FieldType | DB_FieldType[] | Schema`; after the
+		// `Array.isArray` narrow it's a list — cast to `Schema` like
+		// `translatableSchema` above (a `FieldType[]` list walks to nothing).
+		const children = Array.isArray(field.children)
+			? (field.children as Schema)
+			: undefined;
 
 		if (field.type === "array") {
 			if (!Array.isArray(value)) continue;

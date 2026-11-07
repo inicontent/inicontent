@@ -8,7 +8,7 @@
 
 const { schema } = defineProps<{ schema?: Schema }>()
 
-const modelValue = defineModel({
-	default: {},
+const modelValue = defineModel<Record<string, unknown>>({
+	default: () => ({}),
 })
 </script>

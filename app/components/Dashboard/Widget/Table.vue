@@ -9,7 +9,7 @@
 			:loading="loading"
 			:scroll-x="tableWidth"
 			:max-height="480"
-			:row-key="(row: Item) => row.id"
+			:row-key="(row: Item) => row.id ?? ''"
 		/>
 	</NSpin>
 </template>
@@ -18,10 +18,12 @@
 import type { DataTableColumns } from "naive-ui";
 import { h } from "vue";
 import { LazyColumn, NFlex, NPerformantEllipsis } from "#components";
-import { getField } from "~/composables/fieldsList";
-import renderLabel from "~/composables/renderLabel";
-import { useDashboardData } from "~/composables/useDashboardData";
-import { resolveWidgetTable } from "~/composables/widgetSchema";
+import {
+	getField,
+	renderLabel,
+	resolveWidgetTable,
+	useDashboardData,
+} from "#imports";
 
 const props = defineProps<{
 	widget: Widget;

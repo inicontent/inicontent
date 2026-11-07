@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import Inison from "inison";
+import type { NuxtError } from "#app";
 import { Icon, NIcon } from "#components";
 
 interface EmailTemplate {
@@ -129,19 +130,24 @@ const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 const tablePath = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/templates`;
 const newPath = `${tablePath}/new`;
 
-const editPath = (name: string) => `${tablePath}/${encodeURIComponent(name)}`;
+const editPath = (name?: string) =>
+	`${tablePath}/${encodeURIComponent(String(name))}`;
 
-const { data: templates, pending } = await useFetch<EmailTemplate[]>(
-	`${useApiBase()}${database.value.slug}/templates`,
-	{
-		params: {
-			locale: Language.value,
-			options: Inison.stringify({ perPage: 1000 }),
-		},
-		transform: (res) => res.result ?? [],
-		credentials: "include",
+const { data: templates, pending } = await useFetch<
+	EmailTemplate[],
+	NuxtError,
+	string,
+	"get",
+	apiResponse<EmailTemplate[]>,
+	EmailTemplate[]
+>(`${useApiBase()}${database.value.slug}/templates`, {
+	params: {
+		locale: Language.value,
+		options: Inison.stringify({ perPage: 1000 }),
 	},
-);
+	transform: (res) => res.result ?? [],
+	credentials: "include",
+});
 
 async function remove(template: EmailTemplate) {
 	const res = await $fetch<apiResponse<boolean>>(

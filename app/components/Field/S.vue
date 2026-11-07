@@ -25,7 +25,7 @@
 <script lang="ts" setup>
 import { isArrayOfObjects } from "inibase/utils";
 
-import { COMPUTED_PREVIEW_KEY } from "~/composables/useComputedPreview";
+import { COMPUTED_PREVIEW_KEY } from "#imports";
 
 function addIdToSchema(schema: Schema, startWithID = 0) {
 	function _addIdToField(field: Field) {
@@ -95,10 +95,11 @@ provide(
 			preview,
 			displayValue: (field: Field, elementIndex?: number) => {
 				// Computed children carry one preview entry per array element.
-				if (Array.isArray(preview.value[field.key]))
+				const previewValue = preview.value[field.key];
+				if (Array.isArray(previewValue))
 					return elementIndex === undefined
 						? undefined
-						: preview.value[field.key][elementIndex];
+						: previewValue[elementIndex];
 				return computedDisplay(field, toRaw(modelValue.value));
 			},
 		} satisfies ComputedPreviewContext),

@@ -34,7 +34,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		// The redirect intent is dead (the table no longer exists) — drop it
 		// so a later login doesn't bounce back into this same 404 loop.
 		useScopedCookie<string | null>("redirectTo", database.value?.slug).value =
-			undefined
+			null
 		// Do NOT `throw` here: an error thrown from a route middleware during
 		// *client-side* navigation is swallowed by the router (nothing renders
 		// the error page), so navigating here from /auth after a redirectTo

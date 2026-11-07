@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { resolveItemRepeatPlaceholders } from "~/composables/itemBindings";
+import { resolveItemRepeatPlaceholders } from "#imports";
 
 const modelValue = defineModel<Content>({
 	required: true,
@@ -34,7 +34,7 @@ watchEffect(() => {
 	const splitedName = modelValue.value.name.split("/");
 	if (splitedName) {
 		block.value = splitedName[0] as Blocks;
-		design.value = parseInt(splitedName[1], 10);
+		design.value = parseInt(splitedName[1] ?? "", 10);
 	}
 
 	if (

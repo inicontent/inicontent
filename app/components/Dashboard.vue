@@ -121,7 +121,7 @@
 
 <script setup lang="ts">
 import type { FormInst } from "naive-ui";
-import { normalizeRegionApiUrl } from "~/composables/region";
+import { normalizeRegionApiUrl } from "#imports";
 
 onBeforeRouteLeave((route) => {
 	if (route.params.database) clearNuxtState(["database", "table", "user"]);

@@ -83,7 +83,6 @@ watch(
 onMounted(() => {
 	const runInit = () => useOfflineSync().initSync();
 	if ("requestIdleCallback" in window) {
-		// @ts-expect-error requestIdleCallback types not present
 		window.requestIdleCallback(runInit, { timeout: 3000 });
 	} else {
 		setTimeout(runInit, 500);

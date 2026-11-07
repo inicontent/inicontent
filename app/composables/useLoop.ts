@@ -1,4 +1,4 @@
-import { flattenSchema } from "inibase/utils";
+import { flattenSchema } from "./schemaCompat.ts";
 import Inison from "inison";
 import { resolveTemplatePageHref } from "./itemBindings";
 import { isVideoMediaValue } from "./useForm";
@@ -266,7 +266,7 @@ export function useLoop(modelValue: Ref<Loop>) {
 		return resolveText(resolveField(item, modelValue.value.linkField));
 	}
 
-	function toDemoCard(entry: Loop["demo"][number]): LoopCard {
+	function toDemoCard(entry: NonNullable<Loop["demo"]>[number]): LoopCard {
 		const row = (entry ?? {}) as Record<string, unknown>;
 		return {
 			id: resolveText(entry?.id),

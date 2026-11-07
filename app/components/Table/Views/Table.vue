@@ -37,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const columns = defineModel<DataTableColumns>("columns");
-const searchString = defineModel<string>("searchString");
+const searchString = defineModel<string | undefined>("searchString");
 const data = defineModel<apiResponse<Item[]>>("data");
 
 const Loading = useState<Record<string, boolean>>("Loading", () => ({
@@ -281,7 +281,7 @@ const currentItem = ref<Item>();
 const showDropdown = ref(false);
 const x = ref(0);
 const y = ref(0);
-const rowTouchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+const rowTouchTimeout = ref<number | null>(null);
 
 async function handleSelect(value: string) {
 	showDropdown.value = false;
@@ -1030,7 +1030,6 @@ async function setColumns(skipVisualWidths = false) {
 															table.value?.slug as string
 														]?.columns?.includes(id as number)
 													)
-														// @ts-expect-error
 														tablesConfig.value[
 															table.value?.slug as string
 														].columns = tablesConfig.value[
@@ -1048,7 +1047,6 @@ async function setColumns(skipVisualWidths = false) {
 															clonedTablesConfig[table.value?.slug as string] =
 																{ columns: [] };
 
-														// @ts-expect-error
 														clonedTablesConfig[
 															table.value?.slug as string
 														].columns?.push(id as number);
@@ -1083,7 +1081,9 @@ async function setColumns(skipVisualWidths = false) {
 									!tablesConfig.value[
 										table.value?.slug as string
 									]?.columns?.includes(id) &&
-									!table.value?.defaultTableColumns?.includes(id),
+									!table.value?.defaultTableColumns?.some(
+										(columnId) => columnId === id,
+									),
 							)
 						: []),
 					...table.value.defaultTableColumns

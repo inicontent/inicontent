@@ -1,6 +1,6 @@
 <template>
 	<NFlex :wrap="false" class="localeCell">
-		<NTag v-for="singleValue in ([] as string[]).concat(value)" :key="singleValue" round
+		<NTag v-for="singleValue in ([] as (string | number)[]).concat(value)" :key="singleValue" round
 			:bordered="false">
 			{{ t(`languages.${singleValue}`) }}
 		</NTag>

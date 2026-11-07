@@ -138,7 +138,8 @@ export function usePageLanguages() {
 		page: Page,
 		lang: LanguagesType,
 	): Promise<string | undefined> {
-		const targetSlug = await slugForPage(page.id, lang);
+		const targetSlug =
+			page.id === undefined ? undefined : await slugForPage(page.id, lang);
 		if (typeof targetSlug !== "string") return undefined;
 		const urlSegments = ([] as string[]).concat(route.params.slug ?? []);
 		const rebuilt = rebuildLocalizedSlug(urlSegments, targetSlug);
