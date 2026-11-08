@@ -2,7 +2,7 @@
 	<NCard :title="t('databases')" style="background: none" :bordered="false">
 		<template #header-extra>
 			<NFlex justify="center" align="center">
-				<NSelect v-if="!isPinned && !isSingleRegion && regionOptions.length"
+				<NSelect v-if="!isPinned && regionOptions.length"
 					:value="selection?.code ?? null" :options="regionOptions" :placeholder="t('selectRegion')"
 					size="small" style="width: 180px; margin-inline-end: 8px;" @update:value="onRegionChange" />
 				<NPagination v-if="pagination.itemCount && pagination.pageCount > 1"
@@ -67,6 +67,9 @@
 				<NDescriptions :column="1" label-placement="left" size="small" bordered>
 					<NDescriptionsItem :label="t('adminUsername')">
 						{{ createdDatabase.adminUsername }}
+					</NDescriptionsItem>
+					<NDescriptionsItem :label="t('adminEmail')">
+						{{ createdDatabase.adminEmail }}
 					</NDescriptionsItem>
 					<NDescriptionsItem :label="t('databaseLoginUrlLabel')">
 						<NText code>{{ databaseLoginUrl }}</NText>
@@ -142,7 +145,6 @@ const {
 	catalog: regionCatalog,
 	selectableCatalog,
 	creatableCatalog,
-	isSingleRegion,
 	selection,
 	pinned,
 	isPinned,
@@ -270,6 +272,7 @@ const databaseLoginUrl = computed(() => {
 
 const DatabaseRef = ref<FormInst>();
 const DatabaseModal = ref<Database>({});
+const user = useState<User | null>("user", () => null);
 const databaseSchema = computed<Schema>(() => [
 	{
 		key: "slug",
@@ -322,6 +325,14 @@ const databaseSchema = computed<Schema>(() => [
 		inputProps: { inputProps: { autocomplete: "new-password" } },
 	},
 	{
+		key: "adminEmail",
+		type: "email",
+		required: true,
+		width: 2,
+		inputProps: { inputProps: { name: "admin-email", autocomplete: "email" } },
+		description: "databaseAdminEmailHint",
+	},
+	{
 		key: "primaryColor",
 		type: "string",
 		subType: "color",
@@ -361,7 +372,9 @@ const databaseSchema = computed<Schema>(() => [
 ]);
 
 function startDatabaseCreation() {
-	DatabaseModal.value = {}; // Reset/initialize model
+	DatabaseModal.value = {
+		adminEmail: user.value?.email ?? undefined,
+	}; // Reset/initialize model
 	showDatabaseCreation.value = true;
 }
 
@@ -375,6 +388,7 @@ async function createDatabase() {
 		if (errors) return window.$message.error(t("inputsAreInvalid"));
 		const bodyContent = toRaw(DatabaseModal.value) as Database & {
 			adminUsername?: string;
+			adminEmail?: string;
 			adminPassword?: string;
 			adminPasswordConfirm?: string;
 		};
@@ -410,6 +424,7 @@ async function createDatabase() {
 			createdDatabase.value = {
 				slug: data.result.slug as string,
 				adminUsername: bodyContent.adminUsername ?? "",
+				adminEmail: bodyContent.adminEmail ?? "",
 			};
 			window.$message.success(data.message);
 			showDatabaseCreation.value = false;

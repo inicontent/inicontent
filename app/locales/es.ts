@@ -237,6 +237,7 @@ export default {
 		regionNotAcceptingDatabases: "Esta región no acepta nuevas bases de datos",
 		createDatabase: "Crear base de datos",
 		adminUsername: "Nombre de usuario del administrador",
+		adminEmail: "Correo electrónico del administrador",
 		adminPassword: "Contraseña del administrador",
 		adminPasswordConfirm: "Confirmar contraseña del administrador",
 		databaseSlugHint:
@@ -245,6 +246,8 @@ export default {
 			"El nombre de usuario del primer administrador de esta base de datos. Es independiente de tu cuenta global.",
 		databaseAdminPasswordHint:
 			"Al menos 8 caracteres. Se almacena como hash; nunca se copia de tu cuenta global.",
+		databaseAdminEmailHint:
+			"El correo electrónico del primer administrador de esta base de datos.",
 		databaseCreatedTitle: "Base de datos creada",
 		databaseCreatedHint:
 			"Inicia sesión en la dirección propia de la base de datos para guardar estas credenciales en tu navegador.",

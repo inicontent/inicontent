@@ -530,6 +530,7 @@ export default {
 		createDatabase: "Create database",
 		create: "Create",
 		adminUsername: "Administrator username",
+		adminEmail: "Administrator email",
 		adminPassword: "Administrator password",
 		adminPasswordConfirm: "Confirm administrator password",
 		databaseSlugHint:
@@ -538,6 +539,8 @@ export default {
 			"The username for this database's first administrator. It is separate from your global account.",
 		databaseAdminPasswordHint:
 			"At least 8 characters. Stored as a hash; never copied from your global account.",
+		databaseAdminEmailHint:
+			"The email for this database's first administrator.",
 		databaseCreatedTitle: "Database created",
 		databaseCreatedHint:
 			"Sign in at the database's own address to save these credentials in your browser.",

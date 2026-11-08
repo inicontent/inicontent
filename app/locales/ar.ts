@@ -239,6 +239,7 @@ export default {
 		regionNotAcceptingDatabases: "هذه المنطقة لا تقبل قواعد بيانات جديدة",
 		createDatabase: "إنشاء قاعدة بيانات",
 		adminUsername: "اسم مستخدم المسؤول",
+		adminEmail: "البريد الإلكتروني للمسؤول",
 		adminPassword: "كلمة مرور المسؤول",
 		adminPasswordConfirm: "تأكيد كلمة مرور المسؤول",
 		databaseSlugHint:
@@ -247,6 +248,8 @@ export default {
 			"اسم المستخدم لأول مسؤول في قاعدة البيانات هذه. إنه منفصل عن حسابك العام.",
 		databaseAdminPasswordHint:
 			"8 أحرف على الأقل. يُخزَّن كتجزئة؛ ولا يُنسخ أبدًا من حسابك العام.",
+		databaseAdminEmailHint:
+			"البريد الإلكتروني لأول مسؤول في قاعدة البيانات هذه.",
 		databaseCreatedTitle: "تم إنشاء قاعدة البيانات",
 		databaseCreatedHint:
 			"سجّل الدخول من عنوان قاعدة البيانات نفسه لحفظ بيانات الاعتماد في متصفحك.",
