@@ -384,8 +384,9 @@ declare global {
 declare module "nuxt/schema" {
 	interface runtimeConfig {
 		public: {
+			/** Default/region-scoped API origin; retargeted to the selected region at runtime. */
 			apiBase: string;
-			/** Main-region control plane; equals `apiBase` unless a regional deployment points it at the central main region. */
+			/** Global control plane (auth, users, billing, region catalog); never follows the region picker. */
 			mainApiBase: string;
 			idOne: string;
 			database?: string;
