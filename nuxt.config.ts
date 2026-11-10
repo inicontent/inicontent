@@ -338,13 +338,21 @@ export default defineNuxtConfig({
 	compatibilityDate: "latest",
 	runtimeConfig: {
 		public: {
+			// Default API origin. A multi-region app boots at the main control
+			// plane and retargets region-scoped requests to the origin of the
+			// selected region (resolved from the catalog). A fixed-region app may
+			// point this straight at its own regional API instead.
 			apiBase: process.env.apiBase || "https://api.inicontent.com/",
-			// Main-region control plane. Equal to `apiBase` unless a regional
-			// deployment points it at the central main region explicitly.
+			// The global control plane: identities (auth/users), billing, the
+			// region catalog, compliance, monitoring and payments. It is
+			// deliberately NOT derived from `apiBase`: when `apiBase` is a
+			// *regional* origin, the app must still reach the one central main
+			// region, or it would look for a user, a subscription or the catalog
+			// that only exists there. One inicontent user can own databases in
+			// several regions, so this origin never follows the region picker.
+			// Override it for a local/self-hosted control plane.
 			mainApiBase:
-				process.env.INICONTENT_MAIN_API_URL ||
-				process.env.apiBase ||
-				"https://api.inicontent.com/",
+				process.env.INICONTENT_MAIN_API_URL || "https://api.inicontent.com/",
 			idOne: process.env.idOne || "d7b3d61a582e53ee29b5a1d02a436d55",
 			database:
 				process.env.INICONTENT_DATABASE || process.env.database || "inicontent",
