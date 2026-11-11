@@ -104,8 +104,10 @@ function purgeLegacyStorage(): void {
 /** Repeatable; never touches synced data or the quarantined legacy stores. */
 export async function purgeLegacyCopies(): Promise<void> {
 	if (typeof caches !== "undefined") {
-		for (const name of await caches.keys())
-			if (isLegacySensitiveCache(name)) await caches.delete(name);
+		const names = await caches.keys();
+		await Promise.all(
+			names.filter(isLegacySensitiveCache).map((name) => caches.delete(name)),
+		);
 	}
 	purgeLegacyStorage();
 }
@@ -115,8 +117,10 @@ export async function purgeLegacyCopies(): Promise<void> {
  * database-config copies. Never touches queued mutations. */
 export async function purgeBrowserCopies(): Promise<void> {
 	if (typeof caches !== "undefined") {
-		for (const name of await caches.keys())
-			if (isSensitiveCache(name)) await caches.delete(name);
+		const names = await caches.keys();
+		await Promise.all(
+			names.filter(isSensitiveCache).map((name) => caches.delete(name)),
+		);
 	}
 	if (typeof localStorage !== "undefined") {
 		for (let index = localStorage.length - 1; index >= 0; index--) {

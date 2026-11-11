@@ -75,7 +75,8 @@ export default defineNuxtPlugin({
 			});
 		}
 		try {
-			if (!import.meta.dev && worker) {
+			const ensureWorker = (async () => {
+				if (import.meta.dev || !worker) return;
 				const registration = await worker.register("/sw.js", {
 					scope: "/",
 					updateViaCache: "none",
@@ -86,8 +87,20 @@ export default defineNuxtPlugin({
 				registration.addEventListener("updatefound", () =>
 					registration.installing?.addEventListener("statechange", activate),
 				);
-				await registration.update();
+				await Promise.race([
+					registration.update(),
+					new Promise((_, reject) =>
+						setTimeout(
+							() => reject(new Error("worker-update-timeout")),
+							10_000,
+						),
+					),
+				]);
 				activate();
+				if (!registration.waiting && worker.controller) {
+					const current = await workerVersion(worker.controller);
+					if (current === BROWSER_CONTAINMENT_VERSION) return;
+				}
 				const deadline = Date.now() + 15_000;
 				while (
 					!worker.controller ||
@@ -96,13 +109,30 @@ export default defineNuxtPlugin({
 				) {
 					if (Date.now() > deadline) throw new Error("worker-update-required");
 					activate();
-					await new Promise((resolve) => setTimeout(resolve, 250));
+					await new Promise((resolve) => setTimeout(resolve, 100));
 				}
-			}
-			quarantined.value = await migrateBrowserPersistence(blocked);
+			})();
+			const quarantinedResult = (
+				await Promise.all([ensureWorker, migrateBrowserPersistence(blocked)])
+			)[1];
+			quarantined.value = quarantinedResult;
 			gate.remove();
 			syncPhi();
 		} catch {
+			try {
+				const registrations = await worker?.getRegistrations?.();
+				await Promise.all(
+					(registrations ?? []).map((registration) =>
+						registration.unregister(),
+					),
+				);
+				if (typeof caches !== "undefined") {
+					const names = await caches.keys();
+					await Promise.all(names.map((name) => caches.delete(name)));
+				}
+			} catch {
+				// Best-effort recovery.
+			}
 			gate.textContent =
 				"Browser update or storage cleanup could not finish. Close other app tabs, reconnect and reload. Unsynced work is preserved; do not clear site data.";
 			const button = document.createElement("button");
