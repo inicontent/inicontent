@@ -19,6 +19,7 @@
  */
 export function useTableUrl() {
 	const route = useRoute();
+	const tenantPath = useTenantDatabasePath();
 
 	const encodeSegment = (segment: string) => encodeURI(segment);
 
@@ -36,7 +37,11 @@ export function useTableUrl() {
 		const db =
 			database ??
 			(route.params.database ? String(route.params.database) : undefined);
-		const base = db ? `/${encodeSegment(db)}` : "";
+		const base = !db
+			? ""
+			: db === route.params.database
+				? databaseRoutePrefix(route)
+				: tenantPath(db);
 		return `${base}/admin/tables/${encodeSegment(slug)}${suffix}`;
 	}
 

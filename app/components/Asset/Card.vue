@@ -1108,7 +1108,7 @@ async function createFolder() {
 		await nextTick();
 		if (isAssetRoute)
 			await navigateTo(
-				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${currentPath.value}`,
+				`${databaseRoutePrefix(route)}/admin/tables/assets${currentPath.value}`,
 			);
 		folder.value = "";
 		showFolderInput.value = false;

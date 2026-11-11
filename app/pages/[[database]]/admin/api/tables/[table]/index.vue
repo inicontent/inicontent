@@ -41,9 +41,9 @@
 						{{ t('apiDocs.sessionNoticeDescription', { param: sessionParamName }) }}
 					</NP>
 					<NFlex wrap :size="12">
-						<NTag type="info" size="large">{{ sessionParamName }}</NTag>
+						<NTag type="info" size="large">Authorization</NTag>
 						<NText>{{ t('apiDocs.sessionAsQuery') }}</NText>
-						<NCode :code="`?${sessionParamName}=SESSION_ID`" language="bash" />
+						<NCode :code="`Bearer SESSION_ID`" language="bash" />
 					</NFlex>
 					<NP>{{ t('apiDocs.sessionAsCookie') }}</NP>
 					<NAlert type="success" :show-icon="false">
@@ -82,7 +82,6 @@
 							t('apiDocs.realtime.subscribeHint', {
 								database: dbSlug,
 								table: currentTable.slug,
-								param: sessionParamName,
 							})
 						}}
 					</NP>
@@ -206,7 +205,7 @@ const database = useState<Database>("database");
 const config = useRuntimeConfig();
 
 const basePath = computed(() =>
-	route.params.database ? `/${route.params.database}` : "",
+	databaseRoutePrefix(route),
 );
 const tablesListUrl = computed(() => `${basePath.value}/admin/api/tables`);
 
@@ -271,8 +270,7 @@ const realtimeSubscribeMessage = computed(
 	() => `{
   "type": "subscribe",
   "database": "${dbSlug.value}",
-  "table": "${currentTable.value?.slug ?? ""}",
-  "sessionId": "SESSION_ID"
+  "table": "${currentTable.value?.slug ?? ""}"
 }`,
 );
 

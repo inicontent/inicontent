@@ -64,10 +64,12 @@ jobs remain an unverified dependency and must be accounted for before quiescing.
 
 Paris is the **only available onboarding region**: display `Europe (Paris)`,
 provider `aws`, provider location `eu-west-3`, main role, EUR catalog metadata.
-Registry code `main` is the legacy-main lookup alias. The existing undeclared
-runtime region id remains **empty**: setting it to `main` would introduce
-`main--` hostname/SEO prefixes in paths that historically use bare tenant hosts.
-No database association or tenant hostname is rewritten.
+Registry code `main` is the legacy-main lookup alias and its public URL label is
+`eu` (`clinic.eu.inicontent.com`, `inicontent.com/eu/clinic`). The existing
+undeclared runtime region id remains **empty**; do not set it to `main`. Legacy
+bare tenant hosts (`clinic.inicontent.com`) and `<code>--<slug>` hosts remain
+valid during the migration. No database association or tenant hostname is
+rewritten.
 
 The main region owns global users, registry, pricing, billing inventory,
 subscriptions/invoices/payments, monitoring authority and compliance evidence.
@@ -149,8 +151,10 @@ security work already present at the merge base. Principal milestones:
 - Region onboarding enforced server-side, including unavailable/unregistered
   deployments, with audited denial; the UI hides undeployed choices and disables
   creation when the active region is closed.
-- An explicit `main` selection keeps bare tenant login hosts, not `main--…`;
-  the seeder refuses a prefix that would shadow an existing legacy hostname.
+- An explicit `main` selection uses the public `eu` label
+  (`clinic.eu.inicontent.com`) while legacy bare tenant login hosts continue to
+  resolve; the seeder refuses a prefix that would shadow an existing legacy
+  hostname.
 - Partial region PUT no longer blanks `name/code/apiUrl`; a seed refuses to
   rename an existing identity associated with the same API origin.
 - Provisioning obtains full metadata independent of requested response columns;

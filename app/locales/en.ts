@@ -125,9 +125,9 @@ export default {
 			availableMethods: "Available methods",
 			sessionNoticeTitle: "Session authentication",
 			sessionNoticeDescription:
-				"Provide your session id via the {param} parameter either as a query string value or a cookie.",
-			sessionAsQuery: "Send it as a query parameter:",
-			sessionAsCookie: "Or attach it as a cookie on every request.",
+				"Send your session id in the Authorization header (Bearer <sessionId>) or as the scoped HttpOnly cookie.",
+			sessionAsQuery: "Send it in the Authorization header:",
+			sessionAsCookie: "Or let the browser send the scoped HttpOnly cookie on every request.",
 			sessionAuthLinkPrefix: "Need a session id? Read",
 			viewAuthDocs: "the auth docs",
 			schemaTitle: "Schema fields",
@@ -174,7 +174,7 @@ export default {
 				endpointLabel: "WebSocket endpoint",
 				subscribeLabel: "Subscribe message",
 				subscribeHint:
-					"Send this message right after the connection opens. {database} and {table} are the slugs of your database and table; {param} carries your session id.",
+					"Send this message right after the connection opens. {database} and {table} are the slugs of your database and table. The server authorizes the subscription from the WebSocket upgrade request (Authorization header or scoped cookie), not from this message.",
 				eventsLabel: "Incoming events",
 				eventsHint:
 					"The server pushes data_change messages with an action of create, update, or delete. Lost connections are retried automatically.",
@@ -206,34 +206,34 @@ export default {
 			auth: {
 				title: "Authentication endpoints",
 				description:
-					"Use the following endpoints to create sessions and populate the {param} parameter.",
+					"Use the following endpoints to create sessions. Send the session id as Authorization: Bearer <sessionID> on subsequent requests.",
 				signinDescription:
-					"Authenticate an existing user by providing username and password. Returns a session id that must be sent on subsequent requests.",
+					"Authenticate an existing user by providing username and password. Returns a session id that must be sent as a Bearer token on subsequent requests.",
 				signinEndpoint: "/auth/signin",
 				usernameField: "username — unique identifier for the account",
 				passwordField:
 					"password — plain text password that will be hashed on the server",
 				signupDescription:
-					"Create a new user. The payload follows the users table schema shown below.",
-				signupEndpoint: "/auth/signup",
+					"Create a new user by creating an item in the users table. There is no /auth/signup route.",
+				signupEndpoint: "/users",
 				currentDescription:
-					"Returns the full user object for the session associated with your {param} token.",
+					"Returns the full user object for the session sent in the Authorization header or scoped cookie.",
 				currentEndpoint: "/auth/current",
 				signoutDescription:
-					"Invalidates the active session and clears the related cookie.",
+					"Invalidates the active session and clears the related cookie. Add ?allDevices=true to revoke every session for the user.",
 				signoutEndpoint: "/auth/signout",
 				resetRequestDescription:
 					"Request a password reset email. Sends a token to the registered email address.",
 				resetRequestEndpoint: "/auth/reset",
 				resetRequestEmailField: "email — the registered email address",
 				resetCompleteDescription:
-					"Set a new password using the token received via the password reset email.",
+					"Set a new password using the token received via the password reset email. Revokes outstanding sessions.",
 				resetCompleteEndpoint: "/auth/reset",
 				resetTokenField: "token — the reset token from the email link",
 				resetPasswordField: "password — new password (minimum 8 characters)",
 				signupSchemaTitle: "Users schema",
 				cookieHint:
-					"Successful signin stores the session id inside the {param} cookie. You can also send it manually if needed.",
+					"A successful sign-in also sets the HttpOnly {param} cookie. Agents should send Authorization: Bearer <sessionID> instead; query-string sessions are not accepted.",
 			},
 			publicApi: {
 				title: "Public API",

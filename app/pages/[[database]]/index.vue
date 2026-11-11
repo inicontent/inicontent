@@ -47,7 +47,7 @@ if (!page.value) {
 	await navigateTo(
 		database.value.slug === "inicontent"
 			? "/auth"
-			: `/${route.params.database ? `${route.params.database}/` : ""}auth`,
+			: `${databaseRoutePrefix(route)}/auth`,
 	);
 } else {
 	useSeoMeta({

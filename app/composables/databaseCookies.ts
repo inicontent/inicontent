@@ -18,8 +18,21 @@ function resolveDatabaseSlug(databaseSlug?: string) {
 }
 
 export function useScopedCookie<T>(key: string, databaseSlug?: string) {
-	return useCookie<T>(
-		`${resolveDatabaseSlug(databaseSlug)}_${key}`,
-		{ sameSite: true },
-	);
+	const slug = resolveDatabaseSlug(databaseSlug);
+	const { public: config } = useRuntimeConfig();
+	const { hostname } = useRequestURL();
+	const region = useState<RegionSelection | null>(REGION_STATE_KEY, () => null);
+	// The apex is shared by tenants with the same slug in different regions.
+	// Keep their session cookies separate while retaining existing EU sessions.
+	const code = region.value?.code;
+	const regional =
+		config.regionalDatabasePaths &&
+		(isPlatformApex(hostname) ||
+			(import.meta.dev && hostname === "localhost")) &&
+		slug !== "inicontent" &&
+		code &&
+		code !== "main";
+	return useCookie<T>(regional ? `${code}_${slug}_${key}` : `${slug}_${key}`, {
+		sameSite: true,
+	});
 }

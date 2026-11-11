@@ -312,9 +312,7 @@ async function handleSuccessfulLogin(
 	await navigateTo(
 		target
 			? target
-			: route.params.database
-				? `/${database.value.slug}/admin`
-				: "/admin",
+			: `${databaseRoutePrefix(route)}/admin`,
 	);
 }
 

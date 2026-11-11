@@ -9,11 +9,11 @@ test("billing stays on platform hosts for platform and tenant databases", () => 
 	);
 	assert.equal(
 		resolvePlatformFeatureHost("clinic"),
-		"https://clinic.inicontent.com",
+		"https://clinic.eu.inicontent.com",
 	);
 	assert.equal(
 		resolvePlatformFeatureHost("bücher"),
-		"https://xn--bcher-kva.inicontent.com",
+		"https://xn--bcher-kva.eu.inicontent.com",
 	);
 });
 
@@ -34,7 +34,7 @@ test("malformed slugs cannot redirect billing off platform", () => {
 test("a secondary region's platform host carries the region prefix", () => {
 	assert.equal(
 		resolvePlatformFeatureHost("clinic", "sa-1"),
-		"https://sa-1--clinic.inicontent.com",
+		"https://clinic.sa-1.inicontent.com",
 	);
 	// The platform database itself always lives on the main host.
 	assert.equal(

@@ -332,7 +332,7 @@ async function handleOnClickAsset(_e: MouseEvent, asset: Asset) {
 	if (asset.type === "dir") {
 		if (isAssetRoute)
 			return navigateTo(
-				`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/assets${path.value}/${asset.name}`,
+				`${databaseRoutePrefix(route)}/admin/tables/assets${path.value}/${asset.name}`,
 			);
 		path.value += `/${asset.name}`;
 		return;

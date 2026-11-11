@@ -54,7 +54,7 @@ watch(
 const saving = ref(false);
 
 function editPath(name: string) {
-	return `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/templates/${encodeURIComponent(name)}`;
+	return `${databaseRoutePrefix(route)}/admin/tables/templates/${encodeURIComponent(name)}`;
 }
 
 async function save() {

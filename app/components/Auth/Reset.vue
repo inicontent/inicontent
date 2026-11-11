@@ -33,7 +33,7 @@ const token = computed(() =>
 	typeof route.query.token === "string" ? route.query.token : "",
 );
 const authPath = computed(() =>
-	route.params.database ? `/${database.value.slug}/auth` : "/auth",
+	`${databaseRoutePrefix(route)}/auth`,
 );
 const passwordSchema = computed<Schema>(() => [
 	{

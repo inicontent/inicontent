@@ -236,13 +236,7 @@ export function useLoop(modelValue: Ref<Loop>) {
 	// resolved to the current locale's slug here and at render time.
 	const { pagesMap } = usePageLinks();
 	const route = useRoute();
-	const routeDatabasePrefix = computed(() => {
-		const value = route.params.database;
-		const slug = Array.isArray(value) ? value[0] : value;
-		return typeof slug === "string" && slug
-			? `/${slug.replace(/^\/+|\/+$/g, "")}`
-			: "";
-	});
+	const routeDatabasePrefix = computed(() => databaseRoutePrefix(route));
 
 	/**
 	 * Card button URL. When the block has a `link` to a page template

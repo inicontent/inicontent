@@ -127,9 +127,9 @@ export default {
 			availableMethods: "العمليات المتاحة",
 			sessionNoticeTitle: "اعتماد الجلسة",
 			sessionNoticeDescription:
-				"يمكنك تمرير معرف الجلسة عبر الوسيط {param} سواءً كمعلَمة استعلام أو كملف تعريف ارتباط.",
-			sessionAsQuery: "كمعلَمة في رابط الطلب:",
-			sessionAsCookie: "أو كملف تعريف ارتباط يُرسل مع كل طلب.",
+				"أرسل معرف الجلسة في ترويسة Authorization (Bearer <sessionId>) أو عبر الكوكي المقيّد HttpOnly.",
+			sessionAsQuery: "أرسله في ترويسة Authorization:",
+			sessionAsCookie: "أو دع المتصفح يرسل الكوكي المقيّد HttpOnly مع كل طلب.",
 			sessionAuthLinkPrefix: "للحصول على معرف جلسة، اطّلع على",
 			viewAuthDocs: "إرشادات المصادقة",
 			schemaTitle: "حقول المخطط",
@@ -156,7 +156,7 @@ export default {
 				endpointLabel: "نقطة اتصال WebSocket",
 				subscribeLabel: "رسالة الاشتراك",
 				subscribeHint:
-					"أرسل هذه الرسالة فور فتح الاتصال. {database} و {table} هما معرفا قاعدة البيانات والجدول، و {param} يحمل معرف جلستك.",
+					"أرسل هذه الرسالة فور فتح الاتصال. {database} و {table} هما معرفا قاعدة البيانات والجدول. يتحقق الخادم من الاشتراك من طلب ترقية WebSocket (ترويسة Authorization أو الكوكي المقيّد)، وليس من هذه الرسالة.",
 				eventsLabel: "الأحداث الواردة",
 				eventsHint:
 					"يرسل الخادم رسائل data_change بإجراء إنشاء أو تحديث أو حذف، ويُعاد الاتصال تلقائياً عند انقطاعه.",
@@ -164,19 +164,20 @@ export default {
 			auth: {
 				title: "نهايات المصادقة",
 				description:
-					"استخدم هذه النهايات لإنشاء الجلسات وتمرير الوسيط {param}.",
+					"استخدم هذه النهايات لإنشاء الجلسات. أرسل معرف الجلسة كـ Authorization: Bearer <sessionID> في الطلبات اللاحقة.",
 				signinDescription:
-					"يصدق مستخدماً موجوداً؛ تنشئ POST جلسة جديدة بينما تحدّث PUT الجلسة الحالية.",
+					"يصدق مستخدماً موجوداً؛ يعيد معرف جلسة يجب إرساله كـ Bearer في الطلبات اللاحقة.",
 				usernameField: "username — اسم المستخدم الفريد",
 				passwordField: "password — كلمة المرور (يتم تشفيرها على الخادم)",
 				signupDescription:
-					"ينشئ مستخدماً جديداً وفق مخطط جدول users الموضح أدناه.",
-				currentDescription: "يعيد بيانات المستخدم المرتبطة بالرمز {param}.",
+					"ينشئ مستخدماً جديداً عبر إنشاء عنصر في جدول users. لا يوجد مسار /auth/signup.",
+				currentDescription:
+					"يعيد كائن المستخدم الكامل لجلسة تُرسل في ترويسة Authorization أو الكوكي المقيّد.",
 				signoutDescription:
-					"ينهي الجلسة النشطة ويمسح ملف تعريف الارتباط المتعلق بها.",
+					"ينهي الجلسة النشطة ويمسح ملف تعريف الارتباط المتعلق بها. أضف ?allDevices=true لإبطال كل جلسات المستخدم.",
 				signupSchemaTitle: "مخطط جدول المستخدمين",
 				cookieHint:
-					"بعد تسجيل الدخول يُخزَّن معرف الجلسة في ملف تعريف الارتباط {param}، ويمكنك أيضاً تمريره يدوياً عند الحاجة.",
+					"تسجيل الدخول الناجح يضع أيضاً كوكي HttpOnly باسم {param}. يجب على الوكلاء إرسال Authorization: Bearer <sessionID> بدلاً منه؛ لا تُقبل الجلسات في سلسلة الاستعلام.",
 			},
 		},
 

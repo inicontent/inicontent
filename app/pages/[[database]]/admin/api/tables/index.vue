@@ -51,7 +51,7 @@ definePageMeta({
 const route = useRoute();
 const database = useState<Database>("database");
 const basePath = computed(() =>
-	route.params.database ? `/${route.params.database}` : "",
+	databaseRoutePrefix(route),
 );
 const authDocsUrl = computed(() => `${basePath.value}/admin/api/auth`);
 
@@ -75,7 +75,7 @@ const documentedTables = computed(() =>
 			return {
 				...tableItem,
 				methods,
-				url: `${route.params.database ? `/${route.params.database}` : ""}/admin/api/tables/${tableItem.slug}`,
+				url: `${databaseRoutePrefix(route)}/admin/api/tables/${tableItem.slug}`,
 			};
 		})
 		.filter(({ methods }) => methods.length > 0),

@@ -352,22 +352,25 @@ export function collectRegionOrigins(options: {
 	return [...origins];
 }
 
-// ─── Database hostnames ─────────────────────────────────────────────────────
-//
-// The region a database belongs to is encoded in its hostname so a bare
-// `*.inicontent.com` host can be resolved deterministically without a global
-// database locator:
-//
-//   main region      myclinic.inicontent.com
-//   secondary region sa-1--myclinic.inicontent.com
-//
-// `--` separates the region code from the slug; a single hyphen is an ordinary
-// slug character. A slug therefore never contains `--` (enforced at creation).
-
-/** Tenant platform hostnames live under this suffix. */
+// Public URLs call the Paris deployment "eu"; the region registry calls it "main".
+export const DEFAULT_REGION_CODE = "main";
+export const DEFAULT_REGION_LABEL = "eu";
 export const TENANT_HOSTNAME_SUFFIX = ".inicontent.com";
-/** Double hyphen separating an optional region code from the database slug. */
-export const REGION_HOST_SEPARATOR = "--";
+const REGION_HOST_SEPARATOR = "--"; // legacy hostname separator
+
+export function publicRegionLabel(region?: string | null): string | null {
+	const code = normalizeRegionCode(region ?? DEFAULT_REGION_CODE);
+	return code === DEFAULT_REGION_CODE ? DEFAULT_REGION_LABEL : code;
+}
+
+export function registryRegionCode(region: unknown): string | null {
+	const code = normalizeRegionCode(region);
+	return code === DEFAULT_REGION_LABEL ? DEFAULT_REGION_CODE : code;
+}
+
+export function isPlatformApex(hostname: string): boolean {
+	return hostname === "inicontent.com" || hostname === "www.inicontent.com";
+}
 
 /** A DNS label: 1..63 chars, alphanumeric plus hyphen, no leading/trailing hyphen. */
 const HOSTNAME_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
@@ -385,13 +388,7 @@ export interface DatabaseHostname {
 	slug: string;
 }
 
-/**
- * Parse `[<region>--]<slug>.inicontent.com` deterministically, or `null` when
- * the value is not a database hostname. Mirrors the API's parser: another
- * domain, a multi-label host, an empty/invalid slug, an invalid region code and
- * a label with more than one separator all resolve to `null` rather than a
- * guess.
- */
+/** Parse a regional tenant host or a legacy single-label tenant host. */
 export function parseDatabaseHostname(
 	hostname: unknown,
 ): DatabaseHostname | null {
@@ -402,9 +399,17 @@ export function parseDatabaseHostname(
 		return null;
 	if (!host.endsWith(TENANT_HOSTNAME_SUFFIX)) return null;
 
-	const label = host.slice(0, -TENANT_HOSTNAME_SUFFIX.length);
-	if (!label || label.includes(".") || !HOSTNAME_LABEL_PATTERN.test(label))
-		return null;
+	const [label, regionLabel, extra] = host
+		.slice(0, -TENANT_HOSTNAME_SUFFIX.length)
+		.split(".");
+	if (extra !== undefined || !HOSTNAME_LABEL_PATTERN.test(label)) return null;
+	if (regionLabel !== undefined) {
+		const region = registryRegionCode(regionLabel);
+		if (!region || ["api", "s3"].includes(region)) return null;
+		if (label.includes(REGION_HOST_SEPARATOR) && !label.startsWith("xn--"))
+			return null;
+		return { region, slug: label };
+	}
 
 	// An ACE (punycode) label starts with `xn--`: that `--` is the IDNA prefix,
 	// not a region separator, so such a label carries no region.
@@ -445,20 +450,7 @@ function asciiSlugLabel(value: string): string | null {
 	}
 }
 
-/**
- * The platform hostname for a database slug: `<region>--<slug>.inicontent.com`
- * for a secondary region, `<slug>.inicontent.com` for the main/default one.
- * Returns `null` for a slug that cannot form a valid host, so a caller never
- * navigates to a malformed one.
- *
- * An internationalized slug is IDNA-encoded per label, so the region separator
- * is encoded **outside** the ACE form: `مرحبا` in `sa-1` is reached at
- * `sa-1--xn--mgbbop3h.inicontent.com`, and on the main region at
- * `xn--mgbbop3h.inicontent.com`. The region therefore lives in the hostname for
- * every supported slug, not only the ASCII ones; `?region=` stays an
- * independent cross-check rather than the only routing signal. A pre-existing
- * bare ACE host keeps resolving (the parser reads it as the main region).
- */
+/** Build the canonical tenant hostname, encoding the slug as its own DNS label. */
 export function databaseHostname(
 	slug: unknown,
 	region?: string | null,
@@ -467,35 +459,14 @@ export function databaseHostname(
 	const trimmed = slug.trim();
 	if (!trimmed || trimmed.includes(REGION_HOST_SEPARATOR)) return null;
 
-	const regionCode = normalizeRegionCode(region);
-	if (region && !regionCode) return null;
-
+	const regionLabel = publicRegionLabel(region);
 	const slugLabel = asciiSlugLabel(trimmed);
-	if (!slugLabel) return null;
-
-	// `main` is the registry's alias for the historical default deployment;
-	// selecting Paris must not turn an existing bare tenant host into main--….
-	const hostnameRegion = regionCode === "main" ? "" : regionCode;
-	const label = hostnameRegion
-		? `${hostnameRegion}${REGION_HOST_SEPARATOR}${slugLabel}`
-		: slugLabel;
-	if (!HOSTNAME_LABEL_PATTERN.test(label)) return null;
-	return `${label}${TENANT_HOSTNAME_SUFFIX}`;
+	if (!slugLabel || !regionLabel || ["api", "s3"].includes(regionLabel))
+		return null;
+	return `${slugLabel}.${regionLabel}${TENANT_HOSTNAME_SUFFIX}`;
 }
 
-/**
- * The absolute sign-in URL for a database: `/login` **on the database's own
- * hostname**, carrying the region as an explicit `?region=<code>`.
- *
- * This is why the credentials a password manager offers to save are scoped to
- * the database (`myclinic.inicontent.com`, or `sa-1--myclinic…`), never to the
- * SaaS administration host (`inicontent.com`) where the database was created —
- * a browser only associates saved credentials with the origin the form was
- * submitted from. The region prefix and the parameter both encode the region so
- * either one alone is enough to route.
- *
- * Returns `null` for a slug that cannot form a valid host.
- */
+/** The password manager should associate credentials with the tenant's origin. */
 export function resolveDatabaseLoginUrl(
 	slug: unknown,
 	region?: string | null,

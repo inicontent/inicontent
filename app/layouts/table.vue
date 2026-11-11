@@ -54,7 +54,7 @@ const user = useState<User>("user");
 const table = useState<Table>("table");
 const dashboards = ref<Dashboard[]>([]);
 const adminBase = computed(() =>
-	route.params.database ? `/${route.params.database}` : "",
+	databaseRoutePrefix(route),
 );
 const { tableUrl } = useTableUrl();
 const defaultValue = computed(() => {

@@ -19,15 +19,10 @@ export function usePageLinks() {
 	const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 	const cacheKey = computed(
-		() => `${database.value?.slug ?? ""}:${Language.value ?? "en"}`,
+		() =>
+			`${useApiBase()}:${database.value?.slug ?? ""}:${Language.value ?? "en"}`,
 	);
-	const routeDatabasePrefix = computed(() => {
-		const value = route.params.database;
-		const slug = Array.isArray(value) ? value[0] : value;
-		return typeof slug === "string" && slug
-			? `/${slug.replace(/^\/+|\/+$/g, "")}`
-			: "";
-	});
+	const routeDatabasePrefix = computed(() => databaseRoutePrefix(route));
 
 	function withRouteDatabasePrefix(slug: string): string {
 		const path = `/${String(slug).replace(/^\/+/, "")}`;

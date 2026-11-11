@@ -2,7 +2,7 @@
     <header :class="{ 'header--sticky': isSticky }" class="header">
         <nav class="nav">
             <div v-if="modelValue?.logo || modelValue?.icon || modelValue?.logoType" class="logo-col">
-                <a :href="$route.params.database ? `/${$route.params.database}/` : '/'" class="logo-link">
+                <a :href="`${databaseRoutePrefix($route)}/`" class="logo-link">
                     <img v-if="modelValue?.icon || modelValue?.logo"
                         :src="modelValue?.logo ? modelValue?.logo?.publicURL : modelValue?.icon?.publicURL" alt="logo"
                         class="logo-img" />

@@ -13,6 +13,6 @@ definePageMeta({
 const route = useRoute();
 
 await navigateTo(
-	`${route.params.database ? `/${route.params.database}` : ""}/admin/api/tables`,
+	`${databaseRoutePrefix(route)}/admin/api/tables`,
 );
 </script>

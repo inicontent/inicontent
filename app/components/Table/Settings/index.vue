@@ -378,7 +378,7 @@ async function deleteTable() {
 		setTimeout(
 			async () =>
 				await navigateTo(
-					`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables`,
+					`${databaseRoutePrefix(route)}/admin/tables`,
 				),
 			800,
 		);

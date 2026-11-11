@@ -51,7 +51,7 @@ const route = useRoute();
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 const authPath = computed(
-	() => `${route.params.database ? `/${route.params.database}` : ""}/auth`,
+	() => `${databaseRoutePrefix(route)}/auth`,
 );
 
 const shouldRedirect = await useAsyncData("api-doc-auth", async () => {
@@ -75,7 +75,7 @@ const shouldRedirect = await useAsyncData("api-doc-auth", async () => {
 
 if (shouldRedirect.data.value) {
 	await navigateTo(
-		`${route.params.database ? `/${route.params.database}` : ""}/admin/api`,
+		`${databaseRoutePrefix(route)}/admin/api`,
 	);
 }
 

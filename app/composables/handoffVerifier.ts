@@ -1,3 +1,5 @@
+import { isPlatformApex, parseDatabaseHostname } from "./region.ts";
+
 /**
  * B2 — destination-initiated PKCE for cross-origin session handoff.
  *
@@ -51,7 +53,6 @@ export const HANDOFF_VERIFIER_TTL_MS = 5 * 60 * 1000;
 
 /** SHA-256 as base64url (43 chars, no padding) — the shape of a challenge. */
 const DIGEST_RE = /^[A-Za-z0-9_-]{43}$/;
-const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 const STORAGE_PREFIX = "inicontent:handoff:v:";
 
 /**
@@ -87,9 +88,7 @@ export function isPlatformHandoffOrigin(origin: string): boolean {
 	// Reject anything that is not a bare origin (path/query/hash/credentials/port).
 	if (url.port || url.origin !== origin) return false;
 	const host = url.hostname;
-	if (host === "inicontent.com" || host === "www.inicontent.com") return true;
-	if (!host.endsWith(".inicontent.com")) return false;
-	return SLUG_RE.test(host.slice(0, -".inicontent.com".length));
+	return isPlatformApex(host) || !!parseDatabaseHostname(host);
 }
 
 /** base64url without padding, matching the API's `digest("base64url")`. */

@@ -21,6 +21,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	if (sessionID.value) query[`${currentDatabaseSlug}_sid`] = sessionID.value;
 
+	const { hostname } = useRequestURL();
+	const region = useState<RegionSelection | null>(REGION_STATE_KEY);
+	// Legacy local configuration keys contain the slug only. Never let a
+	// secondary tenant read a same-slug database's cached EU configuration.
+	const isSaasPath =
+		config.public.regionalDatabasePaths &&
+		(isPlatformApex(hostname) || (import.meta.dev && hostname === "localhost"));
+	const useLegacyCache =
+		!isSaasPath || !region.value || region.value.code === DEFAULT_REGION_CODE;
+	if (
+		isSaasPath &&
+		database.value &&
+		database.value.slug !== currentDatabaseSlug
+	) {
+		clearNuxtState([...REGIONAL_STATE_KEYS]);
+	}
+
 	if (!database.value) {
 		try {
 			database.value = (
@@ -37,7 +54,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			// boot offline from local storage even when the service worker's
 			// config cache is missing or evicted. PHI databases are excluded
 			// inside the helper.
-			saveDatabaseConfigLocally(currentDatabaseSlug, database.value);
+			if (useLegacyCache)
+				saveDatabaseConfigLocally(currentDatabaseSlug, database.value);
 		} catch (error) {
 			// Offline (or a hung network). Prefer the locally-persisted copy of
 			// the database config — with it the app boots normally with the real
@@ -52,7 +70,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			// register the error via `showError()` so `payload.error` is set
 			// *before* mount (NuxtRoot then swaps in error.vue), and return
 			// `true` so the navigation itself completes and mounting proceeds.
-			const localConfig = loadDatabaseConfigLocally(currentDatabaseSlug);
+			const localConfig = useLegacyCache
+				? loadDatabaseConfigLocally(currentDatabaseSlug)
+				: undefined;
 			if (localConfig) {
 				database.value = localConfig;
 			} else {

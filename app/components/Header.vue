@@ -2,7 +2,7 @@
     <NPageHeader>
         <template #avatar>
             <NuxtLink v-if="String($route.matched[0]?.name).startsWith('database')"
-                :to="`/${$route.params.database ?? ''}`">
+                :to="databaseRoutePrefix($route) || '/'">
                 <NTag strong round :bordered="false" style="cursor:pointer;font-weight:600"
                     :style="ThemeConfig.revert && Theme === 'dark' ? 'color:#000;background-color:#fff' : ''">
                     <template #avatar>
@@ -159,28 +159,21 @@ const tableColor = (table: Table) => {
 	return `hsl(${(360 / count) * index} 70% 52%)`;
 };
 
-function breadCrumbItemLink(index: number) {
-	const breadcrumbSegments = breadcrumbArray.value.slice(0, index + 1);
-	if (hideDatabaseInBreadcrumb.value && databaseParam.value)
-		return `/${databaseParam.value}/${breadcrumbSegments.join("/")}`;
-	return `/${breadcrumbSegments.join("/")}`;
-}
-const routeSegments = computed(() => route.path.split("/").filter(Boolean));
-const databaseParam = computed(() => {
-	const param = route.params.database;
-	return typeof param === "string" ? param : undefined;
-});
+const databasePrefix = computed(() => databaseRoutePrefix(route));
+const adminPath = computed(() => `${databasePrefix.value}/admin`);
 const hideDatabaseInBreadcrumb = computed(
-	() =>
-		!!databaseParam.value &&
-		routeSegments.value[0] === databaseParam.value &&
-		routeSegments.value[1] === "admin",
+	() => !!databasePrefix.value &&
+		(route.path === adminPath.value || route.path.startsWith(`${adminPath.value}/`)),
 );
 const breadcrumbArray = computed(() =>
-	hideDatabaseInBreadcrumb.value
-		? routeSegments.value.slice(1)
-		: routeSegments.value,
+	(hideDatabaseInBreadcrumb.value ? route.path.slice(databasePrefix.value.length) : route.path)
+		.split("/").filter(Boolean),
 );
+
+function breadCrumbItemLink(index: number) {
+	const path = breadcrumbArray.value.slice(0, index + 1).join("/");
+	return `${hideDatabaseInBreadcrumb.value ? databasePrefix.value : ""}/${path}`;
+}
 const table = useState<Table>("table");
 const currentItem = useState<Item>("currentItem");
 const currentDashboard = useState<Dashboard | null>("currentDashboard");
@@ -333,7 +326,7 @@ async function logout() {
 	}
 
 	await navigateTo(
-		`${route.params.database ? `/${route.params.database}` : ""}/auth`,
+		`${databaseRoutePrefix(route)}/auth`,
 	);
 	if (!signedOutRemotely) window.$message?.warning(t("logoutLocalOnly"));
 	window.dispatchEvent(new Event("inicontent-session-ended"));
@@ -343,7 +336,7 @@ async function onSelectUserDropdown(v: string) {
 	switch (v) {
 		case "api":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/api`,
+				`${databaseRoutePrefix(route)}/admin/api`,
 			);
 			break;
 		case "edit":
@@ -356,7 +349,7 @@ async function onSelectUserDropdown(v: string) {
 			break;
 		case "settings":
 			navigateTo(
-				`${route.params.database ? `/${route.params.database}` : ""}/admin/settings`,
+				`${databaseRoutePrefix(route)}/admin/settings`,
 			);
 			break;
 		case "theme":

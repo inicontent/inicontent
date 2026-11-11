@@ -66,7 +66,7 @@ test("platformUrl starts a destination-initiated handoff from a platform origin"
 	const value = await platformUrl("billing");
 	const url = new URL(value);
 
-	assert.equal(url.origin, "https://alpha.inicontent.com");
+	assert.equal(url.origin, "https://alpha.eu.inicontent.com");
 	assert.equal(url.pathname, "/admin/billing");
 	// Only the source's return URL travels out; no secret and no code yet.
 	assert.equal(
@@ -77,13 +77,13 @@ test("platformUrl starts a destination-initiated handoff from a platform origin"
 });
 
 test("platformUrl stays on the bare destination when it is the same origin", async () => {
-	location.origin = "https://alpha.inicontent.com";
-	location.hostname = "alpha.inicontent.com";
-	location.href = "https://alpha.inicontent.com/alpha/admin/settings";
+	location.origin = "https://alpha.eu.inicontent.com";
+	location.hostname = "alpha.eu.inicontent.com";
+	location.href = "https://alpha.eu.inicontent.com/alpha/admin/settings";
 
 	const { platformUrl } = usePlatformRedirect();
 	const url = await platformUrl("billing");
-	assert.equal(url, "https://alpha.inicontent.com/admin/billing");
+	assert.equal(url, "https://alpha.eu.inicontent.com/admin/billing");
 });
 
 test("platformUrl does not attempt a handoff from a custom-domain source", async () => {
@@ -96,7 +96,7 @@ test("platformUrl does not attempt a handoff from a custom-domain source", async
 		const url = await platformUrl("billing");
 		// No handshake is started: the destination must never redirect back to a
 		// non-platform origin, so the user signs in at the platform host.
-		assert.equal(url, "https://alpha.inicontent.com/admin/billing");
+		assert.equal(url, "https://alpha.eu.inicontent.com/admin/billing");
 	} finally {
 		location.origin = "https://inicontent.com";
 		location.hostname = "inicontent.com";
@@ -108,7 +108,7 @@ test("isPlatformHandoffOrigin accepts platform hosts and rejects everything else
 	for (const origin of [
 		"https://inicontent.com",
 		"https://www.inicontent.com",
-		"https://alpha.inicontent.com",
+		"https://alpha.eu.inicontent.com",
 		"https://app.inicontent.com",
 		"https://xn--bcher-kva.inicontent.com",
 	]) {
@@ -142,8 +142,8 @@ test("a verifier is stored, read back and cleared by state", () => {
 	globals.sessionStorage = sessionStore;
 	const record = {
 		verifier: "v".repeat(43),
-		destination: "https://alpha.inicontent.com",
-		to: "https://alpha.inicontent.com/admin/billing",
+		destination: "https://alpha.eu.inicontent.com",
+		to: "https://alpha.eu.inicontent.com/admin/billing",
 	};
 	handoff.storeHandoffVerifier("state-1", record);
 	assert.deepEqual(
@@ -159,8 +159,8 @@ test("a verifier past its TTL is treated as absent and swept", () => {
 	globals.sessionStorage = sessionStore;
 	handoff.storeHandoffVerifier("state-2", {
 		verifier: "v".repeat(43),
-		destination: "https://alpha.inicontent.com",
-		to: "https://alpha.inicontent.com/admin/billing",
+		destination: "https://alpha.eu.inicontent.com",
+		to: "https://alpha.eu.inicontent.com/admin/billing",
 	});
 
 	const now = Date.now;

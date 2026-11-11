@@ -101,7 +101,7 @@ const methodEntries = [
 ]
 
 function buildMethodChildren(currentTable: Table) {
-    const baseUrl = `${route.params.database ? `/${route.params.database}` : ""}/admin/api/tables/${currentTable.slug}`
+    const baseUrl = `${databaseRoutePrefix(route)}/admin/api/tables/${currentTable.slug}`
     return methodEntries
         .filter((entry) => entry.show(currentTable.allowedMethods))
         .map((entry) => ({
@@ -125,7 +125,7 @@ function buildMenuOption(currentTable: Table): MenuOption {
             h(
                 NuxtLink,
                 {
-                    to: `${route.params.database ? `/${route.params.database}` : ""}/admin/api/tables/${currentTable.slug}`,
+                    to: `${databaseRoutePrefix(route)}/admin/api/tables/${currentTable.slug}`,
                 },
                 { default: () => t(currentTable.slug) },
             ),

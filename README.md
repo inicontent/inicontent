@@ -66,14 +66,33 @@ contract.
 
 ## REST API & authentication (short version)
 
-Every database gets a public REST API at `https://api.inicontent.com/{databaseSlug}`:
+Every database gets a public REST API at the API origin of the region that hosts
+it. The main region (Europe / Paris) is `https://api.inicontent.com/`:
 
-- `PUT {db}/auth/signin` with `{ "username": ..., "password": ... }` → returns a `sessionID`;
-  pass it on every request as the `{db}_sid` query param.
+- `PUT {db}/auth/signin` with `{ "username": ..., "password": ... }` → returns a `sessionID`.
+  Send it on every request as `Authorization: Bearer <sessionID>` (or rely on the
+  scoped `{db}_sid` `HttpOnly` cookie).
+- **Session IDs are never accepted in the query string.** Do not use
+  `?{db}_sid=` or `?inicontent_sid=`, and never log or commit a SID.
 - Table data: `GET/POST/PUT/DELETE {db}/{table}` — list pagination/projection live in the
   Inison-stringified `options` query param and filters in `where`.
 - Structure: `GET/POST/PUT/DELETE inicontent/databases/{db}[/{table}]` for metadata, schemas,
   flows (`onRequest`/`onResponse`), and table CRUD.
+- Platform identity, billing, the region catalog and `inicontent_sid` live on the
+  **main control plane** (`INICONTENT_MAIN_API_URL`). A secondary region uses a
+  short-lived regional session instead.
+
+Tenant browser URLs are regional. Paris (`main` in the registry) is published as
+`eu`:
+
+```text
+https://<databaseSlug>.eu.inicontent.com/…
+https://inicontent.com/eu/<databaseSlug>/…
+```
+
+Legacy `<databaseSlug>.inicontent.com` and `<region>--<slug>.inicontent.com`
+hosts keep resolving during the migration. Sign in at the tenant's own origin,
+for example `https://<databaseSlug>.eu.inicontent.com/login?region=main`.
 
 ## Usage
 
@@ -123,13 +142,23 @@ pnpm install
 
 ## Environment Variables
 
-| Variable   | Required | Default                       | Description                                    |
-|------------|----------|--------------------------------|------------------------------------------------|
-| `database` | No       | `inicontent`                  | Database slug the admin panel targets directly. |
-| `apiBase`  | No       | `https://api.inicontent.com/` | Base URL for the Inicontent API.                |
-| `idOne`    | No       | (built-in default)            | Public identifier used by the API client.       |
+| Variable                 | Required | Default                       | Description                                    |
+|--------------------------|----------|--------------------------------|------------------------------------------------|
+| `database`               | No       | `inicontent`                  | Database slug the admin panel targets directly. |
+| `apiBase`                | No       | `https://api.inicontent.com/` | Default origin for region-scoped requests (tenant databases, tables, assets). |
+| `INICONTENT_MAIN_API_URL`| No       | `https://api.inicontent.com/` | Global control plane: identity/auth, users, billing, compliance and the region catalog. Never follows the region picker. |
+| `INICONTENT_REGION`      | No       | (empty)                       | Pin this deployment to one region code; empty means multi-region. |
+| `INICONTENT_DATABASE`    | No       | —                             | Alias for `database` used by layer consumers. |
+| `idOne`                  | No       | (built-in default)            | Public identifier used by the API client.       |
 
 Copy these into a local `.env` file as needed; none are required to start the dev server.
+
+Regional path routing (`https://inicontent.com/{region}/{database}/…`) is opt-in
+per layer consumer through `runtimeConfig.public.regionalDatabasePaths`. This
+repo defaults to root-relative tenant paths; consumers that enable regional paths
+render region-prefixed routes and scoped cookies. Build tenant links with
+`databaseRoutePrefix()` / `useTenantDatabasePath()` instead of hardcoding
+`/${slug}`.
 
 ## Setup
 

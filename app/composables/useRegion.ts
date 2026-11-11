@@ -12,8 +12,9 @@
 import {
 	isSingleRegion as catalogHasSingleRegion,
 	creatableRegions,
+	DEFAULT_REGION_CODE,
 	normalizePinnedRegion,
-	normalizeRegionCode,
+	registryRegionCode,
 	parseRegionSelection,
 	REGION_CATALOG_KEY,
 	REGION_COOKIE,
@@ -74,6 +75,7 @@ export function useRegion() {
 	/** Reset the region-scoped caches. Called on every real region switch. */
 	function resetRegionState() {
 		clearNuxtState([...REGIONAL_STATE_KEYS]);
+		clearNuxtData();
 	}
 
 	/**
@@ -121,9 +123,11 @@ export function useRegion() {
 		const query = withTrailingSlash(mainBase);
 		const response = await $fetch<apiResponse<RegionOption[]>>(
 			`${query}inicontent/regions`,
-			{ credentials: "include", cache: "no-store" },
+			{ credentials: "omit", cache: "no-store", timeout: 4000, retry: 0 },
 		);
-		catalog.value = (Array.isArray(response?.result) ? response.result : [])
+		if (!Array.isArray(response?.result))
+			throw new Error("Invalid region catalog");
+		catalog.value = response.result
 			.map(toRegionOption)
 			.filter((option): option is RegionOption => option !== null);
 		return catalog.value;
@@ -132,12 +136,8 @@ export function useRegion() {
 	/**
 	 * Resolve the request base before the first navigation.
 	 *
-	 * `requested` is the raw `?region=` value from the current URL (or `null`);
-	 * `hostRegion` is the region encoded in the hostname (`sa-1--clinic`), if
-	 * any. The query parameter is **strict** — an unknown code is an error — and
-	 * the hostname is **permissive**: a prefix that names no catalog region is a
-	 * legacy slug that merely contains `--`, not an explicit region, so it
-	 * falls back to the persisted selection instead of erroring.
+	 * The query and the region encoded in a tenant host or path must resolve
+	 * against the registry before any database request is made.
 	 *
 	 * The two must agree. When an explicit query parameter and the hostname name
 	 * different regions, resolution fails closed (`regionMismatch`) rather than
@@ -154,16 +154,17 @@ export function useRegion() {
 	async function bootstrap(
 		requested?: string | null,
 		hostRegion?: string | null,
+		useLoadedCatalog = false,
 	) {
 		const raw = typeof requested === "string" ? requested.trim() : "";
-		const queryCode = normalizeRegionCode(raw);
+		const queryCode = registryRegionCode(raw);
 		if (raw && !queryCode) {
 			regionError.value = "regionNotFound";
 			return;
 		}
 
 		const rawHost = typeof hostRegion === "string" ? hostRegion.trim() : "";
-		const hostCode = normalizeRegionCode(rawHost);
+		const hostCode = registryRegionCode(rawHost);
 		if (rawHost && !hostCode) {
 			regionError.value = "regionNotFound";
 			return;
@@ -174,8 +175,6 @@ export function useRegion() {
 		}
 
 		const code = queryCode ?? hostCode;
-		// Only the query parameter is a strict, explicit region request.
-		const explicit = !!queryCode;
 
 		if (pinned && code && code !== pinned) {
 			regionError.value = "regionMismatch";
@@ -184,7 +183,7 @@ export function useRegion() {
 		if (!pinned && !selection.value && !code && !regionError.value) return;
 
 		try {
-			await loadRegions();
+			if (!useLoadedCatalog || !catalog.value.length) await loadRegions();
 		} catch {
 			// A pinned deployment or an explicit deep link must not proceed on a
 			// stale/absent catalog; a plain persisted selection fails soft (the
@@ -207,6 +206,17 @@ export function useRegion() {
 		}
 
 		if (code) {
+			// An unseeded production catalog still has a configured main API.
+			// Resolve existing EU tenants without adding an onboarding option.
+			if (
+				config.public.regionalDatabasePaths &&
+				code === DEFAULT_REGION_CODE &&
+				catalog.value.length === 0
+			) {
+				const fallback = await select({ code, apiUrl: mainBase });
+				if (!fallback) regionError.value = "regionUnavailable";
+				return;
+			}
 			const option = catalog.value.find((region) => region.code === code);
 			if (option) {
 				if (option.enabled === false) {
@@ -217,12 +227,8 @@ export function useRegion() {
 				await select(option);
 				return;
 			}
-			// A host-derived code that names no catalog region is a legacy slug,
-			// not an explicit region: fall through to the persisted selection.
-			if (explicit) {
-				regionError.value = "regionNotFound";
-				return;
-			}
+			regionError.value = "regionNotFound";
+			return;
 		}
 
 		await select(

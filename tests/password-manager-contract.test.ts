@@ -46,12 +46,12 @@ test("the create form offers the new-password contract", () => {
 
 test("the database login alias resolves to the real sign-in page", () => {
 	const login = source("app/pages/login.vue");
-	assert.match(login, /navigateTo\(\{[\s\S]*path:\s*"\/auth"/);
+	assert.match(login, /definePageMeta\(\{[\s\S]*middleware:[\s\S]*path:\s*`\$\{databaseRoutePrefix\(to\)\}\/auth`/);
 });
 
 test("the post-create sign-in link is on the database host, not the admin host", () => {
 	// A browser associates saved credentials with the origin the form was
-	// submitted from, so the link must point at `[region--]slug.inicontent.com`,
+	// submitted from, so the link must point at `slug.region.inicontent.com`,
 	// never at this administration host. The URL builder is pure and covered by
 	// `database-hostname.test.ts`; this pins that the form uses it.
 	const dashboard = source("app/components/Dashboard.vue");

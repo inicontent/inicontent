@@ -5,8 +5,8 @@
 				<NButtonGroup>
 					<PreviewDropdown showHide />
 					<NButton v-if="table.allowedMethods?.includes('c')" round :disabled="!table.schema" tag="a"
-						:href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`"
-						@click.prevent="navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`)">
+						:href="`${databaseRoutePrefix($route)}/admin/tables/${table.slug}/new`"
+						@click.prevent="navigateTo(`${databaseRoutePrefix($route)}/admin/tables/${table.slug}/new`)">
 						<template #icon>
 							<NIcon>
 								<Icon name="tabler:plus" />
@@ -39,7 +39,7 @@
 									</template>
 									<NButtonGroup vertical>
 										<NButton tertiary type="primary" tag="a"
-											:href="`${$route.params.database ? `/${database.slug}` : ''}${page.slug}`"
+											:href="`${databaseRoutePrefix($route)}${page.slug}`"
 											target="_blank">
 											<template #icon>
 												<NIcon>
@@ -49,8 +49,8 @@
 											{{ t('view') }}
 										</NButton>
 										<NButton v-if="table.allowedMethods?.includes('u')" tertiary type="info" tag="a"
-											:href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/pages/${page.slug}`"
-											@click.stop.prevent="navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/pages/${page.slug}`)">
+											:href="`${databaseRoutePrefix($route)}/admin/tables/pages/${page.slug}`"
+											@click.stop.prevent="navigateTo(`${databaseRoutePrefix($route)}/admin/tables/pages/${page.slug}`)">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:pencil" />
@@ -108,13 +108,14 @@ definePageMeta({
 
 const tableRef = ref<TableRef>();
 
+const route = useRoute();
 const database = useState<Database>("database");
 const table = useState<Table>("table");
 
 const clonePageTarget = ref<Page | null>(null);
 
 function onCloned(page: Page) {
-	const base = `/${database.value.slug}/admin/tables/pages/${page.slug}`;
+	const base = `${databaseRoutePrefix(route)}/admin/tables/pages/${page.slug}`;
 	navigateTo(base);
 }
 

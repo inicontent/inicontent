@@ -346,6 +346,7 @@ export default defineNuxtConfig({
 				process.env.INICONTENT_DATABASE || process.env.database || "inicontent",
 			// The region this deployment is pinned to (`""` = multi-region).
 			region: process.env.INICONTENT_REGION || "",
+			regionalDatabasePaths: false,
 		},
 	},
 });

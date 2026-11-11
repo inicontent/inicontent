@@ -91,6 +91,7 @@ const config = useRuntimeConfig();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const user = useState<User>("user");
 const route = useRoute();
+const tenantPath = useTenantDatabasePath();
 const database = useState<Database>("database");
 
 const Language = useScopedCookie<LanguagesType>(
@@ -169,7 +170,10 @@ const fetchDashboards = async () => {
 onMounted(fetchDashboards);
 
 function getDashboardUrl(id?: string | number) {
-	return `/${route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin") ? `${modelValue.value.slug}/` : ""}admin/dashboards/${id}`;
+	const base = route.params.database || (database.value?.slug === "inicontent" && route.path === "/admin")
+		? tenantPath(modelValue.value.slug)
+		: "";
+	return `${base}/admin/dashboards/${id}`;
 }
 
 const createDashboard = async () => {

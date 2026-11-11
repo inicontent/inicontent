@@ -128,9 +128,9 @@ export default {
 			availableMethods: "Méthodes disponibles",
 			sessionNoticeTitle: "Authentification par session",
 			sessionNoticeDescription:
-				"Fournissez l'identifiant de session via le paramètre {param} dans la requête ou en cookie.",
-			sessionAsQuery: "Envoyez-le comme paramètre de requête :",
-			sessionAsCookie: "Ou envoyez-le comme cookie sur chaque requête.",
+				"Envoyez l'identifiant de session dans l'en-tête Authorization (Bearer <sessionId>) ou avec le cookie HttpOnly à portée limitée.",
+			sessionAsQuery: "Envoyez-le dans l'en-tête Authorization :",
+			sessionAsCookie: "Ou laissez le navigateur envoyer le cookie HttpOnly à portée limitée sur chaque requête.",
 			sessionAuthLinkPrefix: "Besoin d'un ID de session ? Consultez",
 			viewAuthDocs: "la documentation d'authentification",
 			schemaTitle: "Champs du schéma",
@@ -158,7 +158,7 @@ export default {
 				endpointLabel: "Point de terminaison WebSocket",
 				subscribeLabel: "Message d'abonnement",
 				subscribeHint:
-					"Envoyez ce message juste après l'ouverture de la connexion. {database} et {table} sont les identifiants de votre base et de votre table ; {param} contient votre identifiant de session.",
+					"Envoyez ce message juste après l'ouverture de la connexion. {database} et {table} sont les identifiants de votre base et de votre table. Le serveur autorise l'abonnement depuis la requête d'upgrade WebSocket (en-tête Authorization ou cookie à portée limitée), pas depuis ce message.",
 				eventsLabel: "Événements reçus",
 				eventsHint:
 					"Le serveur envoie des messages data_change avec une action de création, de mise à jour ou de suppression. Les connexions perdues sont relancées automatiquement.",
@@ -166,20 +166,20 @@ export default {
 			auth: {
 				title: "Endpoints d'authentification",
 				description:
-					"Utilisez ces endpoints pour créer des sessions et alimenter le paramètre {param}.",
+					"Utilisez ces endpoints pour créer des sessions. Envoyez l'identifiant de session via Authorization: Bearer <sessionID> dans les requêtes suivantes.",
 				signinDescription:
-					"Authentifie un utilisateur existant. POST crée une session, PUT la rafraîchit.",
+					"Authentifie un utilisateur existant. Renvoie un identifiant de session à envoyer comme Bearer dans les requêtes suivantes.",
 				usernameField: "username — identifiant unique de l'utilisateur",
 				passwordField: "password — mot de passe en clair (haché côté serveur)",
 				signupDescription:
-					"Crée un nouvel utilisateur. Le payload suit le schéma de la table users ci-dessous.",
+					"Crée un nouvel utilisateur en créant une ligne dans la table users. Il n'existe pas de route /auth/signup.",
 				currentDescription:
-					"Retourne l'objet utilisateur lié au cookie {param}.",
+					"Retourne l'objet utilisateur complet pour la session envoyée dans l'en-tête Authorization ou le cookie à portée limitée.",
 				signoutDescription:
-					"Met fin à la session active et supprime le cookie correspondant.",
+					"Met fin à la session active et supprime le cookie correspondant. Ajoutez ?allDevices=true pour révoquer toutes les sessions de l'utilisateur.",
 				signupSchemaTitle: "Schéma des utilisateurs",
 				cookieHint:
-					"Une connexion réussie stocke l'ID de session dans le cookie {param}. Vous pouvez aussi l'envoyer manuellement.",
+					"Une connexion réussie définit aussi le cookie HttpOnly {param}. Les agents doivent envoyer Authorization: Bearer <sessionID> ; les sessions dans la chaîne de requête ne sont pas acceptées.",
 			},
 		},
 

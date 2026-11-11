@@ -690,7 +690,7 @@ const table = useState<Table>("table");
 const showCloneModal = ref(false);
 
 function onCloneCloned(page: Page) {
-	const base = `${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/pages/${page.slug}`;
+	const base = `${databaseRoutePrefix(route)}/admin/tables/pages/${page.slug}`;
 	window.open(base, "_blank");
 }
 
@@ -1219,7 +1219,7 @@ async function SaveAdd() {
 				} else {
 					Loading.value.SaveAdd = false;
 					return navigateTo(
-						`${route.params.database ? `/${database.value.slug}` : ""}/admin/tables/pages/${rawModelValue.slug}`,
+						`${databaseRoutePrefix(route)}/admin/tables/pages/${rawModelValue.slug}`,
 					);
 				}
 			}

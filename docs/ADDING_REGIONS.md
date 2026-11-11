@@ -10,15 +10,56 @@ association, ID cipher secret or tenant URL to add capacity.
 The main API owns the `regions` registry and global billing/users/compliance/
 monitoring authority. Regions host local tenant databases/assets and regional
 sessions, not a copy of the central billing authority. The historical main
-runtime id is empty (bare tenant hosts); registry lookup alias is `main`.
-Secondary codes are stable DNS-safe identifiers; `<code>--<slug>` routes there.
-There is no global database locator or implicit fallback to another region.
+runtime id is empty (bare tenant hosts); registry lookup alias is `main` and its
+public URL label is `eu`. Secondary codes are stable DNS-safe identifiers.
+Canonical tenant URLs are:
+
+```text
+https://<slug>.<public-label>.inicontent.com   # e.g. clinic.eu.inicontent.com
+https://inicontent.com/<public-label>/<slug>   # e.g. inicontent.com/eu/clinic
+```
+
+`main` is published as `eu`; other regions use their registry code in both
+forms. Legacy bare (`<slug>.inicontent.com`) and `<code>--<slug>` hosts remain
+valid during the migration and must keep their TLS/DNS mappings. There is no
+global database locator or implicit fallback to another region.
 
 Registry schema (do not reorder existing schema fields): `name`, `code`,
 `country`, `provider`, `providerRegion`, `apiUrl`, `enabled`,
 `acceptNewDatabases`, `currency`. Availability is derived from the two flags.
 The public projection does not disclose provider location or internal row ids.
 The client is data-driven and does not contain a hardcoded list of countries.
+
+## Authentication and sessions in a region
+
+Identity remains global; sessions do not. Keep these boundaries:
+
+- **Main control plane** (`NITRO_REGION_ROLE=main`): global users, platform
+  `inicontent_sid` sessions, billing, registry, compliance and monitoring.
+- **Each tenant database**: its own `{db}_sid` sessions, scoped to that database
+  and API origin. A tenant session never authenticates another database or the
+  platform.
+- **Secondary region platform routes**: a short-lived regional session
+  (`inicontent_region_sid` cookie or `Authorization: Region <token>`), minted by
+  `POST {main}/inicontent/auth/region-grant` then
+  `POST {region}/inicontent/auth/region-grant/redeem`. Grants are single-use and
+  expire after 2 minutes; regional sessions expire after 15 minutes and are
+  re-minted from the main region. Drop one with
+  `POST {region}/inicontent/auth/region-session/signout`.
+
+The main platform session must never be forwarded to a secondary region. The
+client strips it at the network boundary and uses the regional session instead.
+Tenant browsers sign in at the tenant's own origin
+(`https://<slug>.<label>.inicontent.com/login?region=<registry-code>`) so saved
+credentials stay scoped to that database.
+
+CORS/origin rules must trust both canonical and legacy hostnames for a tenant.
+`GET /inicontent/regions` is a public catalog: tenant origins may read it without
+credentials even when the tenant belongs to another deployment, but no
+credentialed cross-origin request is allowed from an untrusted origin.
+
+Session transport is `Authorization: Bearer <sessionID>` or the scoped
+`HttpOnly` cookie. Query-string sessions are not accepted.
 
 ## 1. Install privately, inactive
 
@@ -81,6 +122,11 @@ the original. It refuses a different existing code for the same API origin.
 - `/health` must identify the exact artifact and declared region.
 - Real two-origin grant mint/redeem/signout; wrong audience/region, replay,
   expiration, role-change revocation, passkey enrollment and session isolation.
+- Sign-in and data access work through `Authorization: Bearer` (no query SID),
+  and a tenant session is rejected by another database and by the platform.
+- Canonical (`<slug>.<label>.inicontent.com`, `/<label>/<slug>`) and legacy
+  (`<slug>.inicontent.com`, `<code>--<slug>`) tenant hosts both resolve through
+  sign-in, cookies and CORS.
 - Same synthetic slug in two isolated regions must never cross-read records,
   metadata caches, assets, audit trails or local filesystem paths.
 - Closed/unregistered-region database creation must fail server-side, even when
@@ -98,8 +144,15 @@ The old two-EC2 acceptance plan is not authorization to provision anything now.
 
 ## 4. Activate deliberately
 
-Publish DNS/TLS only after infrastructure checks and owner approval. Update the
-existing registry row by **id**, never by inventing a new code. Enable serving
+Publish DNS/TLS only after infrastructure checks and owner approval. For each
+region, map `*.<public-label>.inicontent.com` (for Paris: `*.eu.inicontent.com`)
+to the SaaS frontend with wildcard certificate coverage at the public edge and a
+matching origin domain configuration. Keep the bare and `<code>--<slug>` mappings
+during the migration. For assets, add the regional alias
+(`eu.s3.inicontent.com` for Paris) to the existing distribution and update
+`AWS_S3_PUBLIC_URL` / `NITRO_URL_S3` only after verifying an existing object
+through the alias. Update the existing registry row by **id**, never by inventing
+a new code. Enable serving
 with `enabled:true` while keeping `acceptNewDatabases:false` if draining/read-only
 validation is still needed. Only after acceptance set `acceptNewDatabases:true`.
 The main public catalog, status page and picker are dynamic; the single-option

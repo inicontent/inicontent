@@ -381,7 +381,11 @@ test("a fresh or single-region catalog has no region choice to offer", () => {
  * `useRegionSession` for `useScopedCookie`. Reproduce them so the reactive
  * wrapper runs under node:test — the same approach as `translate.test.ts`.
  */
-function mockNuxt(options: { region?: string; result?: unknown[] }): void {
+function mockNuxt(options: {
+	region?: string;
+	result?: unknown[];
+	regionalDatabasePaths?: boolean;
+}): void {
 	const states = new Map<string, { value: unknown }>();
 	const globals = globalThis as Record<string, unknown>;
 
@@ -390,6 +394,7 @@ function mockNuxt(options: { region?: string; result?: unknown[] }): void {
 			apiBase: "https://api.x/",
 			mainApiBase: "https://api.x/",
 			region: options.region ?? "",
+			regionalDatabasePaths: options.regionalDatabasePaths ?? false,
 		},
 	});
 	globals.useState = (key: string, init?: () => unknown) => {
@@ -405,6 +410,7 @@ function mockNuxt(options: { region?: string; result?: unknown[] }): void {
 		},
 	});
 	globals.clearNuxtState = () => {};
+	globals.clearNuxtData = () => {};
 	globals.$fetch = async () => ({ result: options.result ?? [] });
 }
 
@@ -452,4 +458,19 @@ test("a single-entry catalog loads and keeps a pinned deployment on its region",
 		null,
 	);
 	assert.equal(region.selection.value?.code, "eu-1");
+});
+
+test("an empty SaaS catalog routes EU links to the main API without opening onboarding", async () => {
+	mockNuxt({ regionalDatabasePaths: true });
+	const region = useRegion();
+	await region.bootstrap(null, "eu");
+	assert.equal(region.regionError.value, null);
+	assert.deepEqual(region.selection.value, {
+		code: "main",
+		apiUrl: "https://api.x",
+	});
+	assert.deepEqual(region.creatableCatalog.value, []);
+
+	await region.bootstrap(null, "sa-1");
+	assert.equal(region.regionError.value, "regionNotFound");
 });

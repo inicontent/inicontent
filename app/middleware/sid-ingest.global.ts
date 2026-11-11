@@ -38,7 +38,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const config = useRuntimeConfig();
 	const databaseSlug = String(
 		config.public.database === "inicontent"
-			? to.params.database || config.public.database
+			? to.params.database ||
+					(!isPlatformApex(useRequestURL().hostname) &&
+						useState<Database>("database").value?.slug) ||
+					config.public.database
 			: config.public.database || to.params.database,
 	);
 
@@ -90,9 +93,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 					handoffError = true;
 					continue;
 				}
-				const cookie = useCookie<string | null>(`${slug}_sid`, {
-					sameSite: true,
-				});
+				const cookie = scopedCookie(slug);
 				if (!cookie.value) cookie.value = sid;
 			} catch {
 				handoffError = true;
@@ -165,7 +166,7 @@ function resolveDestinationOrigin(
 }
 
 function scopedCookie(slug: string) {
-	return useCookie<string | null>(`${slug}_sid`, { sameSite: true });
+	return useScopedCookie<string | null>("sid", slug);
 }
 
 function platformCookie() {

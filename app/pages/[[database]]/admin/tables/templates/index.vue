@@ -127,7 +127,7 @@ const Language = useScopedCookie<LanguagesType>(
 );
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
-const tablePath = `${route.params.database ? `/${route.params.database}` : ""}/admin/tables/templates`;
+const tablePath = `${databaseRoutePrefix(route)}/admin/tables/templates`;
 const newPath = `${tablePath}/new`;
 
 const editPath = (name?: string) =>

@@ -53,8 +53,16 @@ Optional environment variables (see the
 | Variable   | Default                       | Description                                    |
 |------------|--------------------------------|------------------------------------------------|
 | `database` | `inicontent`                  | Database slug the admin panel targets directly. |
-| `apiBase`  | `https://api.inicontent.com/` | Base URL for the Inicontent API.                |
+| `apiBase`  | `https://api.inicontent.com/` | Default origin for region-scoped requests (tenant data/assets). |
+| `INICONTENT_MAIN_API_URL` | `https://api.inicontent.com/` | Global control plane: identity/auth, users, billing and the region catalog. |
+| `INICONTENT_REGION` | (empty) | Pin the deployment to one region code; empty means multi-region. |
 | `idOne`    | (built-in default)            | Public identifier used by the API client.       |
+
+Tenant sessions are sent as `Authorization: Bearer <sid>` (or the scoped
+`HttpOnly` cookie); query-string SIDs are refused. Regional layer consumers add
+`/:region/:database` routes — use `databaseRoutePrefix()` /
+`useTenantDatabasePath()` instead of hardcoding `/${slug}`, and
+`useScopedCookie()` for browser state.
 
 ## Project Structure
 

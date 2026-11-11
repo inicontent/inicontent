@@ -113,7 +113,7 @@ const usersTable = computed(() =>
 );
 
 const signinEndpoint = computed(() => `/${dbSlug.value}/auth/signin`);
-const signupEndpoint = computed(() => `/${dbSlug.value}/auth/signup`);
+const signupEndpoint = computed(() => `/${dbSlug.value}/users`);
 const currentEndpoint = computed(() => `/${dbSlug.value}/auth/current`);
 const signoutEndpoint = computed(() => `/${dbSlug.value}/auth/signout`);
 const resetRequestEndpoint = computed(() => `/${dbSlug.value}/auth/reset`);
@@ -130,12 +130,13 @@ const signinResponse = `{
     "username": "demo",
     "email": "demo@example.com",
     "role": "editor",
-    "createdBy": "...",
-    "sessionID": "e5f6g7h8i9j0"
+    "sessionID": "e5f6g7h8i9j0",
+    "hasPasskey": false,
+    "enrollmentRequired": false,
+    "sessionScope": "authenticated"
   },
   "message": "Signed in successfully",
-  "options": {},
-  "code": 200
+  "code": "loginSuccess"
 }`;
 
 const signinParams = computed(() => [
@@ -163,8 +164,7 @@ const signupResponse = `{
     "createdBy": "..."
   },
   "message": "User created successfully",
-  "options": {},
-  "code": 200
+  "code": "signupSuccess"
 }`;
 
 const currentResponse = `{
@@ -173,20 +173,16 @@ const currentResponse = `{
     "username": "demo",
     "email": "demo@example.com",
     "role": "editor",
-    "createdBy": "..."
+    "createdBy": "...",
+    "sessionID": "e5f6g7h8i9j0",
+    "sessionScope": "authenticated",
+    "enrollmentRequired": false
   },
   "message": "Session is valid",
-  "options": {},
-  "code": 200
+  "code": 202
 }`;
 
 const currentParams = computed(() => [
-	{
-		name: sessionParamName.value,
-		type: "string",
-		required: true,
-		description: "Session ID",
-	},
 	{
 		name: "isSignedIn",
 		type: "boolean",
@@ -198,8 +194,7 @@ const currentParams = computed(() => [
 const signoutResponse = `{
   "result": true,
   "message": "Signed out successfully",
-  "options": {},
-  "code": 200
+  "code": "logoutSuccess"
 }`;
 
 const resetRequestRequest = `{
@@ -209,8 +204,7 @@ const resetRequestRequest = `{
 const resetRequestResponse = `{
   "result": true,
   "message": "Password reset email sent",
-  "options": {},
-  "code": 200
+  "code": "resetPasswordEmailSent"
 }`;
 
 const resetCompleteRequest = `{
@@ -221,8 +215,7 @@ const resetCompleteRequest = `{
 const resetCompleteResponse = `{
   "result": true,
   "message": "Password has been reset successfully",
-  "options": {},
-  "code": 200
+  "code": "passwordResetSuccess"
 }`;
 
 const jsonLd = computed(() => ({
@@ -242,7 +235,7 @@ const jsonLd = computed(() => ({
 			"@type": "EntryPoint",
 			name: "Sign up",
 			httpMethod: "POST",
-			urlTemplate: `${apiBase.value}${dbSlug.value}/auth/signup`,
+			urlTemplate: `${apiBase.value}${dbSlug.value}/users`,
 		},
 		{
 			"@type": "EntryPoint",

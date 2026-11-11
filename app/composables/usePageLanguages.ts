@@ -145,11 +145,7 @@ export function usePageLanguages() {
 		const rebuilt = rebuildLocalizedSlug(urlSegments, targetSlug);
 		const path = rebuilt ? `/${rebuilt}` : "/";
 
-		const raw = Array.isArray(route.params.database)
-			? route.params.database[0]
-			: route.params.database;
-		const prefix =
-			typeof raw === "string" && raw ? `/${raw.replace(/^\/+|\/+$/g, "")}` : "";
+		const prefix = databaseRoutePrefix(route);
 		if (!prefix) return path;
 		return path === "/" ? prefix : `${prefix}${path}`;
 	}

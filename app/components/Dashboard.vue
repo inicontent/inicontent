@@ -94,7 +94,7 @@
 						<NButtonGroup round>
 							<NButton round>
 								<template #icon>
-									<NuxtLink :to="`/${database.slug}/admin/settings`" external>
+									<NuxtLink :to="`${tenantPath(database.slug)}/admin/settings`" external>
 										<NIcon>
 											<Icon name="tabler:settings" />
 										</NIcon>
@@ -103,7 +103,7 @@
 							</NButton>
 							<NButton round>
 								<template #icon>
-									<NuxtLink :to="`/${database.slug}/admin/tables`" external>
+									<NuxtLink :to="`${tenantPath(database.slug)}/admin/tables`" external>
 										<NIcon>
 											<Icon name="tabler:arrow-right" />
 										</NIcon>
@@ -128,6 +128,7 @@ onBeforeRouteLeave((route) => {
 });
 
 const config = useRuntimeConfig();
+const tenantPath = useTenantDatabasePath();
 const Loading = useState<Record<string, boolean>>("Loading", () => ({}));
 const database = useState<Database>("database");
 const Language = useScopedCookie<LanguagesType>(
@@ -248,14 +249,12 @@ const showDatabaseCreation = ref(false);
  * so the owner has a clear action to open the database's own sign-in page —
  * where the browser can offer to save the new credentials for its hostname.
  */
-const createdDatabase = ref<{ slug: string; adminUsername: string } | null>(
+const createdDatabase = ref<{ slug: string; adminUsername: string; region: string | null } | null>(
 	null,
 );
 
 /**
- * `https://<region>--<slug>.inicontent.com/login` (or the bare
- * `https://<slug>.inicontent.com/login` on the main region), carrying the active
- * region as an explicit, catalog-validated `?region=` parameter.
+ * The sign-in link opens the tenant's regional hostname.
  *
  * The URL is built by `resolveDatabaseLoginUrl` (unit-tested). What matters here
  * is the **host**: the sign-in form runs on the database's own origin, so a
@@ -265,7 +264,7 @@ const createdDatabase = ref<{ slug: string; adminUsername: string } | null>(
 const databaseLoginUrl = computed(() => {
 	const slug = createdDatabase.value?.slug;
 	if (!slug) return "";
-	return resolveDatabaseLoginUrl(slug, selection.value?.code) ?? "";
+	return resolveDatabaseLoginUrl(slug, createdDatabase.value?.region) ?? "";
 });
 
 const DatabaseRef = ref<FormInst>();
@@ -381,6 +380,7 @@ async function createDatabase() {
 		// The confirmation is a client-side guard only; the server never sees it.
 		if (bodyContent.adminPassword !== bodyContent.adminPasswordConfirm)
 			return window.$message.error(t("passwordsDoNotMatch"));
+		const createdInRegion = selection.value?.code ?? (pinned || null);
 		Loading.value.Database = true;
 		try {
 			const data = await $fetch<apiResponse>(
@@ -410,6 +410,7 @@ async function createDatabase() {
 			createdDatabase.value = {
 				slug: data.result.slug as string,
 				adminUsername: bodyContent.adminUsername ?? "",
+				region: createdInRegion,
 			};
 			window.$message.success(data.message);
 			showDatabaseCreation.value = false;

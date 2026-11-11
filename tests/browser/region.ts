@@ -148,7 +148,7 @@ async function runMain() {
 	const checks: Array<[string, boolean]> = [
 		[
 			"the database login URL is on the database's own regional hostname",
-			login.hostname === "sa-1--clinic.inicontent.com",
+			login.hostname === "clinic.sa-1.inicontent.com",
 		],
 		[
 			"the database login URL is never on the SaaS admin host",
@@ -157,7 +157,7 @@ async function runMain() {
 		[
 			"an internationalized slug logs in on a region-prefixed ACE host",
 			resolveDatabaseLoginUrl("\u0645\u062a\u062c\u0631", "sa-1") ===
-				"https://sa-1--xn--pgbep1f.inicontent.com/login?region=sa-1",
+				"https://xn--pgbep1f.sa-1.inicontent.com/login?region=sa-1",
 		],
 		[
 			"a malformed slug never produces a navigable login URL",

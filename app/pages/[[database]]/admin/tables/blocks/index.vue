@@ -4,8 +4,8 @@
 			<template #navbarActions>
 				<NButtonGroup>
 					<NButton type="primary" secondary round tag="a"
-						:href="`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`"
-						@click.prevent="navigateTo(`${$route.params.database ? `/${$route.params.database}` : ''}/admin/tables/${table.slug}/new`)">
+						:href="`${databaseRoutePrefix($route)}/admin/tables/${table.slug}/new`"
+						@click.prevent="navigateTo(`${databaseRoutePrefix($route)}/admin/tables/${table.slug}/new`)">
 						<template #icon>
 							<NIcon>
 								<Icon name="tabler:plus" />
@@ -43,8 +43,8 @@
 									</template>
 									<NButtonGroup vertical>
 										<NButton tertiary type="info" tag="a"
-											:href="`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/blocks/${block.id}`"
-											@click.stop.prevent="navigateTo(`${$route.params.database ? `/${database.slug}` : ''}/admin/tables/blocks/${block.id}`)">
+											:href="`${databaseRoutePrefix($route)}/admin/tables/blocks/${block.id}`"
+											@click.stop.prevent="navigateTo(`${databaseRoutePrefix($route)}/admin/tables/blocks/${block.id}`)">
 											<template #icon>
 												<NIcon>
 													<Icon name="tabler:pencil" />

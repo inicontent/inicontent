@@ -70,7 +70,18 @@ raising an error.
 - No Vuex/Pinia. State is `useState<T>(key, init)` in composables/middleware plus
   scoped cookies.
 - Routing uses the optional segment `[[database]]`, so admin paths are both
-  `/admin` and `/admin/<dbName>`.
+  `/admin` and `/admin/<dbName>`. Regional layer consumers (SaaS) add a
+  `/:region/:database` prefix and enable
+  `runtimeConfig.public.regionalDatabasePaths`; build tenant paths with
+  `databaseRoutePrefix()` / `useTenantDatabasePath()` rather than hardcoding
+  `/${slug}`.
+- Scoped browser state goes through `useScopedCookie()`. On a regional path
+  (`inicontent.com/<label>/<slug>`) a secondary region prefixes the cookie with
+  its code (`<code>_<slug>_<key>`); the main region keeps `<slug>_<key>` for
+  backward compatibility.
+- Sessions never travel in URLs: the client rewrites `*_sid` query params to
+  `Authorization: Bearer` (or the delegated child headers) at the network
+  boundary. Do not add new query-SID call sites.
 - Tests are `node:test` + `node:assert`, and import app modules with an
   **explicit `.ts` extension** (`../app/composables/foo.ts`) — that is what makes
   them loadable under Node's type stripping. Keep pure logic in a composable so

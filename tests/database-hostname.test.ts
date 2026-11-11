@@ -30,10 +30,13 @@ test("a bare hostname resolves to the main region", () => {
 });
 
 test("the canonical main selection preserves existing bare tenant login hosts", () => {
-	assert.equal(databaseHostname("myclinic", "main"), "myclinic.inicontent.com");
+	assert.equal(
+		databaseHostname("myclinic", "main"),
+		"myclinic.eu.inicontent.com",
+	);
 	assert.equal(
 		resolveDatabaseLoginUrl("myclinic", "main"),
-		"https://myclinic.inicontent.com/login?region=main",
+		"https://myclinic.eu.inicontent.com/login?region=main",
 	);
 	assert.equal(databaseHostname("مرحبا", "main"), databaseHostname("مرحبا"));
 });
@@ -55,7 +58,9 @@ test("an ambiguous or malformed label is rejected, never guessed", () => {
 		"-sa--clinic.inicontent.com",
 		"sa-1--.inicontent.com",
 		"sa-1--clinic.example.com",
-		"foo.bar.inicontent.com",
+		"foo.bar.baz.inicontent.com",
+		"eu.s3.inicontent.com",
+		"eu.api.inicontent.com",
 		"myclinic.inicontent.com.evil.test",
 		"myclinic.inicontent.com:443",
 		"myclinic.example.com",
@@ -77,20 +82,20 @@ test("a punycode label is a slug, not a region prefix", () => {
 });
 
 test("a database hostname is built from a slug and an optional region", () => {
-	assert.equal(databaseHostname("clinic"), "clinic.inicontent.com");
-	assert.equal(databaseHostname("clinic", null), "clinic.inicontent.com");
+	assert.equal(databaseHostname("clinic"), "clinic.eu.inicontent.com");
+	assert.equal(databaseHostname("clinic", null), "clinic.eu.inicontent.com");
 	assert.equal(
 		databaseHostname("clinic", "sa-1"),
-		"sa-1--clinic.inicontent.com",
+		"clinic.sa-1.inicontent.com",
 	);
 	assert.equal(
 		databaseHostname("clinic", "SA-1"),
-		"sa-1--clinic.inicontent.com",
+		"clinic.sa-1.inicontent.com",
 	);
 	// A single hyphen in the slug is fine.
 	assert.equal(
 		databaseHostname("my-clinic", "sa-1"),
-		"sa-1--my-clinic.inicontent.com",
+		"my-clinic.sa-1.inicontent.com",
 	);
 });
 
@@ -113,15 +118,15 @@ test("a non-ASCII slug gets a region-prefixed ACE host", () => {
 	// The region is encoded outside the ACE form, so the slug itself still
 	// round-trips through the parser on every region — no `?region=` needed.
 	const host = databaseHostname("مرحبا", "sa-1");
-	assert.equal(host, "sa-1--xn--mgbbop3h.inicontent.com");
+	assert.equal(host, "xn--mgbbop3h.sa-1.inicontent.com");
 	assert.equal(parseDatabaseHostname(host)?.region, "sa-1");
 
 	// On the main region the host stays bare, so an already-published URL is
 	// unchanged.
-	assert.equal(databaseHostname("مرحبا"), "xn--mgbbop3h.inicontent.com");
+	assert.equal(databaseHostname("مرحبا"), "xn--mgbbop3h.eu.inicontent.com");
 	assert.equal(
 		parseDatabaseHostname(databaseHostname("مرحبا") as string)?.region,
-		null,
+		"main",
 	);
 
 	// A slug that IDNA cannot encode yields no hostname rather than a malformed
@@ -132,22 +137,22 @@ test("a non-ASCII slug gets a region-prefixed ACE host", () => {
 test("the sign-in URL is on the database's own hostname, never the admin host", () => {
 	assert.equal(
 		resolveDatabaseLoginUrl("clinic"),
-		"https://clinic.inicontent.com/login",
+		"https://clinic.eu.inicontent.com/login",
 	);
 	assert.equal(
 		resolveDatabaseLoginUrl("clinic", "sa-1"),
-		"https://sa-1--clinic.inicontent.com/login?region=sa-1",
+		"https://clinic.sa-1.inicontent.com/login?region=sa-1",
 	);
 	// The host a password manager scopes saved credentials to.
 	const url = new URL(resolveDatabaseLoginUrl("clinic", "sa-1") as string);
-	assert.equal(url.hostname, "sa-1--clinic.inicontent.com");
+	assert.equal(url.hostname, "clinic.sa-1.inicontent.com");
 	assert.notEqual(url.hostname, "inicontent.com");
 
 	// An internationalized slug is reachable at its own regional host, so its
 	// credentials are scoped there too.
 	assert.equal(
 		resolveDatabaseLoginUrl("مرحبا", "sa-1"),
-		"https://sa-1--xn--mgbbop3h.inicontent.com/login?region=sa-1",
+		"https://xn--mgbbop3h.sa-1.inicontent.com/login?region=sa-1",
 	);
 
 	// An invalid slug yields no URL rather than a malformed one.
