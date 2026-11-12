@@ -1,4 +1,4 @@
-import { withTrailingSlash } from "./region";
+import { withTrailingSlash } from "./region.ts";
 
 /**
  * The single seam for **main control-plane** API calls.
@@ -10,19 +10,11 @@ import { withTrailingSlash } from "./region";
  * databases in several regions, and a regional deployment hosts none of this
  * global state.
  *
- * `mainApiBase` is configured on its own, independently of
- * `config.public.apiBase` — the region-scoped origin, which may point at a
- * regional deployment that hosts none of this global state. The trailing
- * `apiBase` fallback is only a last resort for a consumer that predates the
- * config key; with the layer's config in place it is never reached.
- *
- * `useApiBase()` is the opposite seam — region-scoped (tenant/database)
- * requests. Reach for this one only for the main-owned operations above.
+ * The control plane can be overridden for local and self-hosted deployments.
  */
 export function useMainApiBase(): string {
 	const config = useRuntimeConfig();
-	const base = String(
-		config.public?.mainApiBase ?? config.public?.apiBase ?? "",
+	return withTrailingSlash(
+		String(config.public?.mainApiBase || "https://api.inicontent.com/"),
 	);
-	return base ? withTrailingSlash(base) : "";
 }

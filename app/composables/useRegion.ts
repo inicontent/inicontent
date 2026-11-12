@@ -9,6 +9,7 @@
  * Pure parsing/validation lives in `./region.ts`; this is the reactive wrapper.
  */
 
+import { useMainApiBase } from "./useMainApiBase.ts";
 import {
 	isSingleRegion as catalogHasSingleRegion,
 	creatableRegions,
@@ -37,7 +38,7 @@ export function useRegion() {
 	const config = useRuntimeConfig();
 
 	const base = String(config.public?.apiBase ?? "");
-	const mainBase = String(config.public?.mainApiBase ?? base);
+	const mainBase = useMainApiBase();
 	const pinned = normalizePinnedRegion(config.public?.region);
 	const session = useRegionSession();
 

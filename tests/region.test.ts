@@ -27,6 +27,7 @@ import {
 	toRegionOption,
 	withTrailingSlash,
 } from "../app/composables/region.ts";
+import { useApiBase } from "../app/composables/useApiBase.ts";
 import { useRegion } from "../app/composables/useRegion.ts";
 
 test("region codes are lower-cased and restricted to a safe alphabet", () => {
@@ -473,4 +474,22 @@ test("an empty SaaS catalog routes EU links to the main API without opening onbo
 
 	await region.bootstrap(null, "sa-1");
 	assert.equal(region.regionError.value, "regionNotFound");
+});
+
+test("a regional API is never the fallback for platform database or catalog requests", async () => {
+	mockNuxt({});
+	const globals = globalThis as Record<string, unknown>;
+	globals.useRuntimeConfig = () => ({
+		public: { apiBase: "https://eu.api.inicontent.com/" },
+	});
+	globals.$fetch = async (url: string) => {
+		assert.equal(url, "https://api.inicontent.com/inicontent/regions");
+		return { result: [] };
+	};
+	const useState = globals.useState as (key: string) => { value: unknown };
+	useState("database").value = { slug: "inicontent" };
+
+	assert.equal(useApiBase(), "https://api.inicontent.com/");
+	assert.equal(useApiBase("pteam-platform"), "https://eu.api.inicontent.com/");
+	await useRegion().loadRegions();
 });

@@ -19,6 +19,7 @@
  * destroys the previous one.
  */
 
+import { useMainApiBase } from "./useMainApiBase.ts";
 import {
 	apiUrlOrigin,
 	normalizeRegionApiUrl,
@@ -28,11 +29,7 @@ import {
 } from "./region.ts";
 
 export function useRegionSession() {
-	const config = useRuntimeConfig();
-	const base = String(config.public?.apiBase ?? "");
-	const mainBase = withTrailingSlash(
-		String(config.public?.mainApiBase ?? base),
-	);
+	const mainBase = useMainApiBase();
 	const selection = useState<RegionSelection | null>(
 		REGION_STATE_KEY,
 		() => null,

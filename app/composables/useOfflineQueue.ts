@@ -179,6 +179,7 @@ export async function getMutationsByScope(
 	database: string,
 	table?: string,
 ): Promise<PendingMutation[]> {
+	if (isPhiDatabase()) return [];
 	try {
 		const db = await initDB();
 		const all = await db.getAll(STORE_NAME);

@@ -1,8 +1,9 @@
+import { useMainApiBase } from "./useMainApiBase.ts";
 import {
 	REGION_STATE_KEY,
 	type RegionSelection,
 	withTrailingSlash,
-} from "./region";
+} from "./region.ts";
 
 /**
  * The single seam for **region-scoped** API calls: tenant databases, their
@@ -17,10 +18,17 @@ import {
  * routing stays a one-place change. Do not add new direct
  * `config.public.apiBase` reads.
  */
-export function useApiBase(): string {
+export function useRegionalApiBase(): string {
 	const config = useRuntimeConfig();
 	const region = useState<RegionSelection | null>(REGION_STATE_KEY, () => null);
 
 	const base = region.value?.apiUrl || String(config.public?.apiBase ?? "");
 	return base ? withTrailingSlash(base) : "";
+}
+
+/** Route requests to the platform database independently of the selected region. */
+export function useApiBase(
+	databaseSlug = useState<Database | undefined>("database").value?.slug,
+): string {
+	return databaseSlug === "inicontent" ? useMainApiBase() : useRegionalApiBase();
 }

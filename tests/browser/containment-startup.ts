@@ -24,18 +24,34 @@ async function run() {
 	const { default: plugin } = await import(
 		"../../app/plugins/browser-containment.client"
 	);
+	const cacheKeys = caches.keys.bind(caches);
+	let resumeMigration!: () => void;
+	const migrationPaused = new Promise<void>((resolve) => {
+		resumeMigration = resolve;
+	});
+	caches.keys = async () => {
+		await migrationPaused;
+		return cacheKeys();
+	};
 	await plugin.setup({
 		hook: (name: string, handler: () => void) => hooks.set(name, handler),
 	});
 	hooks.get("app:mounted")?.();
-	if (!state.get("containment_quarantined")?.value)
-		throw new Error("quarantine notice missing");
+	if (state.get("containment_quarantined")?.value)
+		throw new Error("migration ran before storage was released");
 	if (defaults.cache !== "no-store")
 		throw new Error("fetch default not enforced");
 	if (document.querySelector('[role="alert"]'))
-		throw new Error("startup gate did not clear");
+		throw new Error("storage migration blocked app startup");
 	const response = await fetch("/api/synthetic");
 	if (response.status !== 200) throw new Error("startup handshake missing");
+	caches.keys = cacheKeys;
+	resumeMigration();
+	const deadline = Date.now() + 5000;
+	while (!state.get("containment_quarantined")?.value) {
+		if (Date.now() >= deadline) throw new Error("quarantine notice missing");
+		await new Promise((resolve) => setTimeout(resolve, 25));
+	}
 	document.body.appendChild(document.createElement("p")).textContent =
 		"STARTUP PLUGIN CHECKS PASSED: migration, notice, fetch defaults and worker handshake";
 }

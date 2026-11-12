@@ -85,7 +85,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		for (const { code, slug } of plan.codes) {
 			try {
 				const response = await $fetch<{ sessionID?: string }>(
-					`${useApiBase()}${slug}/auth/handoff/redeem`,
+					`${useApiBase(slug)}${slug}/auth/handoff/redeem`,
 					{ method: "POST", body: { code, verifier } },
 				);
 				const sid = response?.sessionID;
@@ -111,11 +111,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	}
 
 	if (plan.kind === "mint") {
-		const apiBase = useApiBase();
 		const jobs = plan.codes.map(async ({ key, slug }) => {
 			const sid = scopedCookie(slug).value;
 			const code = sid
-				? await mintCode(apiBase, slug, sid, plan.destination, plan.challenge)
+				? await mintCode(
+						useApiBase(slug),
+						slug,
+						sid,
+						plan.destination,
+						plan.challenge,
+					)
 				: null;
 			return [key, code] as [string, string | null];
 		});

@@ -138,7 +138,7 @@ const Language = useScopedCookie<LanguagesType>(
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
 
 // Explicit region selection. The platform admin lists databases per region;
-// switching region retargets `useApiBase()` and the reactive fetch below.
+// switching region retargets `useRegionalApiBase()` and the reactive fetch below.
 const {
 	catalog: regionCatalog,
 	selectableCatalog,
@@ -159,14 +159,14 @@ const regionOptions = computed(() =>
 
 /**
  * Whether the active region accepts new databases. The create request targets
- * `useApiBase()`, so the answer is whether that base is one of the catalog's
+ * `useRegionalApiBase()`, so the answer is whether that base is one of the catalog's
  * creatable regions. When no catalog entry vouches for it (the catalog has not
  * loaded, or the region is closed to new databases) creation fails closed —
  * the action stays visible but disabled — instead of surfacing an error only
  * after submit.
  */
 const canCreateDatabase = computed(() => {
-	const base = normalizeRegionApiUrl(useApiBase());
+	const base = normalizeRegionApiUrl(useRegionalApiBase());
 	return (
 		!!base &&
 		creatableCatalog.value.some(
@@ -210,7 +210,7 @@ const {
 	status,
 	refresh,
 } = await useLazyFetch<apiResponse<Database[]>>(
-	computed(() => `${useApiBase()}inicontent/databases`),
+	computed(() => `${useRegionalApiBase()}inicontent/databases`),
 	{
 		key: "databases",
 		onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
@@ -384,7 +384,7 @@ async function createDatabase() {
 		Loading.value.Database = true;
 		try {
 			const data = await $fetch<apiResponse>(
-				`${useApiBase()}inicontent/databases/${bodyContent.slug}`,
+				`${useRegionalApiBase()}inicontent/databases/${bodyContent.slug}`,
 				{
 					method: "POST",
 					body: bodyContent,

@@ -24,7 +24,7 @@ export default defineNuxtPlugin(() => {
 	if (typeof window === "undefined" || typeof window.fetch !== "function")
 		return;
 
-	const config = useRuntimeConfig();
+	const mainApiUrl = useMainApiBase();
 	const selection = useState<RegionSelection | null>(
 		REGION_STATE_KEY,
 		() => null,
@@ -39,7 +39,7 @@ export default defineNuxtPlugin(() => {
 			const regionOrigins = collectRegionOrigins({
 				selection: selection.value,
 				catalog: catalog.value,
-				mainApiUrl: config.public?.mainApiBase ?? config.public?.apiBase,
+				mainApiUrl,
 			});
 			const rewritten = rewriteSidRequest(
 				input as string | URL | Request,

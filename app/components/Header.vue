@@ -311,7 +311,7 @@ async function logout() {
 	let signedOutRemotely = true;
 	for (const session of endedSessions) {
 		try {
-			await $fetch(`${useApiBase()}${session.slug}/auth/signout`, {
+			await $fetch(`${useApiBase(session.slug)}${session.slug}/auth/signout`, {
 				method: "POST",
 				body: {},
 				credentials: "include",

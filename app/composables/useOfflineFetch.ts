@@ -3,6 +3,7 @@ import {
 	mapOfflineReferences,
 	temporaryReferences,
 } from "./offlineReferences.ts";
+import { isPhiDatabase } from "./phiGuard.ts";
 import { enqueueMutation, getAllMutations } from "./useOfflineQueue.ts";
 
 /** Bound for a single request so offline/hung connections fail fast instead of
@@ -192,7 +193,8 @@ export function useOfflineFetch<T = unknown>() {
 			isMutation &&
 			(unresolvedReference ||
 				(typeof window !== "undefined" &&
-					(navigator.onLine === false || (await getAllMutations()).length > 0)))
+					(navigator.onLine === false ||
+						(!isPhiDatabase() && (await getAllMutations()).length > 0))))
 		)
 			return queue();
 		try {

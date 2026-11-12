@@ -4,11 +4,7 @@ import {
 	purgeBrowserCopies,
 } from "../composables/browserContainment";
 import { releaseAllObjectUrls } from "../composables/managedObjectUrl";
-import {
-	isPhiDatabase,
-	resolvePhiDatabase,
-	setPhiDatabase,
-} from "../composables/phiGuard";
+import { resolvePhiDatabase, setPhiDatabase } from "../composables/phiGuard";
 
 export default defineNuxtPlugin({
 	name: "browser-containment",
@@ -21,17 +17,15 @@ export default defineNuxtPlugin({
 			"containment_quarantined",
 			() => false,
 		);
-		// The gate is intentionally outside Vue: it remains visible while an IDB
-		// version upgrade waits on an old tab, before route middleware or forms run.
-		const gate = document.createElement("div");
-		gate.setAttribute("role", "alert");
-		gate.style.cssText =
-			"position:fixed;inset:0;z-index:2147483647;background:#fff;color:#172033;display:grid;place-content:center;padding:32px;font:18px/1.6 system-ui;text-align:center";
-		gate.textContent = "Securing this browser’s stored data…";
-		document.body.append(gate);
-		function blocked() {
-			gate.textContent =
-				"Close other tabs or installed windows of this app to continue. Unsynced work is being preserved. Do not clear site data.";
+		let persistenceReady = false;
+		function showGate(message: string) {
+			const gate = document.createElement("div");
+			gate.setAttribute("role", "alert");
+			gate.style.cssText =
+				"position:fixed;inset:0;z-index:2147483647;background:#fff;color:#172033;display:grid;place-content:center;padding:32px;font:18px/1.6 system-ui;text-align:center";
+			gate.textContent = message;
+			document.body.append(gate);
+			return gate;
 		}
 		const worker = navigator.serviceWorker;
 		/**
@@ -42,15 +36,19 @@ export default defineNuxtPlugin({
 		function syncPhi() {
 			const loaded = Boolean(currentDatabase.value?.slug);
 			// Conservative (C1): only an explicit `phi: false` is non-PHI.
-			const phi = loaded ? resolvePhiDatabase(currentDatabase.value) : true;
-			setPhiDatabase(phi);
+			const phi = resolvePhiDatabase(currentDatabase.value);
+			const networkOnly = !persistenceReady || phi;
+			setPhiDatabase(networkOnly);
 			if (!loaded) return;
 			try {
-				worker?.controller?.postMessage({ type: "CONTAINMENT_PHI", phi });
+				worker?.controller?.postMessage({
+					type: "CONTAINMENT_PHI",
+					phi: networkOnly,
+				});
 			} catch {
 				// The worker may be gone during unload; the next boot re-syncs.
 			}
-			if (phi) void purgeBrowserCopies();
+			if (phi) void purgeBrowserCopies().catch(() => {});
 		}
 		worker?.addEventListener("message", (event) => {
 			if (event.data?.type === "CONTAINMENT_IDENTIFY")
@@ -74,74 +72,61 @@ export default defineNuxtPlugin({
 				]);
 			});
 		}
-		try {
-			const ensureWorker = (async () => {
-				if (import.meta.dev || !worker) return;
-				const registration = await worker.register("/sw.js", {
-					scope: "/",
-					updateViaCache: "none",
-				});
-				const activate = () =>
-					registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-				registration.installing?.addEventListener("statechange", activate);
-				registration.addEventListener("updatefound", () =>
-					registration.installing?.addEventListener("statechange", activate),
-				);
-				await Promise.race([
-					registration.update(),
-					new Promise((_, reject) =>
-						setTimeout(
-							() => reject(new Error("worker-update-timeout")),
-							10_000,
-						),
-					),
-				]);
-				activate();
-				if (!registration.waiting && worker.controller) {
-					const current = await workerVersion(worker.controller);
-					if (current === BROWSER_CONTAINMENT_VERSION) return;
-				}
-				const deadline = Date.now() + 15_000;
-				while (
-					!worker.controller ||
-					(await workerVersion(worker.controller)) !==
-						BROWSER_CONTAINMENT_VERSION
-				) {
-					if (Date.now() > deadline) throw new Error("worker-update-required");
-					activate();
-					await new Promise((resolve) => setTimeout(resolve, 100));
-				}
-			})();
-			const quarantinedResult = (
-				await Promise.all([ensureWorker, migrateBrowserPersistence(blocked)])
-			)[1];
-			quarantined.value = quarantinedResult;
-			gate.remove();
-			syncPhi();
-		} catch {
-			try {
-				const registrations = await worker?.getRegistrations?.();
-				await Promise.all(
-					(registrations ?? []).map((registration) =>
-						registration.unregister(),
-					),
-				);
-				if (typeof caches !== "undefined") {
-					const names = await caches.keys();
-					await Promise.all(names.map((name) => caches.delete(name)));
-				}
-			} catch {
-				// Best-effort recovery.
-			}
-			gate.textContent =
-				"Browser update or storage cleanup could not finish. Close other app tabs, reconnect and reload. Unsynced work is preserved; do not clear site data.";
+		// An older worker can intercept even no-store requests. Keep its clients
+		// out of the app until the replacement controls the page.
+		const controller = worker?.controller;
+		const controllerIsCurrent =
+			controller &&
+			(await workerVersion(controller).catch(() => null)) ===
+				BROWSER_CONTAINMENT_VERSION;
+		async function updateWorker() {
+			if (import.meta.dev || !worker) return;
+			const registration = await worker.register("/sw.js", {
+				scope: "/",
+				updateViaCache: "none",
+			});
+			const activate = () =>
+				registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+			registration.installing?.addEventListener("statechange", activate);
+			registration.addEventListener("updatefound", () =>
+				registration.installing?.addEventListener("statechange", activate),
+			);
+			activate();
+		}
+
+		if (!import.meta.dev && worker && controller && !controllerIsCurrent) {
+			const gate = showGate("Updating this browser’s app files…");
+			worker.addEventListener(
+				"controllerchange",
+				() => window.location.reload(),
+				{
+					once: true,
+				},
+			);
+			void (async () => {
+				const registration = await worker.getRegistration().catch(() => null);
+				if (await registration?.unregister().catch(() => false))
+					window.location.reload();
+				else await updateWorker();
+			})().catch(() => {});
+			gate.append(document.createElement("br"));
 			const button = document.createElement("button");
 			button.textContent = "Reload";
 			button.onclick = () => window.location.reload();
 			gate.append(button);
-			// Keep boot suspended: a failed migration must not enable cached fallbacks.
 			await new Promise(() => {});
 		}
+
+		// Render with network-only access while persistence is being migrated.
+		// A blocked or failed migration leaves offline storage disabled for this tab.
+		void migrateBrowserPersistence(() => {})
+			.then((result) => {
+				quarantined.value = result;
+				persistenceReady = true;
+				syncPhi();
+			})
+			.catch(() => {});
+		void updateWorker().catch(() => {});
 		const apiBase = useApiBase();
 		globalThis.$fetch = globalThis.$fetch.create({
 			cache: "no-store",
@@ -166,10 +151,13 @@ export default defineNuxtPlugin({
 		// databases fall through to the runtime caches instead.
 		worker?.addEventListener("controllerchange", () => {
 			syncPhi();
-			if (isPhiDatabase()) void purgeBrowserCopies();
 		});
 		window.addEventListener("focus", () => {
-			if (isPhiDatabase()) void purgeBrowserCopies();
+			if (
+				currentDatabase.value?.slug &&
+				resolvePhiDatabase(currentDatabase.value)
+			)
+				void purgeBrowserCopies().catch(() => {});
 		});
 		const channel =
 			typeof BroadcastChannel === "undefined"
@@ -179,8 +167,7 @@ export default defineNuxtPlugin({
 		async function resetContext(broadcast: boolean) {
 			if (leaving) return;
 			leaving = true;
-			document.body.append(gate);
-			gate.textContent = "Your session changed. Reloading securely…";
+			showGate("Your session changed. Reloading securely…");
 			if (broadcast) {
 				try {
 					if (channel) channel.postMessage("reset");

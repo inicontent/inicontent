@@ -42,7 +42,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		try {
 			database.value = (
 				await $fetch<apiResponse<Database>>(
-					`${useApiBase()}inicontent/databases/${currentDatabaseSlug}`,
+					`${useApiBase(currentDatabaseSlug)}inicontent/databases/${currentDatabaseSlug}`,
 					{
 						credentials: "include",
 						cache: "no-store",

@@ -53,7 +53,7 @@ export function usePageLanguages() {
 		const request = (async () => {
 			try {
 				const res = await $fetch<apiResponse<{ locale?: string }[]>>(
-					`${useApiBase()}${databaseSlug}/translations`,
+					`${useApiBase(databaseSlug)}${databaseSlug}/translations`,
 					{
 						params: {
 							where: Inison.stringify({ table: pagesTableId, item: pageId }),

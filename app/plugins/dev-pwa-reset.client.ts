@@ -15,8 +15,7 @@
  * stale shell — reload once so the clean state is what the tab shows.
  *
  * The reload is rate-limited through `sessionStorage` so an `unregister()`
- * that doesn't take effect cannot loop (same one-shot idea as
- * offline-warmup.client.ts, which tolerates the controllerchange this fires).
+ * that doesn't take effect cannot loop.
  *
  * Deliberately dev-only: `import.meta.dev` is statically false in a build, so
  * none of this reaches production, where the worker is the point.
