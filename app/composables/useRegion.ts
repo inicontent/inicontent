@@ -207,15 +207,15 @@ export function useRegion() {
 		}
 
 		if (code) {
-			// An unseeded production catalog still has a configured main API.
-			// Resolve existing EU tenants without adding an onboarding option.
+			// An explicit EU tenant URL must not silently fall back to the
+			// global API when the region catalog is unavailable: surface a
+			// region-unavailable error before any tenant request is made.
 			if (
 				config.public.regionalDatabasePaths &&
 				code === DEFAULT_REGION_CODE &&
 				catalog.value.length === 0
 			) {
-				const fallback = await select({ code, apiUrl: mainBase });
-				if (!fallback) regionError.value = "regionUnavailable";
+				regionError.value = "regionUnavailable";
 				return;
 			}
 			const option = catalog.value.find((region) => region.code === code);

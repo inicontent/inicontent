@@ -2,7 +2,7 @@
 	<NCard :title="t('databases')" style="background: none" :bordered="false">
 		<template #header-extra>
 			<NFlex justify="center" align="center">
-				<NSelect v-if="!isPinned && !isSingleRegion && regionOptions.length"
+				<NSelect v-if="!isPinned && regionOptions.length && (!isSingleRegion || !hasValidRegionSelection)"
 					:value="selection?.code ?? null" :options="regionOptions" :placeholder="t('selectRegion')"
 					size="small" style="width: 180px; margin-inline-end: 8px;" @update:value="onRegionChange" />
 				<NPagination v-if="pagination.itemCount && pagination.pageCount > 1"
@@ -85,6 +85,9 @@
 				</NFlex>
 			</NFlex>
 		</NCard>
+		<NAlert v-if="!hasValidRegionSelection && !showDatabaseCreation && !createdDatabase" type="info" style="margin-bottom: 12px;">
+			{{ t("selectRegion") }}
+		</NAlert>
 		<NSpin v-if="!showDatabaseCreation && !createdDatabase && databases?.result?.length" size="small" :show="status === 'idle' || status === 'pending'">
 			<NCollapse v-model:expanded-names="expandedNames"
 				:triggerAreas="['main', 'arrow']" accordion>
@@ -150,12 +153,45 @@ const {
 	select: selectRegion,
 	loadRegions,
 } = useRegion();
+const regionSession = useRegionSession();
+const regionSessionReady = ref(false);
+
 const regionOptions = computed(() =>
 	selectableCatalog.value.map((region) => ({
 		label: region.name,
 		value: region.code,
 	})),
 );
+
+const hasValidRegionSelection = computed(() => {
+	const sel = selection.value;
+	if (!sel?.code || !sel?.apiUrl) return false;
+	return regionCatalog.value.some(
+		(region) =>
+			region.code === sel.code &&
+			normalizeRegionApiUrl(region.apiUrl) ===
+				normalizeRegionApiUrl(sel.apiUrl),
+	);
+});
+
+async function ensureRegionSession() {
+	if (!hasValidRegionSelection.value) {
+		regionSessionReady.value = false;
+		return false;
+	}
+	const sel = selection.value;
+	const secondary = regionSession.isSecondary(sel);
+	if (!secondary) {
+		regionSessionReady.value = true;
+		return true;
+	}
+	regionSessionReady.value = false;
+	const expectedCode = selection.value?.code;
+	const ok = await regionSession.establish();
+	if (selection.value?.code === expectedCode)
+		regionSessionReady.value = ok;
+	return ok;
+}
 
 /**
  * Whether the active region accepts new databases. The create request targets
@@ -179,11 +215,18 @@ function onRegionChange(code: string) {
 	// Switching region rotates the regional session (clear the old, establish
 	// the new) before the list refetches, so the request never carries the
 	// previous region's credential.
+	databases.value = null;
+	pagination.page = 1;
+	pagination.pageCount = 1;
+	pagination.itemCount = 0;
+	requestToken.value += 1;
+	regionSessionReady.value = false;
 	selectRegion(
 		regionCatalog.value.find((region) => region.code === code) ?? null,
-	).finally(() => {
+	).then(async () => {
+		await ensureRegionSession();
 		pagination.page = 1;
-		refresh();
+		await refresh();
 	});
 }
 
@@ -205,32 +248,41 @@ const queryOptions = computed(() =>
 	}),
 );
 
-const {
-	data: databases,
-	status,
-	refresh,
-} = await useLazyFetch<apiResponse<Database[]>>(
-	computed(() => `${useRegionalApiBase()}inicontent/databases`),
-	{
-		key: "databases",
-		onResponse({ response }: { response: { _data: apiResponse<Database[]> } }) {
-			if (response._data.result?.length)
-				expandedNames.value = [response._data.result.at(-1)?.slug as string];
-			pagination.pageCount = response._data.options?.totalPages ?? 1;
-			pagination.itemCount = response._data.options?.total ?? 0;
-		},
-		transform: (response: apiResponse<Database[]>) => {
-			response.result.map(formatDatabase);
-			return response;
-		},
-		params: {
-			options: queryOptions,
-			locale: Language.value,
-			[`${database.value.slug}_sid`]: sessionID.value,
-		},
-		credentials: "include",
-	},
-);
+const databases = ref<apiResponse<Database[]> | null>(null);
+const status = ref<"idle" | "pending" | "success" | "error">("idle");
+const requestToken = ref(0);
+
+async function refresh() {
+	if (!hasValidRegionSelection.value || !regionSessionReady.value) return;
+	const token = ++requestToken.value;
+	status.value = "pending";
+	try {
+		const response = await $fetch<apiResponse<Database[]>>(
+			`${useRegionalApiBase()}inicontent/databases`,
+			{
+				params: {
+					options: queryOptions.value,
+					locale: Language.value,
+					...(!regionSession.isSecondary(selection.value) && sessionID.value
+						? { inicontent_sid: sessionID.value }
+						: {}),
+				},
+				credentials: "include",
+			},
+		);
+		if (token !== requestToken.value) return;
+		response.result?.map?.(formatDatabase);
+		databases.value = response;
+		if (response.result?.length)
+			expandedNames.value = [response.result.at(-1)?.slug as string];
+		pagination.pageCount = response.options?.totalPages ?? 1;
+		pagination.itemCount = response.options?.total ?? 0;
+		status.value = "success";
+	} catch {
+		if (token !== requestToken.value) return;
+		status.value = "error";
+	}
+}
 
 // Multi-region only: load the catalog once so the selector can offer regions.
 // Best-effort — a failure leaves the deployment's default region in place.
@@ -241,6 +293,20 @@ if (!pinned) {
 		// The dashboard still lists the default region's databases.
 	}
 }
+watch(
+	hasValidRegionSelection,
+	async (valid) => {
+		if (!valid) {
+			regionSessionReady.value = false;
+			databases.value = null;
+			return;
+		}
+		await ensureRegionSession();
+		if (regionSessionReady.value && selection.value?.code) await refresh();
+	},
+	{ immediate: true },
+);
+
 const expandedNames = ref<string[]>();
 const showDatabaseCreation = ref(false);
 
@@ -249,9 +315,11 @@ const showDatabaseCreation = ref(false);
  * so the owner has a clear action to open the database's own sign-in page —
  * where the browser can offer to save the new credentials for its hostname.
  */
-const createdDatabase = ref<{ slug: string; adminUsername: string; region: string | null } | null>(
-	null,
-);
+const createdDatabase = ref<{
+	slug: string;
+	adminUsername: string;
+	region: string | null;
+} | null>(null);
 
 /**
  * The sign-in link opens the tenant's regional hostname.

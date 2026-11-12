@@ -126,7 +126,7 @@ test("a non-ASCII slug gets a region-prefixed ACE host", () => {
 	assert.equal(databaseHostname("مرحبا"), "xn--mgbbop3h.eu.inicontent.com");
 	assert.equal(
 		parseDatabaseHostname(databaseHostname("مرحبا") as string)?.region,
-		"main",
+		"eu",
 	);
 
 	// A slug that IDNA cannot encode yields no hostname rather than a malformed

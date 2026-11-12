@@ -465,12 +465,8 @@ test("an empty SaaS catalog routes EU links to the main API without opening onbo
 	mockNuxt({ regionalDatabasePaths: true });
 	const region = useRegion();
 	await region.bootstrap(null, "eu");
-	assert.equal(region.regionError.value, null);
-	assert.deepEqual(region.selection.value, {
-		code: "main",
-		apiUrl: "https://api.x",
-	});
-	assert.deepEqual(region.creatableCatalog.value, []);
+	assert.equal(region.regionError.value, "regionUnavailable");
+	assert.equal(region.selection.value, null);
 
 	await region.bootstrap(null, "sa-1");
 	assert.equal(region.regionError.value, "regionNotFound");

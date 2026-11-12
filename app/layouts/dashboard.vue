@@ -81,9 +81,5 @@ function onLoggedIn() {
 
 onMounted(async () => {
 	checkAuth();
-	if (!String(route.name).endsWith("auth")) {
-		const interval = setInterval(checkAuth, 60000); // Check every 1 minute
-		onUnmounted(() => clearInterval(interval));
-	}
 });
 </script>

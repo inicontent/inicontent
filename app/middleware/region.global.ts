@@ -17,10 +17,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const hasParam = to.query[REGION_QUERY_PARAM] !== undefined;
 	const requested = registryRegionCode(regionCodeFromQuery(to.query));
 	const encoded = to.params.region;
+	const hostname = useRequestURL().hostname;
+	const hostRegion = isRegionalEntryHost(hostname)
+		? registryRegionCode(hostname.split(".")[0])
+		: parseDatabaseHostname(hostname)?.region ?? null;
 	const urlRegion =
-		registryRegionCode(encoded) ??
-		parseDatabaseHostname(useRequestURL().hostname)?.region ??
-		null;
+		registryRegionCode(encoded) ?? hostRegion ?? null;
 
 	if ((hasParam && !requested) || (encoded && !registryRegionCode(encoded))) {
 		throw createError({ statusCode: 404, statusMessage: t("regionNotFound") });

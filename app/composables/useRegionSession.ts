@@ -65,7 +65,7 @@ export function useRegionSession() {
 		).value;
 
 		try {
-			const minted = await $fetch<{ grant?: string }>(
+			const minted = await $fetch<{ result?: { grant?: string } }>(
 				`${mainBase}inicontent/auth/region-grant`,
 				{
 					method: "POST",
@@ -74,11 +74,12 @@ export function useRegionSession() {
 					...(mainSID ? { query: { inicontent_sid: mainSID } } : {}),
 				},
 			);
-			if (!minted?.grant) return false;
+			const grant = minted?.result?.grant;
+			if (!grant) return false;
 
 			await $fetch(`${regionBase}inicontent/auth/region-grant/redeem`, {
 				method: "POST",
-				body: { grant: minted.grant },
+				body: { grant },
 				credentials: "include",
 			});
 			return true;

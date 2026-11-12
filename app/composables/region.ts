@@ -272,7 +272,8 @@ export function resolveSelectionAgainstCatalog(
 	catalog: readonly RegionOption[],
 ): RegionSelection | null {
 	if (!selection) return null;
-	const match = catalog.find((region) => region.code === selection.code);
+	const code = selection.code === "main" ? "eu" : selection.code;
+	const match = catalog.find((region) => region.code === code);
 	if (!match) return null;
 
 	const apiUrl = normalizeRegionApiUrl(match.apiUrl);
@@ -292,8 +293,9 @@ export function resolvePinnedSelection(
 	pinned: unknown,
 	catalog: readonly RegionOption[],
 ): RegionSelection | null {
-	const code = normalizeRegionCode(pinned);
+	let code = normalizeRegionCode(pinned);
 	if (!code) return null;
+	if (code === "main") code = "eu";
 
 	const match = catalog.find((region) => region.code === code);
 	const apiUrl = match ? normalizeRegionApiUrl(match.apiUrl) : null;
@@ -353,23 +355,41 @@ export function collectRegionOrigins(options: {
 }
 
 // Public URLs call the Paris deployment "eu"; the region registry calls it "main".
-export const DEFAULT_REGION_CODE = "main";
+export const DEFAULT_REGION_CODE = "eu";
 export const DEFAULT_REGION_LABEL = "eu";
 export const TENANT_HOSTNAME_SUFFIX = ".inicontent.com";
 const REGION_HOST_SEPARATOR = "--"; // legacy hostname separator
 
 export function publicRegionLabel(region?: string | null): string | null {
 	const code = normalizeRegionCode(region ?? DEFAULT_REGION_CODE);
-	return code === DEFAULT_REGION_CODE ? DEFAULT_REGION_LABEL : code;
+	if (!code) return null;
+	// Legacy `main` is the old alias for the Europe deployment; keep its
+	// historical public label so existing hosts and saved selections resolve.
+	return code === "main" ? DEFAULT_REGION_LABEL : code;
 }
 
 export function registryRegionCode(region: unknown): string | null {
 	const code = normalizeRegionCode(region);
-	return code === DEFAULT_REGION_LABEL ? DEFAULT_REGION_CODE : code;
+	if (!code) return null;
+	// `eu` is the canonical Europe region code; `main` is the legacy alias.
+	if (code === DEFAULT_REGION_LABEL || code === "main") return "eu";
+	return code;
 }
 
 export function isPlatformApex(hostname: string): boolean {
 	return hostname === "inicontent.com" || hostname === "www.inicontent.com";
+}
+
+/** A host that serves as a regional entry point (e.g. eu.inicontent.com). */
+export function isRegionalEntryHost(hostname: string): boolean {
+	let host = (hostname || "").trim().toLowerCase();
+	if (host.endsWith(".")) host = host.slice(0, -1);
+	if (!host.endsWith(TENANT_HOSTNAME_SUFFIX)) return false;
+	const label = host.slice(0, -TENANT_HOSTNAME_SUFFIX.length);
+	if (!label || label.includes(".") || label.includes("--")) return false;
+	// Configured/known regional entry hosts. Keep in sync with the region
+	// catalog's public labels; `eu` is the Europe entry host.
+	return label === "eu" || label === DEFAULT_REGION_LABEL;
 }
 
 /** A DNS label: 1..63 chars, alphanumeric plus hyphen, no leading/trailing hyphen. */
