@@ -1,5 +1,6 @@
 export default {
 	es: {
+		signinIdentifier: "Nombre de usuario o correo electrónico",
 		offlinePersistenceDisabled:
 			"No se puede guardar sin conexión. Vuelve a conectarte antes de guardar; los cambios que fallen no se pondrán en cola.",
 		offlineQuarantineNotice:

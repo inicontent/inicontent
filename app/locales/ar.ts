@@ -1,5 +1,6 @@
 export default {
 	ar: {
+		signinIdentifier: "اسم المستخدم أو البريد الإلكتروني",
 		offlinePersistenceDisabled:
 			"الحفظ دون اتصال غير متاح. أعد الاتصال قبل الحفظ؛ لن تُضاف التغييرات التي فشل حفظها إلى قائمة الانتظار.",
 		offlineQuarantineNotice:

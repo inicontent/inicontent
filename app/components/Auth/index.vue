@@ -132,9 +132,10 @@ const passkeySigninHint = computed(() => {
 
 	return t("passkey.signinHintDevice");
 });
-const SigninColumns: Schema = [
+const SigninColumns = computed<Schema>(() => [
 	{
 		key: "username",
+		label: t("signinIdentifier"),
 		type: "string",
 		required: true,
 		// `field.inputProps` are NInput **props**; NInput forwards its own
@@ -157,7 +158,7 @@ const SigninColumns: Schema = [
 			inputProps: { autocomplete: "current-password", name: "password" },
 		},
 	},
-];
+]);
 const ResetRequestColumns: Schema = [
 	{
 		key: "email",
@@ -320,7 +321,17 @@ async function SigninSubmit(e: Event) {
 	e.preventDefault();
 	SigninFormRef.value?.validate(async (errors) => {
 		if (!errors) {
-			const bodyContent = toRaw(SigninForm.value);
+			const identifier = SigninForm.value.username.trim();
+			if (!identifier) {
+				window.$message.error(t("inputsAreInvalid"));
+				return;
+			}
+			const bodyContent = {
+				...(identifier.includes("@")
+					? { email: identifier }
+					: { username: identifier }),
+				password: SigninForm.value.password,
+			};
 			if (Loading.value.Signin !== true) {
 				Loading.value.Signin = true;
 				const data = await $fetch<LoginResponse>(

@@ -1,5 +1,6 @@
 export default {
 	fr: {
+		signinIdentifier: "Nom d’utilisateur ou adresse e-mail",
 		offlinePersistenceDisabled:
 			"L’enregistrement hors ligne est indisponible. Reconnectez-vous avant d’enregistrer ; un échec n’est pas mis en attente.",
 		offlineQuarantineNotice:

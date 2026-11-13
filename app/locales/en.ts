@@ -1,5 +1,6 @@
 export default {
 	en: {
+		signinIdentifier: "Username or email",
 		offlinePersistenceDisabled:
 			"Offline saving is unavailable. Reconnect before saving; a failed save has not been queued.",
 		offlineQuarantineNotice:
