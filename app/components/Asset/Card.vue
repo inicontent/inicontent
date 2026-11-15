@@ -674,16 +674,16 @@ const syncPaginationPageSize = () => {
 };
 
 const pagination = reactive({
-	page: isAssetRoute && route.query.page ? Number(route.query.page) : 1,
+	page: isAssetRoute.value && route.query.page ? Number(route.query.page) : 1,
 	pageCount: 1,
 	pageSize:
-		isAssetRoute && route.query.perPage
+		isAssetRoute.value && route.query.perPage
 			? Number(route.query.perPage)
 			: getResponsivePageSize(),
 	itemCount: 0,
 	async onUpdatePage(currentPage: number) {
 		pagination.page = currentPage;
-		if (!isAssetRoute) return;
+		if (!isAssetRoute.value) return;
 		let { page, ...Query }: any = route.query;
 		Query = {
 			...Query,
@@ -694,7 +694,7 @@ const pagination = reactive({
 	async onUpdatePageSize(pageSize: number) {
 		const OLD_pageSize = toRaw(pagination.pageSize);
 		pagination.pageSize = pageSize;
-		if (!isAssetRoute) return;
+		if (!isAssetRoute.value) return;
 		let { perPage, page, ...Query }: any = route.query;
 		const defaultPageSize = Number(
 			route.query.perPage ?? getResponsivePageSize(),
@@ -733,7 +733,7 @@ async function onUpdatePage(currentPage: number) {
 	pagination.page = currentPage;
 	let Query = route.query;
 	if (currentPage !== 1) Query = { ...Query, page: currentPage as any };
-	if (isAssetRoute)
+	if (isAssetRoute.value)
 		router.push({ query: (({ page, ...rest }) => rest)(Query) });
 	return refresh();
 }
@@ -751,7 +751,7 @@ async function onUpdatePageSize(currentPageSize: number) {
 		perPage: pagination.pageSize,
 		page: pagination.page,
 	};
-	if (isAssetRoute) router.push({ query: Query });
+	if (isAssetRoute.value) router.push({ query: Query });
 	return refresh();
 }
 
@@ -1106,7 +1106,7 @@ async function createFolder() {
 		);
 		window.$message.success(t("folderCreatedSuccessfully"));
 		await nextTick();
-		if (isAssetRoute)
+		if (isAssetRoute.value)
 			await navigateTo(
 				`${databaseRoutePrefix(route)}/admin/tables/assets${currentPath.value}`,
 			);
