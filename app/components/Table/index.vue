@@ -82,12 +82,15 @@
 					</template>
 				</NFlex>
 			</template>
-			<slot name="default" :data>
+			<template v-if="isSlotSet('default')">
+				<slot name="default" :data :loading="customViewLoading" :pagination="customViewPaginationProps" :refresh="refreshCustomView" />
+			</template>
+			<template v-else>
 				<LazyTableViewsKanban v-if="table.displayAs === 'kanban'" v-model:columns="columns" v-model:data="data"
 					v-model:searchString="searchString" :slots />
 				<LazyTableViewsTable v-else v-model:columns="columns" v-model:data="data"
 					v-model:searchString="searchString" ref="tableViewRef" :slots />
-			</slot>
+			</template>
 		</NCard>
 		<LazyTableLogs v-if="table.config?.log" />
 	</div>
@@ -190,6 +193,7 @@ onMounted(() => {
 
 watch(searchString, (v) => {
 	const { search, page, ...Query }: any = route.query;
+	customViewPagination.page = 1;
 
 	router.push({
 		query: {
@@ -240,6 +244,8 @@ const Language = useScopedCookie<LanguagesType>(
 	database.value?.slug,
 );
 const sessionID = useScopedCookie<string>("sid", database.value?.slug);
+let refreshCustomViewImpl: () => Promise<void> = async () => {};
+const refreshCustomView = async () => refreshCustomViewImpl();
 const importFileInputRef = ref<HTMLInputElement>();
 const importUploadProgress = ref(0);
 
@@ -282,14 +288,8 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 		window.$message.success((deleteResponse as any).message);
 	else window.$message.error((deleteResponse as any)?.message);
 	Loading.value.data = false;
-	if (isSlotSet("default") && !table.value.displayAs)
-		data.value = await $fetch<apiResponse<Item[]>>(
-			`${useApiBase()}${database.value.slug}/${table.value?.slug as string}`,
-			{
-				credentials: "include",
-				query: { [`${database.value.slug}_sid`]: sessionID.value },
-			},
-		);
+	if (isSlotSet("default"))
+		await refreshCustomView();
 	else
 		await refreshNuxtData(
 			`${database.value.slug}/${table.value?.slug as string}`,
@@ -455,10 +455,24 @@ defineExpose<TableRef>({
 	columns: columns as any,
 	delete: deleteItem,
 	data: data as any,
+	refresh: refreshCustomView,
 });
 
 const slots = defineSlots<{
-	default(props: { data?: apiResponse<Item[]> }): any;
+	default(props: {
+		data?: apiResponse<Item[]>;
+		loading: boolean;
+		pagination: {
+			page: number;
+			pageSize: number;
+			itemCount: number;
+			showSizePicker: boolean;
+			pageSizes: number[];
+			onUpdatePage: (page: number) => Promise<void>;
+			onUpdatePageSize: (pageSize: number) => Promise<void>;
+		};
+		refresh: () => Promise<void>;
+	}): any;
 	form(props: {
 		onAfterCreate: (item?: Item) => Promise<void>;
 		onAfterUpdate: (item?: Item) => Promise<void>;
@@ -476,15 +490,108 @@ const isSlotSet = (slotName: keyof typeof slots) => !!slots[slotName];
 
 provide("isSlotSet", isSlotSet);
 
-if (isSlotSet("default") && !table.value.displayAs)
-	data.value = await $fetch<apiResponse<Item[]>>(
-		`${useApiBase()}${database.value.slug}/${table.value?.slug as string}`,
+const customViewLoading = ref(false);
+const customViewPagination = reactive({
+	page: route.query.page ? Number(route.query.page) : 1,
+	pageCount: 0,
+	pageSize: route.query.perPage ? Number(route.query.perPage) : isMobile ? 8 : 12,
+	itemCount: 0,
+});
+
+async function updateCustomViewPage(page: number) {
+	customViewPagination.page = page;
+	await router.push({
+		query: { ...route.query, page: page !== 1 ? page : undefined },
+	});
+}
+
+async function updateCustomViewPageSize(pageSize: number) {
+	customViewPagination.pageSize = pageSize;
+	customViewPagination.page = 1;
+	await router.push({
+		query: { ...route.query, perPage: pageSize, page: undefined },
+	});
+}
+
+const customViewPaginationProps = computed(() => ({
+	page: customViewPagination.page,
+	pageSize: customViewPagination.pageSize,
+	itemCount: customViewPagination.itemCount,
+	showSizePicker: customViewPagination.itemCount > 0,
+	pageSizes: [8, 12, 15, 24, 48, 100],
+	onUpdatePage: updateCustomViewPage,
+	onUpdatePageSize: updateCustomViewPageSize,
+}));
+
+if (isSlotSet("default")) {
+	const options = computed(() =>
+		Inison.stringify({
+			page: customViewPagination.page,
+			perPage: customViewPagination.pageSize,
+			columns: table.value?.columns,
+		}),
+	);
+	const {
+		data: customViewData,
+		pending: customViewPending,
+		refresh,
+	} = await useLazyFetch<apiResponse<Item[]>>(
+		useApiBase() + database.value.slug + "/" + String(table.value?.slug ?? ""),
 		{
+			key: database.value.slug + "/" + String(table.value?.slug ?? ""),
+			query: {
+				options,
+				where: searchString,
+				locale: Language,
+				[database.value.slug + "_sid"]: sessionID.value,
+			},
+			onRequest() {
+				customViewLoading.value = true;
+				Loading.value.data = true;
+			},
+			onResponse({ response: { _data } }) {
+				customViewPagination.pageCount = _data?.options.totalPages ?? 0;
+				customViewPagination.itemCount = _data?.options.total ?? 0;
+				customViewLoading.value = false;
+				Loading.value.data = false;
+			},
 			credentials: "include",
-			query: { [`${database.value.slug}_sid`]: sessionID.value },
 		},
 	);
-
+	watch(
+		customViewData,
+		(value) => {
+			data.value = value ?? undefined;
+		},
+		{ immediate: true },
+	);
+	watch(customViewPending, (pending) => {
+		customViewLoading.value = pending;
+	});
+	watch(
+		() => route.query.page,
+		(page) => {
+			const nextPage = page ? Number(page) : 1;
+			if (Number.isFinite(nextPage) && customViewPagination.page !== nextPage)
+				customViewPagination.page = nextPage;
+		},
+	);
+	watch(
+		() => route.query.perPage,
+		(pageSize) => {
+			const nextSize = pageSize ? Number(pageSize) : isMobile ? 8 : 12;
+			if (
+				Number.isFinite(nextSize) &&
+				customViewPagination.pageSize !== nextSize
+			)
+				customViewPagination.pageSize = nextSize;
+		},
+	);
+	refreshCustomViewImpl = async () => {
+		await refresh();
+		data.value = customViewData.value ?? undefined;
+	};
+}
 const notificationRef = ref<NotificationReactive>();
 const currentJob = computed(() => table.value?.currentJob);
 let jobTimer: ReturnType<typeof setTimeout> | undefined;
@@ -495,14 +602,8 @@ function clearJobTimer() {
 }
 
 async function refreshTableAfterImport() {
-	if (isSlotSet("default") && !table.value.displayAs)
-		data.value = await $fetch<apiResponse<Item[]>>(
-			`${useApiBase()}${database.value.slug}/${table.value.slug}`,
-			{
-				credentials: "include",
-				query: { [`${database.value.slug}_sid`]: sessionID.value },
-			},
-		);
+	if (isSlotSet("default"))
+		await refreshCustomView();
 	else await refreshNuxtData(`${database.value.slug}/${table.value.slug}`);
 }
 

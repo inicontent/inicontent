@@ -311,6 +311,7 @@ declare global {
 		columns?: DataTableColumns<any>;
 		delete: (id?: string | string[]) => Promise<void>;
 		data?: apiResponse<Item[]>;
+		refresh?: () => Promise<void>;
 	};
 
 	type FormRef = {
