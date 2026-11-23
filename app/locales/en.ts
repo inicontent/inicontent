@@ -128,7 +128,8 @@ export default {
 			sessionNoticeDescription:
 				"Send your session id in the Authorization header (Bearer <sessionId>) or as the scoped HttpOnly cookie.",
 			sessionAsQuery: "Send it in the Authorization header:",
-			sessionAsCookie: "Or let the browser send the scoped HttpOnly cookie on every request.",
+			sessionAsCookie:
+				"Or let the browser send the scoped HttpOnly cookie on every request.",
 			sessionAuthLinkPrefix: "Need a session id? Read",
 			viewAuthDocs: "the auth docs",
 			schemaTitle: "Schema fields",
@@ -1181,6 +1182,47 @@ export default {
 			emailBuilderSubtitle:
 				"Design reusable email templates once and trigger them from your flows. Included with every subscription — only emails beyond your monthly allowance are metered.",
 			emailBuilderTitle: "Transactional & Flow Emails That Just Work",
+		},
+		domainUi: {
+			title: "Custom Domains",
+			subtitle:
+				"Allow apps on these origins to call this database’s API. Exact domains are also used for SEO and Amplify.",
+			domainHint:
+				"Accepted: example.com, *.example.com, *.com, *, *.*, localhost, localhost:* and localhost:<port>.",
+			removeFailed: "Failed to remove domain",
+			addDomain: "Add Domain",
+			domainName: "Domain",
+			domainPlaceholder: "example.com or *.example.com",
+			add: "Add",
+			addFailed: "Failed to add domain",
+			domainRequired: "Domain name is required",
+			domainInvalid:
+				"Enter a valid domain or wildcard without a protocol or path",
+			linkedDomains: "Linked Domains",
+			noDomains: "No domains linked yet",
+			refresh: "Refresh",
+			remove: "Remove",
+			confirmRemoveTitle: "Remove Domain",
+			confirmRemoveBody: "Are you sure you want to remove {domain}?",
+			cname: "CNAME Name",
+			cnameValue: "CNAME Value",
+			broadWarningTitle: "This is a broad origin rule",
+			broadWarning:
+				"Every matching site will be able to make credentialed requests as a signed-in user of this database. Only add this if you understand and accept that risk.",
+			broadAck: "I understand that this rule trusts a broad share of the web.",
+			broadAckRequired:
+				"Tick the acknowledgement before adding a broad origin rule.",
+			broadBadge: "Broad",
+			wildcardBadge: "Wildcard",
+			status: {
+				AVAILABLE: "Active",
+				PENDING_VERIFICATION: "Pending Verification",
+				CREATING: "Creating",
+				UPDATING: "Updating",
+				FAILED: "Failed",
+				DELETING: "Deleting",
+				PENDING: "Pending",
+			},
 		},
 		complianceSettings: "Compliance",
 		phi: "PHI",

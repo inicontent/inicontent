@@ -4,8 +4,8 @@ Guidance for coding agents working in this repository.
 
 Scope: **how to work in this codebase.** For human contribution process see
 [CONTRIBUTING.md](CONTRIBUTING.md). For working with a *database* — the REST API,
-the query language, table schemas and flows — use the
-[`@inicontent/mcp`](https://github.com/inicontent/mcp) server.
+the query language, table schemas and flows — use the published
+[docs](https://inicontent.com/docs).
 
 ## What this repo is
 
@@ -112,6 +112,11 @@ generic schema-driven editor covers it.
 A block that is a schema plus markup does not need a `.vue` file at all. Declare
 it in `app/components/Block/customBlocks.ts` (empty by default) and it is merged
 into `blockTypes` at build time, so it appears everywhere a built-in block does.
+
+**Hard rule:** before building any custom page system, check the registered
+custom blocks. Use one of them (or add one here) instead of creating a parallel
+block/runtime system. The layer ships no built-in custom blocks; an app's own
+list replaces this file through `modules/custom-blocks.ts`.
 
 ```ts
 import promo from "./custom/promo.html?raw";

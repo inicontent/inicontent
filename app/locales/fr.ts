@@ -131,7 +131,8 @@ export default {
 			sessionNoticeDescription:
 				"Envoyez l'identifiant de session dans l'en-tête Authorization (Bearer <sessionId>) ou avec le cookie HttpOnly à portée limitée.",
 			sessionAsQuery: "Envoyez-le dans l'en-tête Authorization :",
-			sessionAsCookie: "Ou laissez le navigateur envoyer le cookie HttpOnly à portée limitée sur chaque requête.",
+			sessionAsCookie:
+				"Ou laissez le navigateur envoyer le cookie HttpOnly à portée limitée sur chaque requête.",
 			sessionAuthLinkPrefix: "Besoin d'un ID de session ? Consultez",
 			viewAuthDocs: "la documentation d'authentification",
 			schemaTitle: "Champs du schéma",
@@ -1491,6 +1492,48 @@ export default {
 				"Concevez une fois des modeles d'e-mails reutilisables et declenchez-les depuis vos flux. Inclus dans chaque abonnement — seuls les e-mails au-dela de votre allocation mensuelle sont factures au compteur.",
 			emailBuilderTitle:
 				"Des e-mails transactionnels et automatises qui fonctionnent",
+		},
+		domainUi: {
+			title: "Domaines personnalisés",
+			subtitle:
+				"Autorisez les applications de ces origines à appeler l’API de cette base. Les domaines exacts servent aussi au SEO et à Amplify.",
+			domainHint:
+				"Formats acceptés : exemple.com, *.exemple.com, *.com, *, *.*, localhost, localhost:* et localhost:<port>.",
+			removeFailed: "Impossible de supprimer le domaine",
+			addDomain: "Ajouter un domaine",
+			domainName: "Domaine",
+			domainPlaceholder: "exemple.com ou *.exemple.com",
+			add: "Ajouter",
+			addFailed: "Échec de l’ajout du domaine",
+			domainRequired: "Le nom de domaine est obligatoire",
+			domainInvalid:
+				"Saisissez un domaine ou un joker valide, sans protocole ni chemin",
+			linkedDomains: "Domaines associés",
+			noDomains: "Aucun domaine associé pour l’instant",
+			refresh: "Actualiser",
+			remove: "Supprimer",
+			confirmRemoveTitle: "Supprimer le domaine",
+			confirmRemoveBody: "Voulez-vous vraiment supprimer {domain} ?",
+			cname: "Nom CNAME",
+			cnameValue: "Valeur CNAME",
+			broadWarningTitle: "Cette règle d’origine est très large",
+			broadWarning:
+				"Tout site correspondant pourra envoyer des requêtes authentifiées en tant qu’utilisateur connecté de cette base. Ajoutez-la seulement si vous comprenez et acceptez ce risque.",
+			broadAck:
+				"Je comprends que cette règle fait confiance à une large partie du web.",
+			broadAckRequired:
+				"Cochez la confirmation avant d’ajouter une règle d’origine large.",
+			broadBadge: "Large",
+			wildcardBadge: "Joker",
+			status: {
+				AVAILABLE: "Actif",
+				PENDING_VERIFICATION: "Vérification en attente",
+				CREATING: "Création",
+				UPDATING: "Mise à jour",
+				FAILED: "Échec",
+				DELETING: "Suppression",
+				PENDING: "En attente",
+			},
 		},
 		complianceSettings: "Conformité",
 		phi: "PHI",
