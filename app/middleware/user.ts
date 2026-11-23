@@ -1,7 +1,6 @@
 export default defineNuxtRouteMiddleware(async () => {
 	const user = useState<User | undefined>("user");
 	const database = useState<Database>("database");
-	const config = useRuntimeConfig();
 
 	const sessionID = useScopedCookie<string | undefined>(
 		"sid",
@@ -14,8 +13,6 @@ export default defineNuxtRouteMiddleware(async () => {
 			"inicontent",
 		);
 
-		if (!sessionID.value && !platformSessionID.value) return;
-
 		let refreshed = true;
 		try {
 			user.value = (
@@ -25,9 +22,11 @@ export default defineNuxtRouteMiddleware(async () => {
 						credentials: "include",
 						method: "POST",
 						body: {},
-						query: sessionID.value
-							? { [`${database.value.slug}_sid`]: sessionID.value }
-							: { inicontent_sid: platformSessionID.value },
+						...(sessionID.value
+							? { query: { [`${database.value.slug}_sid`]: sessionID.value } }
+							: platformSessionID.value
+								? { query: { inicontent_sid: platformSessionID.value } }
+								: {}),
 					},
 				)
 			).result;
@@ -40,7 +39,7 @@ export default defineNuxtRouteMiddleware(async () => {
 			refreshed = false;
 			user.value = undefined;
 		}
-		if (!sessionID.value && user.value?.sessionID)
+		if (user.value?.sessionID && sessionID.value !== user.value.sessionID)
 			sessionID.value = user.value.sessionID;
 		if (refreshed && !user.value) sessionID.value = undefined;
 	}

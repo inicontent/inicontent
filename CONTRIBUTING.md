@@ -43,9 +43,9 @@ behind `https://api.inicontent.com/` (`inicontent/api`) is proprietary and not
 included here. Contributions are limited to the client side.
 
 The API surface you develop against — the query language, schema field types,
-table flows, routing — is served as context resources by the
-[`@inicontent/mcp`](https://github.com/inicontent/mcp) server, which is also how
-code agents connect to a database.
+table flows, routing — is documented at
+[inicontent.com/docs](https://inicontent.com/docs), which is also how code agents
+connect to a database.
 
 Optional environment variables (see the
 [README](README.md#environment-variables) for the full table):
