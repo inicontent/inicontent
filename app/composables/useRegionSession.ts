@@ -23,6 +23,7 @@ import { useMainApiBase } from "./useMainApiBase.ts";
 import {
 	apiUrlOrigin,
 	normalizeRegionApiUrl,
+	parseDatabaseHostname,
 	REGION_STATE_KEY,
 	type RegionSelection,
 	withTrailingSlash,
@@ -63,6 +64,10 @@ export function useRegionSession() {
 			"sid",
 			"inicontent",
 		).value;
+
+		// Regional tenant hosts authenticate against their own database.
+		if (import.meta.client && parseDatabaseHostname(window.location.hostname)?.region)
+			return false;
 
 		try {
 			const minted = await $fetch<{ result?: { grant?: string } }>(

@@ -132,7 +132,8 @@ export default {
 			sessionNoticeDescription:
 				"Envía el ID de sesión en la cabecera Authorization (Bearer <sessionId>) o con la cookie HttpOnly con ámbito.",
 			sessionAsQuery: "Envíalo en la cabecera Authorization:",
-			sessionAsCookie: "O deja que el navegador envíe la cookie HttpOnly con ámbito en cada petición.",
+			sessionAsCookie:
+				"O deja que el navegador envíe la cookie HttpOnly con ámbito en cada petición.",
 			sessionAuthLinkPrefix: "¿Necesitas un ID de sesión? Lee",
 			viewAuthDocs: "la documentación de auth",
 			schemaTitle: "Campos del esquema",
@@ -1482,6 +1483,47 @@ export default {
 			emailBuilderSubtitle:
 				"Diseña plantillas de correo reutilizables una sola vez y actívalas desde tus flujos. Incluido con cada suscripción — solo se cobran los correos que superan tu asignación mensual.",
 			emailBuilderTitle: "Correos transaccionales y de flujo que funcionan",
+		},
+		domainUi: {
+			title: "Dominios personalizados",
+			subtitle:
+				"Permite que las aplicaciones de estos orígenes llamen a la API de esta base. Los dominios exactos también se usan para SEO y Amplify.",
+			domainHint:
+				"Formatos aceptados: ejemplo.com, *.ejemplo.com, *.com, *, *.*, localhost, localhost:* y localhost:<port>.",
+			removeFailed: "No se pudo eliminar el dominio",
+			addDomain: "Agregar dominio",
+			domainName: "Dominio",
+			domainPlaceholder: "ejemplo.com o *.ejemplo.com",
+			add: "Agregar",
+			addFailed: "Error al agregar el dominio",
+			domainRequired: "El nombre de dominio es obligatorio",
+			domainInvalid:
+				"Ingresa un dominio o comodín válido sin protocolo ni ruta",
+			linkedDomains: "Dominios vinculados",
+			noDomains: "No hay dominios vinculados aún",
+			refresh: "Actualizar",
+			remove: "Eliminar",
+			confirmRemoveTitle: "Eliminar dominio",
+			confirmRemoveBody: "¿Seguro que deseas eliminar {domain}?",
+			cname: "Nombre CNAME",
+			cnameValue: "Valor CNAME",
+			broadWarningTitle: "Esta regla de origen es muy amplia",
+			broadWarning:
+				"Cualquier sitio coincidente podrá enviar solicitudes autenticadas como un usuario con sesión en esta base. Agrégala solo si entiendes y aceptas ese riesgo.",
+			broadAck: "Entiendo que esta regla confía en una parte amplia de la web.",
+			broadAckRequired:
+				"Marca la confirmación antes de agregar una regla de origen amplia.",
+			broadBadge: "Amplio",
+			wildcardBadge: "Comodín",
+			status: {
+				AVAILABLE: "Activo",
+				PENDING_VERIFICATION: "Verificación pendiente",
+				CREATING: "Creando",
+				UPDATING: "Actualizando",
+				FAILED: "Fallido",
+				DELETING: "Eliminando",
+				PENDING: "Pendiente",
+			},
 		},
 		complianceSettings: "Cumplimiento",
 		phi: "PHI",

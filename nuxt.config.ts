@@ -187,6 +187,7 @@ export default defineNuxtConfig({
 		registerType: "prompt",
 		workbox: {
 			navigateFallback: "/",
+			navigateFallbackDenylist: [/^\/(?:[^/?]+\/){0,2}admin(?:[/?]|$)/],
 			// @vite-pwa/nuxt overrides workbox's default globPatterns with just
 			// the build-manifest JSON, so by default NO app chunk is precached
 			// and the app can't boot offline without a prior warm visit (the
@@ -219,6 +220,18 @@ export default defineNuxtConfig({
 			cacheId: "inicontent-shell-v1",
 			importScripts: ["/inicontent-containment-v1.js"],
 			runtimeCaching: [
+				{
+					// Admin navigations excluded from the shell route fetch the current
+					// build online and use the precached shell if the network fails.
+					urlPattern: ({ request, sameOrigin, url }) =>
+						sameOrigin &&
+						request.mode === "navigate" &&
+						/^\/(?:[^/]+\/){0,2}admin(?:\/|$)/.test(url.pathname),
+					handler: "NetworkOnly",
+					options: {
+						precacheFallback: { fallbackURL: "/" },
+					},
+				},
 				{
 					// Icons are served by the Nuxt app's own /_nuxt_icon endpoint
 					// (same origin). The clientBundle above covers the statically

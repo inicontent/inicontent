@@ -32,7 +32,30 @@ export function useScopedCookie<T>(key: string, databaseSlug?: string) {
 		slug !== "inicontent" &&
 		code &&
 		code !== "main";
-	return useCookie<T>(regional ? `${code}_${slug}_${key}` : `${slug}_${key}`, {
-		sameSite: true,
+	const cookieName = regional ? `${code}_${slug}_${key}` : `${slug}_${key}`;
+	if (key !== "sid")
+		return useCookie<T>(cookieName, {
+			sameSite: true,
+		});
+
+	// The admin app keeps its bearer token in memory, not in a script-readable
+	// cookie. `null` means "explicitly cleared"; a reload starts empty and the
+	// user middleware silently refreshes from the HttpOnly server cookie.
+	const tokens = useState<Record<string, string | null>>(
+		"sessionTokens",
+		() => ({}),
+	);
+	return computed<T | null | undefined>({
+		get: () => {
+			if (cookieName in tokens.value)
+				return tokens.value[cookieName] as T | null;
+			return undefined;
+		},
+		set: (value) => {
+			tokens.value[cookieName] =
+				value === undefined || value === null || value === ""
+					? null
+					: (value as unknown as string);
+		},
 	});
 }

@@ -8,7 +8,10 @@
  * component to write and no registry to edit — a block is a `schema` (its config
  * fields), a Liquid `template` (its markup), and optional `style` (its CSS).
  *
- * Empty by default, so a stock install behaves exactly as before.
+ * Empty by default, so a stock install behaves exactly as before. The layer
+ * ships no built-in custom block types; apps such as `starter` provide their
+ * own list at the same relative path and replace this one through
+ * `modules/custom-blocks.ts`.
  *
  * ## Example
  *

@@ -103,6 +103,10 @@
 						</NButton>
 					</NFlex>
 				</NCard>
+				<NCard v-if="canManageDomains" v-show="$device.isMobile || activeSection === 'domain'"
+					id="domain" :title="t('domainUi.title')" hoverable>
+					<DomainSettings />
+				</NCard>
 			</NCard>
 		</NGridItem>
 		<NGridItem v-if="!$device.isMobile" span="2" style="padding-top: 58px;">
@@ -116,6 +120,7 @@
 						{{ t('databaseExport') }}
 					</NTab>
 					<NTab name="email">{{ t('emailSettings') }}</NTab>
+					<NTab v-if="canManageDomains" name="domain">{{ t('domainUi.title') }}</NTab>
 				</NTabs>
 			</div>
 		</NGridItem>
@@ -165,7 +170,8 @@ type SettingsSection =
 	| "translation"
 	| "compliance"
 	| "database-export"
-	| "email";
+	| "email"
+	| "domain";
 const activeSection = ref<SettingsSection>("general");
 const databaseCopy = ref<Database>(JSON.parse(JSON.stringify(database.value)));
 databaseCopy.value.email ??= {};
@@ -186,6 +192,9 @@ let exportPollTimer: ReturnType<typeof setTimeout> | undefined;
 const canExportDatabase = computed(
 	() => user.value?.role === config.public.idOne,
 );
+const canManageDomains = computed(
+	() => user.value?.role === config.public.idOne,
+);
 const exportIsActive = computed(() =>
 	["queued", "running"].includes(exportStatus.value?.state ?? ""),
 );
@@ -199,8 +208,10 @@ function sectionFromHash(hash: string): SettingsSection | undefined {
 			"compliance",
 			"database-export",
 			"email",
+			"domain",
 		].includes(section) &&
-		(section !== "database-export" || canExportDatabase.value)
+		(section !== "database-export" || canExportDatabase.value) &&
+		(section !== "domain" || canManageDomains.value)
 	)
 		return section;
 }
@@ -217,6 +228,7 @@ watch(
 function changeSection(value: string | number) {
 	const section = value as SettingsSection;
 	if (section === "database-export" && !canExportDatabase.value) return;
+	if (section === "domain" && !canManageDomains.value) return;
 	activeSection.value = section;
 	if (route.hash !== `#${section}`) router.replace({ hash: `#${section}` });
 }
