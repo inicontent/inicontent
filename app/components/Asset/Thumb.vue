@@ -172,6 +172,21 @@ function assetKeyValue(asset: Asset): string {
 	return String(asset.id ?? asset.publicURL ?? asset.name);
 }
 
+/**
+ * Cache key for generated previews. It includes the asset's mutable metadata
+ * so replacing/repairing an asset (new size or updatedAt) never serves a
+ * thumbnail generated for its previous content. The old id-only key left
+ * wrong PDF/document previews in IndexedDB for up to 30 days.
+ */
+function thumbnailCacheKey(
+	asset: Asset,
+	kind: "pdf" | "video" | "doc",
+): string {
+	return `${kind}-${assetKeyValue(asset)}:${asset.size ?? ""}:${
+		asset.updatedAt ?? ""
+	}:${asset.publicURL ?? ""}`;
+}
+
 async function generateVideoThumb(timeSec = 0.5) {
 	if (!videoExtensions.includes(asset.extension)) return;
 	const key = assetKeyValue(asset);
@@ -181,7 +196,7 @@ async function generateVideoThumb(timeSec = 0.5) {
 		generatingVideo[key] = true;
 
 		// Try to get from cache first
-		const cached = await getCachedThumbnail(`video-${key}`);
+		const cached = await getCachedThumbnail(thumbnailCacheKey(asset, "video"));
 		if (cached) {
 			videoThumbs[key] = cached;
 			return cached;
@@ -345,7 +360,8 @@ async function generateVideoThumb(timeSec = 0.5) {
 		videoThumbs[key] = dataUrl;
 
 		// Cache the generated thumbnail
-		if (dataUrl) await cacheThumbnail(`video-${key}`, dataUrl);
+		if (dataUrl)
+			await cacheThumbnail(thumbnailCacheKey(asset, "video"), dataUrl);
 	} catch (error) {
 		console.warn("Error in generateVideoThumb:", error);
 		videoThumbs[key] = undefined;
@@ -364,15 +380,16 @@ async function generatePdfThumb() {
 		generatingPdf[key] = true;
 
 		// Try to get from cache first
-		const cached = await getCachedThumbnail(`pdf-${key}`);
+		const cached = await getCachedThumbnail(thumbnailCacheKey(asset, "pdf"));
 		if (cached) {
 			pdfThumbs[key] = cached;
 			return cached;
 		}
 
-		// Check file size before attempting to load
-		// Limit to 50MB to prevent memory issues with large PDFs
-		const maxFileSizeBytes = 50 * 1024 * 1024;
+		// Check file size before attempting to load. Print-quality PDFs can be
+		// large; PDF.js uses HTTP range requests, so allow up to 100MB while
+		// still refusing truly enormous files that would exhaust memory.
+		const maxFileSizeBytes = 100 * 1024 * 1024;
 		if (asset.size && asset.size > maxFileSizeBytes) {
 			console.warn(
 				`PDF file too large (${Math.round(asset.size / 1024 / 1024)}MB). Skipping thumbnail generation.`,
@@ -386,14 +403,20 @@ async function generatePdfThumb() {
 		// Set worker source from CDN to avoid loading local worker file
 		pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-		// Create a timeout promise to abort if loading takes too long
+		// Create a timeout promise to abort if loading takes too long. Large
+		// print-ready PDFs need a little longer than the old 30 seconds.
+		const timeoutMs =
+			asset.size && asset.size > 50 * 1024 * 1024 ? 60000 : 30000;
 		const timeoutPromise: Promise<never> = new Promise((_resolve, reject) => {
-			setTimeout(() => reject(new Error("PDF loading timeout")), 30000); // 30 second timeout
+			setTimeout(() => reject(new Error("PDF loading timeout")), timeoutMs);
 		});
 
 		const pdf = await Promise.race([
 			pdfjsLib.getDocument({
 				url: asset.publicURL as string,
+				// Do not pull the whole file for a first-page preview; PDF.js
+				// can range-request only the parts it needs.
+				disableAutoFetch: true,
 				// Needed so non-embedded/base-14 fonts get correct glyph widths instead of garbled spacing.
 				cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
 				cMapPacked: true,
@@ -462,7 +485,7 @@ async function generatePdfThumb() {
 		pdfThumbs[key] = dataUrl;
 
 		// Cache the generated thumbnail
-		if (dataUrl) await cacheThumbnail(`pdf-${key}`, dataUrl);
+		if (dataUrl) await cacheThumbnail(thumbnailCacheKey(asset, "pdf"), dataUrl);
 	} catch (error) {
 		console.warn(
 			`Failed to generate PDF thumbnail for ${asset.publicURL}:`,
