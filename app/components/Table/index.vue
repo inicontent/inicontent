@@ -264,6 +264,10 @@ async function deleteItem(id?: string | number | (string | number)[]) {
 				method: "DELETE",
 				query: {
 					where: id && Array.isArray(id) ? Inison.stringify(id) : undefined,
+					// Clearing a whole table (no id) is destructive, so ask the
+					// API for it explicitly. A missing id alone must not wipe
+					// the table if a caller forgets one.
+					all: !id ? true : undefined,
 					locale: Language.value,
 					[`${database.value.slug}_sid`]: sessionID.value,
 				},
